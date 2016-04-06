@@ -5,6 +5,8 @@ var ng_app_1 = require('./ng-app');
 var behaviours_1 = require('./behaviours');
 var calendar_1 = require('./calendar');
 var globals_1 = require('./globals');
+var _ = require('lodash');
+var moment = require('moment');
 function Model(data) {
     if (data === void 0) { data = undefined; }
     if (typeof this.updateData === 'function') {

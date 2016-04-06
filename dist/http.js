@@ -1,5 +1,7 @@
 "use strict";
 var idiom_1 = require('./idiom');
+var $ = require('jquery');
+var humane = require('humane');
 function Http() {
     this.statusCallbacks = {};
 }

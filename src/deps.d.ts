@@ -1,8 +1,4 @@
-declare var $;
 declare var angular;
-declare var humane;
-declare var _;
-declare var moment;
 declare var MathJax;
 
 //webpack stuff

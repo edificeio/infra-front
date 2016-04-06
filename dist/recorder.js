@@ -2,6 +2,7 @@
 var idiom_1 = require('./idiom');
 var http_1 = require('./http');
 var ng_app_1 = require('./ng-app');
+var moment = require('moment');
 exports.recorder = (function () {
     //vendor prefixes
     navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia ||

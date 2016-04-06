@@ -1,5 +1,8 @@
 import { model } from './model';
 
+var moment = require('moment');
+var _ = require('lodash');
+
 export var calendar = {
     setCalendar: function(cal){
         model.calendar = cal;

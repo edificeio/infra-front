@@ -6,6 +6,9 @@ import { Behaviours } from './behaviours';
 import { calendar } from './calendar';
 import { currentLanguage } from './globals';
 
+var _ = require('lodash');
+var moment = require('moment');
+
 export function Model(data = undefined): void {
 	if(typeof this.updateData === 'function'){
 		this.updateData(data, false);

@@ -24,6 +24,10 @@ var ui_1 = require('./ui');
 var behaviours_1 = require('./behaviours');
 var recorder_1 = require('./recorder');
 var globals_1 = require('./globals');
+var $ = require('jquery');
+var humane = require('humane');
+var moment = require('moment');
+var _ = require('lodash');
 exports.template = {
     viewPath: '/' + appPrefix + '/public/template/',
     containers: {},

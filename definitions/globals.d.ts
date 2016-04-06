@@ -1,2 +1,2 @@
-export var currentLanguage: string;
-export var routes: any;
+export declare var currentLanguage: string;
+export declare var routes: any;

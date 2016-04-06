@@ -1,5 +1,7 @@
 "use strict";
 var model_1 = require('./model');
+var moment = require('moment');
+var _ = require('lodash');
 exports.calendar = {
     setCalendar: function (cal) {
         model_1.model.calendar = cal;

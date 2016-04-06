@@ -25,6 +25,11 @@ import { Behaviours } from './behaviours';
 import { recorder } from './recorder';
 import { currentLanguage, routes } from './globals';
 
+var $ = require('jquery');
+var humane = require('humane');
+var moment = require('moment');
+var _ = require('lodash');
+
 export var template = {
 	viewPath: '/' + appPrefix + '/public/template/',
 	containers: {},

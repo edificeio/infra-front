@@ -2,6 +2,8 @@ import { idiom as lang } from './idiom';
 import { http } from './http';
 import { notify } from './ng-app';
 
+var moment = require('moment');
+
 export var recorder = (function(){
 	//vendor prefixes
 	(navigator as any).getUserMedia = (navigator as any).getUserMedia || (navigator as any).webkitGetUserMedia ||

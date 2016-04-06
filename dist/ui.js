@@ -15,6 +15,7 @@
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 "use strict";
+var $ = require('jquery');
 exports.ui = (function () {
     var mainLightbox = {
         show: function () {
