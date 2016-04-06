@@ -23,6 +23,7 @@ import { skin } from './skin';
 import { ui } from './ui';
 import { Behaviours } from './behaviours';
 import { recorder } from './recorder';
+import { currentLanguage, routes } from './globals';
 
 export var template = {
 	viewPath: '/' + appPrefix + '/public/template/',

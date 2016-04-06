@@ -1,3 +1,4 @@
+"use strict";
 if (window.appPrefix === undefined) {
     if (window.location.pathname.split('/').length > 0) {
         window.appPrefix = window.location.pathname.split('/')[1];
@@ -6,14 +7,14 @@ if (window.appPrefix === undefined) {
 if (window.infraPrefix === undefined) {
     window.infraPrefix = 'infra';
 }
-var currentLanguage = '';
+exports.currentLanguage = '';
 (function () {
     var request = new XMLHttpRequest();
     request.open('GET', '/locale');
     request.async = false;
     request.onload = function () {
         if (request.status === 200) {
-            currentLanguage = JSON.parse(request.responseText).locale;
+            exports.currentLanguage = JSON.parse(request.responseText).locale;
         }
     };
     request.send(null);
@@ -23,7 +24,7 @@ if (document.addEventListener) {
         document.getElementsByTagName('body')[0].style.display = 'none';
     });
 }
-var routes = {
+exports.routes = {
     define: function (routing) {
         this.routing = routing;
     }

@@ -4,6 +4,7 @@ var ui_1 = require('./ui');
 var ng_app_1 = require('./ng-app');
 var behaviours_1 = require('./behaviours');
 var calendar_1 = require('./calendar');
+var globals_1 = require('./globals');
 function Model(data) {
     if (data === void 0) { data = undefined; }
     if (typeof this.updateData === 'function') {
@@ -731,8 +732,8 @@ var skin = (function () {
     };
 }());
 function bootstrap(func) {
-    if (currentLanguage === 'fr') {
-        moment.lang(currentLanguage, {
+    if (globals_1.currentLanguage === 'fr') {
+        moment.lang(globals_1.currentLanguage, {
             calendar: {
                 lastDay: '[Hier à] HH[h]mm',
                 sameDay: '[Aujourd\'hui à] HH[h]mm',
@@ -744,7 +745,7 @@ function bootstrap(func) {
         });
     }
     else {
-        moment.lang(currentLanguage);
+        moment.lang(globals_1.currentLanguage);
     }
     if (window.notLoggedIn) {
         behaviours_1.Behaviours.loadBehaviours(appPrefix, function () {

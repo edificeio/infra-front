@@ -8,7 +8,7 @@ if((window as any).infraPrefix === undefined){
 	(window as any).infraPrefix = 'infra';
 }
 
-var currentLanguage = '';
+export var currentLanguage = '';
 (function(){
 	var request = new XMLHttpRequest();
 	request.open('GET', '/locale');
@@ -27,7 +27,7 @@ if(document.addEventListener){
 	});
 }
 
-var routes:any = {
+export var routes:any = {
 	define: function(routing){
 		this.routing = routing;
 	}

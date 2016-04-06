@@ -4,6 +4,7 @@ import { ui } from './ui';
 import { notify } from './ng-app';
 import { Behaviours } from './behaviours';
 import { calendar } from './calendar';
+import { currentLanguage } from './globals';
 
 export function Model(data = undefined): void {
 	if(typeof this.updateData === 'function'){

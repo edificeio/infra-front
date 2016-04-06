@@ -23,6 +23,7 @@ var skin_1 = require('./skin');
 var ui_1 = require('./ui');
 var behaviours_1 = require('./behaviours');
 var recorder_1 = require('./recorder');
+var globals_1 = require('./globals');
 exports.template = {
     viewPath: '/' + appPrefix + '/public/template/',
     containers: {},
@@ -220,8 +221,8 @@ var module = angular.module('app', ['ngSanitize', 'ngRoute'], function ($interpo
     };
 });
 //routing
-if (routes.routing) {
-    module.config(routes.routing);
+if (globals_1.routes.routing) {
+    module.config(globals_1.routes.routing);
 }
 //directives
 module.directive('completeChange', function () {
@@ -1323,7 +1324,7 @@ module.directive('localizedClass', function ($compile) {
     return {
         restrict: 'A',
         link: function ($scope, $attributes, $element) {
-            $element.$addClass(currentLanguage);
+            $element.$addClass(globals_1.currentLanguage);
         }
     };
 });
