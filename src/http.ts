@@ -1,9 +1,5 @@
 import { idiom as lang } from './idiom';
 
-var $ = require('jquery');
-var humane = require('humane-js');
-var angular = require('angular');
-
 export function Http(){
 	this.statusCallbacks = {};
 }
@@ -129,7 +125,7 @@ export var http = (function(){
 			if(!params){
 				params = {};
 			}
-			params.data = angular.toJson(data);
+			params.data = (window as any).angular.toJson(data);
 			params.type = type.toUpperCase();
 			return this.request(url, params, requestName);
 		};
@@ -161,3 +157,6 @@ export var http = (function(){
 		return new Http();
 	}
 }());
+
+var $ = require('jquery');
+var humane = require('humane-js');

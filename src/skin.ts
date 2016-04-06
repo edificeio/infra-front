@@ -3,6 +3,7 @@ import { ui } from './ui';
 
 export var skin = (function(){
 	return {
+        addDirectives: <any> undefined,
 		templateMapping: {},
 		skin: 'raw',
 		theme: '/assets/themes/raw/default/',

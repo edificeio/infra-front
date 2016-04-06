@@ -1,4 +1,5 @@
 export declare var skin: {
+    addDirectives: any;
     templateMapping: {};
     skin: string;
     theme: string;

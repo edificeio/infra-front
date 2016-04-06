@@ -1,7 +1,7 @@
 import { http } from './http';
 import { idiom as lang } from './idiom';
 import { ui } from './ui';
-import { notify } from './ng-app';
+import { notify } from './notify';
 import { Behaviours } from './behaviours';
 import { calendar } from './calendar';
 import { currentLanguage } from './globals';
@@ -16,6 +16,7 @@ export function Model(data = undefined): void {
 }
 
 Model.prototype.build = function(){};
+(window as any).Model = Model;
 export var model = new Model();
 
 export function Collection(obj){
@@ -324,7 +325,9 @@ export function Collection(obj){
 		// fn is passed as parameter to keep its written behaviour
 		var ctr = new Function("fn", "return function " + (fn.name || fn._name) + "(data){ Model.call(this, data); fn.call(this, data); }")(fn);
 		ctr.prototype = Object.create(Model.prototype);
-		ctr.name = fn.name;
+        if(ctr.name === undefined){
+            ctr.name = fn.name;
+        }
 
 		for(var method in methods){
 			ctr.prototype[method] = methods[method];

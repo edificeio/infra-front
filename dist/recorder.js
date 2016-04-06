@@ -1,7 +1,7 @@
 "use strict";
 var idiom_1 = require('./idiom');
 var http_1 = require('./http');
-var ng_app_1 = require('./ng-app');
+var notify_1 = require('./notify');
 var moment = require('moment');
 exports.recorder = (function () {
     //vendor prefixes
@@ -126,7 +126,7 @@ exports.recorder = (function () {
                     if (typeof callback === 'function') {
                         callback(doc);
                         this.flush();
-                        ng_app_1.notify.info('recorder.saved');
+                        notify_1.notify.info('recorder.saved');
                     }
                 }.bind(this));
             }.bind(this);

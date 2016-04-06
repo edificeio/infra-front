@@ -3,6 +3,7 @@ var http_1 = require('./http');
 var ui_1 = require('./ui');
 exports.skin = (function () {
     return {
+        addDirectives: undefined,
         templateMapping: {},
         skin: 'raw',
         theme: '/assets/themes/raw/default/',

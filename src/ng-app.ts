@@ -19,89 +19,23 @@ import { idiom as lang, idiom as idiom } from './idiom';
 import { http, Http } from './http';
 import { calendar } from './calendar';
 import { Collection, Model, model, bootstrap } from './model';
-import { skin } from './skin';
 import { ui } from './ui';
 import { Behaviours } from './behaviours';
 import { recorder } from './recorder';
 import { currentLanguage, routes } from './globals';
+import { notify } from './notify';
+import { skin } from './skin';
+import { template } from './template';
 
 var $ = require('jquery');
-var humane = require('humane-js');
 var moment = require('moment');
 var _ = require('lodash');
-var angular = require('angular');
 
-export var template = {
-	viewPath: '/' + appPrefix + '/public/template/',
-	containers: {},
-	open: function(name, view){
-		var path = this.viewPath + view + '.html';
-		var folder = appPrefix;
-		if(appPrefix === '.'){
-			folder = 'portal';
-		}
-		if(skin.templateMapping[folder] && skin.templateMapping[folder].indexOf(view) !== -1){
-			path = '/assets/themes/' + skin.skin + '/template/' + folder + '/' + view + '.html';
-		}
-
-		this.containers[name] = path;
-
-		if(this.callbacks && this.callbacks[name]){
-			this.callbacks[name].forEach(function(cb){
-				cb();
-			});
-		}
-	},
-	contains: function(name, view){
-		return this.containers[name] === this.viewPath + view + '.html';
-	},
-	isEmpty: function(name){
-		return this.containers[name] === 'empty' || !this.containers[name];
-	},
-	close: function(name){
-		this.containers[name] = 'empty';
-		if(this.callbacks && this.callbacks[name]){
-			this.callbacks[name].forEach(function(cb){
-				cb();
-			});
-		}
-	},
-	watch: function(container, fn){
-		if(typeof fn !== 'function'){
-			throw TypeError('template.watch(string, function) called with wrong parameters');
-		}
-		if(!this.callbacks){
-			this.callbacks = {};
-		}
-		if(!this.callbacks[container]){
-			this.callbacks[container] = [];
-		}
-		this.callbacks[container].push(fn);
-	}
-};
-
-export var notify = {
-	message: function(type, message){
-		message = lang.translate(message);
-		humane.spawn({ addnCls: 'humane-original-' + type })(message);
-	},
-	error: function(message){
-		this.message('error', message);
-	},
-	info: function(message){
-		this.message('info', message)
-	},
-	success: function(message){
-		this.message('success', message);
-	}
-};
+require('angular');
 
 var module = angular.module('app', ['ngSanitize', 'ngRoute'], function($interpolateProvider) {
 		$interpolateProvider.startSymbol('[[');
 		$interpolateProvider.endSymbol(']]');
-	})
-	.factory('notify', function(){
-		return notify;
 	})
 	.factory('route', function($rootScope, $route, $routeParams){
 		var routes = {};
@@ -4422,21 +4356,19 @@ $(document).ready(function(){
 				});
 			}
 
-			/*loader.openFile({
-				url: skin.basePath + 'js/directives.js',
-				success: function(){
-					if(typeof skin.addDirectives === 'function'){
-						skin.addDirectives(module, start);
-					}
-					else{
-						start();
-					}
-				},
-				error: function(){
-					start();
-				}
-			})*/
-
+            http().get(skin.basePath + 'js/directives.js').done((d) => {
+                eval(d);
+                
+                if(typeof skin.addDirectives === 'function'){
+                    skin.addDirectives(module, start);
+                }
+                else{
+                    start();
+                }
+            })
+            .error(() => {
+                start();
+            });
 		});
 	}, 10);
 });

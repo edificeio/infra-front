@@ -1,7 +1,7 @@
 "use strict";
 var http_1 = require('./http');
 var ui_1 = require('./ui');
-var ng_app_1 = require('./ng-app');
+var notify_1 = require('./notify');
 var behaviours_1 = require('./behaviours');
 var calendar_1 = require('./calendar');
 var globals_1 = require('./globals');
@@ -15,6 +15,7 @@ function Model(data) {
 }
 exports.Model = Model;
 Model.prototype.build = function () { };
+window.Model = Model;
 exports.model = new Model();
 function Collection(obj) {
     this.all = [];
@@ -309,7 +310,9 @@ exports.Collection = Collection;
         // fn is passed as parameter to keep its written behaviour
         var ctr = new Function("fn", "return function " + (fn.name || fn._name) + "(data){ Model.call(this, data); fn.call(this, data); }")(fn);
         ctr.prototype = Object.create(Model.prototype);
-        ctr.name = fn.name;
+        if (ctr.name === undefined) {
+            ctr.name = fn.name;
+        }
         for (var method in methods) {
             ctr.prototype[method] = methods[method];
         }
@@ -495,7 +498,7 @@ exports.Collection = Collection;
             var form = new FormData();
             form.append('blob', blob, this.title + '.json');
             if (this._id !== undefined) {
-                ng_app_1.notify.info('notify.object.saved');
+                notify_1.notify.info('notify.object.saved');
                 http_1.http().putFile('/workspace/document/' + this._id, form);
             }
             else {
@@ -515,7 +518,7 @@ exports.Collection = Collection;
             trash.sync();
         };
         obj.prototype.remove = function () {
-            ng_app_1.notify.info('notify.object.remove');
+            notify_1.notify.info('notify.object.remove');
             http_1.http().delete('/workspace/document/' + this._id);
             mine.remove(this, false);
             trash.remove(this, false);

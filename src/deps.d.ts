@@ -1,4 +1,5 @@
 declare var MathJax;
+declare var angular;
 
 //webpack stuff
 declare function require(path:string);

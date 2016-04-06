@@ -1,8 +1,5 @@
 "use strict";
 var idiom_1 = require('./idiom');
-var $ = require('jquery');
-var humane = require('humane-js');
-var angular = require('angular');
 function Http() {
     this.statusCallbacks = {};
 }
@@ -115,7 +112,7 @@ exports.http = (function () {
             if (!params) {
                 params = {};
             }
-            params.data = angular.toJson(data);
+            params.data = window.angular.toJson(data);
             params.type = type.toUpperCase();
             return this.request(url, params, requestName);
         };
@@ -145,3 +142,5 @@ exports.http = (function () {
         return new Http();
     };
 }());
+var $ = require('jquery');
+var humane = require('humane-js');

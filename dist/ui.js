@@ -16,7 +16,6 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 "use strict";
 var $ = require('jquery');
-var angular = require('angular');
 exports.ui = (function () {
     var mainLightbox = {
         show: function () {
@@ -62,7 +61,7 @@ exports.ui = (function () {
             mainLightbox.hide();
         },
         updateAvatar: function () {
-            var scope = angular.element(document.getElementById('my-photo')).scope();
+            var scope = window.angular.element(document.getElementById('my-photo')).scope();
             scope.refreshAvatar();
         },
         scrollToId: function (id) {

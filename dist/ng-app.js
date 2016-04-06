@@ -19,83 +19,20 @@ var idiom_1 = require('./idiom');
 var http_1 = require('./http');
 var calendar_1 = require('./calendar');
 var model_1 = require('./model');
-var skin_1 = require('./skin');
 var ui_1 = require('./ui');
 var behaviours_1 = require('./behaviours');
 var recorder_1 = require('./recorder');
 var globals_1 = require('./globals');
+var notify_1 = require('./notify');
+var skin_1 = require('./skin');
+var template_1 = require('./template');
 var $ = require('jquery');
-var humane = require('humane-js');
 var moment = require('moment');
 var _ = require('lodash');
-var angular = require('angular');
-exports.template = {
-    viewPath: '/' + appPrefix + '/public/template/',
-    containers: {},
-    open: function (name, view) {
-        var path = this.viewPath + view + '.html';
-        var folder = appPrefix;
-        if (appPrefix === '.') {
-            folder = 'portal';
-        }
-        if (skin_1.skin.templateMapping[folder] && skin_1.skin.templateMapping[folder].indexOf(view) !== -1) {
-            path = '/assets/themes/' + skin_1.skin.skin + '/template/' + folder + '/' + view + '.html';
-        }
-        this.containers[name] = path;
-        if (this.callbacks && this.callbacks[name]) {
-            this.callbacks[name].forEach(function (cb) {
-                cb();
-            });
-        }
-    },
-    contains: function (name, view) {
-        return this.containers[name] === this.viewPath + view + '.html';
-    },
-    isEmpty: function (name) {
-        return this.containers[name] === 'empty' || !this.containers[name];
-    },
-    close: function (name) {
-        this.containers[name] = 'empty';
-        if (this.callbacks && this.callbacks[name]) {
-            this.callbacks[name].forEach(function (cb) {
-                cb();
-            });
-        }
-    },
-    watch: function (container, fn) {
-        if (typeof fn !== 'function') {
-            throw TypeError('template.watch(string, function) called with wrong parameters');
-        }
-        if (!this.callbacks) {
-            this.callbacks = {};
-        }
-        if (!this.callbacks[container]) {
-            this.callbacks[container] = [];
-        }
-        this.callbacks[container].push(fn);
-    }
-};
-exports.notify = {
-    message: function (type, message) {
-        message = idiom_1.idiom.translate(message);
-        humane.spawn({ addnCls: 'humane-original-' + type })(message);
-    },
-    error: function (message) {
-        this.message('error', message);
-    },
-    info: function (message) {
-        this.message('info', message);
-    },
-    success: function (message) {
-        this.message('success', message);
-    }
-};
+require('angular');
 var module = angular.module('app', ['ngSanitize', 'ngRoute'], function ($interpolateProvider) {
     $interpolateProvider.startSymbol('[[');
     $interpolateProvider.endSymbol(']]');
-})
-    .factory('notify', function () {
-    return exports.notify;
 })
     .factory('route', function ($rootScope, $route, $routeParams) {
     var routes = {};
@@ -115,7 +52,7 @@ var module = angular.module('app', ['ngSanitize', 'ngRoute'], function ($interpo
     };
 })
     .factory('template', function () {
-    return exports.template;
+    return template_1.template;
 })
     .factory('date', function () {
     return {
@@ -721,11 +658,11 @@ module.directive('calendar', function ($compile) {
             scope.display = {};
             attributes.$observe('createTemplate', function () {
                 if (attributes.createTemplate) {
-                    exports.template.open('schedule-create-template', attributes.createTemplate);
+                    template_1.template.open('schedule-create-template', attributes.createTemplate);
                     allowCreate = true;
                 }
                 if (attributes.displayTemplate) {
-                    exports.template.open('schedule-display-template', attributes.displayTemplate);
+                    template_1.template.open('schedule-display-template', attributes.displayTemplate);
                 }
             });
             scope.items = scope.$eval(attributes.items);
@@ -887,15 +824,15 @@ module.directive('container', function ($compile) {
         scope: true,
         template: '<div ng-include="templateContainer"></div>',
         link: function (scope, element, attributes) {
-            scope.tpl = exports.template;
-            exports.template.watch(attributes.template, function () {
-                scope.templateContainer = exports.template.containers[attributes.template];
+            scope.tpl = template_1.template;
+            template_1.template.watch(attributes.template, function () {
+                scope.templateContainer = template_1.template.containers[attributes.template];
                 if (scope.templateContainer === 'empty') {
                     scope.templateContainer = undefined;
                 }
             });
             if (attributes.template) {
-                scope.templateContainer = exports.template.containers[attributes.template];
+                scope.templateContainer = template_1.template.containers[attributes.template];
             }
         }
     };
@@ -4018,20 +3955,18 @@ $(document).ready(function () {
                     });
                 });
             }
-            /*loader.openFile({
-                url: skin.basePath + 'js/directives.js',
-                success: function(){
-                    if(typeof skin.addDirectives === 'function'){
-                        skin.addDirectives(module, start);
-                    }
-                    else{
-                        start();
-                    }
-                },
-                error: function(){
+            http_1.http().get(skin_1.skin.basePath + 'js/directives.js').done(function (d) {
+                eval(d);
+                if (typeof skin_1.skin.addDirectives === 'function') {
+                    skin_1.skin.addDirectives(module, start);
+                }
+                else {
                     start();
                 }
-            })*/
+            })
+                .error(function () {
+                start();
+            });
         });
     }, 10);
 });
@@ -4605,7 +4540,7 @@ workspace.Document.prototype.upload = function (file, requestName, callback, vis
         }
     }).e400(function (e) {
         var error = JSON.parse(e.responseText);
-        exports.notify.error(error.error);
+        notify_1.notify.error(error.error);
     });
 };
 function MediaLibrary($scope) {

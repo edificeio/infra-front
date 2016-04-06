@@ -1,6 +1,6 @@
 import { idiom as lang } from './idiom';
 import { http } from './http';
-import { notify } from './ng-app';
+import { notify } from './notify';
 
 var moment = require('moment');
 
