@@ -1,3 +1,5 @@
+import { idiom as lang } from './idiom';
+
 export function Http(){
 	this.statusCallbacks = {};
 }

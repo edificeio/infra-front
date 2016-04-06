@@ -1,8 +1,9 @@
 ﻿{
   "compilerOptions": {
     "target": "es5",
-    "module": "amd",
-    "noImplicitAny": false
+    "module": "commonjs",
+    "noImplicitAny": false,
+    "declaration": true
   },
   "exclude": [
     "node_modules"

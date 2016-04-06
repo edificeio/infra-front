@@ -3,7 +3,6 @@ define(["require", "exports"], function (require, exports) {
     function Http() {
         this.statusCallbacks = {};
     }
-    exports.Http = Http;
     exports.http = (function () {
         var statusEvents = ['done', 'error', 'e401', 'e404', 'e409', 'e500', 'e400', 'e413', 'e504', 'e0'];
         Http.prototype = {
