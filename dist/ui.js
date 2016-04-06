@@ -16,6 +16,7 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 "use strict";
 var $ = require('jquery');
+var angular = require('angular');
 exports.ui = (function () {
     var mainLightbox = {
         show: function () {

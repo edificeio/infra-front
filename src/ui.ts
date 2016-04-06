@@ -16,6 +16,7 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 var $ = require('jquery');
+var angular = require('angular');
 
 export var ui;
 

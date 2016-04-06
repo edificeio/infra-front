@@ -1,7 +1,8 @@
 import { idiom as lang } from './idiom';
 
 var $ = require('jquery');
-var humane = require('humane');
+var humane = require('humane-js');
+var angular = require('angular');
 
 export function Http(){
 	this.statusCallbacks = {};

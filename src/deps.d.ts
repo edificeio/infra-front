@@ -1,4 +1,3 @@
-declare var angular;
 declare var MathJax;
 
 //webpack stuff
