@@ -30,6 +30,8 @@ var $ = require('jquery');
 var moment = require('moment');
 var _ = require('lodash');
 require('angular');
+require('angular-sanitize');
+require('angular-route');
 var module = angular.module('app', ['ngSanitize', 'ngRoute'], function ($interpolateProvider) {
     $interpolateProvider.startSymbol('[[');
     $interpolateProvider.endSymbol(']]');
