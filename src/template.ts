@@ -48,3 +48,9 @@ export var template = {
 		this.callbacks[container].push(fn);
 	}
 };
+
+
+if(!(window as any).entcore){
+	(window as any).entcore = {};
+}
+(window as any).entcore.template = template;

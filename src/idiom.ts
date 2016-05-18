@@ -219,3 +219,8 @@ export var idiom = {
         });
     }
 };
+
+if(!(window as any).entcore){
+	(window as any).entcore = {};
+}
+(window as any).entcore.idiom = idiom;

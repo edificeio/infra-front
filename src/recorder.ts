@@ -160,3 +160,8 @@ export var recorder = (function(){
 		}
 	}
 }());
+
+if(!(window as any).entcore){
+	(window as any).entcore = {};
+}
+(window as any).entcore.recorder = recorder;

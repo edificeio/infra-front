@@ -17,3 +17,8 @@ export var notify = {
 		this.message('success', message);
 	}
 };
+
+if(!(window as any).entcore){
+	(window as any).entcore = {};
+}
+(window as any).entcore.notify = notify;

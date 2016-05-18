@@ -751,4 +751,9 @@ ui.extendElement = {
 			}
 		});
 	}
+};
+
+if(!(window as any).entcore){
+	(window as any).entcore = {};
 }
+(window as any).entcore.ui = ui;

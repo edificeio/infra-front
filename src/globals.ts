@@ -1,3 +1,10 @@
+var _ = require('underscore');
+(window as any)._ = _;
+
+if(!(window as any).entcore){
+	(window as any).entcore = {};
+}
+
 if((window as any).appPrefix === undefined){
 	if(window.location.pathname.split('/').length > 0){
 		(window as any).appPrefix = window.location.pathname.split('/')[1]
@@ -32,6 +39,8 @@ export var routes:any = {
 		this.routing = routing;
 	}
 };
+
+(window as any).entcore.routes = routes;
 
 if(!Array.prototype.forEach){
 	window.location.href = "/auth/upgrade";

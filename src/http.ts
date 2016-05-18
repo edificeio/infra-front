@@ -160,3 +160,8 @@ export var http = (function(){
 
 var $ = require('jquery');
 var humane = require('humane-js');
+
+if(!(window as any).entcore){
+	(window as any).entcore = {};
+}
+(window as any).entcore.http = http;

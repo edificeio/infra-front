@@ -1,7 +1,7 @@
 import { model } from './model';
 
 var moment = require('moment');
-var _ = require('lodash');
+var _ = require('underscore');
 
 export var calendar = {
     setCalendar: function(cal){

@@ -28,10 +28,13 @@ import { skin } from './skin';
 import { template } from './template';
 
 var $ = require('jquery');
+(window as any).jQuery = $;
 var moment = require('moment');
-var _ = require('lodash');
+var _ = require('underscore');
 
 require('angular');
+require('angular-route');
+require('angular-sanitize');
 
 var module = angular.module('app', ['ngSanitize', 'ngRoute'], function($interpolateProvider) {
 		$interpolateProvider.startSymbol('[[');
@@ -170,11 +173,6 @@ var module = angular.module('app', ['ngSanitize', 'ngRoute'], function($interpol
         	}
         }
     });
-
-//routing
-if(routes.routing){
-	module.config(routes.routing);
-}
 
 //directives
 module.directive('completeChange', function() {
@@ -4335,60 +4333,8 @@ module.directive('whereami', function () {
 	}
 });
 
-$(document).ready(function(){
-	setTimeout(function(){
-		bootstrap(function(){
-		    //RTE.addDirectives(module);
-		    if ((window as any).AngularExtensions && (window as any).AngularExtensions.init) {
-		        (window as any).AngularExtensions.init(module);
-		    }
-			model.build();
 
-			lang.addDirectives(module);
-
-
-			function start(){
-				lang.addBundle('/i18n', function(){
-					lang.addBundle('/' + appPrefix + '/i18n', function(){
-						angular.bootstrap($('html'), ['app']);
-						model.sync();
-					});
-				});
-			}
-
-            http().get(skin.basePath + 'js/directives.js').done((d) => {
-                eval(d);
-                
-                if(typeof skin.addDirectives === 'function'){
-                    skin.addDirectives(module, start);
-                }
-                else{
-                    start();
-                }
-            })
-            .error(() => {
-                start();
-            });
-		});
-	}, 10);
-});
-
-function SearchPortal($scope, $window) {
-	'use strict';
-	$scope.launchSearch = function(event) {
-		var words = $scope.mysearch;
-		if (event != "link") event.stopPropagation();
-		if ((event == "link" ||  event.keyCode == 13)) {
-			words = (!words || words === '') ? ' ' : words;
-			$scope.mysearch = "";
-			$window.location.href = '/searchengine#/' + words;
-		}
-	};
-}
-
-function Account($scope){
-	"use strict";
-
+module.controller('Account', ['$scope', function($scope) {
 	$scope.nbNewMessages = 0;
 	$scope.me = model.me;
 	$scope.rand = Math.random();
@@ -4434,9 +4380,10 @@ function Account($scope){
 	$scope.refreshMails();
 	$scope.refreshAvatar();
 	$scope.currentURL = window.location.href;
-}
+}]);
 
-function Share($rootScope, $scope, ui, _, lang){
+
+module.controller('Share', ['$rootScope','$scope', function($rootScope, $scope) {
 	if(!$scope.appPrefix){
 		$scope.appPrefix = appPrefix;
 	}
@@ -4740,7 +4687,7 @@ function Share($rootScope, $scope, ui, _, lang){
 			applyRights(element, action);
 		}
 	};
-}
+}]);
 
 function Admin($scope){
 	$scope.urls = [];
@@ -4759,6 +4706,61 @@ function Admin($scope){
     }
 
 	$scope.scrollUp = ui.scrollToTop;
+}
+
+$(document).ready(function(){
+	setTimeout(function(){
+		//routing
+		if(routes.routing){
+			module.config(routes.routing);
+		}
+		bootstrap(function(){
+		    //RTE.addDirectives(module);
+		    if ((window as any).AngularExtensions && (window as any).AngularExtensions.init) {
+		        (window as any).AngularExtensions.init(module);
+		    }
+			model.build();
+
+			lang.addDirectives(module);
+
+
+			function start(){
+				lang.addBundle('/i18n', function(){
+					lang.addBundle('/' + appPrefix + '/i18n', function(){
+						angular.bootstrap($('html'), ['app']);
+						model.sync();
+					});
+				});
+			}
+
+            http().get(skin.basePath + 'js/directives.js').done((d) => {
+                eval(d);
+                
+                if(typeof skin.addDirectives === 'function'){
+                    skin.addDirectives(module, start);
+                }
+                else{
+                    start();
+                }
+            })
+            .error(() => {
+                start();
+            });
+		});
+	}, 10);
+});
+
+function SearchPortal($scope, $window) {
+	'use strict';
+	$scope.launchSearch = function(event) {
+		var words = $scope.mysearch;
+		if (event != "link") event.stopPropagation();
+		if ((event == "link" ||  event.keyCode == 13)) {
+			words = (!words || words === '') ? ' ' : words;
+			$scope.mysearch = "";
+			$window.location.href = '/searchengine#/' + words;
+		}
+	};
 }
 
 function Widget(){}

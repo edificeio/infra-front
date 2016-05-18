@@ -175,11 +175,24 @@ export var Behaviours = (function(){
 			if(this.applicationsBehaviours[serviceName]){
 				return returnWorkflows();
 			}
+			
+			http().get()
+			var request = new XMLHttpRequest();
+			var path = '/' + serviceName + '/public/js/behaviours.js';
+			request.open('GET', path, false);
+			request.onload = function(){
+				if(request.status === 200){
+					try{
+						var lib = new Function(request.responseText);
+						lib();
+					}
+					catch(e){
+						console.log(e);
+					}
+				}
+			};
 
-			/*if(window.loader){
-				require('/' + serviceName + '/public/js/behaviours.js');
-				return returnWorkflows();
-			}*/
+			request.send(null);
 		},
 		workflowsFrom: function(obj, dependencies){
 			if(typeof obj !== 'object'){
@@ -203,3 +216,9 @@ export var Behaviours = (function(){
 		applicationsBehaviours: <any> {}
 	}
 }());
+
+if(!(window as any).entcore){
+	(window as any).entcore = {};
+}
+(window as any).entcore.Behaviours = Behaviours;
+(window as any).Behaviours = Behaviours;
