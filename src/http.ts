@@ -1,5 +1,7 @@
 import { idiom as lang } from './idiom';
 
+var loadedScripts = {};
+
 export function Http(){
 	this.statusCallbacks = {};
 }
@@ -118,6 +120,26 @@ export var http = (function(){
 
 		return this.put(url, data, params)
 	};
+
+	Http.prototype.loadScript = function(url): Promise<any> {
+		return new Promise((resolve, reject) => {
+			if(loadedScripts[url]){
+				resolve(loadedScripts[url]);
+				return;
+			}
+			this.get(url).done((content) => {
+				var f = new Function(content);
+				loadedScripts[url] = f;
+				try{
+					f();
+					resolve(f);
+				}
+				catch(e){
+					reject(e);
+				}
+			});
+		});
+	}
 
 	var requestTypes = ['get', 'post', 'put', 'delete'];
 	requestTypes.forEach(function(type){

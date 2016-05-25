@@ -5,28 +5,10 @@ import { notify } from './notify';
 import { Behaviours } from './behaviours';
 import { calendar } from './calendar';
 import { currentLanguage } from './globals';
-import { skin } from './skin';
+import { skin, Collection, Model, model } from './entcore';
 
 var _ = require('underscore');
 var moment = require('moment');
-
-export function Model(data = undefined): void {
-	if(typeof this.updateData === 'function'){
-		this.updateData(data, false);
-	}
-}
-
-Model.prototype.build = function(){};
-(window as any).Model = Model;
-export var model = new Model();
-(window as any).model = model;
-
-export function Collection(obj){
-	this.all = [];
-	this.obj = obj;
-	this.callbacks = {};
-	this.sync = function(){}
-}
 
 (function(){
 	function pluralizeName(obj){
@@ -38,6 +20,10 @@ export function Collection(obj){
 	}
 
 	Collection.prototype = {
+		obj: undefined,
+		callbacks: {},
+		sync: undefined,
+		all: [],
 		on: function(eventName, cb){
 			if(typeof cb !== 'function'){
 				return;
@@ -208,8 +194,8 @@ export function Collection(obj){
 				}
 			}
 		},
-		splice: function(){
-			this.all.splice.apply(this.all, arguments);
+		splice: function(...args){
+			this.all.splice.apply(this.all, args);
 			if(arguments.length > 2){
 				this.trigger('push');
 			}
@@ -306,6 +292,27 @@ export function Collection(obj){
 	}
 
 	Model.prototype.models = [];
+
+Model.prototype.sync = function(){
+		http().get(http().parseUrl(this.api.get, this)).done(function(data){
+			this.updateData(data);
+		}.bind(this));
+	};
+	
+	Model.prototype.saveModifications = function(){
+		http().putJson(http().parseUrl(this.api.put, this), this);
+	}
+	
+	Model.prototype.remove = function(){
+		http().delete(http().parseUrl(this.api.delete, this));
+	}
+	
+	Model.prototype.create = function(){
+		http().postJson(http().parseUrl(this.api.post, this), this).done(function(data){
+			this.updateData(data);
+		}.bind(this));
+	}
+
 
 	Model.prototype.makeModel = function(fn, methods, namespace){
 		if(typeof fn !== 'function'){
@@ -432,165 +439,6 @@ export function Collection(obj){
 			}
 		}
 		return dup;
-	};
-
-	Model.prototype.toURL = function(){
-
-	};
-
-	Model.prototype.makePermanent = function(obj, methods){
-		function setCol(col){
-			col.composer = this;
-			for(var method in methods){
-				col[method] = methods[method];
-			}
-
-			col.model = this;
-			col.behaviours = 'workspace';
-		}
-
-
-		var applicationPrefix = (methods && methods.fromApplication) || appPrefix;
-
-		this[pluralizeName(obj)] = new Model();
-		this[pluralizeName(obj)].mine = new Collection(obj);
-		this[pluralizeName(obj)].shared = new Collection(obj);
-		this[pluralizeName(obj)].trash = new Collection(obj);
-		this[pluralizeName(obj)].mixed = new Collection(obj);
-
-		var colContainer = this[pluralizeName(obj)];
-		var mine = this[pluralizeName(obj)].mine;
-		var trash = this[pluralizeName(obj)].trash;
-		var shared = this[pluralizeName(obj)].shared;
-		var mixed = this[pluralizeName(obj)].mixed;
-
-		mine.on('change', function(){ colContainer.trigger('change') });
-		shared.on('change', function(){ colContainer.trigger('change') });
-		trash.on('change', function(){ colContainer.trigger('change') });
-		mixed.on('change', function(){ colContainer.trigger('change') });
-		mine.on('sync', function(){ colContainer.trigger('sync') });
-		shared.on('sync', function(){ colContainer.trigger('sync') });
-		trash.on('sync', function(){ colContainer.trigger('sync') });
-		mixed.on('sync', function(){ colContainer.trigger('sync') });
-
-		setCol.call(this, mine);
-		setCol.call(this, trash);
-		setCol.call(this, shared);
-		setCol.call(this, mixed);
-
-		mine.sync = function(){
-			http().get('/workspace/documents', { filter: 'owner', application: applicationPrefix+ '-' + pluralizeName(obj) }).done(function(docs){
-				docs = _.map(docs, function(doc){
-					doc.title = doc.name.split('.json')[0];
-					doc.modified = moment(doc.modified.split('.')[0]);
-					doc.created = moment(doc.created.split('.')[0]);
-					return doc;
-				});
-				mine.load(docs);
-				mine.trigger('sync');
-			});
-		};
-
-		mixed.sync = function(){
-			http().get('/workspace/documents', { application: applicationPrefix+ '-' + pluralizeName(obj) }).done(function(docs){
-				docs = _.map(docs, function(doc){
-					doc.title = doc.name.split('.json')[0];
-					doc.modified = moment(doc.modified.split('.')[0]);
-					doc.created = moment(doc.created.split('.')[0]);
-					return doc;
-				});
-				mixed.load(docs);
-				mixed.trigger('sync');
-			});
-		};
-
-		shared.sync = function(){
-			http().get('/workspace/documents', { filter: 'shared', application: applicationPrefix+ '-' + pluralizeName(obj) }).done(function(docs){
-				docs = _.map(docs, function(doc){
-					doc.title = doc.name.split('.json')[0];
-					doc.modified = moment(doc.modified.split('.')[0]);
-					doc.created = moment(doc.created.split('.')[0]);
-					return doc;
-				});
-				shared.load(docs);
-				shared.trigger('sync');
-			});
-		};
-
-		trash.sync = function(){
-			http().get('/workspace/documents/Trash', { filter: 'owner', application: applicationPrefix+ '-' + pluralizeName(obj) }).done(function(docs){
-				docs = _.map(docs, function(doc){
-					doc.title = doc.name.split('.json')[0];
-					doc.modified = moment(doc.modified.split('.')[0]);
-					doc.created = moment(doc.created.split('.')[0]);
-				});
-				trash.load(docs);
-				trash.trigger('sync');
-			});
-		};
-
-		obj.prototype.save = function(){
-			var toJson = JSON.parse(JSON.stringify(this));
-			var tdl = ['callbacks', '_id', 'created', 'myRights', 'file', 'owner', 'ownerName', 'opened', 'shared', 'modified', 'metadata'];
-			tdl.forEach(function(prop){
-				delete toJson[prop];
-			});
-
-			var blob = new Blob([JSON.stringify(toJson)], { type: 'application/json' });
-			var form = new FormData();
-			form.append('blob', blob, this.title + '.json');
-
-			if(this._id !== undefined){
-				notify.info('notify.object.saved');
-				http().putFile('/workspace/document/' + this._id, form);
-			}
-			else{
-				http().postFile('/workspace/document?application=' + applicationPrefix+ '-' + pluralizeName(obj),  form).done(function(e){
-					this._id = e._id;
-					mine.sync();
-					mixed.sync();
-				}.bind(this));
-			}
-		};
-
-		obj.prototype.move = function(){
-			mine.sync();
-		};
-
-		obj.prototype.trash = function(){
-			mine.sync();
-			shared.sync();
-			trash.sync();
-		};
-
-		obj.prototype.remove = function(){
-			notify.info('notify.object.remove');
-			http().delete('/workspace/document/' + this._id);
-			mine.remove(this, false);
-			trash.remove(this, false);
-			shared.remove(this, false);
-			mixed.remove(this, false);
-		};
-
-		obj.prototype.open = function(){
-			this.opened = true;
-			http().get('/workspace/document/' + this._id).done(function(content){
-				delete content.$$hashKey;
-				this.updateData(content);
-				this.trigger('sync');
-			}.bind(this))
-		};
-
-		obj.prototype.close = function(){
-			if(this.opened === true){
-				this.opened = false;
-			}
-		};
-
-		mine.sync();
-		shared.sync();
-		trash.sync();
-		mixed.sync();
 	};
 
 	Model.prototype.sync = function(){

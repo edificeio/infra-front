@@ -6,3 +6,7 @@ export * from "./model";
 export * from "./globals";
 export * from "./idiom";
 export * from "./behaviours";
+export * from './workspace';
+export * from './skin';
+export * from './editor';
+export * from './modelDefinitions';

@@ -76,6 +76,7 @@ export var Behaviours = (function(){
 			this.applicationsBehaviours[application] = appBehaviours;
 		},
 		findRights: function(serviceName, resource){
+			console.log('deprecated, please use getRights')
 			if(this.applicationsBehaviours[serviceName]){
 				if(!resource.myRights){
 					resource.myRights = {};
@@ -105,9 +106,27 @@ export var Behaviours = (function(){
 					return {};
 				}
 			}
+			
+			
+			if(serviceName !== '.'){
+				var request = new XMLHttpRequest();
 
-			/*if(serviceName !== '.'){
-				loader.syncLoadFile('/' + serviceName + '/public/js/behaviours.js');
+				request.open('GET', '/' + serviceName + '/public/js/behaviours.js', false);
+				request.onload = function(){
+					if(request.status === 200){
+						try{
+							var lib = new Function(request.responseText);
+							lib();
+						}
+						catch(e){
+							console.log('error in ' + serviceName + ' behaviours');
+							console.log(e);
+						}
+					}
+				};
+				
+				request.send(null);
+
 				if(this.applicationsBehaviours[serviceName] && typeof this.applicationsBehaviours[serviceName].resource === 'function'){
 					return this.applicationsBehaviours[serviceName].resourceRights(resource);
 				}
@@ -115,7 +134,7 @@ export var Behaviours = (function(){
 					this.applicationsBehaviours[serviceName] = {};
 					return this.applicationsBehaviours[serviceName];
 				}
-			}*/
+			}
 
 			return {}
 		},
@@ -124,13 +143,13 @@ export var Behaviours = (function(){
 			this.findRights(serviceName, resource);
 		},
 		loadBehaviours: function(serviceName, callback){
+			var err = undefined;
 			var actions = {
 				error: function(cb){
 					err = cb;
 				}
 			};
 
-			var err = undefined;
 			if(this.applicationsBehaviours[serviceName]){
 				callback(this.applicationsBehaviours[serviceName]);
 				return actions;
@@ -140,17 +159,16 @@ export var Behaviours = (function(){
 				return actions;
 			}
 
-			/*loader.openFile({
-				url: '/' + serviceName + '/public/js/behaviours.js',
-				success: function(){
-					callback(this.applicationsBehaviours[serviceName])
-				}.bind(this),
-				error: function(){
-					if(typeof err === 'function'){
-						err();
-					}
+			http().get('/' + serviceName + '/public/js/behaviours.js').done((content) => {
+				var behaviours = new Function(content);
+				behaviours();
+				callback(this.applicationsBehaviours[serviceName]);
+			})
+			.error(() => {
+				if(typeof err === 'function'){
+					err();
 				}
-			});*/
+			})
 
 			return actions;
 		},

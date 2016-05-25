@@ -1,3 +1,4 @@
+require('es6-shim');
 var _ = require('underscore');
 (window as any)._ = _;
 

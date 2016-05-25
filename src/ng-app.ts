@@ -23,18 +23,12 @@ import { ui } from './ui';
 import { Behaviours } from './behaviours';
 import { recorder } from './recorder';
 import { currentLanguage, routes } from './globals';
-import { notify } from './notify';
-import { skin } from './skin';
 import { template } from './template';
-
-var $ = require('jquery');
-(window as any).jQuery = $;
-var moment = require('moment');
-var _ = require('underscore');
-
-require('angular');
-require('angular-route');
-require('angular-sanitize');
+import { $ } from './libs/jquery/jquery';
+import { moment } from './libs/moment/moment';
+import { _ } from './libs/underscore/underscore';
+import { angular } from './libs/angular/angular';
+import { workspace, notify, skin, RTE } from './entcore';
 
 var module = angular.module('app', ['ngSanitize', 'ngRoute'], function($interpolateProvider) {
 		$interpolateProvider.startSymbol('[[');
@@ -1281,8 +1275,8 @@ module.directive('bindHtml', function($compile){
                         http().get('/infra/public/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML').done((d) => {
                             eval(d);
                             
-                            MathJax.Hub.Config({ messageStyle: 'none', tex2jax: { preview: 'none' } });
-                            MathJax.Hub.Typeset();
+                            window.MathJax.Hub.Config({ messageStyle: 'none', tex2jax: { preview: 'none' } });
+                            window.MathJax.Hub.Typeset();
                         });
                     }
                 }
@@ -1298,7 +1292,7 @@ module.directive('bindHtml', function($compile){
 				});
 
 				if((window as any).MathJax && (window as any).MathJax.Hub){
-					MathJax.Hub.Typeset();
+					window.MathJax.Hub.Typeset();
 				}
 			});
 		}
@@ -3039,7 +3033,7 @@ module.directive('datePicker', function($compile){
 				scope.$parent.$apply();
 			}
 
-			/*loader.asyncLoad('/' + infraPrefix + '/public/js/bootstrap-datepicker.js', function(){
+			http().loadScript('/' + infraPrefix + '/public/js/bootstrap-datepicker.js').then((f) => {
 				element.datepicker({
 						dates: {
 							months: moment.months(),
@@ -3056,7 +3050,7 @@ module.directive('datePicker', function($compile){
 						$(this).datepicker('hide');
 					});
 				element.datepicker('hide');
-			});*/
+			});
 
 			var hideFunction = function(e){
 				if(e.originalEvent && (element[0] === e.originalEvent.target || $('.datepicker').find(e.originalEvent.target).length !== 0)){
@@ -3094,7 +3088,7 @@ module.directive('datePickerIcon', function($compile){
 		restrict: 'E',
 		template: '<div class="date-picker-icon"> <input type="text" class="hiddendatepickerform" style="visibility: hidden; width: 0px; height: 0px; float: inherit" data-date-format="dd/mm/yyyy"/> <a ng-click="openDatepicker()"><i class="calendar"/></a> </div>',
 		link: function($scope, $element, $attributes){
-			/*loader.asyncLoad('/' + infraPrefix + '/public/js/bootstrap-datepicker.js', function(){
+			http().loadScript('/' + infraPrefix + '/public/js/bootstrap-datepicker.js').then((lib) => {
 				var input_element   = $element.find('.hiddendatepickerform')
 				input_element.value = moment(new Date()).format('DD/MM/YYYY')
 
@@ -3122,8 +3116,7 @@ module.directive('datePickerIcon', function($compile){
 				$scope.openDatepicker = function(){
 					input_element.datepicker('show')
 				}
-			})*/
-
+			});
 		}
 	}
 });
@@ -3672,7 +3665,7 @@ module.directive('pdfViewer', function(){
 				}
 				pdf.getPage(pageNumber).then(function (page) {
 					var viewport;
-					/*if(!$(canvas).hasClass('fullscreen')){
+					if(!$(canvas).hasClass('fullscreen')){
 						viewport = page.getViewport(1);
 						var scale = element.width() / viewport.width;
 						viewport = page.getViewport(scale);
@@ -3689,28 +3682,25 @@ module.directive('pdfViewer', function(){
 						canvasContext: context,
 						viewport: viewport
 					};
-					page.render(renderContext);*/
+					page.render(renderContext);
 				});
 			};
 			scope.$parent.render = scope.openPage;
 
-			/*window.PDFJS = { workerSrc: '/infra/public/js/viewers/pdf.js/pdf.worker.js' };
+			(window as any).PDFJS = { workerSrc: '/infra/public/js/viewers/pdf.js/pdf.worker.js' };
 			var canvas = document.createElement('canvas');
 			$(canvas).addClass('render');
 			element.append(canvas);
-			loader.openFile({
-				url: '/infra/public/js/viewers/pdf.js/pdf.js',
-				success: function () {
-					PDFJS
-						.getDocument(attributes.ngSrc)
-						.then(function(file){
-							pdf = file;
-							scope.numPages = pdf.pdfInfo.numPages;
-							scope.$apply('numPages');
-							scope.openPage();
-						});
-				}
-			});*/
+			http().loadScript('/infra/public/js/viewers/pdf.js/pdf.js').then(() => {
+				(window as any).PDFJS
+					.getDocument(attributes.ngSrc)
+					.then(function(file){
+						pdf = file;
+						scope.numPages = pdf.pdfInfo.numPages;
+						scope.$apply('numPages');
+						scope.openPage();
+					});
+			});
 		}
 	}
 });
@@ -3849,11 +3839,11 @@ module.directive('plus', function($compile){
 				element.children('.opener').removeClass('plus').addClass('minus');
 				setTimeout(function(){
 					$('body').on('click.switch-plus-buttons', function(e){
-						//if(!(element.children('.toggle-buttons').find(e.originalEvent.target).length)){
+						if(!(element.children('.toggle-buttons').find(e.originalEvent.target).length)){
 							element.children('.toggle-buttons').addClass('hide');
 							element.children('.opener').removeClass('minus').addClass('plus');
 							$('body').off('click.switch-plus-buttons');
-						//}
+						}
 					});
 				}, 0);
 			});
@@ -4715,7 +4705,7 @@ $(document).ready(function(){
 			module.config(routes.routing);
 		}
 		bootstrap(function(){
-		    //RTE.addDirectives(module);
+		    RTE.addDirectives(module);
 		    if ((window as any).AngularExtensions && (window as any).AngularExtensions.init) {
 		        (window as any).AngularExtensions.init(module);
 		    }
@@ -4854,182 +4844,6 @@ function Widgets($scope, model, lang, date){
 		$event.stopPropagation();
 	}
 }
-
-var workspace = {
-    quality: 0.8,
-	thumbnails: "thumbnail=120x120&thumbnail=150x150&thumbnail=100x100&thumbnail=290x290&thumbnail=48x48&thumbnail=82x82&thumbnail=381x381",
-	Document: function(data){
-		if(data.metadata){
-			var dotSplit = data.metadata.filename.split('.');
-			if(dotSplit.length > 1){
-				dotSplit.length = dotSplit.length - 1;
-			}
-			this.title = dotSplit.join('.');
-		}
-
-		if(data.created){
-			this.created = moment(data.created.split('.')[0]);
-		}
-
-		this.protectedDuplicate = function(callback){
-			Behaviours.applicationsBehaviours.workspace.protectedDuplicate(this, function(data){
-				callback(new workspace.Document(data))
-			});
-		};
-
-		this.publicDuplicate = function(callback){
-			Behaviours.applicationsBehaviours.workspace.publicDuplicate(this, function(data){
-				callback(new workspace.Document(data))
-			});
-		};
-
-		this.role = function(){
-			var types = {
-				'doc': function(type){
-					return type.indexOf('document') !== -1 && type.indexOf('wordprocessing') !== -1;
-				},
-				'xls': function(type){
-					return (type.indexOf('document') !== -1 && type.indexOf('spreadsheet') !== -1) || (type.indexOf('ms-excel') !== -1);
-				},
-				'img': function(type){
-					return type.indexOf('image') !== -1;
-				},
-				'pdf': function(type){
-					return type.indexOf('pdf') !== -1;
-				},
-				'ppt': function(type){
-					return (type.indexOf('document') !== -1 && type.indexOf('presentation') !== -1) || type.indexOf('powerpoint') !== -1;
-				},
-				'video': function(type){
-					return type.indexOf('video') !== -1;
-				},
-				'audio': function(type){
-					return type.indexOf('audio') !== -1;
-				}
-			};
-
-			for(var type in types){
-				if(types[type](this.metadata['content-type'])){
-					return type;
-				}
-			}
-
-			return 'unknown';
-		}
-	},
-	Folder: function(data){
-		this.updateData(data);
-
-		this.collection(workspace.Folder, {
-			sync: function(){
-				this.load(_.filter(model.mediaLibrary.myDocuments.folders.list, function(folder){
-					return folder.folder.indexOf(data.folder + '_') !== -1;
-				}));
-			}
-		});
-
-		this.collection(workspace.Document,  {
-			sync: function(){
-				http().get('/workspace/documents/' + data.folder, { filter: 'owner', hierarchical: true }).done(function(documents){
-					this.load(documents);
-				}.bind(this));
-			}
-		});
-
-		this.closeFolder = function(){
-			this.folders.all = [];
-		};
-
-		this.on('documents.sync', function(){
-			this.trigger('sync');
-		}.bind(this));
-	},
-	MyDocuments: function(){
-		this.collection(workspace.Folder, {
-			sync: function(){
-				if(model.me.workflow.workspace.create){
-					http().get('/workspace/folders/list', { filter: 'owner' }).done(function(data){
-						this.list = data;
-						this.load(_.filter(data, function(folder){
-							return folder.folder.indexOf('_') === -1;
-						}))
-					}.bind(this));
-				}
-			},
-			list: []
-		});
-
-		this.collection(workspace.Document,  {
-			sync: function(){
-				http().get('/workspace/documents', { filter: 'owner', hierarchical: true }).done(function(documents){
-					this.load(documents);
-				}.bind(this))
-			}
-		});
-
-		this.on('folders.sync, documents.sync', function(){
-			this.trigger('sync');
-		}.bind(this));
-	},
-	SharedDocuments: function(){
-		this.collection(workspace.Document,  {
-			sync: function(){
-				if(model.me.workflow.workspace.list){
-					http().get('/workspace/documents', { filter: 'shared' }).done(function(documents){
-						this.load(documents);
-					}.bind(this));
-				}
-			}
-		});
-		this.on('documents.sync', function(){
-			this.trigger('sync');
-		}.bind(this));
-	},
-	PublicDocuments: function(){
-		this.collection(workspace.Document, {
-			sync: function(){
-				http().get('/workspace/documents', { filter: 'public', application: 'media-library' }).done(function(documents){
-					this.load(_.filter(documents, function(doc){
-						return doc.folder !== 'Trash';
-					}));
-				}.bind(this))
-			}
-		});
-		this.on('documents.sync', function(){
-			this.trigger('sync');
-		}.bind(this));
-	},
-	AppDocuments: function(){
-		this.collection(workspace.Document, {
-			sync: function(){
-				http().get('/workspace/documents', { filter: 'protected' }).done(function(documents){
-					this.load(_.filter(documents, function(doc){
-						return doc.folder !== 'Trash';
-					}));
-				}.bind(this))
-			}
-		});
-		this.on('documents.sync', function(){
-			this.trigger('sync');
-		}.bind(this));
-	}
-};
-
-workspace.Document.prototype.upload = function(file, requestName, callback, visibility){
-	if(!visibility){
-		visibility = 'protected';
-	}
-	var formData = new FormData();
-	formData.append('file', file, file.name);
-	http().postFile('/workspace/document?' + visibility + '=true&application=media-library&quality=' + workspace.quality + '&' + workspace.thumbnails, formData, { requestName: requestName }).done(function(data){
-		if(typeof callback === 'function'){
-			callback(data);
-		}
-	}).e400(function(e){
-		var error = JSON.parse(e.responseText);
-		notify.error(error.error);
-	});
-};
 
 function MediaLibrary($scope){
 	if(!model.mediaLibrary){
