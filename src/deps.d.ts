@@ -8,10 +8,6 @@ declare interface require{
     ensure(modulesPaths: string[], cb: (modules) => void);
 }
 
-// entcore globals
-declare var appPrefix: string;
-declare var infraPrefix: string;
-
 // allow parsing strings as int
 declare function parseInt(data:any, radix?:number);
 
@@ -31,6 +27,7 @@ declare interface Document{
 declare interface Window{
     MathJax: any;
     Prism: any;
+    entcore: any;
 }
 
 declare interface Object{

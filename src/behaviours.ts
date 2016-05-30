@@ -1,5 +1,6 @@
+import { appPrefix, infraPrefix } from './globals';
 import { http } from './http';
-import { model } from './model';
+import { model } from './entcore';
 
 export var Behaviours = (function(){
 	return {
@@ -194,7 +195,6 @@ export var Behaviours = (function(){
 				return returnWorkflows();
 			}
 			
-			http().get()
 			var request = new XMLHttpRequest();
 			var path = '/' + serviceName + '/public/js/behaviours.js';
 			request.open('GET', path, false);
@@ -210,7 +210,8 @@ export var Behaviours = (function(){
 				}
 			};
 
-			request.send(null);
+            request.send(null);
+            return returnWorkflows();
 		},
 		workflowsFrom: function(obj, dependencies){
 			if(typeof obj !== 'object'){

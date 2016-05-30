@@ -12,9 +12,13 @@ if((window as any).appPrefix === undefined){
 	}
 }
 
+export var appPrefix: string = (window as any).appPrefix;
+
 if((window as any).infraPrefix === undefined){
 	(window as any).infraPrefix = 'infra';
 }
+
+export var infraPrefix: string = (window as any).infraPrefix;
 
 export var currentLanguage = '';
 (function(){

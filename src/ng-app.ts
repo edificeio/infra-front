@@ -18,11 +18,12 @@
 import { idiom as lang, idiom as idiom } from './idiom';
 import { http, Http } from './http';
 import { calendar } from './calendar';
-import { Collection, Model, model, bootstrap } from './model';
+import { Collection, Model, model } from './modelDefinitions';
+import { bootstrap } from './lib';
 import { ui } from './ui';
 import { Behaviours } from './behaviours';
 import { recorder } from './recorder';
-import { currentLanguage, routes } from './globals';
+import { currentLanguage, routes, appPrefix, infraPrefix } from './globals';
 import { template } from './template';
 import { $ } from './libs/jquery/jquery';
 import { moment } from './libs/moment/moment';
@@ -4706,8 +4707,8 @@ $(document).ready(function(){
 		}
 		bootstrap(function(){
 		    RTE.addDirectives(module);
-		    if ((window as any).AngularExtensions && (window as any).AngularExtensions.init) {
-		        (window as any).AngularExtensions.init(module);
+            if (window.entcore.ng.init) {
+                window.entcore.ng.init(module);
 		    }
 			model.build();
 

@@ -1,4 +1,4 @@
-
+import { appPrefix, infraPrefix } from './globals';
 import { $ } from './libs/jquery/jquery';
 import { http, idiom as lang, model, ui, Behaviours, workspace, notify } from './entcore'
 import { _ } from './libs/underscore/underscore';

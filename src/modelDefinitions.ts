@@ -1,3 +1,56 @@
+export class Controller {
+    name: string;
+    contents: any[];
+
+    constructor(name: string, contents: any[]) {
+        this.name = name;
+        this.contents = contents;
+    }
+}
+
+export class Directive {
+    name: string;
+    contents: any;
+
+    constructor(name: string, contents: any) {
+        this.name = name;
+        this.contents = contents;
+    }
+}
+
+export class Ng {
+    controllers: Controller[];
+    directives: Directive[];
+
+    constructor() {
+        this.controllers = [];
+        this.directives = [];
+    }
+
+    init(module) {
+        this.directives.forEach((dir) => {
+            module.directive(dir.name, dir.contents);
+        });
+        this.controllers.forEach((ctrl) => {
+            module.controller(ctrl.name, ctrl.contents);
+        });
+    }
+
+    directive(name: string, contents: any) {
+        return new Directive(name, contents);
+    }
+
+    controller (name: string, contents: any[]) {
+        return new Controller(name, contents);
+    }
+};
+
+export var ng = new Ng();
+if (!window.entcore) {
+    window.entcore = {};
+}
+window.entcore.ng = ng;
+
 export declare interface IModel{
 	api: { get?: string, put?: string, post?: string, delete?: string }
 }
@@ -7,7 +60,7 @@ export class Model {
 		if(typeof this.updateData === 'function'){
 			this.updateData(data, false);
 		}
-	}
+    }
 }
 
 export declare interface Model{
@@ -28,12 +81,14 @@ export declare interface Model{
 	trigger(eventName: string, eventData?: any);
 	behaviours(serviceName: string);
 	inherits(target: any, prototypeFn: any);
-	
 }
+
+Model.prototype.build = function () { };
 
 export class BaseModel extends Model{
 	me: any;
-	calendar: any;
+    calendar: any;
+    widgets: any;
 	mediaLibrary: any;
 	
 	build(){
@@ -41,10 +96,7 @@ export class BaseModel extends Model{
 	}
 }
 
-Model.prototype.build = function(){};
-(window as any).Model = Model;
 export var model = new BaseModel();
-(window as any).model = model;
 
 export class Collection<T>{
 	all: T[];
@@ -62,7 +114,7 @@ export class Collection<T>{
 }
 
 export declare interface Collection<T>{
-	sync: () => void | string;
+	sync: any;
 	composer?: any;
 	model?: any;
 	on(eventName: string, cb: () => void);
@@ -80,7 +132,7 @@ export declare interface Collection<T>{
 	current: T;
 	setCurrent(item: T);
 	slice(index: number, nbItems: number);
-	push(item: T, refreshView?: boolean);
+	push: (item: T, refreshView?: boolean) => void;
 	remove(item: T, refreshView?: boolean);
 	removeAt(index: number);
 	insertAt(index: number, item: T);
@@ -93,10 +145,18 @@ export declare interface Collection<T>{
 	removeSelection();
 	addRange(data: T[], cb?: (item: T) => void, refreshView?: boolean);
 	load(data: T[], cb?: (item: T) => void, refreshView?: boolean);
-	empty();
+	empty: () => void;
 	length(): number;
 	request(httpMethod: string, path: string, cb?: (result: any) => void);
 	contains(item: T);
 	last(): T;
 	removeAll();
 }
+
+if (!window.entcore) {
+    window.entcore = {};
+}
+window.entcore.model = model;
+
+window.entcore.Model = Model;
+(window as any).Model = Model;

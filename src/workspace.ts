@@ -1,7 +1,7 @@
 import { http } from './http';
 import { Behaviours } from './behaviours';
 import { moment } from './libs/moment/moment';
-import { model } from './model';
+import { model } from './entcore';
 import { _ } from './libs/underscore/underscore';
 import { notify } from './notify';
 

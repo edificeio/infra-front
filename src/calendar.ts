@@ -1,4 +1,4 @@
-import { model } from './model';
+import { model } from './entcore';
 
 var moment = require('moment');
 var _ = require('underscore');
@@ -148,3 +148,8 @@ calendar.Calendar.prototype.clearScheduleItems = function(){
 		day.scheduleItems.removeAll();
 	});
 };
+
+if (!window.entcore) {
+    window.entcore = {};
+}
+window.entcore.calendar = calendar;

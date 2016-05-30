@@ -1,3 +1,4 @@
+import { appPrefix } from './globals';
 import { skin } from './skin';
 
 export var template = {
@@ -50,7 +51,7 @@ export var template = {
 };
 
 
-if(!(window as any).entcore){
-	(window as any).entcore = {};
+if(!window.entcore){
+	window.entcore = {};
 }
-(window as any).entcore.template = template;
+window.entcore.template = template;

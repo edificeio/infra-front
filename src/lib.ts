@@ -4,8 +4,9 @@ import { ui } from './ui';
 import { notify } from './notify';
 import { Behaviours } from './behaviours';
 import { calendar } from './calendar';
-import { currentLanguage } from './globals';
-import { skin, Collection, Model, model } from './entcore';
+import { currentLanguage, appPrefix, infraPrefix } from './globals';
+import { Collection, Model, model } from './modelDefinitions';
+import { skin } from './skin';
 
 var _ = require('underscore');
 var moment = require('moment');
@@ -684,10 +685,3 @@ export function bootstrap(func) {
 		func();
 	});
 }
-
-if(!(window as any).entcore){
-	(window as any).entcore = {};
-}
-(window as any).entcore.model = model;
-(window as any).entcore.Model = Model;
-(window as any).entcore.Collection = Collection;
