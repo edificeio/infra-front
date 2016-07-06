@@ -6,7 +6,6 @@ import { _ } from './libs/underscore/underscore';
 import { notify } from './notify';
 
 export var workspace = {
-    quality: 0.8,
 	thumbnails: "thumbnail=120x120&thumbnail=150x150&thumbnail=100x100&thumbnail=290x290&thumbnail=48x48&thumbnail=82x82&thumbnail=381x381",
 	Document: function(data){
 		if(data.metadata){
@@ -17,20 +16,24 @@ export var workspace = {
 			this.title = dotSplit.join('.');
 		}
 
-		if(data.created){
-			this.created = moment(data.created.split('.')[0]);
-		}
-
 		this.protectedDuplicate = function(callback){
-			Behaviours.applicationsBehaviours.workspace.protectedDuplicate(this, function(data){
-				callback(new workspace.Document(data))
-			});
-		};
-
-		this.publicDuplicate = function(callback){
-			Behaviours.applicationsBehaviours.workspace.publicDuplicate(this, function(data){
-				callback(new workspace.Document(data))
-			});
+			var document = this;
+			var xhr = new XMLHttpRequest();
+			xhr.open('GET', '/workspace/document/' + this._id, true);
+			xhr.responseType = 'blob';
+			xhr.onload = function(e) {
+				if (this.status == 200) {
+					var blobDocument = this.response;
+					var formData = new FormData();
+					formData.append('file', blobDocument, document.metadata.filename);
+					http().postFile('/workspace/document?protected=true&application=media-library&' + workspace.thumbnails, formData).done(function(data){
+						if(typeof callback === 'function'){
+							callback(new workspace.Document(data));
+						}
+					});
+				}
+			};
+			xhr.send();
 		};
 
 		this.role = function(){
@@ -97,7 +100,7 @@ export var workspace = {
 	MyDocuments: function(){
 		this.collection(workspace.Folder, {
 			sync: function(){
-				if(model.me.workflow.workspace.create){
+				if(model.me.workflow.workspace.documents.create){
 					http().get('/workspace/folders/list', { filter: 'owner' }).done(function(data){
 						this.list = data;
 						this.load(_.filter(data, function(folder){
@@ -124,25 +127,11 @@ export var workspace = {
 	SharedDocuments: function(){
 		this.collection(workspace.Document,  {
 			sync: function(){
-				if(model.me.workflow.workspace.list){
+				if(model.me.workflow.workspace.documents.list){
 					http().get('/workspace/documents', { filter: 'shared' }).done(function(documents){
 						this.load(documents);
 					}.bind(this));
 				}
-			}
-		});
-		this.on('documents.sync', function(){
-			this.trigger('sync');
-		}.bind(this));
-	},
-	PublicDocuments: function(){
-		this.collection(workspace.Document, {
-			sync: function(){
-				http().get('/workspace/documents', { filter: 'public', application: 'media-library' }).done(function(documents){
-					this.load(_.filter(documents, function(doc){
-						return doc.folder !== 'Trash';
-					}));
-				}.bind(this))
 			}
 		});
 		this.on('documents.sync', function(){
@@ -165,13 +154,10 @@ export var workspace = {
 	}
 };
 
-workspace.Document.prototype.upload = function(file, requestName, callback, visibility){
-	if(!visibility){
-		visibility = 'protected';
-	}
+workspace.Document.prototype.upload = function(file, requestName, callback){
 	var formData = new FormData();
 	formData.append('file', file, file.name);
-	http().postFile('/workspace/document?' + visibility + '=true&application=media-library&quality=' + workspace.quality + '&' + workspace.thumbnails, formData, { requestName: requestName }).done(function(data){
+	http().postFile('/workspace/document?protected=true&application=media-library&' + workspace.thumbnails, formData, { requestName: requestName }).done(function(data){
 		if(typeof callback === 'function'){
 			callback(data);
 		}

@@ -148,7 +148,6 @@ calendar.Calendar.prototype.clearScheduleItems = function(){
 		day.scheduleItems.removeAll();
 	});
 };
-
 if (!window.entcore) {
     window.entcore = {};
 }

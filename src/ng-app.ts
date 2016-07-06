@@ -46,38 +46,15 @@ var module = angular.module('app', ['ngSanitize', 'ngRoute'], function($interpol
 				currentAction = $route.current.action;
 				currentParams = $route.current.params;
 				routes[$route.current.action]($routeParams);
-				ui.scrollToId(window.location.hash.split('#')[1]);
+				setTimeout(function () {
+				    ui.scrollToId(window.location.hash.split('#')[1]);
+				}, 100);
 			}
 		});
 
 		return function(setRoutes){
 			routes = setRoutes;
 		}
-	})
-	.factory('template', function(){
-		return template;
-	})
-	.factory('date', function() {
-		return {
-            create: function(date){
-                return (moment ? moment(date) : date)
-            },
-			format: function(date, format) {
-				if(!moment){
-					return '';
-				}
-				return moment(date).format(format);
-			},
-			calendar: function(date){
-				if(!moment){
-					return '';
-				}
-				return moment(date).calendar();
-			}
-		};
-	})
-	.factory('lang', function(){
-		return lang
 	})
 	.factory('model', function($timeout){
 		var fa = Collection.prototype.trigger;
@@ -95,9 +72,6 @@ var module = angular.module('app', ['ngSanitize', 'ngRoute'], function($interpol
 		};
 
 		return model;
-	})
-	.factory('ui', function(){
-		return ui;
 	})
     .factory('xmlHelper', function(){
         return {
@@ -168,6 +142,11 @@ var module = angular.module('app', ['ngSanitize', 'ngRoute'], function($interpol
         	}
         }
     });
+
+//routing
+if(routes.routing){
+	module.config(routes.routing);
+}
 
 //directives
 module.directive('completeChange', function() {
@@ -1102,48 +1081,60 @@ module.directive('mediaSelect', function($compile){
 			label: "@",
 			class: "@",
 			value: '@',
-			tooltip: "@"
+			mytooltip: "@"
 		},
-		template: '<div><input type="button" class="pick-file [[class]]" tooltip="[[tooltip]]" />' +
+		template: '<div><input type="button" class="pick-file [[class]]" tooltip="[[mytooltip]]" />' +
 					'<lightbox show="userSelecting" on-close="userSelecting = false;">' +
 						'<media-library ng-change="updateDocument()" ng-model="selectedFile.file" multiple="multiple" file-format="fileFormat" visibility="selectedFile.visibility"></media-library>' +
 					'</lightbox>' +
 				'</div>',
-		link: function(scope, element, attributes){
-			scope.selectedFile = { file: {}, visibility: 'protected' };
-			scope.selectedFile.visibility = scope.$parent.$eval(attributes.visibility);
-			if(!scope.selectedFile.visibility){
-				scope.selectedFile.visibility = 'protected';
-			}
-			scope.selectedFile.visibility = scope.selectedFile.visibility.toLowerCase();
+		compile: function(element, attributes){
 
-			if(!scope.tooltip){
-				element.find('input').removeAttr('tooltip');
+			if(!attributes.mytooltip && attributes.tooltip){
+				console.warn('tooltip attribute is deprecated on media-select tag, use mytooltip instead.');
+				element.attr("mytooltip", attributes.tooltip);
+				element.removeAttr('tooltip');
+				attributes.mytooltip = attributes.tooltip;
+				delete attributes.tooltip;
 			}
 
-			attributes.$observe('label', function(newVal){
-				element.find('[type=button]').attr('value', lang.translate(newVal));
-			});
+			return function(scope, element, attributes){
+			//link: function(scope, element, attributes){
+				scope.selectedFile = { file: {}, visibility: 'protected' };
+				scope.selectedFile.visibility = scope.$parent.$eval(attributes.visibility);
+				if(!scope.selectedFile.visibility){
+					scope.selectedFile.visibility = 'protected';
+				}
+				scope.selectedFile.visibility = scope.selectedFile.visibility.toLowerCase();
 
-			scope.$watch('fileFormat', function(newVal){
-				if(newVal === undefined){
-					scope.fileFormat = 'img'
+				if(!scope.mytooltip){
+					element.find('input').removeAttr('tooltip');
 				}
-			});
-			scope.updateDocument = function(){
-				scope.userSelecting = false;
-				var path = '/workspace/document/';
-				if(scope.selectedFile.visibility === 'public'){
-					path = '/workspace/pub/document/'
-				}
-				scope.ngModel = path + scope.selectedFile.file._id;
-				scope.$apply('ngModel');
-				scope.ngChange();
-			};
-			element.find('.pick-file').on('click', function(){
-				scope.userSelecting = true;
-				scope.$apply('userSelecting');
-			});
+
+				attributes.$observe('label', function(newVal){
+					element.find('[type=button]').attr('value', lang.translate(newVal));
+				});
+
+				scope.$watch('fileFormat', function(newVal){
+					if(newVal === undefined){
+						scope.fileFormat = 'img'
+					}
+				});
+				scope.updateDocument = function(){
+					scope.userSelecting = false;
+					var path = '/workspace/document/';
+					if(scope.selectedFile.visibility === 'public'){
+						path = '/workspace/pub/document/'
+					}
+					scope.ngModel = path + scope.selectedFile.file._id;
+					scope.$apply('ngModel');
+					scope.ngChange();
+				};
+				element.find('.pick-file').on('click', function(){
+					scope.userSelecting = true;
+					scope.$apply('userSelecting');
+				});
+			}
 		}
 	}
 });
@@ -1270,16 +1261,25 @@ module.directive('bindHtml', function($compile){
 				var htmlVal = $('<div>' + (newVal || '') + '</div>')
 				//Remove resizable attributes
 				htmlVal.find('[resizable]').removeAttr('resizable').css('cursor', 'initial');
+				htmlVal.find('[bind-html]').removeAttr('bind-html');
+				htmlVal.find('[ng-include]').removeAttr('ng-include');
+				htmlVal.find('[ng-transclude]').removeAttr('ng-transclude');
 				var htmlContent = htmlVal[0].outerHTML;
-				if($(htmlContent).find('.math-tex').length > 0){
-                    if (!(window as any).MathJax) {
-                        http().get('/infra/public/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML').done((d) => {
-                            eval(d);
-                            
-                            window.MathJax.Hub.Config({ messageStyle: 'none', tex2jax: { preview: 'none' } });
-                            window.MathJax.Hub.Typeset();
-                        });
-                    }
+				if (!window.MathJax && !(window as any).MathJaxLoading) {
+				    (window as any).MathJaxLoading = true;
+                    http().loadScript('/infra/public/mathjax/MathJax.js').then(function () {
+						(window as any).MathJaxLoading = false;
+						window.MathJax.Hub.Config({
+							messageStyle: 'none',
+							tex2jax: { preview: 'none' },
+							jax: ["input/TeX", "output/CommonHTML"],
+							extensions: ["tex2jax.js", "MathMenu.js", "MathZoom.js"],
+							TeX: {
+								extensions: ["AMSmath.js", "AMSsymbols.js", "noErrors.js", "noUndefined.js"]
+							}
+						});
+						window.MathJax.Hub.Typeset();
+					});
                 }
 				element.html($compile(htmlContent)(scope.$parent));
 				//weird browser bug with audio tags
@@ -1292,7 +1292,7 @@ module.directive('bindHtml', function($compile){
 						.appendTo(parent);
 				});
 
-				if((window as any).MathJax && (window as any).MathJax.Hub){
+				if(window.MathJax && window.MathJax.Hub){
 					window.MathJax.Hub.Typeset();
 				}
 			});
@@ -1602,6 +1602,9 @@ module.directive('dropDown', function($compile, $timeout){
 				dropDown.offset(pos);
 				dropDown.width(width);
 				scope.setDropDownHeight();
+				setTimeout(function(){
+					scope.setDropDownHeight()
+				}, 100);
 			});
 
 			dropDown.detach().appendTo('body');
@@ -2036,18 +2039,27 @@ module.directive('authorize', function($compile){
 module.directive('bottomScroll', function($compile){
 	return {
 		restrict: 'A',
-		link: function($scope, $element, $attributes){
-			$(window).scroll(function(){
-				var scrollHeight = window.scrollY || document.getElementsByTagName('html')[0].scrollTop;
+		link: function (scope, element, attributes) {
+		    var scrollElement = element;
+		    var getContentHeight = function () {
+		        return element[0].scrollHeight;
+		    };
+		    if (element.css('overflow') !== 'auto') {
+		        scrollElement = $(window);
+		        var getContentHeight = function () {
+		            return $(document).height();
+		        };
+		    }
+		    scrollElement.scroll(function () {
+		        var scrollHeight = scrollElement[0].scrollY || scrollElement[0].scrollTop;
 				//adding ten pixels to account for system specific behaviours
 				scrollHeight += 10;
 
-				if($(document).height() - $(window).height() < scrollHeight){
-					$scope.$eval($attributes.bottomScroll);
-					if(!$scope.$$phase){
-						$scope.$apply();
+				if (getContentHeight() - scrollElement.height() < scrollHeight) {
+				    scope.$eval(attributes.bottomScroll);
+				    if (!scope.$$phase) {
+				        scope.$apply();
 					}
-
 				}
 			})
 		}
@@ -2184,6 +2196,11 @@ module.directive('gridCell', function($compile){
 	}
 });
 
+interface Directions{
+	horizontal?: boolean;
+	vertical?: boolean;
+}
+
 module.directive('gridResizable', function($compile){
 	return {
 		restrict: 'A',
@@ -2195,12 +2212,12 @@ module.directive('gridResizable', function($compile){
 			});
 
 			var cellSizes = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve'];
-			var resizeLimits:any = {};
+			var resizeLimits: Directions = {};
 			var parent = element.parents('.drawing-grid');
 
 			element.addClass('grid-media');
 
-			var lock:any = {};
+			var lock: Directions = {};
 
 			//cursor styles to indicate resizing possibilities
 			element.on('mouseover', function(e){
@@ -2775,8 +2792,6 @@ module.directive('draggable', function($compile){
 });
 
 module.directive('sharePanel', function($compile){
-
-	var sharePanel;
 	return {
 		scope: {
 			resources: '=',
@@ -2785,22 +2800,11 @@ module.directive('sharePanel', function($compile){
 		restrict: 'E',
 		templateUrl: '/' + infraPrefix + '/public/template/share-panel.html',
 		link: function($scope, $element, $attributes){
-			function chooseTemplate(){
-				if(ui.breakpoints.checkMaxWidth("fatMobile")){
-					$scope.mobile =true;
-					$scope.shareTable = '/' + infraPrefix + '/public/template/share-panel-table-mobile.html';
-				}else{
-					$scope.mobile =false;
-					$scope.shareTable = '/' + infraPrefix + '/public/template/share-panel-table.html';
-				}
-				if(!$scope.$$phase)
-					$scope.$apply();
-			}
-			chooseTemplate();
-			$(window).on('resize', chooseTemplate);
+			$scope.shareTable = '/' + infraPrefix + '/public/template/share-panel-table.html';
 		}
 	}
 });
+
 
 module.directive('sortableList', function($compile){
 	return {
@@ -3034,7 +3038,7 @@ module.directive('datePicker', function($compile){
 				scope.$parent.$apply();
 			}
 
-			http().loadScript('/' + infraPrefix + '/public/js/bootstrap-datepicker.js').then((f) => {
+			http().loadScript('/' + infraPrefix + '/public/js/bootstrap-datepicker.js').then(function(){
 				element.datepicker({
 						dates: {
 							months: moment.months(),
@@ -3089,7 +3093,7 @@ module.directive('datePickerIcon', function($compile){
 		restrict: 'E',
 		template: '<div class="date-picker-icon"> <input type="text" class="hiddendatepickerform" style="visibility: hidden; width: 0px; height: 0px; float: inherit" data-date-format="dd/mm/yyyy"/> <a ng-click="openDatepicker()"><i class="calendar"/></a> </div>',
 		link: function($scope, $element, $attributes){
-			http().loadScript('/' + infraPrefix + '/public/js/bootstrap-datepicker.js').then((lib) => {
+			http().loadScript('/' + infraPrefix + '/public/js/bootstrap-datepicker.js').then(() => {
 				var input_element   = $element.find('.hiddendatepickerform')
 				input_element.value = moment(new Date()).format('DD/MM/YYYY')
 
@@ -3694,13 +3698,13 @@ module.directive('pdfViewer', function(){
 			element.append(canvas);
 			http().loadScript('/infra/public/js/viewers/pdf.js/pdf.js').then(() => {
 				(window as any).PDFJS
-					.getDocument(attributes.ngSrc)
-					.then(function(file){
-						pdf = file;
-						scope.numPages = pdf.pdfInfo.numPages;
-						scope.$apply('numPages');
-						scope.openPage();
-					});
+						.getDocument(attributes.ngSrc)
+						.then(function(file){
+							pdf = file;
+							scope.numPages = pdf.pdfInfo.numPages;
+							scope.$apply('numPages');
+							scope.openPage();
+						});
 			});
 		}
 	}
@@ -3764,13 +3768,36 @@ module.directive('fileViewer', function(){
 	}
 });
 
+module.directive('ngTouchstart', function(){
+	return {
+		restrict: 'A',
+		scope: true,
+		link: function(scope, element, attributes){
+			element.on('touchstart', function(){
+				scope.$eval(attributes['ngTouchstart']);
+			});
+
+			if(attributes['ngTouchend']){
+				$('body').on('touchend', function(){
+					scope.$eval(attributes['ngTouchend']);
+				});
+			}
+		}
+	}
+})
+
 module.directive('inputPassword', function(){
 	return {
 		restrict: 'E',
 		replace: false,
 		template:
 			'<input type="password"/>' +
-			'<button type="button" ng-mousedown="show(true)" ng-mouseup="show(false)" ng-mouseleave="show(false)"></button>',
+			'<button type="button" \
+				ng-mousedown="show(true)" \
+				ng-touchstart="show(true)" \
+				ng-touchend="show(false)" \
+				ng-mouseup="show(false)" \
+				ng-mouseleave="show(false)"></button>',
 		scope: true,
 		compile: function(element, attributes){
 			element.addClass('toggleable-password');
@@ -3779,7 +3806,6 @@ module.directive('inputPassword', function(){
 				passwordInput.attr(attributes.$attr[prop], attributes[prop]);
 				element.removeAttr(attributes.$attr[prop]);
 			}
-
 			return function(scope){
 				scope.show = function(bool){
 					passwordInput[0].type = bool ? "text" : "password"
@@ -3840,11 +3866,11 @@ module.directive('plus', function($compile){
 				element.children('.opener').removeClass('plus').addClass('minus');
 				setTimeout(function(){
 					$('body').on('click.switch-plus-buttons', function(e){
-						if(!(element.children('.toggle-buttons').find(e.originalEvent.target).length)){
+						//if(!(element.children('.toggle-buttons').find(e.originalEvent.target).length)){
 							element.children('.toggle-buttons').addClass('hide');
 							element.children('.opener').removeClass('minus').addClass('plus');
 							$('body').off('click.switch-plus-buttons');
-						}
+						//}
 					});
 				}, 0);
 			});
@@ -3883,6 +3909,8 @@ module.directive('help', function(){
 					$('#' + $(e.target).attr('href').split('#')[1]).slideDown();
 				});
 				element.find('a').first().click();
+				scope.display.read = true;
+				scope.$apply('display');
 			};
 
 			element.children('i.help').on('click', function () {
@@ -3894,8 +3922,6 @@ module.directive('help', function(){
                         .done(function (content) {
                             helpText = content;
                             setHtml(helpText);
-                            scope.display.read = true;
-                            scope.$apply('display');
                         })
                         .e404(function () {
                             helpText = '<h2>' + lang.translate('help.notfound.title') + '</h2><p>' + lang.translate('help.notfound.text') + '</p>';
@@ -3918,11 +3944,14 @@ module.directive('stickToTop', function(){
 
 			$(window).scroll(function(){
 				if(initialPosition.top < $(window).scrollTop()){
+					element.addClass('scrolling')
 					element.offset({
 						top: $(window).scrollTop()
 					});
 				}
 				else{
+					element.removeClass('scrolling')
+
 					element.offset({
 						top: initialPosition.top
 					});
@@ -3944,26 +3973,27 @@ module.directive('floatingNavigation', function(){
 		'<div class="next arrow" ng-class="{ visible: step < stepsLength && stepsLength > 0 }"></div>' +
 		'</nav>',
 		link: function(scope, element, attributes){
+
 			var initialPosition;
 			scope.step = 0;
 			setTimeout(function(){
 				initialPosition = element.offset();
 				element.height($(window).height() - parseInt(element.css('margin-bottom')));
 				scope.stepsLength = parseInt(element.find('.content')[0].scrollHeight / element.height());
-			}, 500);
+			}, 800);
 			element.find('.arrow.next').on('click', function(){
 				scope.step ++;
 				scope.$apply();
 				element.find('.content').animate({
 					scrollTop: element.height() * scope.step
-				}, 250);
+				}, 450);
 			});
 			element.find('.arrow.previous').on('click', function(){
 				scope.step --;
 				scope.$apply();
 				element.find('.content').animate({
 					scrollTop: element.height() * scope.step
-				}, 250);
+				}, 450);
 			});
 		}
 	}
@@ -4075,13 +4105,13 @@ module.directive('multiCombo', function(){
 		},
 		link: function(scope, element, attributes){
 			if(!attributes.comboModel || !attributes.filteredModel){
-				throw '[<multi-combo> directive] Error: combo-model & filtered-model attributes are required.'
+				throw '[<multi-combo> directive] Error: combo-model & filtered-model attributes are required.';
 			}
 
 			/* Max n° of elements selected limit */
 			scope.maxSelected = parseInt(scope.maxSelected)
 			if(!isNaN(scope.maxSelected) && scope.maxSelected < 1){
-				throw '[<multi-combo> directive] Error: max-selected must be an integer grather than 0.'
+				throw '[<multi-combo> directive] Error: max-selected must be an integer grather than 0.';
 			}
 
 			/* Visibility mouse click event */
@@ -4140,32 +4170,33 @@ module.directive('sideNav', function(){
 	return {
 		restrict: 'AE',
 		link: function(scope, element, attributes){
+			var body = $('body');;
 			$('.mobile-nav-opener').addClass('visible');
 			var maxWidth = ui.breakpoints.tablette;
 			var target = attributes.targetElement || '.navbar';
-            var body = $('body');
+
 			element.addClass('side-nav');
-			body.addClass('transition');
+			$('body').addClass('transition');
 
 			var opener = $('.mobile-nav-opener');
 			opener.on('click', function(){
 				if(!element.hasClass('slide')){
 					element.addClass('slide');
-					body.addClass('point-out');
+					$('body').addClass('point-out');
 				}
 				else{
 					element.removeClass('slide');
-					body.removeClass('point-out');
+					$('body').removeClass('point-out');
 				}
 
 			});
 
-			body.on('click', function(e){
+			$('body').on('click', function(e){
 				if(element[0] === e.target || element.find(e.target).length || $('.mobile-nav-opener')[0] === e.target){
 					return;
 				}
 				element.removeClass('slide');
-				body.removeClass('point-out');
+				$('body').removeClass('point-out');
 
 			})
 
@@ -4174,9 +4205,7 @@ module.directive('sideNav', function(){
 			}
 			function addRemoveEvents(){
 				if(ui.breakpoints.checkMaxWidth(maxWidth)){
-
 					element.height($(window).height());
-					
 
 					if($('.mobile-nav-opener').hasClass('visible')){
 						body.find('.application-title').addClass('move-right');
@@ -4310,6 +4339,140 @@ module.directive('subtitle', function () {
 });
 
 module.directive('whereami', function () {
+	return {
+		restrict: 'A',
+		scope: false,
+		link: function (scope, element, attributes) {
+			element.addClass('whereami');
+			var current = $('nav.side-nav a.selected').text();
+			$('body').on('whereami.update', function(){
+				element.text($('nav.side-nav a.selected').text());
+			})
+			element.text(current);
+		}
+	}
+});
+
+module.directive('checkTool', function () {
+	return {
+		restrict: 'E',
+		scope: {
+				ngModel: '=',
+				ngClick: '&',
+				ngChange: '&',
+		},
+		template: '<div class="check-tool"><i class="check-status"></i></div>',
+		link: function (scope, element, attributes) {
+			element.on('click', function(){
+				scope.ngModel = !scope.ngModel;
+				if (scope.ngModel) {
+					element.addClass('selected')
+				}else {
+					element.removeClass('selected')
+				}
+				if (scope.ngClick) {
+					scope.ngClick();
+				}
+				if (scope.ngChange) {
+					scope.ngChange();
+				}
+				scope.$apply();
+			});
+		}
+	}
+});
+
+
+module.directive('explorer', function () {
+	return {
+		restrict: 'E',
+		transclude: true,
+		scope: {
+				ngModel: '=',
+				ngClick: '&',
+				ngChange: '&',
+				onOpen: '&',
+		},
+		template:'<div class="explorer" ng-transclude></div>',
+		link: function (scope, element, attributes) {
+
+			function select(){
+				scope.ngModel = !scope.ngModel;
+				if (scope.ngModel) {
+					element.addClass('selected')
+				}else {
+					element.removeClass('selected')
+				}
+				if (scope.ngClick) {
+					scope.ngClick();
+				}
+				if (scope.ngChange) {
+					scope.ngChange();
+				}
+				scope.$apply();
+			}
+
+			$('body').on('click', function(e){
+				if(e.target.nodeName!=="EXPLORER" && $(e.target).parents('explorer').length === 0){
+					scope.ngModel = false;
+					element.removeClass('selected');
+					scope.$apply();
+				}
+			})
+
+			function setGest(apply?){
+				if(ui.breakpoints.checkMaxWidth("tablette")){
+
+					element.off('click dblclick longclick')
+					ui.extendElement.touchEvents(element);
+
+					element.on('contextmenu', function(e){
+						event.preventDefault()
+					})
+
+					element.on('longclick', function(e, position){
+						select();
+					})
+					element.on('click', function(){
+						scope.ngModel = false;
+						scope.onOpen();
+					});
+
+				}else{
+					element.off('click dblclick longclick contextmenu')
+
+					element.on('click', function(){
+						select();
+					});
+					element.on('dblclick', function(){
+						scope.onOpen();
+						scope.ngModel = false;
+					})
+
+				}
+			}
+			setGest();
+			$(window).on('resize', function(){ setGest(true) });
+
+		}
+	}
+});
+
+module.directive('subtitle', function () {
+	return {
+		restrict: 'A',
+		scope: false,
+		link: function (scope, element, attributes) {
+			$('section.main').addClass('subtitle-push');
+
+			scope.$on("$destroy", function() {
+				$('section.main').removeClass('subtitle-push');
+			});
+		}
+	}
+});
+
+module.directive('whereami', function () {
 	//only on mailboxes
 	return {
 		restrict: 'A',
@@ -4418,7 +4581,7 @@ module.controller('Share', ['$rootScope','$scope', function($rootScope, $scope) 
 		return actions;
 	}
 
-	function rightsToActions(rights){
+	function rightsToActions(rights, http?){
 		var actions = {};
 
 		rights.forEach(function(right){
@@ -4559,13 +4722,23 @@ module.controller('Share', ['$rootScope','$scope', function($rootScope, $scope) 
 		var addedIndex = $scope.found.indexOf(item);
 		$scope.found.splice(addedIndex, 1);
 
+        var defaultActions = []
 		$scope.actions.forEach(function(action){
 			var actionId = action.displayName.split('.')[1];
 			if(actionsConfiguration[actionId].default){
 				item.actions[action.displayName] = true;
-				$scope.saveRights(item, action);
+                defaultActions.push(action);
 			}
 		});
+
+        var index = -1;
+        var loopAction = function(){
+            if(++index < defaultActions.length){
+                $scope.saveRights(item, defaultActions[index], loopAction);
+            }
+        }
+        loopAction()
+
 	};
 
 	$scope.findUserOrGroup = function(){
@@ -4618,7 +4791,7 @@ module.controller('Share', ['$rootScope','$scope', function($rootScope, $scope) 
 		$scope.maxEdit += displayMoreInc;
 	}
 
-	function applyRights(element, action){
+	function applyRights(element, action, cb){
 		var data;
 		if(element.login !== undefined){
 			data = { userId: element.id }
@@ -4655,6 +4828,13 @@ module.controller('Share', ['$rootScope','$scope', function($rootScope, $scope) 
 			});
 		}
 
+        var times = $scope.resources.length
+        var countdownAction = function(){
+            if(--times <= 0 && typeof cb === 'function'){
+                cb()
+            }
+        }
+
 		$scope.resources.forEach(function(resource){
 			http().put('/' + $scope.appPrefix + '/share/' + setPath + '/' + resource._id, http().serialize(data)).done(function(){
 				if(setPath === 'remove'){
@@ -4663,24 +4843,24 @@ module.controller('Share', ['$rootScope','$scope', function($rootScope, $scope) 
 				else{
 					$rootScope.$broadcast('share-updated', { added: { groupId: data.groupId, userId: data.userId, actions: rightsToActions(data.actions) } });
 				}
-
+                countdownAction()
 			});
 		});
 	}
 
-	$scope.saveRights = function(element, action){
+	$scope.saveRights = function(element, action, cb){
 		if($scope.varyingRights){
 			dropRights(function(){
-				applyRights(element, action)
+				applyRights(element, action, cb)
 			});
 		}
 		else{
-			applyRights(element, action);
+			applyRights(element, action, cb)
 		}
 	};
 }]);
 
-function Admin($scope){
+module.controller('Admin', ['$scope', function($scope){
 	$scope.urls = [];
 	http().get('/admin-urls').done(function(urls){
 		$scope.urls = urls;
@@ -4697,7 +4877,7 @@ function Admin($scope){
     }
 
 	$scope.scrollUp = ui.scrollToTop;
-}
+}]);
 
 $(document).ready(function(){
 	setTimeout(function(){
@@ -4741,8 +4921,7 @@ $(document).ready(function(){
 	}, 10);
 });
 
-function SearchPortal($scope, $window) {
-	'use strict';
+module.controller('SearchPortal', ['$scope', function($scope, $window) {
 	$scope.launchSearch = function(event) {
 		var words = $scope.mysearch;
 		if (event != "link") event.stopPropagation();
@@ -4752,7 +4931,7 @@ function SearchPortal($scope, $window) {
 			$window.location.href = '/searchengine#/' + words;
 		}
 	};
-}
+}]);
 
 function Widget(){}
 
@@ -4821,7 +5000,7 @@ function WidgetModel(){
 	});
 }
 
-function Widgets($scope, model, lang, date){
+module.controller('Widgets', ['$scope', 'model', 'lang', 'date', function($scope, model, lang, date){
 	if(!model.widgets){
 		WidgetModel();
 		model.widgets.sync();
@@ -4844,9 +5023,9 @@ function Widgets($scope, model, lang, date){
 		widget.switchHide();
 		$event.stopPropagation();
 	}
-}
+}]);
 
-function MediaLibrary($scope){
+module.controller('MediaLibrary', ['$scope', function($scope){
 	if(!model.mediaLibrary){
 		model.makeModels(workspace);
 		model.mediaLibrary = new Model();
@@ -4860,7 +5039,8 @@ function MediaLibrary($scope){
 
 	$scope.display = {
 		show: 'browse',
-		search: ''
+		search: '',
+        limit: 12
 	};
 
 	$scope.show = function(tab){
@@ -5047,4 +5227,4 @@ function MediaLibrary($scope){
 	$scope.updateSearch = function(){
 		$scope.documents = filteredDocuments($scope.openedFolder);
 	}
-}
+}]);

@@ -5,6 +5,15 @@ import { _ } from './libs/underscore/underscore';
 
 declare var Prism: any;
 
+if (!String.prototype.startsWith) {
+    String.prototype.startsWith = function (str) {
+        if (this.indexOf(str) !== -1 && this.split(str)[0] === '') {
+            return true;
+        }
+        return false;
+    };
+}
+
 function rgb(r, g, b) {
     return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
 }
@@ -20,18 +29,7 @@ $('body').append(
         .attr('href', '/infra/public/js/prism/prism.css')
 );
 
-function ToolbarConfiguration() {
-    this.collection(RTE.Option);
-    this.option = function(name, fn){
-        this.options.push({
-            name: name,
-            run: fn
-        });
-    };
-}
-
-export var RTE = {
-    baseToolbarConf: undefined as any,
+export var RTE =  {
     Instance: function(data){
         var that = this;
         this.states = [];
@@ -59,7 +57,7 @@ export var RTE = {
             this.trigger('contentupdated');
         };
 
-        var mousePosition: { top?: number, left?: number } = {};
+        var mousePosition = { top: 0, left: 0 };
         this.editZone.on('mousemove', function(e){
             mousePosition = {
                 left: e.pageX,
@@ -185,7 +183,7 @@ export var RTE = {
 
         this.toolbar = new RTE.Toolbar(this);
     },
-    Selection: function(data: any){
+    Selection: function(data){
         var that = this;
         this.selectedElements = [];
 
@@ -195,14 +193,21 @@ export var RTE = {
                 return;
             }
             var range = selection.getRangeAt(0);
+            var selector = [];
+            if (that.editZone[0] === range.startContainer && that.editZone[0] === range.endContainer) {
+                that.editZone.children().each(function (index, child) {
+                    selector.push(child);
+                });
+                return selector;
+            }
             if (!(that.editZone.find(range.startContainer.parentNode).length && range.startContainer.parentNode !== that.editZone[0]) ||
                 !that.editZone.find(range.endContainer.parentNode).length && range.endContainer.parentNode !== that.editZone[0]) {
                 return;
             }
-            var selector = [];
+            
             if(range.startContainer === range.endContainer){
                 if(range.startContainer.childNodes.length){
-                    for(var i = range.startOffset; i < range.endOffset; i++){
+                    for(var i = range.startOffset; i <= range.endOffset; i++){
                         selector.push(range.startContainer.childNodes[i]);
                     }
                 }
@@ -231,7 +236,7 @@ export var RTE = {
                     }
                 });
 
-                if (range.endContainer !== that.editZone[0] && range.endOffset > 0) {
+                if (range.endContainer !== that.editZone[0] && range.endOffset > 0 && $(range.endContainer).find(range.startContainer).length === 0) {
                     selector.push(range.endContainer);
                 }
             }
@@ -248,7 +253,7 @@ export var RTE = {
 
             var same = this.range && this.range.startContainer === range.startContainer && this.range.startOffset === range.startOffset
                     && this.range.endContainer === range.endContainer && range.endOffset === this.range.endOffset;
-            same = same || this.editZone.find(range.startContainer).length === 0;
+            same = same || (this.editZone.find(range.startContainer).length === 0 && this.editZone[0] !== range.startContainer);
             var selectedElements = getSelectedElements();
 
             if(!same && selectedElements){
@@ -310,15 +315,23 @@ export var RTE = {
             if(this.range.startContainer === this.range.endContainer){
                 element.html('&nbsp;');
                 var elementAtCaret = this.range.startContainer;
-                if (elementAtCaret.nodeType === 1 && elementAtCaret.getAttribute('contenteditable')) {
+                if (elementAtCaret.nodeType === 1 && elementAtCaret.getAttribute('contenteditable') || elementAtCaret.nodeName === 'TD') {
                     var newEl = document.createElement('div');
                     elementAtCaret.appendChild(newEl);
                     elementAtCaret = newEl;
                 }
                 if (elementAtCaret.nodeType === 3) {
                     element.text(elementAtCaret.textContent);
-                    elementAtCaret.parentNode.insertBefore(element[0], elementAtCaret);
-                    elementAtCaret.remove();
+                    if(elementAtCaret.parentNode.nodeName === 'TD'){
+                        var wrapper = $('<div></div>');
+                        $(elementAtCaret.parentNode).append(wrapper);
+                        wrapper.append(element);
+                        elementAtCaret.remove();
+                    }
+                    else{
+                        elementAtCaret.parentNode.parentNode.insertBefore(element[0], elementAtCaret.parentNode);
+                        elementAtCaret.parentNode.remove();
+                    }
                 }
                 else {
                     element.text('');
@@ -365,6 +378,10 @@ export var RTE = {
             this.instance.trigger('contentupdated');
         };
 
+        this.isCursor = function () {
+            return this.range.startContainer === this.range.endContainer && this.range.startOffset === this.range.endOffset;
+        }
+
         this.wrapText = function(el){
             this.instance.addState(this.editZone.html());
             if(!this.selectedElements.length){
@@ -377,26 +394,31 @@ export var RTE = {
                 this.selectedElements.forEach(function(item, index){
                     var node = $(el[0].outerHTML);
                     if(item.nodeType === 1){
-                        $(item).wrap(node);
+                        $(item).wrapInner(node);
                     }
                     else{
-                        if(index === 0 && that.range.startOffset >= 0 && that.range.startContainer !== that.range.endContainer){
+                        if(that.range.startContainer === item && that.range.startOffset >= 0 && that.range.startContainer !== that.range.endContainer){
                             node.html(item.textContent.substring(that.range.startOffset));
                             item.parentNode.insertBefore(node[0], item.nextSibling);
                             item.textContent = item.textContent.substring(0, that.range.startOffset);
                         }
-                        else if(index === that.selectedElements.length - 1 && that.range.endOffset <= item.textContent.length && that.range.startContainer !== that.range.endContainer){
+                        else if (that.range.endContainer === item && that.range.endOffset <= item.textContent.length && that.range.startContainer !== that.range.endContainer) {
                             node.text(item.textContent.substring(0, that.range.endOffset));
                             item.parentNode.insertBefore(node[0], item);
                             item.textContent = item.textContent.substring(that.range.endOffset);
                         }
-                        else if(that.range.startContainer === that.range.endContainer && index === 0){
+                        else if (that.range.startContainer === that.range.endContainer && that.range.startContainer === item) {
                             node.html(item.textContent.substring(that.range.startOffset, that.range.endOffset));
                             var textBefore = document.createTextNode('');
                             textBefore.textContent = item.textContent.substring(0, that.range.startOffset);
                             item.parentNode.insertBefore(node[0], item);
                             item.parentNode.insertBefore(textBefore, node[0]);
                             item.textContent = item.textContent.substring(that.range.endOffset);
+                        }
+                        else {
+                            node.html(item.textContent);
+                            item.parentNode.insertBefore(node[0], item);
+                            item.textContent = "";
                         }
                         addedNodes.push(node[0]);
                     }
@@ -408,24 +430,28 @@ export var RTE = {
         };
 
         function applyCSS(css) {
-            if (!that.range) {
-                return;
-            }
             that.instance.addState(that.editZone.html());
 
             if(!that.selectedElements.length){
                 var el = $('<span>&nbsp;</span>');
+                if (!that.range && !that.editZone.html()) {
+                    var elementAtCaret = $('<div></div>').appendTo(that.editZone);
+                }
+                else {
+                    var elementAtCaret = that.range.startContainer;
+                    if (elementAtCaret.nodeType !== 1) {
+                        elementAtCaret = elementAtCaret.parentNode;
+                    }
+                    if (elementAtCaret.nodeName === 'SPAN') {
+                        el.attr('style', $(elementAtCaret).attr('style'));
+                        elementAtCaret = elementAtCaret.parentNode;
+                    }
+                    if (that.editZone.find(elementAtCaret).length === 0) {
+                        elementAtCaret = that.editZone[0];
+                    }
+                }
+                
                 el.css(css);
-                var elementAtCaret = that.range.startContainer;
-                if (elementAtCaret.nodeType !== 1) {
-                    elementAtCaret = elementAtCaret.parentNode;
-                }
-                if (elementAtCaret.nodeName === 'SPAN') {
-                    elementAtCaret = elementAtCaret.parentNode;
-                }
-                if (that.editZone.find(elementAtCaret).length === 0) {
-                    elementAtCaret = that.editZone[0];
-                }
                 $(elementAtCaret).append(el);
                 that.moveCaret(el[0], 1);
             }
@@ -438,12 +464,15 @@ export var RTE = {
                 )
             ) {
                 var element = that.selectedElements[0];
-                if (element.nodeType !== 1) {
-                    var elm = document.createElement('span');
-                    elm.textContent = element.textContent;
-                    element.parentNode.insertBefore(elm, element.nextSibling);
-                    element.remove();
-                    element = elm;
+                if (element.nodeType !== 1 && element.parentNode.nodeName !== 'SPAN') {
+                    let el = document.createElement('span');
+                    el.textContent = element.textContent;
+                    element.parentNode.insertBefore(el, element.nextSibling);
+                    $(element).remove();
+                    element = el;
+                }
+                else {
+                    element = element.parentNode;
                 }
                 $(element).css(css);
                 that.selectNode(element);
@@ -503,7 +532,7 @@ export var RTE = {
         }
 
         this.isEmpty = function () {
-            return !this.range || this.range.startContainer === this.range.endContainer && this.startOffset === this.endOffset;
+            return !this.range || this.isCursor();
         };
 
         this.elementAtCaret = function () {
@@ -599,10 +628,19 @@ export var RTE = {
             optionResult.link(optionScope, optionElement, instance.attributes);
         });
     },
-    ToolbarConfiguration: ToolbarConfiguration,
+    ToolbarConfiguration: function(){
+        this.collection(RTE.Option);
+        this.option = function(name, fn){
+            this.options.push({
+                name: name,
+                run: fn
+            });
+        };
+    },
     Option: function(){
 
     },
+    baseToolbarConf: null,
     setModel: function(){
         model.makeModels(RTE);
         RTE.baseToolbarConf = new RTE.ToolbarConfiguration();
@@ -1117,7 +1155,7 @@ export var RTE = {
                     });
 
                     scope.$watch('foreColor', function(){
-                        if(scope.foreColor !== eval(instance.selection.css('color'))) {
+                        if(scope.foreColor !== eval(instance.selection.css('color')) && !(instance.selection.isEmpty() && scope.foreColor === '#000000')) {
                             instance.selection.css({ 'color': scope.foreColor });
                         }
                     });
@@ -1156,7 +1194,7 @@ export var RTE = {
                     });
 
                     scope.$watch('backColor', function () {
-                        var rgbColor: { r?: number, g?: number, b?: number, a?: number} = {};
+                        var rgbColor: { r?: number, g?: number, b?: number, a?: number } = {};
                         if (typeof scope.backColor === 'string') {
                             if(scope.backColor[0] === '#'){
                                 rgbColor = {
@@ -1236,14 +1274,19 @@ export var RTE = {
                         );
                     }
 
-                    scope.fonts = [{ fontFamily: 'Arial' }, { fontFamily: 'Verdana' }, { fontFamily: 'Tahoma' }, { fontFamily: "'Comic Sans MS'" }];
+                    scope.fonts = [{ fontFamily: 'Arial' }, { fontFamily: 'Verdana' }, { fontFamily: 'Tahoma' }, { fontFamily: "Comic Sans MS" }];
                     scope.font = '';
 
                     setTimeout(function() {
                         var importedFonts = loadImportedFonts();
+                        importedFonts = _.uniq(importedFonts, function(item, key, a) { 
+                            return item.fontFamily;
+                        });
                         scope.fonts = scope.fonts.concat(importedFonts);
-                        scope.font = _.findWhere(scope.fonts, { fontFamily: $('p').css('font-family') });
-                    }, 0);
+                        scope.font = _.find(scope.fonts, function (font) {
+                            return $('p').css('font-family').toLowerCase().indexOf(font.fontFamily.toLowerCase()) !== -1
+                        });
+                    }, 1000);
 
                     scope.setFontFamily = function (font) {
                         scope.font = font;
@@ -1753,7 +1796,7 @@ export var RTE = {
                     scope.updateContent = function(){
                         if(editNode){
                             $(editNode).attr('formula', scope.display.formula);
-                            angular.element(editNode).scope().updateFormula(scope.display.formula);
+                            angular.element(editNode.firstChild).scope().updateFormula(scope.display.formula);
                         }
                         else{
                             instance.selection.replaceHTML(instance.compile(
@@ -1883,8 +1926,10 @@ export var RTE = {
                                 scope.$apply('linker');
                             };
                         }
-                        Behaviours.applicationsBehaviours[prefix].loadResources(cb);
-                        scope.linker.addResource = Behaviours.applicationsBehaviours[prefix].create;
+                        Behaviours.loadBehaviours(scope.linker.params.appPrefix, function (appBehaviour) {
+                            Behaviours.applicationsBehaviours[prefix].loadResources(cb);
+                            scope.linker.addResource = Behaviours.applicationsBehaviours[prefix].create;
+                        });
                     };
 
                     scope.linker.searchApplication = function(cb){
@@ -1976,7 +2021,7 @@ export var RTE = {
                             return;
                         }
 
-                        if (instance.selection.selectedElements.length === 0) {
+                        if (instance.selection.isCursor()) {
                             linkNode.text(scope.linker.params.link);
                             instance.selection.replaceHTML(linkNode[0].outerHTML);
                         }
@@ -2041,13 +2086,26 @@ export var RTE = {
                 template: '<i tooltip="editor.option.unlink"></i>',
                 link: function(scope, element, attributes){
                     element.addClass('disabled');
-                    element.on('click', function(){
-                        document.execCommand('unlink');
+                    element.on('click', function () {
+                        var currentNode = instance.selection.range.startContainer;
+                        if (currentNode.nodeType !== 1) {
+                            currentNode = currentNode.parentNode;
+                        }
+                        if (currentNode.nodeName !== 'A') {
+                            return;
+                        }
+                        var content = document.createTextNode($(currentNode).text());
+                        currentNode.parentNode.insertBefore(content, currentNode);
+                        $(currentNode).remove();
                         element.addClass('disabled');
                     });
 
-                    instance.on('selectionchange', function(e){
-                        if(e.selection.$().is('a')){
+                    instance.on('selectionchange', function (e) {
+                        var currentNode = e.selection.range.startContainer;
+                        if(currentNode.nodeType !==1){
+                            currentNode = currentNode.parentNode;
+                        }
+                        if (currentNode.nodeName === 'A') {
                             element.removeClass('disabled');
                         }
                         else{
@@ -2216,16 +2274,16 @@ export var RTE = {
                 '</lightbox>',
                 link: function (scope, element, attributes) {
                     var split = $('#theme').attr('href').split('/');
-                    var skinPath = split.slice(0, split.length - 2).join('/') + '/img';
+                    var skinPath = split.slice(0, split.length - 2).join('/') + '/../entcore-css-lib/editor-resources/img/';
                     scope.templates = [
                         {
                             title: 'editor.templates.emptypage.title',
-                            image: skinPath + '/icons/editor/templates-preview-emptypage.svg',
+                            image: skinPath + 'templates-preview-emptypage.svg',
                             html: '<div class="twelve cell column"><article></article></div>'
                         },
                         {
                             title: 'editor.templates.twocols.title',
-                            image: skinPath + '/icons/editor/templates-preview-twocols.svg',
+                            image: skinPath + 'templates-preview-twocols.svg',
                             html:
                             '<div class="row">' +
                             '<div class="six cell column">' +
@@ -2252,7 +2310,7 @@ export var RTE = {
                         },
                         {
                             title: 'editor.templates.threecols.title',
-                            image: skinPath + '/icons/editor/templates-preview-threecols.svg',
+                            image: skinPath + 'templates-preview-threecols.svg',
                             html:
                             '<div class="row">' +
                             '<div class="four cell column">' +
@@ -2289,12 +2347,12 @@ export var RTE = {
                         },
                         {
                             title: 'editor.templates.illustration.title',
-                            image: skinPath + '/icons/editor/templates-preview-illustration.svg',
+                            image: skinPath + 'templates-preview-illustration.svg',
                             html:
                             '<div class="row">' +
                                 '<div class="three cell column">' +
                                     '<article>' +
-                                        '<img src="' + skinPath + '/illustrations/image-default.svg" />' +
+                                        '<img src="' + skinPath + 'image-default.svg" />' +
                                     '</article>' +
 
                                 '</div>' +
@@ -2312,13 +2370,13 @@ export var RTE = {
                         },
                         {
                             title: 'editor.templates.dominos.title',
-                            image: skinPath + '/icons/editor/templates-preview-dominos.svg',
+                            image: skinPath + 'templates-preview-dominos.svg',
                             html:
                             '<div class="dominos">' +
                                 '<div class="item">' +
                                     '<section class="domino pink">' +
                                     '<div class="top">' +
-                                        '<img src="' + skinPath + '/illustrations/image-default.svg" class="fixed twelve cell" />' +
+                                        '<img src="' + skinPath + 'image-default.svg" class="fixed twelve cell" />' +
                                     '</div>' +
                                     '<div class="bottom">' +
                                         '<div class="content">' +
@@ -2330,7 +2388,7 @@ export var RTE = {
                                 '<div class="item">' +
                                     '<section class="domino blue">' +
                                         '<div class="top">' +
-                                            '<img src="' + skinPath + '/illustrations/image-default.svg" class="fixed twelve cell" />' +
+                                            '<img src="' + skinPath + 'image-default.svg" class="fixed twelve cell" />' +
                                         '</div>' +
                                         '<div class="bottom">' +
                                             '<div class="content">' +
@@ -2342,7 +2400,7 @@ export var RTE = {
                                 '<div class="item">' +
                                     '<section class="domino orange">' +
                                         '<div class="top">' +
-                                            '<img src="' + skinPath + '/illustrations/image-default.svg" class="fixed twelve cell" />' +
+                                            '<img src="' + skinPath + 'image-default.svg" class="fixed twelve cell" />' +
                                         '</div>' +
                                             '<div class="bottom">' +
                                             '<div class="content">' +
@@ -2354,7 +2412,7 @@ export var RTE = {
                                 '<div class="item">' +
                                     '<section class="domino purple">' +
                                         '<div class="top">' +
-                                            '<img src="' + skinPath + '/illustrations/image-default.svg" class="fixed twelve cell" />' +
+                                            '<img src="' + skinPath + 'image-default.svg" class="fixed twelve cell" />' +
                                         '</div>' +
                                         '<div class="bottom">' +
                                             '<div class="content">' +
@@ -2366,7 +2424,7 @@ export var RTE = {
                                 '<div class="item">' +
                                     '<section class="domino green">' +
                                         '<div class="top">' +
-                                            '<img src="' + skinPath + '/illustrations/image-default.svg" class="fixed twelve cell" />' +
+                                            '<img src="' + skinPath + 'image-default.svg" class="fixed twelve cell" />' +
                                         '</div>' +
                                         '<div class="bottom">' +
                                             '<div class="content">' +
@@ -2378,7 +2436,7 @@ export var RTE = {
                                 '<div class="item">' +
                                     '<section class="domino white">' +
                                         '<div class="top">' +
-                                            '<img src="' + skinPath + '/illustrations/image-default.svg" class="fixed twelve cell" />' +
+                                            '<img src="' + skinPath + 'image-default.svg" class="fixed twelve cell" />' +
                                         '</div>' +
                                             '<div class="bottom">' +
                                             '<div class="content">' +
@@ -2429,6 +2487,7 @@ export var RTE = {
                 link: function(scope, element, attributes) {
                     element.find('.close-focus').on('click', function(){
                         element.removeClass('focus');
+                        element.parent().data('lock', false);
                         element.trigger('editor-blur');
                         $('body').css({ overflow: 'auto' });
                     });
@@ -2444,7 +2503,16 @@ export var RTE = {
                         }
                     });
                     
-                    element.find('.editor-toolbar-opener').on('touchstart', function(){
+                    element.find('.editor-toolbar-opener').on('touchstart', function(e){
+                        e.preventDefault();
+                        if(!$(this).hasClass('active')){
+                            $(this).addClass('active');
+                            element.find('editor-toolbar').addClass('opened');
+                        }
+                        else{
+                            $(this).removeClass('active')
+                            element.find('editor-toolbar').removeClass('opened');
+                        }
                         setTimeout(function(){
                             var sel = window.getSelection();
                             sel.removeAllRanges();
@@ -2503,9 +2571,9 @@ export var RTE = {
                                 editZone.html($compile(ngModel(scope))(scope));
                             }
                             if(newValue !== htmlZone.val() && !htmlZone.is(':focus')){
-                                if((window as any).html_beautify){
-                                    htmlZone.val((window as any).html_beautify(newValue));
-                                    highlightZone.text((window as any).html_beautify(newValue));
+                                if(window.html_beautify){
+                                    htmlZone.val(window.html_beautify(newValue));
+                                    highlightZone.text(window.html_beautify(newValue));
                                     Prism.highlightAll();
                                 }
                                 //beautifier is not loaded on mobile
@@ -2522,11 +2590,20 @@ export var RTE = {
 
                     var previousScroll = 0;
                     function sticky() {
+                        if(element.parents('.editor-media').length > 0){
+                            return;
+                        }
+                            
                         if (previousScroll === window.scrollY) {
                             var placeEditorToolbar = requestAnimationFrame(sticky);
                             return;
                         }
+                        
                         toolbarElement.addClass('sticky');
+                        if(toolbarElement.css({ 'position': 'absolute' })){
+                            toolbarElement.css({ 'position': 'absolute' });
+                            element.css({ 'padding-top': toolbarElement.height() + 1 + 'px' });
+                        }
                         var topDistance = element.offset().top;
                         if (topDistance < window.scrollY) {
                             topDistance = window.scrollY;
@@ -2583,13 +2660,13 @@ export var RTE = {
                         setTimeout(function () {
                             editorInstance.trigger('contentupdated');
                         }, 300);
-                        if((window as any).html_beautify){
+                        if(window.html_beautify){
                             return;
                         }
                         http().get('/infra/public/js/beautify-html.js').done(function(content){
                             eval(content);
-                            htmlZone.val((window as any).html_beautify(ngModel(scope)));
-                            highlightZone.text((window as any).html_beautify(ngModel(scope)));
+                            htmlZone.val(window.html_beautify(ngModel(scope)));
+                            highlightZone.text(window.html_beautify(ngModel(scope)));
                             Prism.highlightAll();
                         });
                     });
@@ -2603,13 +2680,13 @@ export var RTE = {
                         setTimeout(function () {
                             editorInstance.trigger('contentupdated');
                         }, 300);
-                        if((window as any).html_beautify){
+                        if(window.html_beautify){
                             return;
                         }
                         http().get('/infra/public/js/beautify-html.js').done(function(content){
                             eval(content);
-                            htmlZone.val((window as any).html_beautify(ngModel(scope)));
-                            highlightZone.text((window as any).html_beautify(ngModel(scope)));
+                            htmlZone.val(window.html_beautify(ngModel(scope)));
+                            highlightZone.text(window.html_beautify(ngModel(scope)));
                             Prism.highlightAll();
                         });
                     });
@@ -2635,7 +2712,7 @@ export var RTE = {
                         }
 
                         var blob = new Blob(byteArrays, { type: contentType });
-                        (blob as any).name = "image";
+                        blob.name = "image";
                         return blob;
                     }
 
@@ -2702,8 +2779,8 @@ export var RTE = {
                         });
                     });
 
-                    element.on('click', function(e){
-                        if(attributes.inline !== undefined && $(window).width() > ui.breakpoints.tablette){
+                    var placeToolbar = function () {
+                        if (attributes.inline !== undefined && $(window).width() > ui.breakpoints.tablette) {
                             element.children('editor-toolbar').css({
                                 left: 0,
                                 top: -element.children('editor-toolbar').height() + 'px'
@@ -2712,6 +2789,11 @@ export var RTE = {
                                 'margin-top': element.children('editor-toolbar').height() + 'px'
                             });
                         }
+                    }
+
+                    element.parents().on('resizing', placeToolbar)
+                    element.on('click', function(e){
+                        placeToolbar();
 
                         if(e.target === element.find('.close-focus')[0]){
                             return;
@@ -2719,10 +2801,10 @@ export var RTE = {
 
                         element.trigger('editor-focus');
                         element.addClass('focus');
+                        element.parent().data('lock', true);
                         if ($(window).width() < ui.breakpoints.tablette) {
                             $('body').css({ overflow: 'hidden' });
                         }
-                        element.data('lock', true);
                     });
 
                     $('body').on('mousedown', function(e){
@@ -2736,7 +2818,7 @@ export var RTE = {
                             element.trigger('editor-blur');
                             element.removeClass('focus');
                             $('body').css({ overflow: 'auto' });
-                            element.data('lock', false);
+                            element.parent().data('lock', false);
 
                             if(attributes.inline !== undefined){
                                 element.css({
@@ -2774,23 +2856,82 @@ export var RTE = {
                         clearTimeout(editingTimer);
                         typingTimer = setTimeout(wrapFirstLine, 10);
                         
+                        var sel = window.getSelection();
+                        if (sel.rangeCount > 0) {
+                            var range = sel.getRangeAt(0);
+                            if (range.startContainer.nodeType !== 1 && e.which > 64 && e.which < 91 && range.startContainer.parentNode !== null) {     
+                                var currentTextNode = range.startContainer;
+                                var initialOffset = range.startOffset;
+                                if (initialOffset === currentTextNode.textContent.length) {
+                                    initialOffset = -1;
+                                }
+                                if (range.startContainer.parentNode.innerHTML.startsWith('&nbsp;') && range.startOffset === 1) {
+                                    var node = range.startContainer.parentNode;
+                                    
+                                    setTimeout(function () {
+                                        node.innerHTML = node.innerHTML.substring(6);
+                                        setTimeout(function () {
+                                            var range = document.createRange();
+                                            if (initialOffset === -1) {
+                                                initialOffset = (node.firstChild || node).textContent.length
+                                            }
+                                            range.setStart((node.firstChild || node), initialOffset);
+                                            sel.removeAllRanges();
+                                            sel.addRange(range);
+                                        }, 10)
+                                        
+                                    }, 10);
+                                    
+                                }
+                            }
+                        }
+                        
+
                         if (!e.ctrlKey) {
                             editingTimer = setTimeout(editingDone, 500);
                         }
 
                         if (e.keyCode === 13) {
+                            e.preventDefault();
                             editorInstance.addState(editZone.html());
+                            
+                            var parentContainer = range.startContainer;
+                            var newLine = $('<div>&nbsp;</div>');
+                            if (parentContainer === editZone[0]) {
+                                parentContainer.appendChild(newLine[0]);
+                            }
+                            else {
+                                if (parentContainer.nodeType !== 1) {
+                                    parentContainer = parentContainer.parentNode;
+                                }
+                                if (range.startOffset !== range.startContainer.textContent.length) {
+                                    newLine.html('&nbsp;' + parentContainer.textContent.substring(range.startOffset, parentContainer.textContent.length));
+                                    parentContainer.textContent = parentContainer.textContent.substring(0, range.startOffset);
+                                }
+
+                                if (parentContainer.nextSibling) {
+                                    parentContainer.parentNode.insertBefore(newLine[0], parentContainer.nextSibling);
+                                }
+                                else {
+                                    parentContainer.parentNode.appendChild(newLine[0]);
+                                }
+                            }
+
+                            var range = document.createRange();
+                            range.setStart(newLine[0].firstChild || newLine[0], 1);
+
+                            sel.removeAllRanges();
+                            sel.addRange(range);
                         }
 
                         if (e.keyCode === 8 || e.keyCode === 46) {
                             editorInstance.addState(editZone.html());
                             // for whatever reason, ff likes to create several ranges for table selection
                             // which messes up their deletion
-                            var sel = window.getSelection();
                             for (var i = 0; i < sel.rangeCount; i++) {
                                 var startContainer = sel.getRangeAt(i).startContainer;
                                 if (startContainer.nodeType === 1 && startContainer.nodeName === 'TD' || startContainer.nodeName === 'TR') {
-                                    (startContainer as any).remove();
+                                    startContainer.remove();
                                 }
                             }
                             editZone.find('table').each(function (index, item) {
@@ -2837,7 +2978,7 @@ export var RTE = {
                                     nextTag = newLine.children('td')[0];
                                     $(currentTag).closest('table').append(newLine);
                                 }
-                                editorInstance.selection.moveCaret(nextTag);
+                                editorInstance.selection.moveCaret(nextTag, nextTag.firstChild.textContent.length);
                             }
                             else if (currentTag.tagName === 'LI') {
                                 document.execCommand('indent');
@@ -2907,7 +3048,7 @@ export var RTE = {
 
                     element.find('[contenteditable]').on('drop', function(e){
                         element.removeClass('droptarget');
-                        var el = $;
+                        var el: any = {};
                         var files = e.originalEvent.dataTransfer.files;
                         if(!files.length){
                             return;
@@ -2938,7 +3079,7 @@ export var RTE = {
                                         el = $('<audio draggable native controls></audio>');
                                         el.attr('src', '/workspace/document/' + doc._id)
                                     }
-                                    else if (name.indexOf('.png') !== -1 || name.indexOf('.jpg') !== -1 || name.indexOf('.jpeg') !== -1) {
+                                    else if (name.toLowerCase().indexOf('.png') !== -1 || name.toLowerCase().indexOf('.jpg') !== -1 || name.toLowerCase().indexOf('.jpeg') !== -1 || name.toLowerCase().indexOf('.svg') !== -1) {
                                         el = $('<img draggable native />');
                                         el.attr('src', '/workspace/document/' + doc._id)
                                     }
@@ -3108,15 +3249,15 @@ export var RTE = {
                     if (!window.MathJax) {
                         http().loadScript('/infra/public/mathjax/MathJax.js').then(() => {
                             window.MathJax.Hub.Config({
-                                    messageStyle: 'none',
-                                    tex2jax: { preview: 'none' },
-                                    jax: ["input/TeX", "output/CommonHTML"],
-                                    extensions: ["tex2jax.js", "MathMenu.js", "MathZoom.js", "AssistiveMML.js"],
-                                    TeX: {
-                                        extensions: ["AMSmath.js", "AMSsymbols.js", "noErrors.js", "noUndefined.js"]
-                                    }
-                                });
-                                window.MathJax.Hub.Typeset();
+                                messageStyle: 'none',
+                                tex2jax: { preview: 'none' },
+                                jax: ["input/TeX", "output/CommonHTML"],
+                                extensions: ["tex2jax.js", "MathMenu.js", "MathZoom.js", "AssistiveMML.js"],
+                                TeX: {
+                                    extensions: ["AMSmath.js", "AMSsymbols.js", "noErrors.js", "noUndefined.js"]
+                                }
+                            });
+                            window.MathJax.Hub.Typeset();
                         });
                     }
 

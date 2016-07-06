@@ -94,12 +94,12 @@ var moment = require('moment');
 			return this.all[0];
 		},
 		select: function(predicate){
-			_.find(this.all, predicate).forEach(function(item){
+			_.filter(this.all, predicate).forEach(function(item){
 				item.selected = true;
 			});
 		},
 		deselect: function(predicate){
-			_.find(this.all, predicate).forEach(function(item){
+			_.filter(this.all, predicate).forEach(function(item){
 				item.selected = false;
 			});
 		},

@@ -66,7 +66,7 @@ ui = (function(){
 			mainLightbox.hide();
 		},
 		updateAvatar: function(){
-			var scope = (window as any).angular.element(document.getElementById('my-photo')).scope();
+			var scope = angular.element(document.getElementById('my-photo')).scope();
 			scope.refreshAvatar();
 		},
 		scrollToId: function(id){
@@ -143,7 +143,7 @@ ui = (function(){
 
 		$('.remove-fout').removeClass('remove-fout');
 
-		$('body').on('click touchstart', '.select-file input[type!="file"], .select-file button, .file-selector', function(e){
+		$('body').on('click', '.select-file input[type!="file"], .select-file button, .file-selector', function(e){
 			var inputFile = $(this).parent().find('input[type=file]');
 			if($(this).attr('for')){
 				inputFile = $('#' + $(this).attr('for'));
@@ -223,7 +223,8 @@ ui = (function(){
 		//CSS transitions expansions
         var animationTimer;
 		$('body').on('click', 'article.preview', function(e){
-			if($(this).hasClass('expanded')){
+		    if ($(this).hasClass('expanded')) {
+		        clearTimeout(animationTimer);
 				if(($(this).height() + parseInt($(this).css('padding-top')) + parseInt($(this).css('padding-bottom'))) === this.scrollHeight){
 					$(this).css({ transition: 'none', height: 'auto' });
 				}
@@ -256,11 +257,13 @@ ui = (function(){
 			}
 		}
 	}
-})($)
+})(window.jQuery)
 
 
 ui.extendSelector = {
     touchEvents: function(selector, params) {
+		var mouse;
+		
         if (!params) {
             params = {};
         }
@@ -274,7 +277,7 @@ ui.extendSelector = {
                 $(e.target).one('touchleave touchend', function() {
                     $(e.target).trigger('longclick', position);
                 });
-            }, 200);
+            }, 400);
             $(e.target).one('touchleave touchend', function() {
                 clearTimeout(timer);
             });
@@ -282,7 +285,6 @@ ui.extendSelector = {
 
         //swipes
         $('body').on('touchstart', selector, function (e) {
-            var mouse;
             var initialMouse = mouse = {
                 y: e.originalEvent.touches[0].clientY,
                 x: e.originalEvent.touches[0].clientX
@@ -328,6 +330,7 @@ ui.breakpoints = {
 
 ui.extendElement = {
 	touchEvents: function(element, params){
+		var mouse;
 		if(!params){
 			params = {};
 		}
@@ -337,7 +340,7 @@ ui.extendElement = {
 	            element.one('touchleave touchend', function () {
 	                element.trigger('longclick');
 	            });
-	        }, 500);
+	        }, 400);
 	        element.one('touchleave touchend', function() {
 	            clearTimeout(timer);
 	        });
@@ -345,7 +348,6 @@ ui.extendElement = {
 
 		//swipes
 		element.on('touchstart', function(e){
-            var mouse;
 			var initialMouse = mouse = {
 				y: e.originalEvent.touches[0].clientY,
 				x: e.originalEvent.touches[0].clientX
@@ -565,13 +567,13 @@ ui.extendElement = {
 				};
 				resize();
 
-				$(window).on('mouseup.resize touchleave.resize touchend.resize', function(){
+				$(window).on('mouseup.resize touchleave.resize touchend.resize', function(e){
 					interrupt = true;
 					setTimeout(function(){
 						element.data('resizing', false);
 						element.trigger('stopResize');
 						if (params && typeof params.mouseUp === 'function') {
-						    params.mouseUp();
+						    params.mouseUp(e);
 						}
 					}, 100);
 					$(window).unbind('mousemove.resize touchmove.resize mouseup.resize touchleave.resize touchend.resize');
@@ -743,7 +745,7 @@ ui.extendElement = {
 							element.trigger('stopDrag');
 							element.data('dragging', false);
 							if(params && typeof params.mouseUp === 'function' && moved){
-								params.mouseUp();
+								params.mouseUp(e);
 							}
 						}
 					}, 100);
@@ -751,7 +753,7 @@ ui.extendElement = {
 			}
 		});
 	}
-};
+}
 
 if(!(window as any).entcore){
 	(window as any).entcore = {};

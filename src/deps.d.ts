@@ -28,6 +28,13 @@ declare interface Window{
     MathJax: any;
     Prism: any;
     entcore: any;
+    html_beautify: any;
+    jQuery: any;
+}
+
+declare interface Node{
+    innerHTML: string;
+    remove();
 }
 
 declare interface Object{
