@@ -34,7 +34,6 @@ declare interface Window{
 
 declare interface Node{
     innerHTML: string;
-    remove();
 }
 
 declare interface Object{
