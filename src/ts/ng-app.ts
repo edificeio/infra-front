@@ -4478,7 +4478,7 @@ module.directive('explorer', function () {
 				}
 			})
 
-			function setGest(apply?){
+			function setGest(apply){
 				if(ui.breakpoints.checkMaxWidth("tablette")){
 
 					element.off('click dblclick longclick')
@@ -4490,10 +4490,12 @@ module.directive('explorer', function () {
 
 					element.on('longclick', function(e, position){
 						select();
+						scope.$apply();
 					})
 					element.on('click', function(){
 						scope.ngModel = false;
 						scope.onOpen();
+						scope.$apply();
 					});
 
 				}else{
@@ -4501,10 +4503,12 @@ module.directive('explorer', function () {
 
 					element.on('click', function(){
 						select();
+						scope.$apply();
 					});
 					element.on('dblclick', function(){
 						scope.onOpen();
 						scope.ngModel = false;
+						scope.$apply();
 					})
 
 				}
@@ -4515,6 +4519,7 @@ module.directive('explorer', function () {
 		}
 	}
 });
+
 
 module.directive('subtitle', function () {
 	return {
