@@ -360,7 +360,7 @@ module.directive('mediaLibrary', function($compile){
 			multiple: '=',
 			fileFormat: '='
 		},
-		templateUrl: '/' + infraPrefix + '/public/template/media-library.html',
+		templateUrl: '/' + appPrefix + '/public/template/entcore/media-library.html',
 		link: function(scope, element, attributes){
 			scope.$watch(function(){
 				return scope.$parent.$eval(attributes.visibility);
@@ -398,7 +398,7 @@ module.directive('mediaLibrary', function($compile){
 module.directive('linker', function($compile){
 	return {
 		restrict: 'E',
-		templateUrl: '/' + infraPrefix + '/public/template/linker.html',
+		templateUrl: '/' + appPrefix + '/public/template/entcore/linker.html',
 		scope: true,
 		controller: function($scope){
 			$scope.linker = {
@@ -625,7 +625,7 @@ module.directive('calendar', function($compile){
 	return {
 		restrict: 'E',
 		scope: true,
-		templateUrl: '/' + infraPrefix + '/public/template/calendar.html',
+		templateUrl: '/' + appPrefix + '/public/template/entcore/calendar.html',
 		controller: function($scope, $timeout){
 			var refreshCalendar = function(){
 				model.calendar.clearScheduleItems();
@@ -1496,7 +1496,7 @@ module.directive('recorder', function(){
 			format: '@',
 			onUpload: '&'
 		},
-		templateUrl: '/infra/public/template/recorder.html',
+		templateUrl: '/' + appPrefix + '/public/template/entcore/recorder.html',
 		link: function(scope, element, attributes){
 			scope.recorder = recorder;
 			if(attributes.protected !== undefined){
@@ -2798,9 +2798,9 @@ module.directive('sharePanel', function($compile){
 			appPrefix: '='
 		},
 		restrict: 'E',
-		templateUrl: '/' + infraPrefix + '/public/template/share-panel.html',
+		templateUrl: '/' + appPrefix + '/public/template/entcore/share-panel.html',
 		link: function($scope, $element, $attributes){
-			$scope.shareTable = '/' + infraPrefix + '/public/template/share-panel-table.html';
+			$scope.shareTable = '/' + appPrefix + '/public/template/entcore/share-panel-table.html';
 		}
 	}
 });
@@ -2915,7 +2915,7 @@ module.directive('widgets', function($compile){
 			list: '='
 		},
 		restrict: 'E',
-		templateUrl: '/' + infraPrefix + '/public/template/widgets.html',
+		templateUrl: '/' + appPrefix + '/public/template/entcore/widgets.html',
 		link: function(scope, element, attributes){
 			element.on('index-changed', '.widget-container', function(e){
 				var widgetObj = angular.element(e.target).scope().widget;
@@ -3319,7 +3319,7 @@ module.directive('attachments', function($parse){
 	return {
 		scope: true,
 		restrict: 'E',
-		templateUrl: '/' + infraPrefix + '/public/template/attachments.html',
+		templateUrl: '/' + appPrefix + '/public/template/entcore/attachments.html',
 		controller: function($scope){
 			$scope.linker = {
 				resource: {}
@@ -3446,7 +3446,7 @@ module.directive('attachments', function($parse){
 module.directive('wizard', function(){
 	return {
 		restrict: 'E',
-		templateUrl: '/infra/public/template/wizard.html',
+		templateUrl: '/' + appPrefix + '/public/template/entcore/wizard.html',
 		scope: {
 			onCancel: '&',
 			onFinish: '&',
@@ -3554,7 +3554,7 @@ module.directive('carousel', function(){
 			items: '='
 		},
 		restrict: 'E',
-		templateUrl: '/infra/public/template/carousel.html',
+		templateUrl: '/' + appPrefix + '/public/template/entcore/carousel.html',
 		link: function(scope, element, attributes){
 			var interrupt = 0;
 			if(attributes.transition){
@@ -3716,7 +3716,7 @@ module.directive('fileViewer', function(){
 		scope: {
 			ngModel: '='
 		},
-		templateUrl: '/infra/public/template/file-viewer.html',
+		templateUrl: '/' + appPrefix + '/public/template/entcore/file-viewer.html',
 		link: function(scope, element, attributes){
 			scope.contentType = scope.ngModel.metadata.contentType;
 			scope.isFullscreen = false;
@@ -4017,7 +4017,7 @@ module.directive('multiCombo', function(){
 			selectionEvent: '&',
 			deselectionEvent: '&'
 		},
-		templateUrl: '/' + infraPrefix + '/public/template/multi-combo.html',
+		templateUrl: '/' + appPrefix + '/public/template/entcore/multi-combo.html',
 		controller: function($scope, $filter, $timeout){
 			/* Search input */
 			$scope.search = {
@@ -5047,6 +5047,10 @@ module.controller('MediaLibrary', ['$scope', function($scope){
 		$scope.display.show = tab;
 		$scope.upload.loading = [];
 	};
+
+    $scope.showPath = () => {
+        return '/' + appPrefix + '/public/template/entcore/media-library-' + $scope.display.show + '.html'
+    }
 
 	$scope.listFrom = function(listName){
 	    $scope.display.listFrom = listName;
