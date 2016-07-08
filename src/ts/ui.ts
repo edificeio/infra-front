@@ -263,7 +263,7 @@ ui = (function(){
 ui.extendSelector = {
     touchEvents: function(selector, params) {
 		var mouse;
-		
+
         if (!params) {
             params = {};
         }
@@ -652,6 +652,14 @@ ui.extendElement = {
 					    top: parseInt((mouse.y - elementDistance.y) + (window.pageYOffset - initialScroll)),
 						left: parseInt(mouse.x - elementDistance.x)
 					};
+					
+					if(newOffset.top < window.scrollY){
+						window.scrollTo(0, window.scrollY - 10);
+					}
+
+					if(newOffset.top > window.scrollY + $(window).height()){
+						window.scrollTo(0, window.scrollY + 10);
+					}
 
 					if(mouse.x < boundaries.left + elementDistance.x && elementWidth < parentWidth){
 						newOffset.left = boundaries.left;
