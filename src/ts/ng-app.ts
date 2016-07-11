@@ -4478,7 +4478,7 @@ module.directive('explorer', function () {
 				}
 			})
 
-			function setGest(apply){
+			function setGest(apply?){
 				if(ui.breakpoints.checkMaxWidth("tablette")){
 
 					element.off('click dblclick longclick')
