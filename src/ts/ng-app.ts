@@ -4984,14 +4984,14 @@ $(document).ready(function(){
 	}, 10);
 });
 
-module.controller('SearchPortal', ['$scope', function($scope, $window) {
+module.controller('SearchPortal', ['$scope', function($scope) {
 	$scope.launchSearch = function(event) {
 		var words = $scope.mysearch;
 		if (event != "link") event.stopPropagation();
 		if ((event == "link" ||  event.keyCode == 13)) {
 			words = (!words || words === '') ? ' ' : words;
 			$scope.mysearch = "";
-			$window.location.href = '/searchengine#/' + words;
+			window.location.href = '/searchengine#/' + words;
 		}
 	};
 }]);

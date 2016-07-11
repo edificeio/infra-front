@@ -10,7 +10,7 @@ if (!String.prototype.startsWith) {
         if (this.indexOf(str) !== -1 && this.split(str)[0] === '') {
             return true;
         }
-        return false;
+        return false
     };
 }
 
