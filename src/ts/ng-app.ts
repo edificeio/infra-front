@@ -15,6 +15,7 @@
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
+import { $ } from './libs/jquery/jquery';
 import { idiom as lang, idiom as idiom } from './idiom';
 import { http, Http } from './http';
 import { calendar } from './calendar';
@@ -25,7 +26,6 @@ import { Behaviours } from './behaviours';
 import { recorder } from './recorder';
 import { currentLanguage, routes, appPrefix, infraPrefix } from './globals';
 import { template } from './template';
-import { $ } from './libs/jquery/jquery';
 import { moment } from './libs/moment/moment';
 import { _ } from './libs/underscore/underscore';
 import { angular } from './libs/angular/angular';
