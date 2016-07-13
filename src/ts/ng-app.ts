@@ -4436,6 +4436,14 @@ module.directive('checkTool', function () {
 				}
 				scope.$apply();
 			});
+
+			$('body').on('click touchstart', function(e){
+				if($(e.target).parents('.check-tool, .toggle, .lightbox').length ===0 && e.target.nodeName!=="CHECK-TOOL"){
+					scope.ngModel = false;
+					element.removeClass('selected');
+					scope.$apply();
+				}
+			})
 		}
 	}
 });
@@ -4470,7 +4478,7 @@ module.directive('explorer', function () {
 				scope.$apply();
 			}
 
-			$('body').on('click', function(e){
+			$('body').on('click touchstart', function(e){
 				if($(e.target).parents('explorer, .toggle, .lightbox').length ===0 && e.target.nodeName!=="EXPLORER"){
 					scope.ngModel = false;
 					element.removeClass('selected');
