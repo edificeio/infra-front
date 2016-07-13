@@ -4471,7 +4471,7 @@ module.directive('explorer', function () {
 			}
 
 			$('body').on('click', function(e){
-				if(e.target.nodeName!=="EXPLORER" && $(e.target).parents('explorer').length === 0){
+				if($(e.target).parents('explorer, .toggle, .lightbox').length ===0 && e.target.nodeName!=="EXPLORER"){
 					scope.ngModel = false;
 					element.removeClass('selected');
 					scope.$apply();
