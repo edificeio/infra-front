@@ -119,7 +119,7 @@ export declare interface Collection<T>{
 	model?: any;
 	on(eventName: string, cb: () => void);
 	one(eventName: string, cb: () => void);
-	trigger(eventName: string);
+	trigger: (eventName: string) => void;
 	unbind(eventName: string, callback: () => void);
     forEach(callback: (item: T) => void);
     first(): T;

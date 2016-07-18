@@ -146,7 +146,8 @@ export var http = (function(){
 		Http.prototype[type + 'Json'] = function(url, data, params, requestName){
 			if(!params){
 				params = {};
-			}
+            }
+            params.contentType = 'application/json';
 			params.data = (window as any).angular.toJson(data);
 			params.type = type.toUpperCase();
 			return this.request(url, params, requestName);
