@@ -3991,32 +3991,44 @@ module.directive('help', function(){
 	}
 });
 
-module.directive('stickToTop', function(){
-	return {
-		restrict: 'EA',
-		link: function(scope, element, attributes){
-			var initialPosition;
-			setTimeout(function(){
-				initialPosition = element.offset();
-			}, 200);
+module.directive('stickToTop', function() {
+    return {
+        restrict: 'EA',
+        link: function(scope, element, attributes) {
+            var initialPosition;
+            setTimeout(function() {
+                initialPosition = element.offset().top;
+            }, 200);
 
-			$(window).scroll(function(){
-				if(initialPosition.top < $(window).scrollTop()){
-					element.addClass('scrolling')
-					element.offset({
-						top: $(window).scrollTop()
-					});
-				}
-				else{
-					element.removeClass('scrolling')
+            var scrollTop = $(window).scrollTop()
+            var actualScrollTop = $(window).scrollTop()
 
-					element.offset({
-						top: initialPosition.top
-					});
-				}
-			})
-		}
-	}
+            var animation = function() {
+				element.addClass('scrolling')
+                   element.offset({
+                       top: element.offset().top + (
+                           actualScrollTop + $('.height-marker').height() - (
+                               element.offset().top
+                           )
+                       ) / 20
+                   });
+                requestAnimationFrame(animation)
+            }
+
+            var scrolls = false;
+				$(window).scroll(function() {
+	                actualScrollTop = $(window).scrollTop()
+					if(actualScrollTop <= initialPosition - $('.height-marker').height()){
+						actualScrollTop = initialPosition - $('.height-marker').height();
+					}
+	                if (!scrolls) {
+	                    animation();
+	                }
+	                scrolls = true;
+	            })
+
+        }
+    }
 });
 
 module.directive('floatingNavigation', function(){
