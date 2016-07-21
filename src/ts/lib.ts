@@ -13,7 +13,10 @@ var moment = require('moment');
 
 (function(){
 	function pluralizeName(obj){
-		var name = (obj.name || obj._name);
+        var name = (obj.name || obj._name);
+        if (!name) {
+            name = obj.toString().split('function')[1].split('(')[0].trim()
+        }
 		if(name[name.length - 1] === 'y' && name[name.length - 2] !== 'a' && name[name.length - 2] !== 'e'){
 			return name[0].toLowerCase() + name.substr(1, name.length - 2) + 'ies';
 		}

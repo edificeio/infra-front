@@ -345,7 +345,8 @@ var touchEvents = {
     swipeElement: function(element, params){
         //swipes
         element.on('touchstart', function(e) {
-            var initialMouse = mouse = {
+            var initialMouse: any;
+            var mouse = {
                 y: e.originalEvent.touches[0].clientY,
                 x: e.originalEvent.touches[0].clientX
             };
@@ -375,7 +376,8 @@ var touchEvents = {
     swipeSelector: function(selector, params){
         //swipes
         $('body').on('touchstart', selector, function(e) {
-            var initialMouse = mouse = {
+            var initialMouse;
+            var mouse: any = {
                 y: e.originalEvent.touches[0].clientY,
                 x: e.originalEvent.touches[0].clientX
             };
