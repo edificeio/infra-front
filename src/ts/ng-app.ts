@@ -4281,8 +4281,15 @@ module.directive('sideNav', function(){
 						body.find('.application-title').addClass('move-right');
 					}
 
-					ui.extendElement.touchEvents(body, { allowDefault: true });
-					ui.extendElement.touchEvents(element);
+					ui.extendElement.touchEvents(body, {
+                        exclude: ['longclick'],
+                        allowDefault: true
+                    });
+
+					ui.extendElement.touchEvents(element, {
+                        exclude: ['longclick']
+                    });
+										
 					body.on('swipe-right', function(){
 						element.addClass('slide');
 					});

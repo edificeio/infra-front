@@ -260,15 +260,52 @@ ui = (function(){
 })(window.jQuery)
 
 
-ui.extendSelector = {
-    touchEvents: function(selector, params) {
-		var mouse;
+var shockwave = function(event, element) {
+    var $div = $('<div/>'),
+        btnOffset = element.offset(),
+        xPos = event.pageX - btnOffset.left,
+        yPos = event.pageY - btnOffset.top;
 
-        if (!params) {
-            params = {};
-        }
+    $div.addClass('shockwave');
+    var $ripple = $(".shockwave");
+
+    $ripple.css("height", element.height());
+    $ripple.css("width", element.height());
+
+    $div.css({
+            top: yPos - ($ripple.height() / 2),
+            left: xPos - ($ripple.width() / 2)
+        })
+        .appendTo(element.children('.explorer'));
+
+    window.setTimeout(function() {
+        $div.remove();
+    }, 2000);
+}
+
+var touchEvents = {
+    longclickElement: function(element, params){
         //longclick
-        $('body').on('touchstart', selector, function (e) {
+        element.on('touchstart', function(e) {
+            var anim = setTimeout(function(){
+                shockwave(e, element);
+            }, 400);
+
+            var timer = setTimeout(function() {
+                element.one('touchleave touchend', function() {
+                    element.trigger('longclick');
+                });
+            }, 800);
+
+            element.one('touchleave touchend', function() {
+                clearTimeout(timer);
+                $(".shockwave").remove();
+            });
+        });
+    },
+    longclickSelector: function(selector, params){
+        //longclick
+        $('body').on('touchstart', selector, function(e) {
             var position = {
                 left: e.originalEvent.touches[0].clientX - window.pageXOffset,
                 top: e.originalEvent.touches[0].clientY - window.pageYOffset
@@ -277,35 +314,78 @@ ui.extendSelector = {
                 $(e.target).one('touchleave touchend', function() {
                     $(e.target).trigger('longclick', position);
                 });
-            }, 400);
+            }, 800);
             $(e.target).one('touchleave touchend', function() {
                 clearTimeout(timer);
             });
         });
-
-		//doubletap
-		$('body').on('touchstart', selector, function(e){
-			$(e.target).one('touchstart.doubletouch', function(){
-				$(e.target).trigger('doubletap')
-			});
-			setTimeout(function(){
-				$(e.target).off('touchstart.doubletap')
-			}, 500);
-		});
-
+    },
+    doubletapElement: function(element, params){
+        //doubletap
+        element.on('touchstart', function() {
+            element.one('touchstart.doubletouch', function() {
+                element.trigger('doubletap')
+            });
+            setTimeout(function() {
+                element.off('touchstart.doubletap')
+            }, 500);
+        });
+    },
+    doubletapSelector: function(selector, params){
+        //doubletap
+        $('body').on('touchstart', selector, function(e) {
+            $(e.target).one('touchstart.doubletouch', function() {
+                $(e.target).trigger('doubletap')
+            });
+            setTimeout(function() {
+                $(e.target).off('touchstart.doubletap')
+            }, 500);
+        });
+    },
+    swipeElement: function(element, params){
         //swipes
-        $('body').on('touchstart', selector, function (e) {
+        element.on('touchstart', function(e) {
             var initialMouse = mouse = {
                 y: e.originalEvent.touches[0].clientY,
                 x: e.originalEvent.touches[0].clientX
             };
-            $(e.target).on('touchmove', function (e) {
+            element.on('touchmove', function(e) {
                 mouse = {
                     y: e.originalEvent.touches[0].clientY,
                     x: e.originalEvent.touches[0].clientX
                 };
             });
-            $(e.target).on('touchleave touchend', function (e) {
+            element.on('touchleave touchend', function(e) {
+                if (initialMouse.x + 150 < mouse.x) {
+                    element.trigger('swipe-right');
+                }
+                if (initialMouse.x - 150 > mouse.x) {
+                    element.trigger('swipe-left');
+                }
+                if (initialMouse.y - 150 > mouse.y) {
+                    element.trigger('swipe-up');
+                }
+                if (initialMouse.y - 150 > mouse.y) {
+                    element.trigger('swipe-bottom');
+                }
+                element.off('touchleave touchend touchmove');
+            });
+        });
+    },
+    swipeSelector: function(selector, params){
+        //swipes
+        $('body').on('touchstart', selector, function(e) {
+            var initialMouse = mouse = {
+                y: e.originalEvent.touches[0].clientY,
+                x: e.originalEvent.touches[0].clientX
+            };
+            $(e.target).on('touchmove', function(e) {
+                mouse = {
+                    y: e.originalEvent.touches[0].clientY,
+                    x: e.originalEvent.touches[0].clientX
+                };
+            });
+            $(e.target).on('touchleave touchend', function(e) {
                 if (initialMouse.x + 150 < mouse.x) {
                     $(e.target).trigger('swipe-right');
                 }
@@ -321,6 +401,47 @@ ui.extendSelector = {
                 $(e.target).off('touchleave touchend touchmove');
             });
         });
+
+    }
+}
+
+
+ui.extendSelector = {
+	touchEvents: function(selector, params) {
+        if (!params) {
+            params = {};
+        }
+        //include existe
+        if(params.include){
+            //pour chaque event dans include,
+            params.include.forEach(function(event){
+                //si exclude est défini et contient l'event, on annule
+                if(params.exclude && params.exclude.indexOf(event) !== -1){
+                    return;
+                }
+                //sinon on garde et applique le resultat
+                touchEvents[event + 'Selector'](selector, params);
+            })
+        }
+        else{
+            //include n'est pas défini
+            // on regarde chaque event
+            for(var property in touchEvents){
+                if(
+                    //la propriété contient bien bien le mot selector (on a bien un sélecteur)
+                    property.indexOf('Selector') !== -1 &&
+                    (
+                        //exclude n'est pas défini, ou l'event n'est pas listé dans exclude
+                        !params.exclude
+                        ||
+                        params.exclude.indexOf(property.split('Selector')[0]) === -1
+                    )
+                ){
+                    //on applique le resultat
+                    touchEvents[property](selector, params);
+                }
+            }
+        }
     }
 };
 
@@ -339,62 +460,42 @@ ui.breakpoints = {
 }
 
 ui.extendElement = {
-	touchEvents: function(element, params){
-		var mouse;
-		if(!params){
-			params = {};
-		}
-	    //longclick
-	    element.on('touchstart', function(e) {
-	        var timer = setTimeout(function() {
-	            element.one('touchleave touchend', function () {
-	                element.trigger('longclick');
-	            });
-	        }, 400);
-	        element.one('touchleave touchend', function() {
-	            clearTimeout(timer);
-	        });
-	    });
-
-		//doubletap
-		element.on('touchstart', function(){
-			element.one('touchstart.doubletouch', function(){
-				element.trigger('doubletap')
-			});
-			setTimeout(function(){
-				element.off('touchstart.doubletap')
-			}, 500);
-		});
-
-		//swipes
-		element.on('touchstart', function(e){
-			var initialMouse = mouse = {
-				y: e.originalEvent.touches[0].clientY,
-				x: e.originalEvent.touches[0].clientX
-			};
-			element.on('touchmove', function(e){
-				mouse = {
-					y: e.originalEvent.touches[0].clientY,
-					x: e.originalEvent.touches[0].clientX
-				};
-			});
-			element.on('touchleave touchend', function(e){
-				if(initialMouse.x + 150 < mouse.x){
-					element.trigger('swipe-right');
-				}
-				if(initialMouse.x - 150 > mouse.x){
-					element.trigger('swipe-left');
-				}
-				if(initialMouse.y - 150 > mouse.y){
-					element.trigger('swipe-up');
-				}
-				if(initialMouse.y - 150 > mouse.y){
-					element.trigger('swipe-bottom');
-				}
-				element.off('touchleave touchend touchmove');
-			});
-		});
-	},
+	touchEvents: function(element, params) {
+        if (!params) {
+            params = {};
+        }
+        //include existe
+        if(params.include){
+            //pour chaque event dans include,
+            params.include.forEach(function(event){
+                //si exclude est défini et contient l'event, on annule
+                if(params.exclude && params.exclude.indexOf(event) !== -1){
+                    return;
+                }
+                //sinon on garde et applique le resultat
+                touchEvents[event + 'Element'](element, params);
+            })
+        }
+        else{
+            //include n'est pas défini
+            // on regarde chaque event
+            for(var property in touchEvents){
+                if(
+                    //la propriété contient bien bien le mot element (on a bien un sélecteur)
+                    property.indexOf('Element') !== -1 &&
+                    (
+                        //exclude n'est pas défini, ou l'event n'est pas listé dans exclude
+                        !params.exclude
+                        ||
+                        params.exclude.indexOf(property.split('Element')[0]) === -1
+                    )
+                ){
+                    //on applique le resultat
+                    touchEvents[property](element, params);
+                }
+            }
+        }
+    },
 	resizable: function(element, params){
 		if(!params){
 			params = {};
