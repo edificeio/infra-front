@@ -4457,7 +4457,7 @@ module.directive('checkTool', function () {
 			});
 
 			$('body').on('click', function(e){
-				if($(e.target).parents('.check-tool, .toggle, .lightbox').length ===0 && e.target.nodeName!=="CHECK-TOOL"){
+				if($(e.target).parents('.check-tool, .toggle, .lightbox').length ===0 && e.target.nodeName!=="CHECK-TOOL" && $('body').find(e.target).length !== 0){
 					scope.ngModel = false;
 					element.removeClass('selected');
 					scope.$apply();
