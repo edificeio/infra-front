@@ -4442,6 +4442,8 @@ module.directive('checkTool', function () {
 		link: function (scope, element, attributes) {
 			element.on('click', function(){
 				scope.ngModel = !scope.ngModel;
+				scope.$apply('ngModel');
+
 				if (scope.ngModel) {
 					element.addClass('selected')
 				}else {
@@ -4461,6 +4463,10 @@ module.directive('checkTool', function () {
 					scope.ngModel = false;
 					element.removeClass('selected');
 					scope.$apply();
+					if(scope.ngChange){
+                        scope.ngChange();
+                        scope.$apply();
+                    }
 				}
 			})
 		}
