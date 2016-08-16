@@ -22,15 +22,39 @@ export var infraPrefix: string = (window as any).infraPrefix;
 
 export var currentLanguage = '';
 (function(){
-	var request = new XMLHttpRequest();
-	request.open('GET', '/locale');
-	(request as any).async = false;
-	request.onload = function(){
-		if(request.status === 200){
-			currentLanguage = JSON.parse(request.responseText).locale;
-		}
-	};
-	request.send(null);
+
+    // User preferences language
+    var preferencesRequest = new XMLHttpRequest();
+	preferencesRequest.open('GET', '/userbook/preference/language');
+	(preferencesRequest as any).async = false;
+
+	preferencesRequest.onload = function(){
+        var fallBack = function(){
+            // Fallback : navigator language
+            var request = new XMLHttpRequest();
+            request.open('GET', '/locale');
+            (request as any).async = false;
+            request.onload = function(){
+                if(request.status === 200){
+                    currentLanguage = JSON.parse(request.responseText).locale;
+                }
+            };
+            request.send(null);
+        }
+
+        if(preferencesRequest.status === 200){
+            try{
+    			currentLanguage = JSON.parse(JSON.parse(preferencesRequest.responseText).preference)['default-domain'];
+    		} catch(e) {
+    			fallBack();
+    		}
+        }
+
+        if(!currentLanguage)
+            fallBack();
+    };
+    preferencesRequest.send(null);
+
 }());
 
 if(document.addEventListener){
