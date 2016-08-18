@@ -36,15 +36,22 @@ export var http = (function(){
 			Http.prototype.events[eventName] = handler;
 		},
 		parseUrl: function (path, item){
-			var matchParams = new (RegExp as any)(':[a-zA-Z0-9_]+', ["g"]);
+			var matchParams = new RegExp(':[a-zA-Z0-9_.]+', "g");
 			var params = path.match(matchParams);
 			if(!params){
 				params = [];
 			}
+			var getProp = function (prop, obj) {
+			    if (prop.indexOf('.') === -1) {
+			        return obj[prop];
+			    }
+			    return getProp(prop.split('.').splice(1).join('.'), obj[prop.split('.')[0]])
+			}
 			params.forEach(function(param){
-				var prop = param.split(':')[1];
-				var data = item[prop] || '';
-				path = path.replace(param, data);
+			    var prop = param.split(':')[1];
+                
+			    var data = getProp(prop, item) || '';
+			    path = path.replace(param, data);
 			});
 			return path;
 		},

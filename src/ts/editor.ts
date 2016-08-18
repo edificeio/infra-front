@@ -375,7 +375,9 @@ export var RTE =  {
                 });
             }
             that.instance.addState(that.editZone.html());
-            this.instance.trigger('contentupdated');
+            setTimeout(function () {
+                this.instance.trigger('contentupdated');
+            }.bind(this), 20);
         };
 
         this.isCursor = function () {
@@ -2510,6 +2512,7 @@ export var RTE =  {
                     element.find('.close-focus').on('click', function(){
                         element.removeClass('focus');
                         element.parent().data('lock', false);
+                        element.parents('grid-cell').data('lock', false);
                         element.trigger('editor-blur');
                         $('body').css({ overflow: 'auto' });
                     });
@@ -2621,35 +2624,31 @@ export var RTE =  {
                             return;
                         }
                         
-                        toolbarElement.addClass('sticky');
-                        if(toolbarElement.css({ 'position': 'absolute' })){
-                            toolbarElement.css({ 'position': 'absolute' });
+                        if(toolbarElement.css('position') !== 'absolute'){
+                            toolbarElement.css({ 'position': 'absolute', 'top': '0px' });
                             element.css({ 'padding-top': toolbarElement.height() + 1 + 'px' });
                         }
-                        var topDistance = element.offset().top;
+                        var topDistance = element.offset().top - $('.height-marker').height();
                         if (topDistance < window.scrollY) {
                             topDistance = window.scrollY;
-                        }
-                        else {
-                            toolbarElement.removeClass('sticky');
                         }
                         if (topDistance > editZone.offset().top + editZone.height() - toolbarElement.height()) {
                             topDistance = editZone.offset().top + editZone.height() - toolbarElement.height();
                         }
                         if (attributes.inline !== undefined) {
                             toolbarElement.offset({
-                                top: topDistance + parseInt(toolbarElement.css('margin-top')) - parseInt(element.css('margin-top'))
+                                top: topDistance + $('.height-marker').height()
                             });
                             element.children('popover').offset({
-                                top: topDistance + parseInt(toolbarElement.css('margin-top')) + 10 - parseInt(element.css('margin-top'))
+                                top: topDistance + $('.height-marker').height() + 10 - parseInt(element.css('margin-top'))
                             });
                         }
                         else {
                             toolbarElement.offset({
-                                top: topDistance + parseInt(toolbarElement.css('margin-top'))
+                                top: topDistance + $('.height-marker').height()
                             });
                             element.children('popover').offset({
-                                top: topDistance + parseInt(toolbarElement.css('margin-top')) + 10
+                                top: topDistance + $('.height-marker').height() + 10
                             });
                         }
                         
@@ -2804,12 +2803,9 @@ export var RTE =  {
                     var placeToolbar = function () {
                         if (attributes.inline !== undefined && $(window).width() > ui.breakpoints.tablette) {
                             element.children('editor-toolbar').css({
-                                left: 0,
-                                top: -element.children('editor-toolbar').height() + 'px'
+                                left: 0
                             });
-                            element.css({
-                                'margin-top': element.children('editor-toolbar').height() + 'px'
-                            });
+                            element.css({ 'padding-top': toolbarElement.height() + 1 + 'px' });
                         }
                     }
 
@@ -2824,6 +2820,7 @@ export var RTE =  {
                         element.trigger('editor-focus');
                         element.addClass('focus');
                         element.parent().data('lock', true);
+                        element.parents('grid-cell').data('lock', true);
                         if ($(window).width() < ui.breakpoints.tablette) {
                             $('body').css({ overflow: 'hidden' });
                         }
@@ -2841,10 +2838,12 @@ export var RTE =  {
                             element.removeClass('focus');
                             $('body').css({ overflow: 'auto' });
                             element.parent().data('lock', false);
+                            element.parents('grid-cell').data('lock', false);
 
                             if(attributes.inline !== undefined){
                                 element.css({
-                                    'margin-top': 0
+                                    'margin-top': 0,
+                                    'padding-top': 0
                                 });
                                 element.children('editor-toolbar').attr('style', '');
                             }
@@ -2914,7 +2913,6 @@ export var RTE =  {
                         }
 
                         if (e.keyCode === 13) {
-                            e.preventDefault();
                             editorInstance.addState(editZone.html());
                             
                             var parentContainer = range.startContainer;
@@ -2926,24 +2924,34 @@ export var RTE =  {
                                 if (parentContainer.nodeType !== 1) {
                                     parentContainer = parentContainer.parentNode;
                                 }
-                                if (range.startOffset !== range.startContainer.textContent.length) {
-                                    newLine.html('&nbsp;' + parentContainer.textContent.substring(range.startOffset, parentContainer.textContent.length));
-                                    parentContainer.textContent = parentContainer.textContent.substring(0, range.startOffset);
-                                }
+                                if (parentContainer.nodeName !== 'LI') {
+                                    e.preventDefault();
 
-                                if (parentContainer.nextSibling) {
-                                    parentContainer.parentNode.insertBefore(newLine[0], parentContainer.nextSibling);
-                                }
-                                else {
-                                    parentContainer.parentNode.appendChild(newLine[0]);
+                                    if (!(range.startContainer.nodeType !== 1) && range.startOffset < range.startContainer.textContent.length) {
+                                        newLine.html('&nbsp;' + parentContainer.textContent.substring(range.startOffset, parentContainer.textContent.length));
+                                        range.startContainer.textContent = range.startContainer.textContent.substring(0, range.startOffset);
+                                    }
+                                    if (range.startContainer.nodeType === 1 && range.startOffset < (range.startContainer as any).children.length) {
+                                        for(var i = range.startOffset; i < (range.startContainer as any).children.length; i++){
+                                            (range.startContainer as any).children[i].remove();
+                                            newLine.append($((range.startContainer as any).children[i].outerHTML));
+                                        }
+                                    }
+
+                                    if (parentContainer.nextSibling) {
+                                        parentContainer.parentNode.insertBefore(newLine[0], parentContainer.nextSibling);
+                                    }
+                                    else {
+                                        parentContainer.parentNode.appendChild(newLine[0]);
+                                    }
+
+                                    var range = document.createRange();
+                                    range.setStart(newLine[0].firstChild || newLine[0], 1);
+
+                                    sel.removeAllRanges();
+                                    sel.addRange(range);
                                 }
                             }
-
-                            var range = document.createRange();
-                            range.setStart(newLine[0].firstChild || newLine[0], 1);
-
-                            sel.removeAllRanges();
-                            sel.addRange(range);
                         }
 
                         if (e.keyCode === 8 || e.keyCode === 46) {
@@ -2953,7 +2961,7 @@ export var RTE =  {
                             for (var i = 0; i < sel.rangeCount; i++) {
                                 var startContainer = sel.getRangeAt(i).startContainer;
                                 if (startContainer.nodeType === 1 && startContainer.nodeName === 'TD' || startContainer.nodeName === 'TR') {
-                                    $(startContainer).remove();
+                                    startContainer.remove();
                                 }
                             }
                             editZone.find('table').each(function (index, item) {
@@ -3010,7 +3018,7 @@ export var RTE =  {
                             }
                         }
                     });
-
+                    
                     editZone.on('keyup', function(e){
                         htmlZone.css({ 'min-height': '250px', height: 0 });
                         var newHeight = htmlZone[0].scrollHeight + 2;
