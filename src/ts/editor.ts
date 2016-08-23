@@ -2961,7 +2961,7 @@ export var RTE =  {
                             for (var i = 0; i < sel.rangeCount; i++) {
                                 var startContainer = sel.getRangeAt(i).startContainer;
                                 if (startContainer.nodeType === 1 && startContainer.nodeName === 'TD' || startContainer.nodeName === 'TR') {
-                                    startContainer.remove();
+                                    (startContainer as any).remove();
                                 }
                             }
                             editZone.find('table').each(function (index, item) {
