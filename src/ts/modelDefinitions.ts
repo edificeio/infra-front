@@ -144,6 +144,7 @@ export declare interface Collection<T>{
 	moveUp(item: T);
 	moveDown(item: T);
 	getIndex(item: T);
+    indexOf(item: T): number;
 	splice(...args: any[]);
 	selectItem(item: T);
 	selection(): T[];
