@@ -150,7 +150,7 @@ export declare interface Collection<T>{
 	selection(): T[];
 	removeSelection();
 	addRange(data: T[], cb?: (item: T) => void, refreshView?: boolean);
-	load(data: T[], cb?: (item: T) => void, refreshView?: boolean);
+	load: (data: T[], cb?: (item: T) => void, refreshView?: boolean) => void;
 	empty: () => void;
 	length(): number;
 	request(httpMethod: string, path: string, cb?: (result: any) => void);
