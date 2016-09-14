@@ -131,6 +131,7 @@ export declare interface Collection<T>{
 	closeAll();
 	current: T;
 	setCurrent(item: T);
+    map(callback: (item: T) => T);
 	slice(index: number, nbItems: number);
 	push: (item: T, refreshView?: boolean) => void;
 	remove(item: T, refreshView?: boolean);
