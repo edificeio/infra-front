@@ -103,7 +103,7 @@ export class Collection<T>{
 	obj: any;
 	callbacks: {};
 	
-	constructor(obj: T){
+	constructor(obj: any){
 		this.all = [];
 		this.obj = obj;
 		this.callbacks = {};
