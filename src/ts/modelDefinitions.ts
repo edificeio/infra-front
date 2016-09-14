@@ -115,7 +115,7 @@ export class Collection<T>{
 
 export declare interface Collection<T>{
 	sync: any;
-	composer?: any;
+	composer: any;
 	model?: any;
 	on(eventName: string, cb: () => void);
 	one(eventName: string, cb: () => void);
@@ -131,11 +131,11 @@ export declare interface Collection<T>{
 	closeAll();
 	current: T;
 	setCurrent(item: T);
-    map?: (filter: (item: T) => T) => void;
-    filter?: (filter: (item: T) => boolean) => void;
-    findWhere?: (filter: any) => T;
-    find?: (filter: (item: T) => boolean) => T;
-    where?: (filter: any) => T;
+    map: (filter: (item: T) => T) => void;
+    filter: (filter: (item: T) => boolean) => void;
+    findWhere: (filter: any) => T;
+    find: (filter: (item: T) => boolean) => T;
+    where: (filter: any) => T;
 	slice(index: number, nbItems: number);
 	push: (item: T, refreshView?: boolean) => void;
 	remove(item: T, refreshView?: boolean);

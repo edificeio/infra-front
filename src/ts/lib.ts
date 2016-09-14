@@ -28,6 +28,12 @@ var moment = require('moment');
 		callbacks: {},
 		sync: undefined,
 		all: [],
+        composer: undefined,
+        map: undefined,
+        find: undefined,
+        filter: undefined,
+        findWhere: undefined,
+        where: undefined,
 		on: function(eventName, cb){
 			if(typeof cb !== 'function'){
 				return;
