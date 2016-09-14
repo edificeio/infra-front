@@ -131,11 +131,11 @@ export declare interface Collection<T>{
 	closeAll();
 	current: T;
 	setCurrent(item: T);
-    map(callback: (item: T) => T);
-    filter(callback: (item: T) => boolean);
-    findWhere(filter: any): T;
-    find(callback: (item: T) => boolean): T;
-    where(filter: any);
+    map?: (filter: (item: T) => T) => void;
+    filter?: (filter: (item: T) => boolean) => void;
+    findWhere?: (filter: any) => T;
+    find?: (filter: (item: T) => boolean) => T;
+    where?: (filter: any) => T;
 	slice(index: number, nbItems: number);
 	push: (item: T, refreshView?: boolean) => void;
 	remove(item: T, refreshView?: boolean);
@@ -144,7 +144,7 @@ export declare interface Collection<T>{
 	moveUp(item: T);
 	moveDown(item: T);
 	getIndex(item: T);
-    indexOf(item: T): number;
+    indexOf?: (item: T) => number;
 	splice(...args: any[]);
 	selectItem(item: T);
 	selection(): T[];
