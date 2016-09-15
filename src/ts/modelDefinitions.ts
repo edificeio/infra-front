@@ -132,10 +132,10 @@ export declare interface Collection<T>{
 	current: T;
 	setCurrent(item: T);
     map: (filter: (item: T) => T) => void;
-    filter: (filter: (item: T) => boolean) => void;
+    filter: (filter: (item: T) => boolean) => T[];
     findWhere: (filter: any) => T;
     find: (filter: (item: T) => boolean) => T;
-    where: (filter: any) => T;
+    where: (filter: any) => T[];
 	slice(index: number, nbItems: number);
 	push: (item: T, refreshView?: boolean) => void;
 	remove(item: T, refreshView?: boolean);
