@@ -166,3 +166,4 @@ window.entcore.model = model;
 
 window.entcore.Model = Model;
 (window as any).Model = Model;
+window.entcore.Collection = Collection;
