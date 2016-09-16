@@ -18,13 +18,25 @@ export class Directive {
     }
 }
 
+export class Filter {
+    name: string;
+    contents: any;
+
+    constructor(name: string, contents: any) {
+        this.name = name;
+        this.contents = contents;
+    }
+}
+
 export class Ng {
     controllers: Controller[];
     directives: Directive[];
+    filters: Filter[];
 
     constructor() {
         this.controllers = [];
         this.directives = [];
+        this.filters = [];
     }
 
     init(module) {
@@ -36,12 +48,16 @@ export class Ng {
         });
     }
 
-    directive(name: string, contents: any) {
+    directive(name: string, contents: any): Directive {
         return new Directive(name, contents);
     }
 
-    controller (name: string, contents: any[]) {
+    controller (name: string, contents: any[]): Controller {
         return new Controller(name, contents);
+    }
+
+    filter(name: string, contents: any[]): Filter {
+        return new Filter(name, contents);
     }
 };
 
