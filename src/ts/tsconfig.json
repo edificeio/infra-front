@@ -2,11 +2,9 @@
   "compilerOptions": {
     "target": "es5",
     "module": "commonjs",
-    "noImplicitAny": false,
-    "declaration": true,
-    "moduleResolution": "node"
-  },
-  "exclude": [
-    "node_modules"
-  ]
+    "declaration": false,
+    "moduleResolution": "node",
+    "sourceMap":  true,
+    "noImplicitAny": false
+  }
 }
