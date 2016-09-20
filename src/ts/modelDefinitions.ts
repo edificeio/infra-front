@@ -143,6 +143,7 @@ export declare interface Collection<T>{
     deselect(predicate: (item: T) => boolean);
     selectAll();
     deselectAll();
+    all: T[];
 	concat(col: Collection<T>);
 	closeAll();
 	current: T;
