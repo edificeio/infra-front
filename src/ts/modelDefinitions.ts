@@ -46,6 +46,9 @@ export class Ng {
         this.controllers.forEach((ctrl) => {
             module.controller(ctrl.name, ctrl.contents);
         });
+        this.filters.forEach((fil) => {
+            module.filter(fil.name, fil.contents);
+        });
     }
 
     directive(name: string, contents: any): Directive {
