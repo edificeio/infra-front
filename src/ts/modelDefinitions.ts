@@ -56,7 +56,7 @@ export class Ng {
         return new Controller(name, contents);
     }
 
-    filter(name: string, contents: any[]): Filter {
+    filter(name: string, contents: any): Filter {
         return new Filter(name, contents);
     }
 };
