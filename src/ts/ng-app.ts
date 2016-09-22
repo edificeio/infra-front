@@ -3224,7 +3224,7 @@ module.directive('dragItem', function(){
 
 			ui.extendElement.draggable(element, {
 				mouseUp: function(e){
-					$("[drop-item]").off("mouseover mouseout");
+					$("[drop-item]").off("mouseout");
 					//declencher l'evenement drop
 					$('body').removeClass('dragging');
 					if(matchedElement){
@@ -3234,22 +3234,26 @@ module.directive('dragItem', function(){
 					firstTick = true;
 					element.attr('style', '');
 				},
-				tick: function(){
-					if(firstTick){
-						element.css({ 'pointer-events': 'none'});
-						$('body').addClass('dragging');
-						$("[drop-item]").on("mouseover", function(e){
-							matchedElement = $(e.target).parents('[drop-item]');
-							//target l'element lié à l'event, ici celui que l'on survole
-						})
-						$("[drop-item]").on("mouseout", function(e){
-							matchedElement = undefined;
-						})
-						scope.$apply();
+				dragOver: function(item){
+                    item.addClass('dragover');
+                    matchedElement = item;
+                },
+                dragOut: function(item){
+                    item.removeClass('dragover');
+                    matchedElement = undefined;
+                },
+                tick: function() {
+                    if (firstTick) {
+                        $('[drop-item]').removeClass('drag-over');
+                        element.css({
+                            'pointer-events': 'none'
+                        });
+                        $('body').addClass('dragging');
+                        scope.$apply();
 
-						firstTick = false;
-					}
-				}
+                        firstTick = false;
+                    }
+                }
 
 			})
 
@@ -3262,7 +3266,7 @@ module.directive('dropItem', function($parse) {
         restrict: 'A',
         link: function(scope, element, attributes) {
             var dropConditionFn = $parse(attributes.dropcondition);
-            element.on("mouseover", function(event) {
+            element.on("dragover", function(event) {
                 if (attributes.dropcondition === undefined || dropConditionFn(scope, {
                         $originalEvent: event.originalEvent
                     })) {
@@ -3271,7 +3275,7 @@ module.directive('dropItem', function($parse) {
                     element.addClass("droptarget")
                 }
             });
-            element.on("mouseout", function(event) {
+            element.on("dragout", function(event) {
                 element.removeClass("droptarget")
             });
             element.on('drop', function(event, item) {

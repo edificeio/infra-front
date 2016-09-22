@@ -770,6 +770,22 @@ ui.extendElement = {
 				var elementWidth = element.width();
 				var elementHeight = element.height();
 
+				//$('[drop-item]') > array
+                var dropItemsAreas = [];
+                $('[drop-item]').each(function(index, item){
+                    var dropItemPos = $(item).offset();
+                    var dropElementInfos = {
+                        offset: dropItemPos,
+                        width: $(item).width(),
+                        height: $(item).height(),
+                        item: $(item)
+                    };
+                    dropItemsAreas.push(dropElementInfos);
+                });
+
+                var dragoverred = undefined;
+
+
 				var moveElement = function(e){
 					var newOffset = {
 					    top: parseInt((mouse.y - elementDistance.y) + (window.pageYOffset - initialScroll)),
@@ -804,6 +820,47 @@ ui.extendElement = {
 						newOffset.left = parseInt(element.offset().left);
 					}
 					element.offset(newOffset);
+
+					// hit test
+                    dropItemsAreas.forEach(function(dropElementInfos){
+                        if( (
+                                (dropElementInfos.offset.left < newOffset.left &&
+                                dropElementInfos.offset.left + dropElementInfos.width > newOffset.left)
+                            ||
+                                (newOffset.left < dropElementInfos.offset.left &&
+                                newOffset.left + elementWidth < dropElementInfos.offset.left)
+                            )
+                            &&
+                            (
+                                (dropElementInfos.offset.top < newOffset.top &&
+                                dropElementInfos.offset.top + dropElementInfos.height > newOffset.top)
+                            ||
+                                (newOffset.top < dropElementInfos.offset.top &&
+                                newOffset.top + elementHeight > dropElementInfos.offset.top)
+                            )
+                        )
+                         {
+                            //on check si c bien une function
+                            if(params && typeof params.dragOver === 'function'){
+                                //on applique le dragover sur l'item (donc declenche le 'faux' mouseover)
+                                params.dragOver(dropElementInfos.item)
+                                dragoverred = dropElementInfos.item;
+                                dropElementInfos.item.trigger('dragover');
+                            }
+                        }else{
+                            if(dragoverred && dragoverred[0] === dropElementInfos.item[0]){
+                                dragoverred = undefined
+
+                                if(params && typeof params.dragOut === 'function'){
+                                    params.dragOut(dropElementInfos.item)
+                                    dropElementInfos.item.trigger('dragout');
+                                }
+                            }
+                        }
+                    })
+
+
+
 
 					if(params && typeof params.tick === 'function'){
 						params.tick(e);
@@ -878,6 +935,10 @@ ui.extendElement = {
 							if(params && typeof params.mouseUp === 'function' && moved){
 								params.mouseUp(e);
 							}
+							if(params && typeof params.dragOut === 'function' && dragoverred){
+                                params.dragOut(dragoverred)
+                                dragoverred.trigger('dragout');
+                            }
 						}
 					}, 100);
 				});
