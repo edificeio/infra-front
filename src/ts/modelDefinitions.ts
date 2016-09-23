@@ -1,3 +1,5 @@
+import { appPrefix, infraPrefix } from './globals';
+
 export class Controller {
     name: string;
     contents: any[];

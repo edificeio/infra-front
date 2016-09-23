@@ -9,8 +9,12 @@ if(!(window as any).entcore){
 }
 
 if((window as any).appPrefix === undefined){
+    if(!(window as any).entcore){
+        (window as any).entcore = {};
+    }
 	if(window.location.pathname.split('/').length > 0){
 		(window as any).appPrefix = window.location.pathname.split('/')[1]
+        (window as any).entcore.appPrefix = (window as any).appPrefix;
 	}
 }
 
