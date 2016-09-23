@@ -2,6 +2,8 @@ require('es6-shim');
 var _ = require('underscore');
 (window as any)._ = _;
 
+declare let moment: any;
+
 if(!(window as any).entcore){
 	(window as any).entcore = {};
 }
@@ -37,6 +39,23 @@ export var currentLanguage = '';
             request.onload = function(){
                 if(request.status === 200){
                     currentLanguage = JSON.parse(request.responseText).locale;
+                    if((window as any).moment){
+                        if (currentLanguage === 'fr') {
+                            moment.lang(currentLanguage, {
+                                calendar: {
+                                    lastDay: '[Hier à] HH[h]mm',
+                                    sameDay: '[Aujourd\'hui à] HH[h]mm',
+                                    nextDay: '[Demain à] HH[h]mm',
+                                    lastWeek: 'dddd [dernier à] HH[h]mm',
+                                    nextWeek: 'dddd [prochain à] HH[h]mm',
+                                    sameElse: 'dddd LL'
+                                }
+                            });
+                        }
+                        else {
+                            moment.lang(currentLanguage);
+                        }
+                    }
                 }
             };
             request.send(null);
