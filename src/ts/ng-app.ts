@@ -4086,146 +4086,149 @@ module.directive('floatingNavigation', function(){
 	}
 });
 
-module.directive('multiCombo', function(){
-	return {
-		restrict: 'E',
-		replace: false,
-		scope: {
-			title: '@',
-			comboModel: '=',
-			filteredModel: '=',
-			searchOn: '@',
- 			orderBy: '@',
-			filterModel: '&',
- 			searchPlaceholder: '@',
- 			maxSelected: '@',
-			labels: '&',
-			disable: '&',
-			selectionEvent: '&',
-			deselectionEvent: '&'
-		},
+module.directive('multiCombo', function() {
+    return {
+        restrict: 'E',
+        replace: false,
+        scope: {
+            title: '@',
+            comboModel: '=',
+            filteredModel: '=',
+            searchOn: '@',
+            orderBy: '@',
+            filterModel: '&',
+            searchPlaceholder: '@',
+            maxSelected: '@',
+            labels: '&',
+            disable: '&',
+            selectionEvent: '&',
+            deselectionEvent: '&'
+        },
 		templateUrl: '/' + appPrefix + '/public/template/entcore/multi-combo.html',
-		controller: function($scope, $filter, $timeout){
-			/* Search input */
-			$scope.search = {
-				input: '',
+        controller: function($scope, $filter, $timeout) {
+            /* Search input */
+            $scope.search = {
+                input: '',
 				reset: function(){ this.input = "" }
-			}
+            }
 
-			/* Combo box visibility */
-			$scope.show = false
-			$scope.toggleVisibility = function(){
-				$scope.show = !$scope.show
-				if($scope.show){
-					$scope.addClickEvent()
-					$scope.search.reset()
-					$timeout(function(){
-						$scope.setComboPosition()
-					}, 1)
-				}
-			}
+            /* Combo box visibility */
+            $scope.show = false
+            $scope.toggleVisibility = function() {
+                $scope.show = !$scope.show
+                if ($scope.show) {
+                    $scope.addClickEvent()
+                    $scope.search.reset()
+                    $timeout(function() {
+                        $scope.setComboPosition()
+                    }, 1)
+                }
+            }
 
-			/* Item list selection & filtering */
-			if(!$scope.filteredModel || !($scope.filteredModel instanceof Array))
-				$scope.filteredModel = []
+            /* Item list selection & filtering */
+            if (!$scope.filteredModel || !($scope.filteredModel instanceof Array))
+                $scope.filteredModel = []
 
-			$scope.isSelected = function(item){
-				return $scope.filteredModel.indexOf(item) >= 0
-			}
+            $scope.isSelected = function(item) {
+                return $scope.filteredModel.indexOf(item) >= 0
+            }
 
-			$scope.toggleItem = function(item){
-				var idx = $scope.filteredModel.indexOf(item)
-				if(idx >= 0){
- 					$scope.filteredModel.splice(idx, 1);
-					if($scope.deselectionEvent() instanceof Function)
-						$scope.deselectionEvent()()
-				}
-				else if(!$scope.maxSelected || $scope.filteredModel.length < $scope.maxSelected){
- 					$scope.filteredModel.push(item);
-					if($scope.selectionEvent() instanceof Function)
-						$scope.selectionEvent()()
-				}
-			}
+            $scope.toggleItem = function(item) {
+                var idx = $scope.filteredModel.indexOf(item)
+                if (idx >= 0) {
+                    $scope.filteredModel.splice(idx, 1);
+                    if ($scope.deselectionEvent() instanceof Function)
+                        $scope.deselectionEvent()()
+                } else if (!$scope.maxSelected || $scope.filteredModel.length < $scope.maxSelected) {
+                    $scope.filteredModel.push(item);
+                    if ($scope.selectionEvent() instanceof Function)
+                        $scope.selectionEvent()()
+                }
+            }
 
-			$scope.selectAll = function(){
-				$scope.filteredModel = []
-				for(var i = 0; i < $scope.filteredComboModel.length; i++){
-					$scope.filteredModel.push($scope.filteredComboModel[i])
-				}
-			}
+            $scope.selectAll = function() {
+                $scope.filteredModel.length = 0
+                for (var i = 0; i < $scope.filteredComboModel.length; i++) {
+                    $scope.filteredModel.push($scope.filteredComboModel[i])
+                }
+                if ($scope.selectionEvent() instanceof Function)
+                    $scope.selectionEvent()()
+            }
 
-			$scope.deselectAll = function(){
-				$scope.filteredModel = []
-			}
+            $scope.deselectAll = function() {
+                $scope.filteredModel.length = 0
+                if ($scope.deselectionEvent() instanceof Function)
+                    $scope.deselectionEvent()()
+            }
 
-			$scope.fairInclusion = function(anyString, challenger){
-				return lang.removeAccents(anyString.toLowerCase()).indexOf(lang.removeAccents(challenger.toLowerCase())) >= 0
-			}
+            $scope.fairInclusion = function(anyString, challenger) {
+                return lang.removeAccents(anyString.toLowerCase()).indexOf(lang.removeAccents(challenger.toLowerCase())) >= 0
+            }
 
-			$scope.filteringFun = function(item){
-				var precondition = $scope.filterModel() ? $scope.filterModel()(item) : true
-				if($scope.searchOn && item instanceof Object)
-					return precondition && $scope.fairInclusion(item[$scope.searchOn], $scope.search.input)
-				return precondition && $scope.fairInclusion(item, $scope.search.input)
-			}
+            $scope.filteringFun = function(item) {
+                var precondition = $scope.filterModel() ? $scope.filterModel()(item) : true
+                if ($scope.searchOn && item instanceof Object)
+                    return precondition && $scope.fairInclusion(item[$scope.searchOn], $scope.search.input)
+                return precondition && $scope.fairInclusion(item, $scope.search.input)
+            }
 
-			/* Item display */
-			$scope.display = function(item){
-				return item instanceof Object ? item.toString() : item
-			}
+            /* Item display */
+            $scope.display = function(item) {
+                return item instanceof Object ? item.toString() : item
+            }
 
-			/* Ensure that filtered elements are not obsolete */
-			$scope.$watchCollection('comboModel', function(){
-				if(!$scope.comboModel){
-					$scope.filteredModel = []
-					return
-				}
+            /* Ensure that filtered elements are not obsolete */
+            $scope.$watchCollection('comboModel', function() {
+                if (!$scope.comboModel) {
+                    $scope.filteredModel = []
+                    return
+                }
 
-				for(var i = 0; i < $scope.filteredModel.length; i++){
-					var idx = $scope.comboModel.indexOf($scope.filteredModel[i])
-					if(idx < 0){
-						$scope.filteredModel.splice(idx, 1)
-						i--
-					}
-				}
-			})
-		},
-		link: function(scope, element, attributes){
-			if(!attributes.comboModel || !attributes.filteredModel){
-				throw '[<multi-combo> directive] Error: combo-model & filtered-model attributes are required.';
-			}
+                for (var i = 0; i < $scope.filteredModel.length; i++) {
+                    var idx = $scope.comboModel.indexOf($scope.filteredModel[i])
+                    if (idx < 0) {
+                        $scope.filteredModel.splice(idx, 1)
+                        i--
+                    }
+                }
+            })
+        },
+        link: function(scope, element, attributes) {
+            if (!attributes.comboModel || !attributes.filteredModel) {
+                throw '[<multi-combo> directive] Error: combo-model & filtered-model attributes are required.'
+            }
 
-			/* Max n° of elements selected limit */
-			scope.maxSelected = parseInt(scope.maxSelected)
-			if(!isNaN(scope.maxSelected) && scope.maxSelected < 1){
-				throw '[<multi-combo> directive] Error: max-selected must be an integer grather than 0.';
-			}
+            /* Max n° of elements selected limit */
+            scope.maxSelected = parseInt(scope.maxSelected)
+            if (!isNaN(scope.maxSelected) && scope.maxSelected < 1) {
+                throw '[<multi-combo> directive] Error: max-selected must be an integer greater than 0.'
+            }
 
-			/* Visibility mouse click event */
-			scope.addClickEvent = function(){
-				if(!scope.show)
-					return
+            /* Visibility mouse click event */
+            scope.addClickEvent = function() {
+                if (!scope.show)
+                    return
 
-				var timeId = new Date().getTime()
-				$('body').on('click.multi-combo'+timeId, function(e){
-					if(!(element.find(e.originalEvent.target).length)){
-						scope.show = false
-						$('body').off('click.multi-combo'+timeId)
-						scope.$apply()
-					}
-				})
-			}
+                var timeId = new Date().getTime()
+                $('body').on('click.multi-combo' + timeId, function(e) {
+                    if (!(element.find(e.originalEvent.target).length)) {
+                        scope.show = false
+                        $('body').off('click.multi-combo' + timeId)
+                        scope.$apply()
+                    }
+                })
+            }
 
-			/* Drop down position */
-			scope.setComboPosition = function(){
-				element.css('position', 'relative')
-				element.find('.multi-combo-root-panel').css('top',
-					element.find('.multi-combo-root-button').outerHeight()
-				)
-			}
-			scope.setComboPosition()
-		}
-	}
+            /* Drop down position */
+            scope.setComboPosition = function() {
+                element.css('position', 'relative')
+                element.find('.multi-combo-root-panel').css('top',
+                    element.find('.multi-combo-root-button').outerHeight()
+                )
+            }
+            scope.setComboPosition()
+        }
+    }
 });
 
 module.directive('slide', function () {
