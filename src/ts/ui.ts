@@ -82,10 +82,13 @@ ui = (function(){
 		},
 		setStyle: function(stylePath){
 			if($('#theme').length === 0){
+				let version = $('#context').attr('src').split('-');
+                version = version[version.length - 1].split('.')[0];
+
 				var style = $('<link>', {
 					rel: 'stylesheet',
 					type: 'text/css',
-					href: stylePath + 'theme.css',
+					href: stylePath + 'theme.css?version=' + version,
 					id: 'theme'
 				});
 				var favicon = $('<link>', {
