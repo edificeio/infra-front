@@ -204,7 +204,8 @@ module.directive('lightbox', function($compile){
 			var content = element.find('.content');
 			element.children('.lightbox').find('> .background, > .content > .close-lightbox > i.close-2x').on('click', function(e){
 				element.children('.lightbox').first().fadeOut();
-				$('body').css({ overflow: 'auto' });
+                $('body').css({ overflow: 'auto' });
+                $('body').removeClass('lightbox-opened');
 
 				scope.$eval(scope.onClose);
 				if(!scope.$$phase){
@@ -216,7 +217,8 @@ module.directive('lightbox', function($compile){
 			});
 
 			scope.$watch('show', function(newVal){
-				if(newVal){
+                if (newVal) {
+                    $('body').addClass('lightbox-opened');
                     var lightboxWindow = element.children('.lightbox');
 
                     //Backup overflow hidden elements + z-index of parents
@@ -254,7 +256,9 @@ module.directive('lightbox', function($compile){
 
 					$('body').css({ overflow: 'hidden' });
 				}
-				else{
+                else {
+                    $('body').removeClass('lightbox-opened');
+
                     if(scope.backup){
                         //Restoring stored elements properties
                         _.forEach(scope.backup.overflow, function(element) {
@@ -270,7 +274,8 @@ module.directive('lightbox', function($compile){
 				}
 			});
 
-			scope.$on("$destroy", function() {
+            scope.$on("$destroy", function () {
+                $('body').removeClass('lightbox-opened');
 			    $('body').css({ overflow: 'auto' });
 
 			    if (scope.backup) {
@@ -1648,7 +1653,8 @@ module.directive('autocomplete', function($compile, $timeout){
 		scope: {
 			options: '&',
 			ngModel: '=',
-			ngChange: '&'
+            ngChange: '&',
+            search: '=?'
 		},
 		template: '' +
 			'<div class="row">' +
@@ -1661,23 +1667,46 @@ module.directive('autocomplete', function($compile, $timeout){
 					'</div>' +
 				'</div>' +
 			'</div>',
-		link: function(scope, element, attributes){
+        link: function (scope, element, attributes) {
+            var token;
 			if(attributes.autocomplete === 'off'){
 				return;
 			}
 			var dropDownContainer = element.find('[data-drop-down]');
-			var linkedInput = element.find('input');
+            var linkedInput = element.find('input');
+            scope.search = '';
 			scope.match = [];
 
-			scope.setDropDownHeight = function(){
-				var liHeight = 0;
-				var max = Math.min(10, scope.match.length);
-				dropDownContainer.find('li').each(function(index, el){
-					liHeight += $(el).height();
-					return index < max;
-				})
-				dropDownContainer.height(liHeight)
-			}
+            scope.setDropDownHeight = function () {
+                var liHeight = 0;
+                var max = Math.min(10, scope.match.length);
+                dropDownContainer.find('li').each(function (index, el) {
+                    liHeight += $(el).height();
+                    return index < max;
+                })
+                dropDownContainer.height(liHeight)
+            };
+
+            var placeDropDown = function () {
+                var pos = linkedInput.offset();
+                var width = linkedInput.width() +
+                    parseInt(linkedInput.css('padding-right')) +
+                    parseInt(linkedInput.css('padding-left')) +
+                    parseInt(linkedInput.css('border-width') || 1) * 2;
+                var height = linkedInput.height() +
+                    parseInt(linkedInput.css('padding-top')) +
+                    parseInt(linkedInput.css('padding-bottom')) +
+                    parseInt(linkedInput.css('border-height') || 1) * 2;
+
+                pos.top = pos.top + height;
+                dropDownContainer.offset(pos);
+                dropDownContainer.width(width);
+                $timeout(function () {
+                    scope.setDropDownHeight();
+                }, 1);
+
+                token = requestAnimationFrame(placeDropDown);
+            };
 
 			scope.$watch('search', function(newVal){
 				if(!newVal){
@@ -1699,30 +1728,17 @@ module.directive('autocomplete', function($compile, $timeout){
 					dropDownContainer.addClass('hidden');
 					return;
 				}
-				dropDownContainer.removeClass('hidden');
-
-				var pos = linkedInput.offset();
-				var width = linkedInput.width() +
-					parseInt(linkedInput.css('padding-right')) +
-					parseInt(linkedInput.css('padding-left')) +
-					parseInt(linkedInput.css('border-width') || 1) * 2;
-				var height = linkedInput.height() +
-					parseInt(linkedInput.css('padding-top')) +
-					parseInt(linkedInput.css('padding-bottom')) +
-					parseInt(linkedInput.css('border-height') || 1) * 2;
-
-				pos.top = pos.top + height;
-				dropDownContainer.offset(pos);
-				dropDownContainer.width(width);
-				$timeout(function(){
-					scope.setDropDownHeight();
-				}, 1);
+                dropDownContainer.removeClass('hidden');
+                cancelAnimationFrame(token);
+                placeDropDown();
 			});
 
-			element.parent().on('remove', function(){
+            element.parent().on('remove', function () {
+                cancelAnimationFrame(token);
 				dropDownContainer.remove();
 			});
-			element.find('input').on('blur', function(){
+            element.find('input').on('blur', function () {
+                cancelAnimationFrame(token);
 				setTimeout(function(){
 					scope.search = '';
 				}, 200);
@@ -1735,7 +1751,8 @@ module.directive('autocomplete', function($compile, $timeout){
 				scope.$apply('ngModel');
 				scope.$eval(scope.ngChange);
 				scope.$apply('ngModel');
-				dropDownContainer.addClass('hidden');
+                dropDownContainer.addClass('hidden');
+                cancelAnimationFrame(token);
 			});
 			dropDownContainer.attr('data-opened-drop-down', true);
 		}
@@ -3220,7 +3237,13 @@ module.directive('dragItem', function(){
 		link: function(scope, element, attributes){
 			var drag = scope.$eval(attributes.dragItem);
 			var matchedElement = undefined;
-			var firstTick = true;
+            var firstTick = true;
+
+            scope.$watch(function () {
+                return scope.$eval(attributes.dragItem);
+            }, function (newVal) {
+                drag = newVal;
+            });
 
 			ui.extendElement.draggable(element, {
 				mouseUp: function(e){
