@@ -20,15 +20,6 @@ function rgb(r, g, b) {
 var rgba = rgb;
 var transparent = 'rgba(255, 255, 255, 0)';
 
-http().loadScript('/infra/public/js/prism/prism.js');
-
-$('body').append(
-    $('<link />')
-        .attr('rel', 'stylesheet')
-        .attr('type', 'text/css')
-        .attr('href', '/infra/public/js/prism/prism.css')
-);
-
 export var RTE =  {
     Instance: function(data){
         var that = this;
@@ -1243,7 +1234,7 @@ export var RTE =  {
         RTE.baseToolbarConf.option('font', function(instance){
             return {
                 template:
-                '<select-list display="font" display-as="fontFamily" placeholder="Police" tooltip="editor.option.font">' +
+                '<select-list display="font" display-as="fontFamily" placeholder="editor.font.placeholder" tooltip="editor.option.font">' +
                 '<opt ng-repeat="font in fonts" ng-click="setFontFamily(font)" ' +
                 'value="font" style="font-family: [[font.fontFamily]]">[[font.fontFamily]]</opt>' +
                 '</select-list>',
@@ -1306,7 +1297,7 @@ export var RTE =  {
 
         RTE.baseToolbarConf.option('fontSize', function(instance) {
             return {
-                template: '<select-list placeholder="Taille" display="font.fontSize.size" tooltip="editor.option.fontSize">' +
+                template: '<select-list placeholder="size" display="font.fontSize.size" tooltip="editor.option.fontSize">' +
                 '<opt ng-repeat="fontSize in font.fontSizes" ng-click="setSize(fontSize)" ' +
                     'style="font-size: [[fontSize.size]]px; line-height: [[fontSize.size]]px">' +
                         '[[fontSize.size]]' +
@@ -1347,40 +1338,40 @@ export var RTE =  {
 
         RTE.baseToolbarConf.option('format', function(instance) {
             return {
-                template: '<select-list model="format" placeholder="Paragraphe" display-as="label" display="format" tooltip="editor.option.format">' +
+                template: '<select-list model="format" placeholder="editor.format.paragraph" display-as="label" display="format" tooltip="editor.option.format">' +
                 '<opt ng-repeat="format in formats" value="format" ng-click="wrap(format)"><div bind-html="format.option"></div></opt>' +
                 '</select-list>',
                 link: function(scope, element, attributes){
                     scope.formats = [
                         {
                             apply: { tag: 'p' },
-                            option: '<p>[[format.label]]</p>',
-                            label: 'Paragraphe'
+                            option: '<p translate content="[[format.label]]"></p>',
+                            label: 'editor.format.paragraph'
                         },
                         {
                             apply: { tag: 'h1' },
-                            option: '<h1>[[format.label]]</h1>',
-                            label: 'Titre 1'
+                            option: '<h1 translate content="[[format.label]]"></h1>',
+                            label: 'editor.format.title1'
                         },
                         {
                             apply: { tag: 'h2' },
-                            option: '<h2>[[format.label]]</h2>',
-                            label: 'Titre 2'
+                            option: '<h2 translate content="[[format.label]]"></h2>',
+                            label: 'editor.format.title2'
                         },
                         {
                             apply: { tag: 'h3' },
-                            option: '<h3>[[format.label]]</h3>',
-                            label: 'Titre 3'
+                            option: '<h3 translate content="[[format.label]]"></h3>',
+                            label: 'editor.format.title3'
                         },
                         {
                             apply: { tag: 'p', classes: ['info'] },
-                            option: '<p class="info">[[format.label]]</p>',
-                            label: 'Information'
+                            option: '<p class="info" translate content="[[format.label]]"></p>',
+                            label: 'editor.format.info'
                         },
                         {
                             apply: { tag: 'p', classes: ['warning'] },
-                            option: '<p class="warning">[[format.label]]</p>',
-                            label: 'Avertissement'
+                            option: '<p class="warning" translate content="[[format.label]]"></p>',
+                            label: 'editor.format.warning'
                         }
                     ];
 
@@ -2499,16 +2490,29 @@ export var RTE =  {
                     '<i class="tools" popover-opener opening-event="click"></i>' +
                     '<popover-content>' +
                     '<ul>' +
-                    '<li>Editeur de texte</li>' +
-                    '<li>Code HTML</li>' +
-                    '<li>Mode mixte</li>' +
+                    '<li><i18n>editor.mode.wysiwyg</i18n></li>' +
+                    '<li><i18n>editor.mode.html</i18n></li>' +
+                    '<li><i18n>editor.mode.mixed</i18n></li>' +
                     '</ul>' +
                     '</popover-content>' +
                     '</popover>' +
                     '<div><div contenteditable="true"></div></div>' +
                     '<textarea></textarea>' +
                     '<code class="language-html"></code>',
-                link: function(scope, element, attributes) {
+                link: function (scope, element, attributes) {
+                    if (navigator.userAgent.indexOf('Trident') !== -1 || navigator.userAgent.indexOf('Edge') !== -1) {
+                        element.find('code').hide();
+                    }
+
+                    http().loadScript('/infra/public/js/prism/prism.js');
+
+                    $('body').append(
+                        $('<link />')
+                            .attr('rel', 'stylesheet')
+                            .attr('type', 'text/css')
+                            .attr('href', '/infra/public/js/prism/prism.css')
+                    );
+
                     element.find('.close-focus').on('click', function(){
                         element.removeClass('focus');
                         element.parent().data('lock', false);
@@ -3162,12 +3166,12 @@ export var RTE =  {
                 link: function(scope, element, attributes){
                     scope.showValue = function(){
                         if(!scope.display){
-                            return scope.placeholder;
+                            return lang.translate(scope.placeholder);
                         }
                         if(!scope.displayAs){
-                            return scope.display;
+                            return lang.translate(scope.display);
                         }
-                        return scope.display[scope.displayAs];
+                        return lang.translate(scope.display[scope.displayAs]);
                     };
 
                     element.children('.selected-value').on('click', function(){
