@@ -101,7 +101,8 @@ export declare interface Model{
 	one(eventName: string, callback: () => void);
 	trigger(eventName: string, eventData?: any);
 	behaviours(serviceName: string);
-	inherits(target: any, prototypeFn: any);
+    inherits(target: any, prototypeFn: any);
+    selected: boolean;
 }
 
 Model.prototype.build = function () { };
@@ -168,9 +169,9 @@ export declare interface Collection<T>{
     indexOf?: (item: T) => number;
 	splice(...args: any[]);
 	selectItem(item: T);
-	selection(): T[];
-	removeSelection();
-	addRange(data: T[], cb?: (item: T) => void, refreshView?: boolean);
+	selection: () => T[];
+	removeSelection: () => void;
+	addRange: (data: T[], cb?: (item: T) => void, refreshView?: boolean) => void;
 	load: (data: T[], cb?: (item: T) => void, refreshView?: boolean) => void;
 	empty: () => void;
 	length(): number;
