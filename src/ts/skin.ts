@@ -63,3 +63,8 @@ export var skin = {
 		});
 	}
 };
+
+if (!(window as any).entcore) {
+    (window as any).entcore = {};
+}
+(window as any).entcore.skin = skin;

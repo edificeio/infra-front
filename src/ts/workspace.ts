@@ -1,72 +1,108 @@
 import { http } from './http';
 import { Behaviours } from './behaviours';
 import { moment } from './libs/moment/moment';
-import { model } from './entcore';
+import { model, Model } from './modelDefinitions';
 import { _ } from './libs/underscore/underscore';
 import { notify } from './notify';
 
-export var workspace = {
+
+export class Document extends Model {
+    title: string;
+    _id: string;
+    created: any;
+
+    constructor(data) {
+        super(data);
+
+        if (data.metadata) {
+            var dotSplit = data.metadata.filename.split('.');
+            if (dotSplit.length > 1) {
+                dotSplit.length = dotSplit.length - 1;
+            }
+            this.title = dotSplit.join('.');
+        }
+
+        if (data.created) {
+            this.created = moment(data.created.split('.')[0]);
+        }
+    }
+
+    upload(file: File | Blob, requestName: string, callback: (data: any) => void, visibility?: 'public' | 'protected') {
+        if (!visibility) {
+            visibility = 'protected';
+        }
+        var formData = new FormData();
+        formData.append('file', file, file.name);
+        http().postFile('/workspace/document?' + visibility + '=true&application=media-library&quality=' + workspace.quality + '&' + workspace.thumbnails, formData, { requestName: requestName }).done(function (data) {
+            if (typeof callback === 'function') {
+                callback(data);
+            }
+        }).e400(function (e) {
+            var error = JSON.parse(e.responseText);
+            notify.error(error.error);
+        });
+    }
+
+    role(fileFormat: string) {
+        return Document.role(fileFormat);
+    }
+
+    protectedDuplicate(callback?: (document: Document) => void) {
+        Behaviours.applicationsBehaviours.workspace.protectedDuplicate(this, function (data) {
+            if (typeof callback === 'function') {
+                callback(new workspace.Document(data))
+            }
+        });
+    }
+
+    publicDuplicate(callback?: (document: Document) => void) {
+        Behaviours.applicationsBehaviours.workspace.publicDuplicate(this, function (data) {
+            if (typeof callback === 'function') {
+                callback(new workspace.Document(data))
+            }
+        });
+    }
+
+    static role(fileType) {
+        if (!fileType)
+            return 'unknown'
+
+        var types = {
+            'doc': function (type) {
+                return type.indexOf('document') !== -1 && type.indexOf('wordprocessing') !== -1;
+            },
+            'xls': function (type) {
+                return (type.indexOf('document') !== -1 && type.indexOf('spreadsheet') !== -1) || (type.indexOf('ms-excel') !== -1);
+            },
+            'img': function (type) {
+                return type.indexOf('image') !== -1;
+            },
+            'pdf': function (type) {
+                return type.indexOf('pdf') !== -1 || type === 'application/x-download';
+            },
+            'ppt': function (type) {
+                return (type.indexOf('document') !== -1 && type.indexOf('presentation') !== -1) || type.indexOf('powerpoint') !== -1;
+            },
+            'video': function (type) {
+                return type.indexOf('video') !== -1;
+            },
+            'audio': function (type) {
+                return type.indexOf('audio') !== -1;
+            },
+            'zip': function (type) {
+                return type.indexOf('zip') !== -1 ||
+                    type.indexOf('rar') !== -1 ||
+                    type.indexOf('tar') !== -1 ||
+                    type.indexOf('7z') !== -1;
+            }
+        };
+    }
+}
+
+export let workspace = {
 	quality: 0.7,
 	thumbnails: "thumbnail=120x120&thumbnail=150x150&thumbnail=100x100&thumbnail=290x290&thumbnail=48x48&thumbnail=82x82&thumbnail=381x381",
-	Document: function(data){
-		if(data.metadata){
-			var dotSplit = data.metadata.filename.split('.');
-			if(dotSplit.length > 1){
-				dotSplit.length = dotSplit.length - 1;
-			}
-			this.title = dotSplit.join('.');
-		}
-
-		if(data.created){
-			this.created = moment(data.created.split('.')[0]);
-		}
-
-		this.protectedDuplicate = function(callback){
-			Behaviours.applicationsBehaviours.workspace.protectedDuplicate(this, function(data){
-				callback(new workspace.Document(data))
-			});
-		};
-
-		this.publicDuplicate = function(callback){
-			Behaviours.applicationsBehaviours.workspace.publicDuplicate(this, function(data){
-				callback(new workspace.Document(data))
-			});
-		};
-
-		this.role = function(){
-			var types = {
-				'doc': function(type){
-					return type.indexOf('document') !== -1 && type.indexOf('wordprocessing') !== -1;
-				},
-				'xls': function(type){
-					return (type.indexOf('document') !== -1 && type.indexOf('spreadsheet') !== -1) || (type.indexOf('ms-excel') !== -1);
-				},
-				'img': function(type){
-					return type.indexOf('image') !== -1;
-				},
-				'pdf': function(type){
-					return type.indexOf('pdf') !== -1;
-				},
-				'ppt': function(type){
-					return (type.indexOf('document') !== -1 && type.indexOf('presentation') !== -1) || type.indexOf('powerpoint') !== -1;
-				},
-				'video': function(type){
-					return type.indexOf('video') !== -1;
-				},
-				'audio': function(type){
-					return type.indexOf('audio') !== -1;
-				}
-			};
-
-			for(var type in types){
-				if(types[type](this.metadata['content-type'])){
-					return type;
-				}
-			}
-
-			return 'unknown';
-		}
-	},
+	Document: Document,
 	Folder: function(data){
 		this.updateData(data);
 
@@ -165,18 +201,7 @@ export var workspace = {
 	}
 };
 
-workspace.Document.prototype.upload = function(file, requestName, callback, visibility){
-	if(!visibility){
-		visibility = 'protected';
-	}
-	var formData = new FormData();
-	formData.append('file', file, file.name);
-	http().postFile('/workspace/document?' + visibility + '=true&application=media-library&quality=' + workspace.quality + '&' + workspace.thumbnails, formData, { requestName: requestName }).done(function(data){
-		if(typeof callback === 'function'){
-			callback(data);
-		}
-	}).e400(function(e){
-		var error = JSON.parse(e.responseText);
-		notify.error(error.error);
-	});
-};
+if (!(window as any).entcore) {
+    (window as any).entcore = {};
+}
+(window as any).entcore.workspace = workspace;

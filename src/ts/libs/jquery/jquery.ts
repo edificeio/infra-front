@@ -4,3 +4,4 @@ if(!(window as any).entcore){
     (window as any).entcore = {};
 }
 (window as any).entcore.jQuery = $;
+(window as any).entcore.$ = $;

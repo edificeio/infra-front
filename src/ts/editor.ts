@@ -3253,7 +3253,7 @@ export var RTE =  {
                     });
                     
                     element.find('[contenteditable]').on('drop', function (e) {
-                        var visibility = 'protected';
+                        var visibility: 'protected' | 'public' = 'protected';
                         if (element.attr('public') !== undefined) {
                             visibility = 'public';
                         }
