@@ -10,6 +10,9 @@ export class Document extends Model {
     title: string;
     _id: string;
     created: any;
+    metadata: {
+        'content-type': string
+    };
 
     constructor(data) {
         super(data);
@@ -43,8 +46,8 @@ export class Document extends Model {
         });
     }
 
-    role(fileFormat: string) {
-        return Document.role(fileFormat);
+    role() {
+        return Document.role(this.metadata['content-type']);
     }
 
     protectedDuplicate(callback?: (document: Document) => void) {
@@ -96,6 +99,14 @@ export class Document extends Model {
                     type.indexOf('7z') !== -1;
             }
         };
+
+        for (let type in types) {
+            if (types[type](fileType)){
+                return type;
+            }
+        }
+
+        return 'unknown';
     }
 }
 
@@ -205,3 +216,4 @@ if (!(window as any).entcore) {
     (window as any).entcore = {};
 }
 (window as any).entcore.workspace = workspace;
+(window as any).workspace = workspace;

@@ -195,3 +195,4 @@ if(!(window as any).entcore){
 	(window as any).entcore = {};
 }
 (window as any).entcore.http = http;
+(window as any).http = http;
