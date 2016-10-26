@@ -1,21 +1,94 @@
 import { http } from './http';
 import { Behaviours } from './behaviours';
 import { moment } from './libs/moment/moment';
-import { model, Model } from './modelDefinitions';
+import { model, Model, Collection } from './modelDefinitions';
 import { _ } from './libs/underscore/underscore';
 import { notify } from './notify';
+import { idiom as lang } from './idiom';
 
+class Quota extends Model {
+    max: number;
+    used: number;
+    unit: string;
+
+    constructor() {
+        super();
+        this.max = 1;
+        this.used = 0;
+        this.unit = 'Mo';
+    }
+
+    appropriateDataUnit(bytes: number) {
+        var order = 0
+        var orders = {
+            0: lang.translate("byte"),
+            1: "Ko",
+            2: "Mo",
+            3: "Go",
+            4: "To"
+        }
+        var finalNb = bytes
+        while (finalNb >= 1024 && order < 4) {
+            finalNb = finalNb / 1024
+            order++
+        }
+        return {
+            nb: finalNb,
+            order: orders[order]
+        }
+    }
+
+    refresh () {
+        http().get('/workspace/quota/user/' + model.me.userId).done((data) => {
+            //to mo
+            data.quota = data.quota / (1024 * 1024);
+            data.storage = data.storage / (1024 * 1024);
+
+            if (data.quota > 2000) {
+                data.quota = Math.round((data.quota / 1024) * 10) / 10;
+                data.storage = Math.round((data.storage / 1024) * 10) / 10;
+                this.unit = 'Go';
+            }
+            else {
+                data.quota = Math.round(data.quota);
+                data.storage = Math.round(data.storage);
+            }
+
+            this.max = data.quota;
+            this.used = data.storage;
+            this.trigger('change');
+        });
+    }
+};
+
+export let quota = new Quota();
+
+export class Revision extends Model{
+	constructor(data){
+		super(data);
+	}
+}
 
 export class Document extends Model {
     title: string;
     _id: string;
     created: any;
     metadata: {
-        'content-type': string
+        'content-type': string,
+		role: string,
+		extension: string
     };
+	version: number;
+	link: string;
+	icon: string;
+	owner: {
+		userId: string
+	};
+	revisions: Collection<Revision>;
+
 
     constructor(data) {
-        super(data);
+		super(data);
 
         if (data.metadata) {
             var dotSplit = data.metadata.filename.split('.');
@@ -23,12 +96,34 @@ export class Document extends Model {
                 dotSplit.length = dotSplit.length - 1;
             }
             this.title = dotSplit.join('.');
+			this.metadata.role = this.role();
         }
 
         if (data.created) {
             this.created = moment(data.created.split('.')[0]);
         }
+		else{
+			this.created = moment(data.sent.split('.')[0]);
+		}
+
+		this.owner = { userId: data.owner };
+
+		this.version = parseInt(Math.random() * 100);
+		this.link = '/workspace/document/' + this._id;
+		if(this.metadata.role === 'img'){
+			this.icon = this.link;
+		}
+		this.collection(Revision);
     }
+
+	refreshHistory(hook?: () => void){
+		http().get("document/" + this._id + "/revisions").done((revisions) => {
+			this.revisions.load(revisions);
+			if(typeof hook === 'function'){
+				hook()
+			}
+		})
+	}
 
     upload(file: File | Blob, requestName: string, callback: (data: any) => void, visibility?: 'public' | 'protected') {
         if (!visibility) {
@@ -216,4 +311,5 @@ if (!(window as any).entcore) {
     (window as any).entcore = {};
 }
 (window as any).entcore.workspace = workspace;
+(window as any).entcore.quota = quota;
 (window as any).workspace = workspace;

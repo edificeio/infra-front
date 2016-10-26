@@ -155,6 +155,7 @@ export declare interface Collection<T>{
 	setCurrent(item: T);
     map: (filter: (item: T) => T) => void;
     filter: (filter: (item: T) => boolean) => T[];
+	reject: (filter: (item: T) => boolean) => T[];
     findWhere: (filter: any) => T;
     find: (filter: (item: T) => boolean) => T;
     where: (filter: any) => T[];
