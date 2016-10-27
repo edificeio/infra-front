@@ -308,15 +308,15 @@ Model.prototype.sync = function(){
 			this.updateData(data);
 		}.bind(this));
 	};
-	
+
 	Model.prototype.saveModifications = function(){
 		http().putJson(http().parseUrl(this.api.put, this), this);
 	}
-	
+
 	Model.prototype.remove = function(){
 		http().delete(http().parseUrl(this.api.delete, this));
 	}
-	
+
 	Model.prototype.create = function(){
 		http().postJson(http().parseUrl(this.api.post, this), this).done(function(data){
 			this.updateData(data);
@@ -379,7 +379,7 @@ Model.prototype.sync = function(){
 			}
 			if(fn.prototype.api.post && fn.prototype.api.put && typeof fn.prototype.save !== 'function'){
 				fn.prototype.save = function(){
-					if(this._id){
+					if(this._id || this.id){
 						this.saveModifications();
 					}
 					else{
