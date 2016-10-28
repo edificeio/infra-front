@@ -4473,6 +4473,25 @@ module.directive('whereami', function () {
 	}
 });
 
+
+
+
+var checkToolDelay = (function(){
+    var applyAllowed = true;
+
+	return function checkApplication(scope){
+    	if(applyAllowed){
+			applyAllowed = false;
+
+			setTimeout(function(){
+				scope.$apply();
+				applyAllowed = true;
+			}, 500);
+		}
+
+	}
+}());
+
 module.directive('checkTool', function () {
 	return {
 		restrict: 'E',
@@ -4485,7 +4504,7 @@ module.directive('checkTool', function () {
 		link: function (scope, element, attributes) {
 			element.on('click', function(){
 				scope.ngModel = !scope.ngModel;
-				scope.$apply('ngModel');
+				checkToolDelay(scope)
 
 				if (scope.ngModel) {
 					element.addClass('selected')
@@ -4498,17 +4517,17 @@ module.directive('checkTool', function () {
 				if (scope.ngChange) {
 					scope.ngChange();
 				}
-				scope.$apply();
+				checkToolDelay(scope)
 			});
 
 			$('body').on('click', function(e){
 				if($(e.target).parents('.check-tool, .toggle, .lightbox').length ===0 && e.target.nodeName!=="CHECK-TOOL" && $('body').find(e.target).length !== 0){
 					scope.ngModel = false;
 					element.removeClass('selected');
-					scope.$apply();
+					checkToolDelay(scope)
 					if(scope.ngChange){
                         scope.ngChange();
-                        scope.$apply();
+						checkToolDelay(scope)
                     }
 				}
 			})
