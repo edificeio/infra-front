@@ -23,7 +23,8 @@ var moment = require('moment');
 		return name[0].toLowerCase() + name.substr(1) + 's';
 	}
 
-	Collection.prototype = {
+    Collection.prototype = {
+        reject: undefined,
 		obj: undefined,
 		callbacks: {},
 		sync: undefined,
