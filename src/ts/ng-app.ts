@@ -4963,10 +4963,10 @@ module.controller('Share', ['$rootScope','$scope', function($rootScope, $scope) 
 	function applyRights(element, action, cb){
 		var data;
 		if(element.login !== undefined){
-			data = { userId: element.id }
+			data = { userId: element.id, actions: [] }
 		}
 		else{
-			data = { groupId: element.id }
+            data = { groupId: element.id, actions: [] }
 		}
 		data.actions = actionToRights(element, action);
 

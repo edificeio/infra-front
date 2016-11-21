@@ -203,6 +203,14 @@ export class Document extends Model {
 
         return 'unknown';
     }
+
+    trash(): Promise<any> {
+        return new Promise((resolve, reject) => {
+            http().put('/workspace/document/trash/' + this._id).done(() => {
+                resolve();
+            });
+        });
+    }
 }
 
 export let workspace = {
