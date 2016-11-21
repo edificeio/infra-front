@@ -3679,7 +3679,7 @@ module.directive('carousel', function(){
 				};
 			});
 			scope.openCurrentImage = function(){
-				window.location = scope.current.image.link;
+				window.location.href = scope.current.image.link;
 			};
 			scope.openSelectImage = function(item, index){
 				if(scope.current.image === item){

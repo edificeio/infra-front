@@ -103,6 +103,7 @@ export declare interface Model{
 	behaviours(serviceName: string);
     inherits(target: any, prototypeFn: any);
     selected: boolean;
+    myRights: Map<string, boolean>;
 }
 
 Model.prototype.build = function () { };
