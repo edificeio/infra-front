@@ -5,14 +5,20 @@ import { _ } from './libs/underscore/underscore';
 
 declare var Prism: any;
 
-if (!String.prototype.startsWith) {
-    String.prototype.startsWith = function (str) {
+/// <reference path="./jquery-1.10.2.min.js" />
+/// <reference path="./ui.js" />
+
+if (!(String.prototype as any).startsWith) {
+    (String.prototype as any).startsWith = function (str) {
         if (this.indexOf(str) !== -1 && this.split(str)[0] === '') {
             return true;
         }
-        return false
+        return false;
     };
 }
+
+var textNodes = ['SPAN', 'A', 'STRONG', 'EM', 'B', 'I'];
+var formatNodes = ['P', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6'];
 
 function rgb(r, g, b) {
     return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
@@ -20,7 +26,7 @@ function rgb(r, g, b) {
 var rgba = rgb;
 var transparent = 'rgba(255, 255, 255, 0)';
 
-export var RTE =  {
+export let RTE = {
     Instance: function(data){
         var that = this;
         this.states = [];
@@ -303,76 +309,129 @@ export var RTE =  {
 
         this.wrap = function(element){
             that.instance.addState(that.editZone.html());
-            if(this.range.startContainer === this.range.endContainer){
-                element.html('&nbsp;');
-                var elementAtCaret = this.range.startContainer;
-                if (elementAtCaret.nodeType === 1 && elementAtCaret.getAttribute('contenteditable') || elementAtCaret.nodeName === 'TD') {
-                    var newEl = document.createElement('div');
-                    elementAtCaret.appendChild(newEl);
-                    elementAtCaret = newEl;
-                }
-                if (elementAtCaret.nodeType === 3) {
-                    element.text(elementAtCaret.textContent);
-                    if(elementAtCaret.parentNode.nodeName === 'TD'){
-                        var wrapper = $('<div></div>');
-                        $(elementAtCaret.parentNode).append(wrapper);
-                        wrapper.append(element);
-                        elementAtCaret.remove();
-                    }
-                    else{
-                        elementAtCaret.parentNode.parentNode.insertBefore(element[0], elementAtCaret.parentNode);
-                        elementAtCaret.parentNode.remove();
-                    }
-                }
-                else {
-                    element.text('');
-                    // range is annoyingly changed while executing code
-                    var end = this.range.endOffset;
-                    var start = this.range.startOffset;
-                    for(var i = start; i < end; i++){
-                        element[0].textContent += elementAtCaret.childNodes[i].textContent;
-                        if(i === end - 1){
-                            elementAtCaret.insertBefore(element[0], elementAtCaret.childNodes[i]);
-                            elementAtCaret.childNodes[i + 1].remove();
+            var commonAncestor = that.range.commonAncestorContainer;
+            var startOffset = that.range.startOffset;
+            var endOffset = that.range.endOffset;
+            
+            var elementAtCaret = commonAncestor;
+            if (
+                elementAtCaret.nodeType === 1
+                && (elementAtCaret.getAttribute('contenteditable') || elementAtCaret.nodeName === 'TD')
+            ) {
+                var wrapper = $('<div>&#8203;</div>');
+                $(elementAtCaret).append(wrapper);
+                elementAtCaret = wrapper[0];
+            }
+            if (elementAtCaret.parentNode.nodeName === 'TD') {
+                var wrapper = $('<div>&#8203;</div>');
+                $(elementAtCaret.parentNode).append(wrapper);
+                wrapper.append(elementAtCaret);
+            }
+
+            if(
+                this.isCursor() || commonAncestor.nodeType === 3 || textNodes.indexOf(commonAncestor.nodeName) !== -1
+            ){
+                element.html('&#8203;');
+
+                while (textNodes.indexOf(elementAtCaret.nodeName) !== -1 || elementAtCaret.nodeType === 3) {
+                    if (elementAtCaret.parentNode.nodeType === 1 && elementAtCaret.parentNode.getAttribute('contenteditable') || elementAtCaret.parentNode.nodeName === 'TD') {
+                        var newEl = document.createElement('div');
+                        if(elementAtCaret.nodeType === 1){
+                            $(newEl).html($(elementAtCaret).html());
                         }
                         else{
-                            elementAtCaret.childNodes[i].remove();
+                            $(newEl).text(elementAtCaret.textContent);
+                        }
+                        
+                        elementAtCaret.parentNode.insertBefore(newEl, elementAtCaret);
+                        elementAtCaret.remove();
+                        elementAtCaret = newEl;
+                    }
+                    else{
+                        elementAtCaret = elementAtCaret.parentNode;
+                    }
+                }
+
+                element.html($(elementAtCaret).html());
+                elementAtCaret.parentNode.insertBefore(element[0], elementAtCaret);
+                elementAtCaret.parentNode.removeChild(elementAtCaret);
+
+                var sel = window.getSelection();
+                var r = document.createRange();
+                r.setStart(element[0].firstChild, startOffset);
+                r.setEnd(element[0].firstChild, endOffset);
+                sel.removeAllRanges();
+                sel.addRange(r);
+            }
+            else {
+                if (formatNodes.indexOf(elementAtCaret.nodeName) !== -1) {
+                    element.html($(elementAtCaret).html());
+                    elementAtCaret.parentNode.insertBefore(element[0], elementAtCaret);
+                    elementAtCaret.remove();
+                    var sel = window.getSelection();
+                    var r = document.createRange();
+                    r.setStart(element[0], 0);
+                    var endOffset = element[0].textContent.length;
+                    if(element[0].childNodes.length){
+                        endOffset = element[0].childNodes.length;
+                    }
+                    r.setEnd(element[0], endOffset);
+                    sel.removeAllRanges();
+                    sel.addRange(r);
+                }
+                else {
+                    var foundFirst = false;
+                    var foundLast = false;
+                    for (var i = 0; i < elementAtCaret.childNodes.length; i++) {
+                        var item = elementAtCaret.childNodes[i];
+                        if (item === this.range.startContainer ||
+                            (this.range.startContainer.nodeType === 1 && $(this.range.startContainer).find(item).length) ||
+                            (item.nodeType === 1 && $(item).find(this.range.startContainer).length)) {
+                            foundFirst = true;
+                        }
+                        if (item === this.range.endContainer ||
+                            (this.range.endContainer.nodeType === 1 && $(this.range.endContainer).find(item).length) ||
+                            (item.nodeType === 1 && $(item).find(this.range.endContainer).length)) {
+                            foundLast = true;
+                            if (this.range.endOffset === 0) {
+                                break;
+                            }
+                        }
+                        if (!foundFirst) {
+                            continue;
+                        }
+                        var el = $(element[0].outerHTML);
+                        while (textNodes.indexOf(item.nodeName) !== -1 || item.nodeType === 3) {
+                            item = item.parentNode;
+                        }
+                        if(!item.parentNode){
+                            continue;
+                        }
+
+                        el.html(item.innerHTML || item.textContent);
+                        item.parentNode.insertBefore(el[0], item);
+                        item.remove();
+                        var sel = window.getSelection();
+                        var r = document.createRange();
+                        r.setStart(el[0], 0);
+                        var endOffset = el[0].textContent.length;
+                        if(el[0].childNodes.length){
+                            endOffset = el[0].childNodes.length;
+                        }
+                        r.setEnd(el[0], endOffset);
+                        sel.removeAllRanges();
+                        sel.addRange(r);
+                        if (foundLast) {
+                            break;
                         }
                     }
                 }
-                this.moveCaret(element[0], element.text().length);
-            }
-            else{
-                this.selectedElements.forEach(function (item) {
-                    if (!item) {
-                        return;
-                    }
-
-                    var el = $(element[0].outerHTML);
-                    
-                    if(!item.parentNode){
-                        return;
-                    }
-                    if (item.nodeType !== 1 && item.parentNode.nodeName !== 'DIV') {
-                        var div = document.createElement('div');
-                        $(div).html(item.textContent);
-                        item.parentNode.insertBefore(div, item);
-                        item.remove();
-                        item = div;
-                        
-                        if (item.nodeName === 'A') {
-                            item = item.parentNode;
-                        }
-                    }
-                    el.html(item.innerHTML || item.textContent);
-                    item.parentNode.replaceChild(el[0], item);
-                    that.selectNode(el[0]);
-                });
             }
             that.instance.addState(that.editZone.html());
             setTimeout(function () {
+                this.instance.trigger('selectionchange', { selection: this.instance.selection });
                 this.instance.trigger('contentupdated');
-            }.bind(this), 20);
+            }.bind(this), 100);
         };
 
         this.isCursor = function () {
@@ -388,11 +447,7 @@ export var RTE =  {
             }
             else{
                 var addedNodes = [];
-                this.selectedElements.forEach(function (item, index) {
-                    if (!item) {
-                        return;
-                    }
-
+                this.selectedElements.forEach(function(item, index){
                     var node = $(el[0].outerHTML);
                     if(item.nodeType === 1){
                         $(item).wrapInner(node);
@@ -430,32 +485,35 @@ export var RTE =  {
             that.instance.trigger('contentupdated');
         };
 
-
-        function applyCSSCursor(css) {
-            var el = $('<span>&nbsp;</span>');
+        function applyCSSCursor(css){
+            var el = $('<span>&#8203;</span>');
             if (!that.range && !that.editZone.html()) {
                 var elementAtCaret = $('<div></div>').appendTo(that.editZone);
             }
             else {
                 var elementAtCaret = that.range.startContainer;
-                if (elementAtCaret.nodeType !== 1) {
-                    elementAtCaret = elementAtCaret.parentNode;
-                }
-                if (elementAtCaret.nodeName === 'SPAN') {
+                if (elementAtCaret.nodeType === 1 && elementAtCaret.nodeName === 'SPAN') {
                     el.attr('style', $(elementAtCaret).attr('style'));
-                    elementAtCaret = elementAtCaret.parentNode;
-                }
-                if (that.editZone.find(elementAtCaret).length === 0) {
-                    elementAtCaret = that.editZone[0];
                 }
             }
-
+            
             el.css(css);
-            $(elementAtCaret).append(el);
+            var nodeBefore = $('<span>' + elementAtCaret.textContent.substring(0, that.range.startOffset) + '</span>');
+            var nodeAfter = $('<span>' + elementAtCaret.textContent.substring(that.range.startOffset) + '</span>');
+            if (nodeAfter.text().length) {
+                elementAtCaret.parentNode.insertBefore(nodeAfter[0], elementAtCaret);
+                elementAtCaret.parentNode.insertBefore(el[0], nodeAfter[0]);
+                elementAtCaret.parentNode.insertBefore(nodeBefore[0], el[0]);
+                elementAtCaret.remove();
+            }
+            else {
+                elementAtCaret.parentNode.insertBefore(el[0], elementAtCaret.nextSibling);
+            }
+            
             that.moveCaret(el[0], 1);
         }
 
-        function applyCSSNode(css) {
+        function applyCSSNode(css){
             var element = that.range.startContainer;
             if (element.nodeType !== 1 && element.parentNode.nodeName !== 'SPAN') {
                 var el = document.createElement('span');
@@ -468,40 +526,17 @@ export var RTE =  {
                 element = element.parentNode;
             }
             $(element).css(css);
+            $(element).find('*').css(css);
             that.selectNode(element);
         }
 
-        function applyCSSUntil(nodeLimit, endOffset, css) {
-            var addedNodes = [];
-            var sibling = nodeLimit.parentNode.firstChild;
-            do {
-                if (sibling.nodeType === 1) {
-                    $(sibling).css(css);
-                }
-                else {
-                    var el = $('<span></span>')
-                        .css(css);
-                    if (sibling === nodeLimit) {
-                        el.text(sibling.textContent.substring(0, that.range.endOffset));
-                        sibling.parentNode.insertBefore(el[0], sibling);
-                        sibling.textContent = sibling.textContent.substring(that.range.endOffset);
-                    }
-                    else {
-                        el.text(sibling.textContent.substring(0, sibling.textContent.length));
-                        sibling.parentNode.insertBefore(el[0], sibling);
-                        sibling.textContent = sibling.textContent.substring(sibling.textContent.length);
-                    }
-                    addedNodes.push(el[0]);
-                }
-                sibling = sibling.nextSibling;
-            } while (sibling !== nodeLimit && sibling);
-
-            return addedNodes;
-        }
-
-        function applyCSSFrom(nodeStart, startOffset, css) {
+        function applyCSSBetween(nodeStart, nodeEnd, css, keepRangeStart?, startOffset?) {
+            if (startOffset === undefined) {
+                startOffset = that.range.startOffset;
+            }
             var addedNodes = [];
             var sibling = nodeStart;
+            var i = startOffset;
             do {
                 if (sibling.nodeType === 1) {
                     $(sibling).css(css);
@@ -509,25 +544,82 @@ export var RTE =  {
                 else {
                     var el = $('<span></span>')
                         .css(css);
-                    if (sibling === nodeStart) {
-                        el.html(sibling.textContent.substring(startOffset));
-                        sibling.parentNode.insertBefore(el[0], sibling.nextSibling);
-                        sibling.textContent = sibling.textContent.substring(0, startOffset);
+                    if (sibling === nodeStart && sibling === nodeEnd) {
+                        el.html(sibling.textContent.substring(startOffset, that.range.endOffset));
+                        if (el.html().length > 0) {
+                            sibling.parentNode.insertBefore(el[0], sibling);
+                            var afterText = document.createTextNode(sibling.textContent.substring(that.range.endOffset));
+                            sibling.parentNode.insertBefore(afterText, el[0].nextSibling);
+                            sibling.textContent = sibling.textContent.substring(0, startOffset);
+                            var sel = document.getSelection();
+                            var r = document.createRange();
+                            if (keepRangeStart) {
+                                r.setStart(that.range.startContainer, startOffset);
+                            }
+                            else {
+                                r.setStart(el[0], 0);
+                            }
+
+                            r.setEnd(el[0], 1);
+                            sel.removeAllRanges();
+                            sel.addRange(r);
+                            that.range = r;
+                        }
+                    }
+                    else if (
+                        sibling === nodeEnd
+                        || (sibling.parentNode === that.range.endContainer && sibling === that.range.endContainer.childNodes[that.range.endOffset])
+                    ) {
+                        el.text(sibling.textContent.substring(0, that.range.endOffset));
+                        if (el.text()) {
+                            sibling.parentNode.insertBefore(el[0], sibling);
+                            sibling.textContent = sibling.textContent.substring(that.range.endOffset);
+                            var sel = document.getSelection();
+                            var r = document.createRange();
+                            r.setStart(that.range.startContainer, startOffset);
+                            r.setEnd(el[0], 1);
+                            sel.removeAllRanges();
+                            sel.addRange(r);
+                            that.range = r;
+                        }
+                    }
+                    else if (sibling === nodeStart) {
+                        el.text(sibling.textContent.substring(startOffset, sibling.textContent.length));
+                        if(el.text()){
+                            sibling.parentNode.insertBefore(el[0], sibling.nextSibling);
+                            sibling.textContent = sibling.textContent.substring(0, startOffset);
+                            if (!keepRangeStart) {
+                                var sel = document.getSelection();
+                                var r = document.createRange();
+                                r.setStart(el[0], 0);
+                                r.setEnd(that.range.endContainer, that.range.endOffset);
+                                sel.removeAllRanges();
+                                sel.addRange(r);
+                                that.range = r;
+                            }
+                        }
                     }
                     else {
                         el.text(sibling.textContent.substring(0, sibling.textContent.length));
-                        sibling.parentNode.insertBefore(el[0], sibling);
-                        sibling.textContent = sibling.textContent.substring(sibling.textContent.length);
+                        if (el.text()) {
+                            sibling.parentNode.insertBefore(el[0], sibling);
+                            sibling.textContent = sibling.textContent.substring(sibling.textContent.length);
+                        }
+                        
                     }
-                    addedNodes.push(el[0]);
                 }
                 sibling = sibling.nextSibling;
-            } while (sibling);
+                i++;
+            } while (
+                sibling && sibling !== nodeEnd
+                && !(sibling.parentNode === that.range.endContainer && sibling === that.range.endContainer.childNodes[that.range.endOffset])
+                && !$(sibling).find(that.range.endContainer).length
+            );
 
             return addedNodes;
         }
 
-        function applyCSSText(css) {
+        function applyCSSText(css){
             var el = $(document.createElement('span'));
             $(el).css(css);
 
@@ -538,13 +630,18 @@ export var RTE =  {
             that.range.startContainer.parentNode.insertBefore(textBefore, el[0]);
             that.range.startContainer.textContent = that.range.startContainer.textContent.substring(that.range.endOffset);
 
-            return [el[0]];
+            var sel = document.getSelection();
+            var r = document.createRange();
+            r.setStart(el[0], 0);
+            r.setEnd(el[0], 1);
+            sel.removeAllRanges();
+            sel.addRange(r);
         }
 
         function applyCSS(css) {
             that.instance.addState(that.editZone.html());
 
-            if (that.isCursor()) {
+            if(that.isCursor()){
                 applyCSSCursor(css);
             }
             else if (that.range.startContainer === that.range.endContainer &&
@@ -556,95 +653,121 @@ export var RTE =  {
             ) {
                 applyCSSNode(css)
             }
-            else if (that.range.startContainer === that.range.endContainer &&
+            else if(that.range.startContainer === that.range.endContainer && 
                 (
                     that.range.startContainer.nodeType === 1 &&
                     that.range.startOffset === 0 &&
                     that.range.endOffset === that.range.startContainer.childNodes.length
                 )
-            ) {
-                if (that.range.startContainer !== that.editZone[0]) {
+            ){
+                if(that.range.startContainer !== that.editZone[0]){
                     $(that.range.startContainer).css(css);
+                    $(that.range.startContainer).find('span').css(css);
                 }
-                else {
+                else{
                     $(that.range.startContainer).find('*').css(css);
                 }
             }
-            else {
+            else{
                 var addedNodes = [];
 
-                if (that.range.commonAncestorContainer.nodeType === 3) {
+                if(that.range.commonAncestorContainer.nodeType === 3){
                     addedNodes = addedNodes.concat(applyCSSText(css));
                 }
-                else {
+                else{
                     var foundFirst = false;
-                    for (var i = 0; i < that.range.commonAncestorContainer.childNodes.length; i++) {
+                    for(var i = 0; i < that.range.commonAncestorContainer.childNodes.length; i++){
                         var sibling = that.range.commonAncestorContainer.childNodes[i];
-                        if (
-                            sibling === that.range.startContainer ||
-                            sibling.contains(that.range.startContainer) ||
-                            that.range.startContainer.contains(sibling)
-                        ) {
+                        if(
+                            sibling === that.range.startContainer || 
+                            (sibling.nodeType === 1 && $(sibling).find(that.range.startContainer).length) || 
+                            (that.range.startContainer.nodeType === 1 && $(that.range.startContainer).find(sibling).length && that.range.startOffset === i)
+                        ){
                             foundFirst = true;
                         }
-                        if (!foundFirst) {
+                        if(!foundFirst){
                             continue;
                         }
 
-                        if (sibling.contains(that.range.startContainer)) {
+                        if (
+                            sibling.nodeType === 1 && $(sibling).find(that.range.startContainer).length
+                        ) {
                             addedNodes = addedNodes.concat(
-                                applyCSSFrom(that.range.startContainer, that.range.startOffset, css)
+                                applyCSSBetween(that.range.startContainer, that.range.endContainer, css)
                             );
                             continue;
                         }
 
-                        if (that.range.startContainer.contains(sibling) || sibling === that.range.startContainer) {
+                        if (
+                            (
+                                that.range.startContainer.nodeType === 1
+                                && $(that.range.startContainer).find(sibling).length
+                                && that.range.startOffset === i
+                            )
+                            || sibling === that.range.startContainer
+                        ) {
                             addedNodes = addedNodes.concat(
-                                applyCSSFrom(that.range.startContainer, that.range.startOffset, css)
+                                applyCSSBetween(sibling, that.range.endContainer, css)
                             );
                             continue;
                         }
 
-                        if (sibling.contains(that.range.endContainer)) {
+                        if (
+                            sibling.nodeType === 1 
+                            && $(sibling).find(that.range.endContainer).length
+                        ) {
+                            var firstChild = sibling.firstChild;
+                            var startOffset = 0;
+                            if ($(sibling).find(that.range.startContainer).length) {
+                                firstChild = that.range.startContainer;
+                                startOffset = that.range.startOffset;
+                            }
                             addedNodes = addedNodes.concat(
-                                applyCSSUntil(that.range.endContainer, that.range.endOffset, css)
+                                applyCSSBetween(firstChild, that.range.endContainer, css, true, startOffset)
                             );
                             break;
                         }
 
-                        if (that.range.endContainer.contains(sibling) || sibling === that.range.endContainer) {
+                        if (
+                            (
+                                that.range.endContainer.nodeType === 1
+                                && $(that.range.endContainer).find(sibling).length
+                                && that.range.endOffset === i
+                            ) ||
+                                sibling === that.range.endContainer
+                            )
+                        {
+                            var firstChild = that.range.endContainer.firstChild;
+                            if (!firstChild) {
+                                firstChild = that.range.endContainer;
+                            }
                             addedNodes = addedNodes.concat(
-                                applyCSSUntil(that.range.startContainer, that.range.startOffset, css)
+                                applyCSSBetween(firstChild,  that.range.endContainer, css, true)
                             );
                             break;
                         }
 
-                        if (sibling.nodeType === 1) {
+                        if(sibling.nodeType === 1){
                             addedNodes.push(sibling);
                             $(sibling).css(css);
                             $(sibling).find('*').css(css);
                             continue;
                         }
-                        else {
+                        else{
                             var el = $(document.createElement('span'));
                             el.css(css);
                             addedNodes.push(el[0]);
+                            el.text(sibling.textContent);
+                            sibling.parentNode.insertBefore(el[0], sibling);
+                            sibling.remove();
                         }
 
-                        if (sibling === that.range.endContainer) {
+                        if(sibling === that.range.endContainer){
                             break;
                         }
                     }
                 }
 
-                var sel = window.getSelection();
-                var range = document.createRange();
-
-                range.setStartBefore(addedNodes[0]);
-                range.setEndAfter(addedNodes[addedNodes.length - 1]);
-
-                sel.removeAllRanges();
-                sel.addRange(range);
                 that.instance.trigger('selectionchange', {
                     selection: that.instance.selection
                 });
@@ -689,7 +812,7 @@ export var RTE =  {
                 var different = false;
                 var val = undefined;
                 this.selectedElements.forEach(function (item) {
-                    if (!item) {
+                    if(!item){
                         return;
                     }
                     var itemVal;
@@ -715,7 +838,7 @@ export var RTE =  {
         this.replaceHTML = function(htmlContent){
             that.instance.addState(that.editZone.html());
             var wrapper = $('<div></div>');
-            wrapper.html(htmlContent);
+            wrapper.html(htmlContent + '&#8203;');
             if (this.range) {
                 this.range.deleteContents();
                 this.range.insertNode(wrapper[0]);
@@ -727,13 +850,27 @@ export var RTE =  {
             this.instance.trigger('contentupdated');
         };
 
+        this.replaceHTMLInline = function (htmlContent) {
+            that.instance.addState(that.editZone.html());
+            var wrapper = $('<span></span>');
+            wrapper.html(htmlContent);
+            if (this.range) {
+                this.range.deleteContents();
+                this.range.insertNode(wrapper[0]);
+            }
+            else {
+                this.editZone.append(wrapper);
+            }
+
+            this.instance.trigger('contentupdated');
+        };
+
         this.$ = function(){
             var jSelector = $();
-            this.selectedElements.forEach(function (item) {
-                if (!item) {
+            this.selectedElements.forEach(function(item){
+                if(!item){
                     return;
                 }
-
                 if(item.nodeType === 1){
                     jSelector = jSelector.add(item);
                 }
@@ -770,7 +907,7 @@ export var RTE =  {
     Option: function(){
 
     },
-    baseToolbarConf: null,
+    baseToolbarConf: undefined,
     setModel: function(){
         model.makeModels(RTE);
         RTE.baseToolbarConf = new RTE.ToolbarConfiguration();
@@ -839,24 +976,26 @@ export var RTE =  {
             return {
                 template: '<i tooltip="editor.option.bold"></i>',
                 link: function(scope, element, attributes){
-                    element.on('click', function(){
-                        if(!instance.editZone.is(':focus')){
+                    element.on('click', function () {
+                        if (!instance.editZone.is(':focus')) {
                             instance.focus();
                         }
-                        instance.execCommand('bold');
-                        if(document.queryCommandState('bold')){
-                            element.addClass('toggled');
-                        }
-                        else{
+
+                        if (document.queryCommandState('bold')) {
                             element.removeClass('toggled');
+                            instance.selection.css({ 'font-weight': 'normal' });
+                        }
+                        else {
+                            element.addClass('toggled');
+                            instance.selection.css({ 'font-weight': 'bold' });
                         }
                     });
 
-                    instance.on('selectionchange', function(e){
-                        if(document.queryCommandState('bold')){
+                    instance.on('selectionchange', function (e) {
+                        if (document.queryCommandState('bold')) {
                             element.addClass('toggled');
                         }
-                        else{
+                        else {
                             element.removeClass('toggled');
                         }
                     });
@@ -875,7 +1014,7 @@ export var RTE =  {
 
                         if(document.queryCommandState('italic')){
                             element.removeClass('toggled');
-                            instance.selection.css({ 'font-style': '' });
+                            instance.selection.css({ 'font-style': 'normal' });
                         }
                         else{
                             element.addClass('toggled');
@@ -922,6 +1061,21 @@ export var RTE =  {
             };
         });
 
+        function beforeJustify(instance){
+            instance.editZone.find('mathjax').html('');
+            instance.editZone.find('mathjax').removeAttr('contenteditable');
+        }
+
+        function afterJustify(instance){
+            instance.editZone.find('mathjax').each(function(index, item){
+                var scope = angular.element(item).scope();
+                scope.updateFormula(scope.formula)
+            })
+            instance.editZone.find('mathjax').attr('contenteditable', 'false');
+
+            instance.trigger('justify-changed');
+        }
+
         RTE.baseToolbarConf.option('justifyLeft', function(instance){
             return {
                 template: '<i tooltip="editor.option.justify.left"></i>',
@@ -931,6 +1085,7 @@ export var RTE =  {
                         if(!instance.editZone.is(':focus')){
                             instance.focus();
                         }
+                        beforeJustify(instance)
                         instance.execCommand('justifyLeft');
                         if(document.queryCommandState('justifyLeft')){
                             element.addClass('toggled');							}
@@ -939,24 +1094,12 @@ export var RTE =  {
                         }
 
                         instance.editZone.find('img').each(function (index, item) {
-                            if ($(item).css('text-align') === 'left') {
+                            if ($(item).css('text-align') === 'left' && !$(item).hasClass('smiley')) {
                                 $(item).css({ 'float': 'left', 'z-index': 0 });
                             }
                         });
 
-                        instance.editZone.find('mathjax').each(function (index, item) {
-                            var sel = window.getSelection();
-                            var range = sel.getRangeAt(0);
-                            if (range.intersectsNode && range.intersectsNode(item)) {
-                                if (element.hasClass('toggled')) {
-                                    $(item).css({ float: 'left' });
-                                }
-                            }
-                        });
-
-                        window.MathJax.Hub.Rerender();
-
-                        instance.trigger('justify-changed');
+                        afterJustify(instance)
                     });
 
                     instance.on('selectionchange', function(e){
@@ -989,6 +1132,7 @@ export var RTE =  {
                             instance.focus();
                         }
 
+                        beforeJustify(instance);
                         if(!document.queryCommandState('justifyRight')){
                             instance.execCommand('justifyRight');
                             element.addClass('toggled');
@@ -999,27 +1143,12 @@ export var RTE =  {
                         }
 
                         instance.editZone.find('img').each(function (index, item) {
-                            if ($(item).css('text-align') === 'right') {
+                            if ($(item).css('text-align') === 'right' && !$(item).hasClass('smiley')) {
                                 $(item).css({ 'float': 'right', 'z-index': '0' });
                             }
                         });
 
-                        instance.editZone.find('mathjax').each(function (index, item) {
-                            var sel = window.getSelection();
-                            var range = sel.getRangeAt(0);
-                            if (range.intersectsNode && range.intersectsNode(item)) {
-                                if (element.hasClass('toggled')) {
-                                    $(item).css({ float: 'right' });
-                                }
-                                else {
-                                    $(item).css({ float: 'left' });
-                                }
-                            }
-                        });
-
-                        window.MathJax.Hub.Rerender();
-
-                        instance.trigger('justify-changed');
+                        afterJustify(instance);
                     });
 
                     instance.on('selectionchange', function (e) {
@@ -1052,6 +1181,7 @@ export var RTE =  {
                             instance.focus();
                         }
 
+                        beforeJustify(instance);
                         if(!document.queryCommandState('justifyCenter')){
                             instance.execCommand('justifyCenter');
                             element.addClass('toggled');
@@ -1062,32 +1192,17 @@ export var RTE =  {
                         }
 
                         instance.editZone.find('img').each(function (index, item) {
-                            if ($(item).css('text-align') === 'center') {
+                            if ($(item).css('text-align') === 'center' && !$(item).hasClass('smiley')) {
                                 // z-index is a hack to track margin width; auto width is computed as 0 in FF
                                 $(item).css({ 'float': 'none', 'margin': 'auto', 'z-index': '1' });
                             }
-                            else{
+                            else if(!$(item).hasClass('smiley')){
                                 // z-index is a hack to track margin width; auto width is computed as 0 in FF
                                 $(item).css({ 'float': 'left', 'z-index': '0' });
                             }
                         });
 
-                        instance.editZone.find('mathjax').each(function (index, item) {
-                            var sel = window.getSelection();
-                            var range = sel.getRangeAt(0);
-                            if (range.intersectsNode && range.intersectsNode(item)) {
-                                if (element.hasClass('toggled')) {
-                                    $(item).css({ 'float': 'none', 'margin': 'auto' });
-                                }
-                                else {
-                                    $(item).css({ float: 'left' });
-                                }
-                            }
-                        });
-
-                        window.MathJax.Hub.Rerender();
-
-                        instance.trigger('justify-changed');
+                        afterJustify(instance);
                     });
 
                     instance.on('selectionchange', function(e){
@@ -1124,6 +1239,7 @@ export var RTE =  {
                             instance.focus();
                         }
 
+                        beforeJustify(instance);
                         if(!document.queryCommandState('justifyFull')){
                             element.addClass('toggled');
                             instance.execCommand('justifyFull');
@@ -1133,19 +1249,7 @@ export var RTE =  {
                             element.removeClass('toggled');
                         }
 
-                        instance.editZone.find('mathjax').each(function (index, item) {
-                            var sel = window.getSelection();
-                            var range = sel.getRangeAt(0);
-                            if (range.intersectsNode && range.intersectsNode(item)) {
-                                if (element.hasClass('toggled')) {
-                                    $(item).css({ float: 'left' });
-                                }
-                            }
-                        });
-
-                        window.MathJax.Hub.Rerender();
-
-                        instance.trigger('justify-changed');
+                        afterJustify(instance);
                     });
 
                     instance.on('selectionchange', function(e){
@@ -1173,7 +1277,8 @@ export var RTE =  {
             return {
                 template: '<i tooltip="editor.option.ulist"></i>',
                 link: function(scope, element, attributes){
-                    element.on('mousedown', function(){
+                    element.on('mousedown', function () {
+
                         if(!instance.editZone.is(':focus')){
                             instance.editZone.focus();
                         }
@@ -1265,17 +1370,24 @@ export var RTE =  {
                     element.on('click', 'i', function () {
                         element.find('input').click();
                     });
-                    if(!$.spectrum){
+                    if (navigator.userAgent.indexOf('Edge') !== -1) {
+                        element.find('input').attr('type', 'text');
+                    }
+                    if (!$.spectrum) {
                         $.spectrum = {};
                         http().get('/infra/public/spectrum/spectrum.js').done(function(data){
                             eval(data);
                             setSpectrum();
+                            if ($.spectrum && $.spectrum.palettes && element.find('input')[0].type === 'text') {
+                                $('body').find('.option.color input, .option.background-color input').spectrum({preferredFormat: "hex"});
+                                setSpectrum();
+                            }
                         });
                         var stylesheet = $('<link rel="stylesheet" type="text/css" href="/infra/public/spectrum/spectrum.css" />');
                         $('head').prepend(stylesheet);
                     }
-                    else if ($.spectrum && $.spectrum.palettes && element.find('input[type=color]')[0].type === 'text') {
-                        element.find("input[type=color]").spectrum();
+                    if ($.spectrum && $.spectrum.palettes && element.find('input')[0].type === 'text') {
+                        element.find('input').spectrum({ preferredFormat: "hex" });
                         setSpectrum();
                     }
                     scope.foreColor = "#000000";
@@ -1302,17 +1414,26 @@ export var RTE =  {
             return {
                 template: '<i></i><input tooltip="editor.option.backgroundcolor" type="color" />',
                 link: function(scope, element, attributes){
+                    element.on('click', 'i', function () {
+                        element.find('input').click();
+                    });
+                    if (navigator.userAgent.indexOf('Edge') !== -1) {
+                        element.find('input').attr('type', 'text');
+                    }
                     if(!$.spectrum){
                         $.spectrum = {};
                         http().get('/infra/public/spectrum/spectrum.js').done(function(data){
                             eval(data);
-                            setSpectrum();
+                            if ($.spectrum && $.spectrum.palettes && element.find('input')[0].type === 'text') {
+                                $('body').find('.option.color input, .option.background-color input').spectrum({ preferredFormat: "hex" });
+                                setSpectrum();
+                            }
                         });
                         var stylesheet = $('<link rel="stylesheet" type="text/css" href="/infra/public/spectrum/spectrum.css" />');
                         $('head').prepend(stylesheet);
                     }
-                    else if ($.spectrum && $.spectrum.palettes && element.find('input[type=color]')[0].type === 'text') {
-                        element.find('input[type=color]').spectrum();
+                    else if ($.spectrum && $.spectrum.palettes && element.find('input')[0].type === 'text') {
+                        element.find('input[type=color]').spectrum({ preferredFormat: "hex" });
                         setSpectrum();
                     }
                     element.children('input').on('change', function () {
@@ -1324,7 +1445,7 @@ export var RTE =  {
                     });
 
                     scope.$watch('backColor', function () {
-                        var rgbColor: { r?: number, g?: number, b?: number, a?: number } = {};
+                        var rgbColor:{ r: 0, g: 0, b: 0, a?: 0 } = { r: 0, g: 0, b: 0, a: 0 };
                         if (typeof scope.backColor === 'string') {
                             if(scope.backColor[0] === '#'){
                                 rgbColor = {
@@ -1624,13 +1745,21 @@ export var RTE =  {
                         if (!instance.editZone.is(':focus')) {
                             instance.focus();
                         }
+
+                        var format = {
+                            'font-style': 'normal',
+                            'background-color': 'transparent',
+                            'font-weight': 'normal',
+                            'text-decoration': 'none',
+                            'color': 'inherit',
+                            'font-size': 'initial',
+                            'line-height': 'initial',
+                            'font-family': 'inherit'
+                        };
+
+                        instance.selection.css(format);
                         instance.execCommand('removeFormat');
-                        if (document.queryCommandEnabled('removeFormat')) {
-                            element.removeClass('disabled');
-                        }
-                        else {
-                            element.addClass('disabled');
-                        }
+                        instance.trigger('selectionchange', { selection: instance.selection });
                     });
 
                     instance.on('selectionchange', function (e) {
@@ -1847,7 +1976,7 @@ export var RTE =  {
             }
         });
 
-        RTE.baseToolbarConf.option('sound', function (instance) {
+        RTE.baseToolbarConf.option('sound', function(instance){
             return {
                 template: '<i ng-click="soundOption.display.pickFile = true" tooltip="editor.option.sound"></i>' +
                 '<div ng-if="soundOption.display.pickFile">' +
@@ -1855,7 +1984,7 @@ export var RTE =  {
                 '<media-library ng-change="updateContent()" ng-model="soundOption.display.file" file-format="\'audio\'" visibility="soundOption.visibility"></media-library>' +
                 '</lightbox>' +
                 '</div>',
-                link: function (scope, element, attributes) {
+                link: function(scope, element, attributes){
                     instance.editZone.addClass('drawing-zone');
                     scope.soundOption = {
                         display: { pickFile: false },
@@ -1876,7 +2005,6 @@ export var RTE =  {
                             '<div class="audio-wrapper"><audio src="' + path + scope.soundOption.display.file._id + '" controls draggable native></audio></div>' +
                             '<div><br /></div>'
                         );
-
                         scope.soundOption.display.pickFile = false;
                         scope.soundOption.display.file = undefined;
                     };
@@ -1888,13 +2016,13 @@ export var RTE =  {
                         }
 
                         //delay to account for sound destruction and recreation
-                        setTimeout(function () {
-                            if (audio && audio.tagName && audio.tagName === 'AUDIO') {
+                        setTimeout(function(){
+                            if(audio && audio.tagName && audio.tagName === 'AUDIO'){
                                 audio.remove();
                             }
                             ui.extendElement.resizable(instance.editZone.find('audio'), {
                                 moveWithResize: false,
-                                mouseUp: function () {
+                                mouseUp: function() {
                                     instance.trigger('contentupdated');
                                     instance.addState(instance.editZone.html());
                                 }
@@ -1951,12 +2079,8 @@ export var RTE =  {
                             angular.element(editNode.firstChild).scope().updateFormula(scope.display.formula);
                         }
                         else{
-                            instance.selection.replaceHTML(instance.compile(
-                                '<div class="row"><br/></div>' +
-                                '<div class="row">' +
-                                    '<mathjax formula="'+ scope.display.formula + '"></mathjax>' +
-                                '</div>' +
-                                '<div><br /></div>'
+                            instance.selection.replaceHTMLInline(instance.compile(
+                                '<span>&nbsp;<mathjax contenteditable="false" formula="'+ scope.display.formula + '"></mathjax>&nbsp;</span>'
                             )(scope));
                         }
                         
@@ -2158,6 +2282,10 @@ export var RTE =  {
                             if(scope.linker.params.tooltip){
                                 linkNode.attr('tooltip', scope.linker.params.tooltip);
                             }
+                            else if(linkNode.attr('tooltip')){
+                                linkNode.removeAttr('tooltip');
+                                linkNode.off('mouseover');
+                            }
                         }
 
                         if (selectedNode && selectedNode.nodeName === 'A') {
@@ -2175,7 +2303,7 @@ export var RTE =  {
 
                         if (instance.selection.isCursor()) {
                             linkNode.text(scope.linker.params.link);
-                            instance.selection.replaceHTML(linkNode[0].outerHTML);
+                            instance.selection.replaceHTMLInline(instance.compile(linkNode[0].outerHTML)(scope));
                         }
                         else {
                             instance.selection.wrapText(linkNode);
@@ -2274,8 +2402,8 @@ export var RTE =  {
                 '<i tooltip="editor.option.smileys"></i>' +
                 '<lightbox show="display.pickSmiley" on-close="display.pickSmiley = false;">' +
                 '<h2>Insérer un smiley</h2>' +
-                '<div class="row">' +
-                '<img ng-repeat="smiley in smileys" ng-click="addSmiley(smiley)" skin-src="/img/smileys/[[smiley]].png" />' +
+                '<div class="row smileys">' +
+                '<img ng-repeat="smiley in smileys" class="smiley" ng-click="addSmiley(smiley)" skin-src="/img/smileys/[[smiley]].png" />' +
                 '</div>' +
                 '</lightbox>',
                 link: function(scope, element, attributes){
@@ -2284,8 +2412,10 @@ export var RTE =  {
                     scope.addSmiley = function (smiley) {
                         //do not replace with i, as i is used by other websites for italic and
                         //is often copy-pasted in the editor
-                        var content = instance.compile('<img skin-src="/img/smileys/' + smiley + '.png" draggable native style="height: 60px; width: 60px;" />')(scope.$parent);
-                        instance.selection.replaceHTML(content);
+                        var content = instance.compile(
+                            '<img skin-src="/img/smileys/' + smiley + '.png" draggable native class="smiley" />'
+                        )(scope.$parent);
+                        instance.selection.replaceHTMLInline(content);
                         scope.display.pickSmiley = false;
                     }
 
@@ -2365,7 +2495,7 @@ export var RTE =  {
                             $(table).append(row);
                             for(var j = 0; j <= $(this).index(); j++){
                                 var cell = $('<td></td>');
-                                cell.html('&nbsp;')
+                                cell.html('<br />')
                                 row.append(cell);
                             }
                         }
@@ -2378,7 +2508,7 @@ export var RTE =  {
                             label: 'editor.add.row',
                             action: function(e){
                                 var newRow = $($(e.target).parent()[0].outerHTML);
-                                newRow.find('td').html('&nbsp;');
+                                newRow.find('td').html('<br />');
                                 $(e.target).parent().after(newRow);
                             }
 
@@ -2388,7 +2518,7 @@ export var RTE =  {
                             action: function(e){
                                 var colIndex = $(e.target).index();
                                 $(e.target).parents('table').find('tr').each(function(index, row){
-                                    $(row).children('td').eq(colIndex).after('<td>&nbsp;</td>')
+                                    $(row).children('td').eq(colIndex).after('<td><br /></td>')
                                 });
                             }
                         },
@@ -2640,15 +2770,17 @@ export var RTE =  {
                     if (navigator.userAgent.indexOf('Trident') !== -1 || navigator.userAgent.indexOf('Edge') !== -1) {
                         element.find('code').hide();
                     }
-
-                    http().loadScript('/infra/public/js/prism/prism.js');
-
                     $('body').append(
                         $('<link />')
                             .attr('rel', 'stylesheet')
                             .attr('type', 'text/css')
                             .attr('href', '/infra/public/js/prism/prism.css')
                     );
+
+                    http().get('/infra/public/js/prism/prism.js').done((d) => {
+                        let f = new Function(d);
+                        f();
+                    });
 
                     element.find('.close-focus').on('click', function(){
                         element.removeClass('focus');
@@ -2721,7 +2853,7 @@ export var RTE =  {
                     }
 
                     scope.$watch(
-                        function(){
+                        function () {
                             return ngModel(scope);
                         },
                         function (newValue) {
@@ -2733,7 +2865,11 @@ export var RTE =  {
                                 $(item).append(mathItem);
                             });
 
-                            if(newValue !== editZone.html() && !editZone.is(':focus')){
+                            if (
+                                newValue !== editZone.html() &&
+                                !editZone.is(':focus') &&
+                                $('editor-toolbar').find(':focus').length === 0
+                            ) {
                                 editZone.html($compile(ngModel(scope))(scope));
                             }
                             if(newValue !== htmlZone.val() && !htmlZone.is(':focus')){
@@ -2757,11 +2893,6 @@ export var RTE =  {
                     var previousScroll = 0;
                     function sticky() {
                         if(element.parents('.editor-media').length > 0){
-                            return;
-                        }
-                            
-                        if (previousScroll === (window.scrollY || window.pageYOffset)) {
-                            var placeEditorToolbar = requestAnimationFrame(sticky);
                             return;
                         }
                         
@@ -2802,7 +2933,7 @@ export var RTE =  {
                         var placeEditorToolbar = requestAnimationFrame(sticky);
                     }
 
-                    if ($(window).width() > ui.breakpoints.tablette) {
+                    if(ui.breakpoints.tablette <= $(window).width()){
                         var placeEditorToolbar = requestAnimationFrame(sticky);
                     }
 
@@ -2934,11 +3065,18 @@ export var RTE =  {
                             }
                         });
 
-                        scope.$apply(function(){
+                        if (!scope.$$phase) {
+                            scope.$apply(function () {
+                                scope.$eval(attributes.ngChange);
+                                var content = editZone.html();
+                                ngModel.assign(scope, content);
+                            });
+                        }
+                        else {
                             scope.$eval(attributes.ngChange);
                             var content = editZone.html();
                             ngModel.assign(scope, content);
-                        });
+                        }
                     });
 
                     var placeToolbar = function () {
@@ -2964,6 +3102,14 @@ export var RTE =  {
                         element.parents('grid-cell').data('lock', true);
                         if ($(window).width() < ui.breakpoints.tablette) {
                             $('body').css({ overflow: 'hidden' });
+                            window.scrollTo(0,0);
+                            setTimeout(function(){
+                                var sel = document.getSelection();
+                                var r = document.createRange();
+                                r.setStart(editZone[0].firstChild, 0);
+                                sel.removeAllRanges();
+                                sel.addRange(r);
+                            }, 600);
                         }
                     });
 
@@ -2973,7 +3119,7 @@ export var RTE =  {
                             element.find('.editor-toolbar-opener').removeClass('active');
                         }
 
-                        if(element.find(e.target).length === 0){
+                        if(element.find(e.target).length === 0 && !$(e.target).hasClass('sp-choose')){
                             element.children('editor-toolbar').removeClass('show');
                             element.trigger('editor-blur');
                             element.removeClass('focus');
@@ -3015,8 +3161,18 @@ export var RTE =  {
                     var editingTimer;
 
                     editZone.on('paste', function () {
-                        editorInstance.addState(editZone.html());
-                        editorInstance.trigger('contentupdated');
+                        setTimeout(function(){
+                            editorInstance.addState(editZone.html());
+                            if(editorInstance.editZone[0].childNodes.length > editorInstance.editZone[0].children.length){
+                                var wrapper = $('<div></div>');
+                                while(editorInstance.editZone[0].childNodes.length){
+                                    wrapper.append(editorInstance.editZone[0].childNodes[0]);
+                                }
+                                editorInstance.editZone.append(wrapper);
+                            }
+                            editorInstance.trigger('contentupdated');
+                            editorInstance.scope.$apply();
+                        }, 100);
                     });
 
                     editZone.on('keydown', function (e) {
@@ -3033,11 +3189,11 @@ export var RTE =  {
                                 if (initialOffset === currentTextNode.textContent.length) {
                                     initialOffset = -1;
                                 }
-                                if (range.startContainer.parentNode.innerHTML === '&nbsp;' && range.startOffset === 1) {
+                                if (range.startContainer.parentNode.innerHTML === '&#8203;' && range.startOffset === 1) {
                                     var node = range.startContainer.parentNode;
                                     
                                     setTimeout(function () {
-                                        node.innerHTML = node.innerHTML.substring(6);
+                                        node.innerHTML = node.innerHTML.substring(7);
                                         setTimeout(function () {
                                             var range = document.createRange();
                                             if (initialOffset === -1) {
@@ -3046,9 +3202,8 @@ export var RTE =  {
                                             range.setStart((node.firstChild || node), initialOffset);
                                             sel.removeAllRanges();
                                             sel.addRange(range);
-                                        }, 10)
-                                        
-                                    }, 10);
+                                        }, 1);
+                                    }, 1);
                                     
                                 }
                             }
@@ -3063,71 +3218,111 @@ export var RTE =  {
                             editorInstance.addState(editZone.html());
                             
                             var parentContainer = range.startContainer;
-                            var newLine = $('<div>&nbsp;</div>');
+
+                            if (
+                                    (parentContainer.nodeType === 1 && parentContainer.nodeName === 'LI') ||
+                                    (parentContainer.parentNode.nodeType === 1 && parentContainer.parentNode.nodeName === 'LI') ||
+                                    (parentContainer.nodeType === 1 && parentContainer.nodeName === 'TD') ||
+                                    (parentContainer.parentNode.nodeType === 1 && parentContainer.parentNode.nodeName === 'TD')
+                                ) {
+                                return;
+                            }
+
+                            var blockContainer = parentContainer;
+                            while (blockContainer.nodeType !== 1 || textNodes.indexOf(blockContainer.nodeName) !== -1) {
+                                blockContainer = blockContainer.parentNode;
+                            }
                             if (parentContainer === editZone[0]) {
-                                parentContainer.appendChild(newLine[0]);
+                                var wrapper = $('<div></div>');
+                                $(editZone[0]).append(wrapper);
+                                wrapper.html('&#8203;');
+                                blockContainer = wrapper[0];
+                                parentContainer = wrapper[0];
                             }
-                            else {
-                                if (parentContainer.nodeType !== 1) {
-                                    parentContainer = parentContainer.parentNode;
+                            if (blockContainer === editZone[0]) {
+                                var startOffset = range.startOffset;
+                                var wrapper = $('<div></div>');
+                                
+                                while (editZone[0].childNodes.length) {
+                                    $(wrapper).append(editZone[0].childNodes[0]);
                                 }
-                                if (parentContainer.nodeName !== 'LI') {
-                                    e.preventDefault();
-                                    var rangeStart = 1;
-                                    if (
-                                        range.startContainer.nodeType !== 1 &&
-                                        range.startOffset < range.startContainer.textContent.length
-                                    ) {
-                                        var content = parentContainer.textContent.substring(range.startOffset, parentContainer.textContent.length);
-                                        if (!content) {
-                                            content = '&nbsp;';
-                                        }
-                                        else {
-                                            rangeStart = 0;
-                                        }
-                                        newLine.html(content);
-                                        range.startContainer.textContent = range.startContainer.textContent.substring(0, range.startOffset);
+                                $(blockContainer).append(wrapper);
+                                blockContainer = wrapper[0];
+                                var sel = document.getSelection();
+                                var r = document.createRange();
+                                r.setStart(parentContainer, startOffset);
+                                sel.removeAllRanges();
+                                sel.addRange(r);
+                                range = r;
+                            }
+                            var newNodeName = 'div';
+                            if ((parentContainer.nodeType === 1 && range.startOffset < parentContainer.childNodes.length)
+                                || (parentContainer.nodeType === 3 && range.startOffset < parentContainer.textContent.length)) {
+                                newNodeName = blockContainer.nodeName.toLowerCase();
+                            }
+                            var newLine = $('<' + newNodeName + '>&#8203;</' + newNodeName + '>');
 
-                                        var sibling = range.startContainer.nextSibling;
-                                        do {
-                                            newLine.append(sibling);
-                                            sibling = range.startContainer.nextSibling;
-                                        } while (sibling !== null);
+                            blockContainer.parentNode.insertBefore(newLine[0], blockContainer.nextSibling);
 
-                                        if (!(parentContainer as any).wholeText) {
-                                            // FF forces encode on textContent, this is a hack to get the actual entities codes,
-                                            // since innerHTML doesn't exist on text nodes
-                                            parentContainer.textContent = $('<div>&nbsp;</div>')[0].textContent;
-                                        }
-                                    }
-                                    if (
-                                        range.startContainer.nodeType === 1 &&
-                                        range.startOffset < (range.startContainer as any).children.length
-                                    ) {
-                                        for (var i = range.startOffset; i < (range.startContainer as any).children.length; i++) {
-                                            (range.startContainer as any).children[i].remove();
-                                            newLine.append($((range.startContainer as any).children[i].outerHTML));
-                                        }
-                                    }
-
-                                    var container = parentContainer;
-                                    if (container.nodeType !== 1) {
-                                        container = container.parentNode;
-                                    }
-                                    if (container.nextSibling) {
-                                        container.parentNode.insertBefore(newLine[0], container.nextSibling);
-                                    }
-                                    else {
-                                        container.parentNode.appendChild(newLine[0]);
-                                    }
-
-                                    var range = document.createRange();
-                                    range.setStart(newLine[0].firstChild || newLine[0], rangeStart);
-
-                                    sel.removeAllRanges();
-                                    sel.addRange(range);
+                            newLine.attr('style', $(blockContainer).attr('style'));
+                            newLine.attr('class', $(blockContainer).attr('class'));
+                            
+                            e.preventDefault();
+                            var rangeStart = 1;
+                            if(parentContainer.nodeType === 3){
+                                let content = parentContainer.textContent.substring(range.startOffset, parentContainer.textContent.length);
+                                if(!content){
+                                    content = '&#8203;';
+                                }
+                                else {
+                                    rangeStart = 0;
+                                }
+                                newLine.html(content);
+                                parentContainer.textContent = parentContainer.textContent.substring(0, range.startOffset);
+                            }
+                            else{
+                                while(parentContainer.childNodes.length > range.startOffset){
+                                    newLine.append(parentContainer.childNodes[range.startOffset]);
                                 }
                             }
+
+                            var nodeCursor = parentContainer;
+                            while (nodeCursor !== blockContainer) {
+                                var cursorClone;
+                                if (nodeCursor.nodeType === 1) {
+                                    cursorClone = document.createElement(nodeCursor.nodeName.toLowerCase());
+                                    $(cursorClone).attr('style', $(nodeCursor).attr('style'));
+                                    $(cursorClone).attr('class', $(nodeCursor).attr('class'));
+                                    $(cursorClone).append(newLine[0].firstChild);
+                                    newLine.prepend(cursorClone);
+                                }
+                                        
+                                var sibling = nodeCursor.nextSibling;
+                                while (sibling !== null) {
+                                    //order matters here. appending sibling before getting nextsibling breaks the loop
+                                    var currentSibling = sibling;
+                                    sibling = sibling.nextSibling;
+                                    newLine.append(currentSibling);
+                                }
+
+                                nodeCursor = nodeCursor.parentNode;
+                            }
+
+                            if (!(parentContainer as any).wholeText && parentContainer.nodeType === 3) {
+                                // FF forces encode on textContent, this is a hack to get the actual entities codes,
+                                // since innerHTML doesn't exist on text nodes
+                                parentContainer.textContent = $('<div>&#8203;</div>')[0].textContent;
+                            }
+
+                            var range = document.createRange();
+                            var newStartContainer = newLine[0];
+                            while(newStartContainer.firstChild){
+                                newStartContainer = newStartContainer.firstChild;
+                            }
+                            range.setStart(newStartContainer, rangeStart);
+
+                            sel.removeAllRanges();
+                            sel.addRange(range);
                         }
 
                         if (e.keyCode === 8 || e.keyCode === 46) {
@@ -3179,7 +3374,7 @@ export var RTE =  {
                                 if(!nextTag){
                                     var newLine = $('<tr></tr>');
                                     for(var i = 0; i < $(currentTag).parent('tr').children('td').length; i++){
-                                        newLine.append($('<td>&nbsp;</td>'));
+                                        newLine.append($('<td><br /></td>'));
                                     }
                                     nextTag = newLine.children('td')[0];
                                     $(currentTag).closest('table').append(newLine);
@@ -3190,11 +3385,11 @@ export var RTE =  {
                                 document.execCommand('indent');
                             }
                             else {
-                                editorInstance.selection.range.insertNode($('<span style="padding-left: 25px;">&nbsp;</span>')[0]);
+                                editorInstance.selection.range.insertNode($('<span style="padding-left: 25px;">&#8203;</span>')[0]);
                             }
                         }
                     });
-                    
+
                     editZone.on('keyup', function(e){
                         htmlZone.css({ 'min-height': '250px', height: 0 });
                         var newHeight = htmlZone[0].scrollHeight + 2;
@@ -3251,7 +3446,7 @@ export var RTE =  {
                     element.on('dragleave', function(){
                         element.removeClass('droptarget');
                     });
-                    
+
                     element.find('[contenteditable]').on('drop', function (e) {
                         var visibility: 'protected' | 'public' = 'protected';
                         if (element.attr('public') !== undefined) {
@@ -3283,9 +3478,9 @@ export var RTE =  {
                         }
 
                         for(var i = 0; i < files.length; i++){
-                            (function () {
+                            (function(){
                                 var name = files[i].name;
-                                workspace.Document.prototype.upload(files[i], 'file-upload-' + name + '-' + i, function (doc) {
+                                workspace.Document.prototype.upload(files[i], 'file-upload-' + name + '-' + i, function(doc){
                                     var path = '/workspace/document/';
                                     if (visibility === 'public') {
                                         path = '/workspace/pub/document/';
@@ -3303,13 +3498,13 @@ export var RTE =  {
                                         el = $('<div class="download-attachments">' +
                                             '<h2>' + lang.translate('editor.attachment.title') + '</h2>' +
                                             '<div class="attachments">' +
-                                            '<a href="' + path + doc._id + '"><div class="download"></div>' + name + '</a>' +
-                                            '</div></div><div><br /><div><br /></div></div>');
+                                                '<a href="'+ path + doc._id + '"><div class="download"></div>' + name + '</a>' +
+                                        '</div></div><div><br /><div><br /></div></div>');
                                     }
 
                                     editorInstance.selection.replaceHTML('<div>' + el[0].outerHTML + '<div><br></div><div><br></div></div>');
                                 }, visibility);
-                            } ())
+                            }())
                         }
                     });
 
@@ -3345,6 +3540,10 @@ export var RTE =  {
                         }
                         return lang.translate(scope.display[scope.displayAs]);
                     };
+
+                    element.children('.options').on('mouseover', function (e){
+                        e.stopPropagation()
+                    });
 
                     element.children('.selected-value').on('click', function(){
                         if (element.children('.options').hasClass('hidden')) {
@@ -3463,7 +3662,10 @@ export var RTE =  {
                 },
                 link: function (scope, element, attributes) {
                     if (!window.MathJax) {
-                        http().loadScript('/infra/public/mathjax/MathJax.js').then(() => {
+                        http().get('/infra/public/mathjax/MathJax.js').done((d) => {
+                            var f = new Function(d);
+                            f();
+
                             window.MathJax.Hub.Config({
                                 messageStyle: 'none',
                                 tex2jax: { preview: 'none' },
