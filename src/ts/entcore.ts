@@ -10,3 +10,4 @@ export * from './workspace';
 export * from './skin';
 export * from './editor';
 export * from './modelDefinitions';
+export * from './sniplets';

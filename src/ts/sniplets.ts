@@ -5,7 +5,7 @@ import { http } from './http';
 import { idiom } from './idiom';
 import { _ } from './libs/underscore/underscore';
 
-var sniplets = {
+export let sniplets = {
 	load: function(callback){
 		var sniplets = this;
 		http().get('/resources-applications').done(function(apps) {
