@@ -23,7 +23,6 @@
     "angular": "1.2.0-rc.2",
     "angular-sanitize": "1.2.0-rc.2",
     "angular-route": "1.2.0-rc.2",
-    "underscore": "^1.8.3",
-    "core.js": "^2.4.1"
+    "underscore": "^1.8.3"
   }
 }
