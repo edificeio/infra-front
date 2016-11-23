@@ -1445,7 +1445,7 @@ export let RTE = {
                     });
 
                     scope.$watch('backColor', function () {
-                        var rgbColor:{ r: 0, g: 0, b: 0, a?: 0 } = { r: 0, g: 0, b: 0, a: 0 };
+                        var rgbColor:{ r: number, g: number, b: number, a?: number } = { r: 0, g: 0, b: 0, a: 0 };
                         if (typeof scope.backColor === 'string') {
                             if(scope.backColor[0] === '#'){
                                 rgbColor = {
