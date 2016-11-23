@@ -1,4 +1,4 @@
-require('es6-shim');
+require('core.js');
 var _ = require('underscore');
 (window as any)._ = _;
 
