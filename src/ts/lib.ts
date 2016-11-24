@@ -605,7 +605,7 @@ Model.prototype.sync = function(){
 
 export function bootstrap(func) {
     if (currentLanguage === 'fr') {
-        moment.lang(currentLanguage, {
+        moment.updateLocale(currentLanguage, {
             calendar: {
                 lastDay: '[Hier à] HH[h]mm',
                 sameDay: '[Aujourd\'hui à] HH[h]mm',
@@ -617,7 +617,7 @@ export function bootstrap(func) {
         });
     }
     else {
-        moment.lang(currentLanguage);
+        moment.updateLocale(currentLanguage);
     }
 
 	if((window as any).notLoggedIn){
@@ -631,8 +631,8 @@ export function bootstrap(func) {
 		});
 		return;
 	}
-	http().get('/auth/oauth2/userinfo').done(function(data){
-		skin.loadConnected();
+	http().get('/auth/oauth2/userinfo').done(async (data): Promise<void> => {
+		await skin.loadConnected();
 		model.me = data;
 		model.me.preferences = {
 			save: function(pref, data){
@@ -671,14 +671,14 @@ export function bootstrap(func) {
 		};
 
 		model.me.workflow = {
-			load: function(services){
-				services.forEach(function(serviceName){
-					this[serviceName] = Behaviours.findWorkflow(serviceName);
-				}.bind(this));
+			load: async function(services): Promise<void>{
+				for(let service of services){
+					this[service] = await Behaviours.findWorkflow(service);
+				}
 			}
 		};
 
-		model.me.workflow.load(['workspace', appPrefix]);
+		await model.me.workflow.load(['workspace', appPrefix]);
 		model.trigger('me.change');
 
 		calendar.init();

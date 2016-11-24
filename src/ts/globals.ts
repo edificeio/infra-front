@@ -45,7 +45,7 @@ export var currentLanguage = '';
                     currentLanguage = JSON.parse(request.responseText).locale;
                     if((window as any).moment){
                         if (currentLanguage === 'fr') {
-                            moment.lang(currentLanguage, {
+                            moment.updateLocale(currentLanguage, {
                                 calendar: {
                                     lastDay: '[Hier à] HH[h]mm',
                                     sameDay: '[Aujourd\'hui à] HH[h]mm',

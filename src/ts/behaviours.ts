@@ -173,7 +173,7 @@ export var Behaviours = (function(){
 
 			return actions;
 		},
-		findWorkflow: function(serviceName){
+		findWorkflow: function(serviceName): Promise<any>{
 			var returnWorkflows = function(){
 				if(!this.applicationsBehaviours[serviceName]){
 					return {};
@@ -195,23 +195,26 @@ export var Behaviours = (function(){
 				return returnWorkflows();
 			}
 			
-			var request = new XMLHttpRequest();
-			var path = '/' + serviceName + '/public/js/behaviours.js';
-			request.open('GET', path, false);
-			request.onload = function(){
-				if(request.status === 200){
-					try{
-						var lib = new Function(request.responseText);
-						lib();
+			return new Promise((resolve, reject) => {
+				var request = new XMLHttpRequest();
+				var path = '/' + serviceName + '/public/js/behaviours.js';
+				request.open('GET', path);
+				request.onload = function(){
+					if(request.status === 200){
+						try{
+							var lib = new Function(request.responseText);
+							lib();
+							resolve(returnWorkflows());
+						}
+						catch(e){
+							console.log(e);
+							reject();
+						}
 					}
-					catch(e){
-						console.log(e);
-					}
-				}
-			};
+				};
 
-            request.send(null);
-            return returnWorkflows();
+				request.send(null);
+			});
 		},
 		workflowsFrom: function(obj, dependencies){
 			if(typeof obj !== 'object'){

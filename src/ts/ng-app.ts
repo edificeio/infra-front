@@ -3553,6 +3553,12 @@ module.directive('wizard', function(){
 		transclude: true,
 		compile: function(element, attributes, transclude){
 			return function(scope, element, attributes){
+				element.find('div.steps step').forEach((step) => {
+					if($(step).attr('workflow') && !model.me.hasWorkflow(step.attr('workflow'))){
+						$(step).remove();
+					}
+				});
+				
 				element.find('div.steps').hide();
 				scope.currentStep = 0;
 
