@@ -3553,10 +3553,17 @@ module.directive('wizard', function(){
 		transclude: true,
 		compile: function(element, attributes, transclude){
 			return function(scope, element, attributes){
-				element.find('div.steps step').forEach((step) => {
-					if($(step).attr('workflow') && !model.me.hasWorkflow(step.attr('workflow'))){
-						$(step).remove();
-					}
+				element.find('div.steps step').each((index, step) => {
+					if($(step).attr('workflow')){
+                        let auth = $(step).attr('workflow').split('.');
+                        let right = model.me.workflow;
+                        auth.forEach(function (prop) {
+                            right = right[prop];
+                        });
+                        if (!right) {
+                            $(step).remove();
+                        }
+                    }
 				});
 				
 				element.find('div.steps').hide();
@@ -3576,14 +3583,18 @@ module.directive('wizard', function(){
 					transclude(scope.$parent.$new(), function(content){
 						currentStepContent = _.filter(content, function(el){
 							return el.tagName === 'STEP';
-						})[scope.currentStep];
+                        })[scope.currentStep];
+                        scope.internalNext = $(currentStepContent).attr('internal-next') !== undefined;
 						currentStepContent = $(currentStepContent);
 						element
 							.find('.current-step .step-content')
 							.html('')
-							.append(currentStepContent);
+                            .append(currentStepContent);
 					});
 
+                    element.find('.current-step .step-content step [internal-next]').on('click', () => {
+                        scope.nextStep();
+                    });
 					$('nav.steps li').removeClass('active');
 					$(element.find('nav.steps li')[scope.currentStep]).addClass('active');
 				}
