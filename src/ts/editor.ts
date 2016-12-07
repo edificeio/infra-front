@@ -54,15 +54,8 @@ export let RTE = {
             this.trigger('contentupdated');
         };
 
-        var mousePosition = { top: 0, left: 0 };
-        this.editZone.on('mousemove', function(e){
-            mousePosition = {
-                left: e.pageX,
-                top: e.pageY
-            }
-        });
-
-        var contextualMenu = this.element.children('contextual-menu');
+        let mousePosition = { top: 0, left: 0 };
+        let contextualMenu = this.element.children('contextual-menu');
         contextualMenu.on('contextmenu', function(e){
             e.preventDefault();
             return false;
@@ -74,10 +67,16 @@ export let RTE = {
                 if (position) {
                     mousePosition = position;
                 }
+                if(e.pageX && e.pageY){
+                    mousePosition = {
+                        left: e.pageX,
+                        top: e.pageY
+                    };
+                }
 
                 contextualMenu.children('ul').html('');
                 items.forEach(function (item) {
-                    var node = $('<li></li>');
+                    let node = $('<li></li>');
                     node.on('click', function (event) {
                         item.action(e);
                         scope.$apply();
