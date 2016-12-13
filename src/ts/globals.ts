@@ -86,13 +86,29 @@ if(document.addEventListener){
 	});
 }
 
-export var routes:any = {
+export let routes:any = {
 	define: function(routing){
 		this.routing = routing;
 	}
 };
 
+export let cleanJSON = (obj) => {
+    let dup = {};
+    for (let prop in obj) {
+        if (typeof obj[prop] === 'object' && !(obj[prop] instanceof Array)) {
+            dup[prop] = cleanJSON(obj[prop])
+        }
+        else {
+            if (obj.hasOwnProperty(prop) && prop !== 'callbacks' && prop !== 'data' && prop !== '$$hashKey') {
+                dup[prop] = obj[prop];
+            }
+        }
+    }
+    return dup;
+}
+
 (window as any).entcore.routes = routes;
+(window as any).entcore.cleanJSON = cleanJSON;
 
 if(!Array.prototype.forEach){
 	window.location.href = "/auth/upgrade";

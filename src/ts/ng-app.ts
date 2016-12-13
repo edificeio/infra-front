@@ -1036,8 +1036,9 @@ module.directive('soundSelect', function($compile){
 			ngChange: '&',
 			visibility: '@'
 		},
-		template: '<div><audio ng-src="[[ngModel]]" controls ng-if="ngModel" style="cursor: pointer"></audio>' +
-			'<lightbox show="userSelecting" on-close="userSelecting = false;">' +
+        template: '<div><audio ng-src="[[ngModel]]" controls ng-if="ngModel" style="cursor: pointer"></audio>' +
+            '<button ng-click="display.userSelecting = true">Sélectionner un fichier audio</button>' +
+			'<lightbox show="display.userSelecting" on-close="userSelecting = false;">' +
 			'<media-library ' +
 				'visibility="selectedFile.visibility"' +
 				'ng-change="updateDocument()" ' +
@@ -1046,7 +1047,8 @@ module.directive('soundSelect', function($compile){
 			'</media-library>' +
 			'</lightbox>' +
 			'</div>',
-		link: function(scope, element, attributes){
+        link: function (scope, element, attributes) {
+            scope.display = {};
 			scope.selectedFile = { file: {}, visibility: 'protected'};
 
 			scope.selectedFile.visibility = scope.$parent.$eval(attributes.visibility);
@@ -1056,7 +1058,7 @@ module.directive('soundSelect', function($compile){
 			scope.selectedFile.visibility = scope.selectedFile.visibility.toLowerCase();
 
 			scope.updateDocument = function(){
-				scope.userSelecting = false;
+				scope.display.userSelecting = false;
 				var path = '/workspace/document/';
 				if(scope.selectedFile.visibility === 'public'){
 					path = '/workspace/pub/document/'
@@ -2119,20 +2121,6 @@ module.directive('resizable', function(){
 			});
 		}
 	}
-});
-
-module.directive('drawingGrid', function(){
-	return function(scope, element, attributes){
-		element.addClass('drawing-grid');
-		element.on('click', function(e){
-			element.parents('grid-cell').data('lock', true);
-
-			$('body').on('click.lock', function(){
-				element.parents('grid-cell').data('lock', false);
-				$('body').unbind('click.lock')
-			});
-		});
-	};
 });
 
 module.directive('sniplet', function($parse, $timeout){

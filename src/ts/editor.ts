@@ -3120,8 +3120,8 @@ export let RTE = {
 
                         if(element.find(e.target).length === 0 && !$(e.target).hasClass('sp-choose')){
                             element.children('editor-toolbar').removeClass('show');
-                            element.trigger('editor-blur');
                             element.removeClass('focus');
+                            element.trigger('editor-blur');
                             $('body').css({ overflow: 'auto' });
                             element.parent().data('lock', false);
                             element.parents('grid-cell').data('lock', false);

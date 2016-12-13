@@ -76,100 +76,97 @@ export var Behaviours = (function(){
 			this.applicationsBehaviours[application] = {};
 			this.applicationsBehaviours[application] = appBehaviours;
 		},
-		findRights: function(serviceName, resource){
-			console.log('deprecated, please use getRights')
-			if(this.applicationsBehaviours[serviceName]){
-				if(!resource.myRights){
-					resource.myRights = {};
-				}
+        findRights: function (serviceName, resource): Promise<any>{
+            let resolveRights = () => {
+                let serviceBehaviours = Behaviours.applicationsBehaviours[serviceName];
+                if (typeof serviceBehaviours.resource === 'function') {
+                    console.log('resource method in behaviours is deprecated, please use rights object or rename to resourceRights');
+                    serviceBehaviours.resourceRights = serviceBehaviours.resource;
+                }
 
-				if(typeof this.applicationsBehaviours[serviceName].resource === 'function' ){
-					console.log('resource method in behaviours is deprecated, please use rights object or rename to resourceRights');
-					this.applicationsBehaviours[serviceName].resourceRights = this.applicationsBehaviours[serviceName].resource;
-				}
+                if (typeof serviceBehaviours.resourceRights !== 'function' && typeof serviceBehaviours.rights === 'object') {
+                    var resourceRights = serviceBehaviours.rights.resource;
 
-				if(typeof this.applicationsBehaviours[serviceName].resourceRights !== 'function' && typeof this.applicationsBehaviours[serviceName].rights === 'object'){
-					var resourceRights = this.applicationsBehaviours[serviceName].rights.resource;
+                    serviceBehaviours.resourceRights = function (element) {
+                        for (var behaviour in resourceRights) {
+                            if (model.me && (model.me.hasRight(element, resourceRights[behaviour]) ||
+                                (element.owner && (model.me.userId === element.owner.userId || model.me.userId === element.owner)))) {
+                                element.myRights[behaviour] = resourceRights[behaviour];
+                            }
+                        }
+                    }
+                }
+                if (typeof serviceBehaviours.resourceRights === 'function') {
+                    return serviceBehaviours.resourceRights(resource);
+                }
+                else {
+                    return {};
+                }
+            }
 
-					this.applicationsBehaviours[serviceName].resourceRights = function(element){
-						for(var behaviour in resourceRights){
-							if(model.me && (model.me.hasRight(element, resourceRights[behaviour]) ||
-								(element.owner && (model.me.userId === element.owner.userId || model.me.userId === element.owner)))){
-								element.myRights[behaviour] = resourceRights[behaviour];
-							}
-						}
-					}
-				}
-				if(typeof this.applicationsBehaviours[serviceName].resourceRights === 'function'){
-					return this.applicationsBehaviours[serviceName].resourceRights(resource);
-				}
-				else{
-					return {};
-				}
-			}
-			
-			
-			if(serviceName !== '.'){
-				var request = new XMLHttpRequest();
+            return new Promise((resolve, reject) => {
+                if (this.applicationsBehaviours[serviceName]) {
+                    if (!resource.myRights) {
+                        resource.myRights = {};
+                    }
 
-				request.open('GET', '/' + serviceName + '/public/js/behaviours.js', false);
-				request.onload = function(){
-					if(request.status === 200){
-						try{
-							var lib = new Function(request.responseText);
-							lib();
-						}
-						catch(e){
-							console.log('error in ' + serviceName + ' behaviours');
-							console.log(e);
-						}
-					}
-				};
-				
-				request.send(null);
-
-				if(this.applicationsBehaviours[serviceName] && typeof this.applicationsBehaviours[serviceName].resource === 'function'){
-					return this.applicationsBehaviours[serviceName].resourceRights(resource);
-				}
-				else{
-					this.applicationsBehaviours[serviceName] = {};
-					return this.applicationsBehaviours[serviceName];
-				}
-			}
-
-			return {}
+                    resolve(resolveRights());
+                    return;
+                }
+                Behaviours.loadBehaviours(serviceName, () => {
+                    resolveRights();
+                })
+                .error(() => {
+                    resolveRights();
+                });
+            });
 		},
 		findBehaviours: function(serviceName, resource){
 			console.log('Deprecated, please use findRights');
 			this.findRights(serviceName, resource);
 		},
 		loadBehaviours: function(serviceName, callback){
-			var err = undefined;
-			var actions = {
+            let err = { cb: undefined };
+			let actions = {
 				error: function(cb){
-					err = cb;
+					err.cb = cb;
 				}
 			};
 
-			if(this.applicationsBehaviours[serviceName]){
+            if (this.applicationsBehaviours[serviceName]) {
+                if (this.applicationsBehaviours[serviceName].callbacks) {
+                    this.applicationsBehaviours[serviceName].callbacks.push(callback);
+                    this.applicationsBehaviours[serviceName].errors.push(err);
+                    return actions;
+                }
 				callback(this.applicationsBehaviours[serviceName]);
 				return actions;
-			}
+            }
+            else {
+                this.applicationsBehaviours[serviceName] = {
+                    callbacks: [callback],
+                    errors: [err]
+                };
+            }
 
 			if(serviceName === '.') {
 				return actions;
 			}
 
-			http().get('/' + serviceName + '/public/js/behaviours.js').done((content) => {
-				var behaviours = new Function(content);
-				behaviours();
-				callback(this.applicationsBehaviours[serviceName]);
-			})
-			.error(() => {
-				if(typeof err === 'function'){
-					err();
-				}
-			})
+            let callbacks = Behaviours.applicationsBehaviours[serviceName].callbacks;
+            let errors = Behaviours.applicationsBehaviours[serviceName].errors;
+            http().get('/' + serviceName + '/public/js/behaviours.js').done((content) => {
+                callbacks.forEach((cb) => {
+                    cb(Behaviours.applicationsBehaviours[serviceName]);
+                });
+            })
+            .error(() => {
+                errors.forEach((err) => {
+                    if (typeof err.cb === 'function') {
+                        err.cb();
+                    }
+                });
+            });
 
 			return actions;
 		},
@@ -194,27 +191,15 @@ export var Behaviours = (function(){
 			if(this.applicationsBehaviours[serviceName]){
 				return returnWorkflows();
 			}
-			
-			return new Promise((resolve, reject) => {
-				var request = new XMLHttpRequest();
-				var path = '/' + serviceName + '/public/js/behaviours.js';
-				request.open('GET', path);
-				request.onload = function(){
-					if(request.status === 200){
-						try{
-							var lib = new Function(request.responseText);
-							lib();
-							resolve(returnWorkflows());
-						}
-						catch(e){
-							console.log(e);
-							reject();
-						}
-					}
-				};
 
-				request.send(null);
-			});
+            return new Promise((resolve, reject) => {
+                Behaviours.loadBehaviours(serviceName, () => {
+                    resolve(returnWorkflows());
+                })
+                .error(() => {
+                    reject();
+                });
+            });
 		},
 		workflowsFrom: function(obj, dependencies){
 			if(typeof obj !== 'object'){
