@@ -3,17 +3,17 @@
 export interface Shareable {
     shared: any;
     owner: { userId: string, displayName: string };
-    myRights: Map<string, boolean>;
+    myRights: any;
 }
 
 let waitingFor = {};
 
 export class Rights<T extends Shareable> {
     constructor(private resource: T) {
-        this.myRights = new Map<string, boolean>();
+        this.myRights = {};
     }
 
-    myRights: Map<string, boolean>;
+    myRights: any;
 
     isOwner() {
         return this.resource.owner.userId === model.me.userId;
@@ -25,7 +25,7 @@ export class Rights<T extends Shareable> {
         }
 
         return new Promise((resolve, reject) => {
-            if (Behaviours[prefix]) {
+            if (Behaviours.applicationsBehaviours[prefix] && !Behaviours.applicationsBehaviours[prefix].callbacks) {
                 resolve(this.fromObject(Behaviours.applicationsBehaviours[prefix].rights, prefix));
             }
             else {
@@ -44,20 +44,36 @@ export class Rights<T extends Shareable> {
         });
     }
 
-    fromObject(obj: any, prefix: string): any {
-        let resourceRights = obj.resource;
-        for (var behaviour in resourceRights) {
-            if (
-                model.me && (
-                   model.me.hasRight(this.resource, resourceRights[behaviour]) ||
-                    (
-                        this.resource.owner && (model.me.userId === this.resource.owner.userId)
-                    )
-                )
-            ) {
-                this.myRights[behaviour] = true;
+    async fromObject(obj: any, prefix: string): Promise<any> {
+        return new Promise((resolve, reject) => {
+            let resourceRights = obj.resource;
+
+            let computeRights = () => {
+                for (var behaviour in resourceRights) {
+                    if (
+                        model.me && (
+                            model.me.hasRight(this.resource, resourceRights[behaviour]) ||
+                            (
+                                this.resource.owner && (model.me.userId === this.resource.owner.userId)
+                            )
+                        )
+                    ) {
+                        this.myRights[behaviour] = true;
+                    }
+                }
+            };
+
+            if (model.me) {
+                computeRights();
+                resolve();
+                return;
             }
-        }
+
+            model.on('bootstrap', () => {
+                computeRights();
+                resolve();
+            });
+        });
     }
 }
 

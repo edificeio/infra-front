@@ -1,6 +1,6 @@
 import { appPrefix, infraPrefix } from './globals';
 import { http } from './http';
-import { model } from './entcore';
+import { model } from './modelDefinitions';
 
 export var Behaviours = (function(){
 	return {
