@@ -501,8 +501,8 @@ export let ui = {
                     $(window).on('mousemove.resize touchmove.resize', function (e) {
                         element.unbind("click");
                         mouse = {
-                            y: e.pageY || e.originalEvent.touches[0].pageY,
-                            x: e.pageX || e.originalEvent.touches[0].pageX
+                            y: parseInt(e.pageY || e.originalEvent.touches[0].pageY),
+                            x: parseInt(e.pageX || e.originalEvent.touches[0].pageX)
                         };
                     });
 
@@ -602,13 +602,12 @@ export let ui = {
                 return;
             }
 
-            element.on('touchstart mousedown', function (e) {
-                if (element.length > 1) {
-                    element.each(function (index, item) {
-                        ui.extendElement.draggable($(item), params);
-                    });
-                }
+            let catcher = element;
+            if (params.restrict) {
+                catcher = element.find(params.restrict);
+            }
 
+            catcher.on('touchstart mousedown', function (e) {
                 if (element.data('lock') === true || (e.target.tagName === 'INPUT' && $(e.target).attr('type') === 'text') || (e.target.tagName === 'TEXTAREA' && $(e.target).is(':focus'))) {
                     return;
                 }
@@ -652,12 +651,12 @@ export let ui = {
 
                     //$('[drop-item]') > array
                     var dropItemsAreas = [];
-                    $('[drop-item]').each(function (index, item) {
+                    $('.droppable').each(function (index, item) {
                         var dropItemPos = $(item).offset();
                         var dropElementInfos = {
                             offset: dropItemPos,
                             width: $(item).width(),
-                            height: $(item).height(),
+                            height: $(item).height() + parseInt($(item).css('padding-bottom')),
                             item: $(item)
                         };
                         dropItemsAreas.push(dropElementInfos);
@@ -702,22 +701,15 @@ export let ui = {
                         element.offset(newOffset);
 
                         // hit test
+                        let left = mouse.x;
+                        let top = mouse.y + window.scrollY;
                         dropItemsAreas.forEach(function (dropElementInfos) {
-                            if ((
-                                (dropElementInfos.offset.left < newOffset.left &&
-                                    dropElementInfos.offset.left + dropElementInfos.width > newOffset.left)
-                                ||
-                                (newOffset.left < dropElementInfos.offset.left &&
-                                    newOffset.left + elementWidth < dropElementInfos.offset.left)
-                            )
+                            if (
+                                dropElementInfos.offset.left < left &&
+                                    dropElementInfos.offset.left + dropElementInfos.width > left
                                 &&
-                                (
-                                    (dropElementInfos.offset.top < newOffset.top &&
-                                        dropElementInfos.offset.top + dropElementInfos.height > newOffset.top)
-                                    ||
-                                    (newOffset.top < dropElementInfos.offset.top &&
-                                        newOffset.top + elementHeight > dropElementInfos.offset.top)
-                                )
+                                dropElementInfos.offset.top < top &&
+                                    dropElementInfos.offset.top + dropElementInfos.height > top
                             ) {
                                 //on check si c bien une function
                                 if (params && typeof params.dragOver === 'function') {

@@ -1923,7 +1923,7 @@ module.directive('dragItem', function(){
 
 			ui.extendElement.draggable(element, {
 				mouseUp: function(e){
-					$("[drop-item]").off("mouseout");
+					$(".droppable").off("mouseout");
 					//declencher l'evenement drop
 					$('body').removeClass('dragging');
 					if(matchedElement){
@@ -1931,7 +1931,8 @@ module.directive('dragItem', function(){
 					}
 					scope.$apply();
 					firstTick = true;
-					element.attr('style', '');
+                    element.attr('style', '');
+                    element.trigger('stopdrag');
 				},
 				dragOver: function(item){
                     item.addClass('dragover');
@@ -1943,10 +1944,11 @@ module.directive('dragItem', function(){
                 },
                 tick: function() {
                     if (firstTick) {
-                        $('[drop-item]').removeClass('drag-over');
+                        $('.droppable').removeClass('drag-over');
                         element.css({
                             'pointer-events': 'none'
                         });
+                        element.trigger('startdrag');
                         $('body').addClass('dragging');
                         scope.$apply();
 
@@ -1963,7 +1965,8 @@ module.directive('dragItem', function(){
 module.directive('dropItem', function($parse) {
     return {
         restrict: 'A',
-        link: function(scope, element, attributes) {
+        link: function (scope, element, attributes) {
+            element.addClass('droppable');
             var dropConditionFn = $parse(attributes.dropcondition);
             element.on("dragover", function(event) {
                 if (attributes.dropcondition === undefined || dropConditionFn(scope, {
