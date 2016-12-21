@@ -30,7 +30,7 @@ export class Rights<T extends Shareable> {
             }
             else {
                 if (waitingFor[prefix]) {
-                    waitingFor[prefix].push(() => resolve());
+                    waitingFor[prefix].push(() => resolve(this.fromObject(Behaviours.applicationsBehaviours[prefix].rights, prefix)));
                 }
                 else {
                     waitingFor[prefix] = [];

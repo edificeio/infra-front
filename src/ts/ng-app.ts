@@ -29,13 +29,7 @@ import { _ } from './libs/underscore/underscore';
 import { angular } from './libs/angular/angular';
 import { workspace, notify, skin, RTE } from './entcore';
 import { ng } from './ng-start';
-
-import { dotsMenu } from './directives/dotsMenu';
-import { calendarComponent, scheduleItem } from './directives/calendar';
-import { lightbox } from './directives/lightbox';
-import { slider } from './directives/slider';
-import { recorderComponent } from './directives/recorder';
-import { sortableList, sortableElement } from './directives/sortableList';
+import * as directives from './directives';
 
 var module = angular.module('app', ['ngSanitize', 'ngRoute'], function($interpolateProvider) {
 		$interpolateProvider.startSymbol('[[');
@@ -154,14 +148,9 @@ if(routes.routing){
 	module.config(routes.routing);
 }
 
-ng.directives.push(dotsMenu);
-ng.directives.push(calendarComponent);
-ng.directives.push(scheduleItem);
-ng.directives.push(lightbox);
-ng.directives.push(slider);
-ng.directives.push(recorderComponent);
-ng.directives.push(sortableList);
-ng.directives.push(sortableElement);
+for (let directive in directives) {
+    ng.directives.push(directives[directive]);
+}
 
 //directives
 module.directive('completeChange', function() {
@@ -3230,98 +3219,6 @@ module.directive('checkTool', function () {
 		}
 	}
 });
-
-
-module.directive('explorer', function () {
-	return {
-		restrict: 'E',
-		transclude: true,
-		scope: {
-				ngModel: '=',
-				ngClick: '&',
-				ngChange: '&',
-				onOpen: '&',
-		},
-		template:'<div class="explorer" ng-transclude></div>',
-		link: function (scope, element, attributes) {
-
-			function select(){
-				scope.ngModel = !scope.ngModel;
-				if (scope.ngModel) {
-					element.addClass('selected')
-				}else {
-					element.removeClass('selected')
-				}
-				if (scope.ngClick) {
-					scope.ngClick();
-				}
-				if (scope.ngChange) {
-					scope.ngChange();
-				}
-				scope.$apply('ngModel');
-			}
-
-			$('body').on('click', function(e){
-				if($(e.target).parents('explorer, .toggle, .lightbox').length ===0 && e.target.nodeName!=="EXPLORER"){
-					scope.ngModel = false;
-					element.removeClass('selected');
-					scope.$apply('ngModel');
-				}
-			})
-
-			function setGest(apply?){
-				if(ui.breakpoints.checkMaxWidth("tablette")){
-
-					element.off('click dblclick')
-					ui.extendElement.touchEvents(element);
-
-					element.on('contextmenu', function(event){
-						event.preventDefault()
-					})
-
-					element.on('click', function(e, position) {
-                        select();
-                        scope.$apply('ngModel');
-                    })
-
-                    element.on('doubletap dblclick', function() {
-                        scope.ngModel = false;
-                        scope.onOpen();
-                        scope.$apply('ngModel');
-                    });
-
-					// element.on('longclick', function(e, position){
-					// 	select();
-					// 	scope.$apply();
-					// })
-					// element.on('click', function(){
-					// 	scope.ngModel = false;
-					// 	scope.onOpen();
-					// 	scope.$apply();
-					// });
-
-				}else{
-					element.off('click dblclick doubletap contextmenu')
-
-					element.on('click', function(){
-						select();
-						scope.$apply('ngModel');
-					});
-					element.on('dblclick', function(){
-						scope.onOpen();
-						scope.ngModel = false;
-						scope.$apply('ngModel');
-					})
-
-				}
-			}
-			setGest();
-			$(window).on('resize', function(){ setGest(true) });
-
-		}
-	}
-});
-
 
 module.directive('subtitle', function () {
 	return {
