@@ -99,7 +99,13 @@ export let cleanJSON = (obj) => {
             dup[prop] = cleanJSON(obj[prop])
         }
         else {
-            if (obj.hasOwnProperty(prop) && prop !== 'callbacks' && prop !== 'data' && prop !== '$$hashKey') {
+            if (obj[prop] instanceof Array) {
+                dup[prop] = [];
+                for (let el of obj[prop]) {
+                    dup[prop].push(cleanJSON(el));
+                }
+            }
+            else if (obj.hasOwnProperty(prop) && prop !== 'callbacks' && prop !== 'data' && prop !== '$$hashKey') {
                 dup[prop] = obj[prop];
             }
         }

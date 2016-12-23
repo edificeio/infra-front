@@ -1286,7 +1286,8 @@ module.directive('resourceRight', function($compile){
 
 			var switchHide = function(){
 				var hide = attributes.name && (scope.resource instanceof Array && _.find(scope.resource, function(resource){ return !resource.myRights || resource.myRights[attributes.name] === undefined; }) !== undefined) ||
-					(scope.resource instanceof Model && (!scope.resource.myRights || scope.resource.myRights[attributes.name] === undefined));
+                    (scope.resource instanceof Model && (!scope.resource.myRights || scope.resource.myRights[attributes.name] === undefined))
+                    || (scope.resource.myRights && scope.resource.myRights[attributes.name] === undefined);
 
 				if(hide){
 					if(transcludeScope){
@@ -1352,8 +1353,8 @@ module.directive('bottomScroll', function($compile){
 		    var scrollElement = element;
 		    var getContentHeight = function () {
 		        return element[0].scrollHeight;
-		    };
-		    if (element.css('overflow') !== 'auto') {
+            };
+            if (element.css('overflow') !== 'auto' && !attributes.scrollable) {
 		        scrollElement = $(window);
 		        var getContentHeight = function () {
 		            return $(document).height();
@@ -1922,6 +1923,7 @@ module.directive('dragItem', function(){
 					firstTick = true;
                     element.attr('style', '');
                     element.trigger('stopdrag');
+                    firstTick = true;
 				},
 				dragOver: function(item){
                     item.addClass('dragover');

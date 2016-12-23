@@ -115,6 +115,7 @@ if (!window.entcore) {
     window.entcore = {};
 }
 window.entcore.model = model;
+(window as any).model = model;
 
 window.entcore.Model = Model;
 (window as any).Model = Model;
