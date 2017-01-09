@@ -32,11 +32,13 @@ export class Ng {
     controllers: Controller[];
     directives: Directive[];
     filters: Filter[];
+    requiredModules: string[];
 
     constructor() {
         this.controllers = [];
         this.directives = [];
         this.filters = [];
+        this.requiredModules = [];
     }
 
     init(module) {
@@ -48,6 +50,9 @@ export class Ng {
         });
         this.filters.forEach((fil) => {
             module.filter(fil.name, fil.contents);
+        });
+        this.requiredModules.forEach((m) => {
+            module.requires.push(m);
         });
     }
 
@@ -61,6 +66,10 @@ export class Ng {
 
     filter(name: string, contents: any): Filter {
         return new Filter(name, contents);
+    }
+
+    addRequiredModule(moduleName: string) {
+        this.requiredModules.push(moduleName);
     }
 };
 

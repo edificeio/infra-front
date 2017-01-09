@@ -8,9 +8,12 @@
     "gulp-typescript": "^2.12.2",
     "gulp-watch": "^4.3.5",
     "merge2": "^1.0.2",
-    "typescript": "^2.0.10"
+    "typescript": "^2.0.10",
+    "@types/core-js": "^0.9.35"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "@types/core-js": "^0.9.35"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
