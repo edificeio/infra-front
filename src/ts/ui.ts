@@ -518,8 +518,8 @@ export let ui = {
                                 }
                                 if (params.moveWithResize !== false) {
                                     element.offset({
-                                        left: initial.pos.left - distance,
-                                        top: p.top
+                                        left: parseInt(initial.pos.left - distance),
+                                        top: parseInt(p.top)
                                     });
                                 }
 
@@ -545,8 +545,8 @@ export let ui = {
                                 }
                                 if (params.moveWithResize !== false) {
                                     element.offset({
-                                        left: p.left,
-                                        top: initial.pos.top - distance
+                                        left: parseInt(p.left),
+                                        top: parseInt(initial.pos.top - distance)
                                     });
                                 }
 
@@ -714,17 +714,23 @@ export let ui = {
                                 //on check si c bien une function
                                 if (params && typeof params.dragOver === 'function') {
                                     //on applique le dragover sur l'item (donc declenche le 'faux' mouseover)
-                                    params.dragOver(dropElementInfos.item)
+                                    params.dragOver(dropElementInfos.item);
+                                    if (dragoverred && dragoverred[0] !== dropElementInfos.item[0]) {
+                                        dragoverred.trigger('dragout');
+                                        if (params && typeof params.dragOut === 'function') {
+                                            params.dragOut(dragoverred);
+                                        }
+                                    }
                                     dragoverred = dropElementInfos.item;
                                     dropElementInfos.item.trigger('dragover');
                                 }
                             } else {
                                 if (dragoverred && dragoverred[0] === dropElementInfos.item[0]) {
-                                    dragoverred = undefined
+                                    dragoverred = undefined;
+                                    dropElementInfos.item.trigger('dragout');
 
                                     if (params && typeof params.dragOut === 'function') {
-                                        params.dragOut(dropElementInfos.item)
-                                        dropElementInfos.item.trigger('dragout');
+                                        params.dragOut(dropElementInfos.item);
                                     }
                                 }
                             }
