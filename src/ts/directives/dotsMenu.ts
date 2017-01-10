@@ -1,5 +1,4 @@
-﻿import { ng } from '../ng-start';
-
+import { ng } from '../ng-start';
 import { $ } from '../libs/jquery/jquery';
 
 export let dotsMenu = ng.directive('dotsMenu', () => {
@@ -20,9 +19,9 @@ export let dotsMenu = ng.directive('dotsMenu', () => {
                     element.addClass('opened');
                 }
             });
-
-            $('body').on('click', (e) => {
-                if (element.find(e.target).length === 0) {
+            
+            $('body, lightbox').on('click', (e) => {
+                if(element.find(e.target).length === 0){
                     element.removeClass('opened');
                 }
             });

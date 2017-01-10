@@ -1,4 +1,5 @@
-﻿export class Controller {
+
+export class Controller {
     name: string;
     contents: any[];
 
@@ -60,7 +61,7 @@ export class Ng {
         return new Directive(name, contents);
     }
 
-    controller(name: string, contents: any[]): Controller {
+    controller (name: string, contents: any[]): Controller {
         return new Controller(name, contents);
     }
 

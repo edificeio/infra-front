@@ -69,7 +69,7 @@ export class Rights<T extends Shareable> {
                 return;
             }
 
-            model.on('bootstrap', () => {
+            model.one('bootstrap', () => {
                 computeRights();
                 resolve();
             });
