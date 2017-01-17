@@ -1,5 +1,5 @@
 // angular is loaded globally
-declare var angular;
+declare let angular;
 
 //webpack stuff
 declare function require(path:string);

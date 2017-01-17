@@ -1,4 +1,5 @@
-﻿export * from './calendar';
+﻿export * from './autocomplete';
+export * from './calendar';
 export * from './dotsMenu';
 export * from './embedder';
 export * from './imageSelect';

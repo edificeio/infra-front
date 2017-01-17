@@ -9,6 +9,8 @@ import { _ } from './libs/underscore/underscore';
 import { appPrefix } from './globals';
 import { notify } from './notify';
 
+declare let Prism: any;
+
 if (!String.prototype.startsWith) {
     String.prototype.startsWith = function (str) {
         if (this.indexOf(str) !== -1 && this.split(str)[0] === '') {
@@ -2768,7 +2770,7 @@ export let RTE = {
                     '</popover>' +
                     '<div><div contenteditable="true"></div></div>' +
                     '<textarea></textarea>' +
-                    '<code class="idiomuage-html"></code>',
+                    '<code class="language-html"></code>',
                 link: function (scope, element, attributes) {
                     if (navigator.userAgent.indexOf('Trident') !== -1 || navigator.userAgent.indexOf('Edge') !== -1) {
                         element.find('code').hide();
@@ -2882,8 +2884,8 @@ export let RTE = {
                             ) {
                                 editZone.html($compile(ngModel(scope))(scope));
                             }
-                            if(newValue !== htmlZone.val() && !htmlZone.is(':focus')){
-                                if(window.html_beautify){
+                            if (newValue !== htmlZone.val() && !htmlZone.is(':focus')) {
+                                if (window.html_beautify && window.Prism) {
                                     htmlZone.val(window.html_beautify(newValue));
                                     highlightZone.text(window.html_beautify(newValue));
                                     window.Prism.highlightAll();
@@ -2963,22 +2965,10 @@ export let RTE = {
                         setTimeout(function () {
                             editorInstance.trigger('contentupdated');
                         }, 300);
-<<<<<<< 371302cdea61c3a62b69171893252af8aee732f6
-                        if(window.html_beautify){
-                            return;
-                        }
-                        http().get('/infra/public/js/beautify-html.js').done(function(content){
-                            eval(content);
-                            htmlZone.val(window.html_beautify(ngModel(scope)));
-                            highlightZone.text(window.html_beautify(ngModel(scope)));
-                            window.Prism.highlightAll();
-                        });
-=======
 
                         htmlZone.val(window.html_beautify(ngModel(scope)));
                         highlightZone.text(window.html_beautify(ngModel(scope)));
                         Prism.highlightAll();
->>>>>>> prism conditional loading
                     });
 
                     element.children('popover').find('li:nth-child(3)').on('click', function(){
@@ -2990,22 +2980,10 @@ export let RTE = {
                         setTimeout(function () {
                             editorInstance.trigger('contentupdated');
                         }, 300);
-<<<<<<< 371302cdea61c3a62b69171893252af8aee732f6
-                        if(window.html_beautify){
-                            return;
-                        }
-                        http().get('/infra/public/js/beautify-html.js').done(function(content){
-                            eval(content);
-                            htmlZone.val(window.html_beautify(ngModel(scope)));
-                            highlightZone.text(window.html_beautify(ngModel(scope)));
-                            window.Prism.highlightAll();
-                        });
-=======
                         
                         htmlZone.val(window.html_beautify(ngModel(scope)));
                         highlightZone.text(window.html_beautify(ngModel(scope)));
                         Prism.highlightAll();
->>>>>>> prism conditional loading
                     });
 
                     function b64toBlob(b64Data, contentType = '', sliceSize = 512) {
@@ -3110,7 +3088,10 @@ export let RTE = {
                     }
 
                     element.parents().on('resizing', placeToolbar)
-                    element.on('click', function(e){
+                    element.on('click', function (e) {
+                        if (element.hasClass('focus')) {
+                            return;
+                        }
                         placeToolbar();
 
                         if(e.target === element.find('.close-focus')[0]){
@@ -3439,8 +3420,10 @@ export let RTE = {
                     htmlZone.on('keydown', function (e) {
                         // free main thread so it can render textarea changes
                         setTimeout(function () {
-                            highlightZone.text($(this).val());
-                            window.Prism.highlightAll();
+                            if (window.Prism) {
+                                highlightZone.text($(this).val());
+                                Prism.highlightAll();
+                            }
                         }.bind(this), 200);
                         if(e.keyCode === 9){
                             e.preventDefault();
