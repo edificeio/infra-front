@@ -2773,14 +2773,24 @@ export let RTE = {
                     if (navigator.userAgent.indexOf('Trident') !== -1 || navigator.userAgent.indexOf('Edge') !== -1) {
                         element.find('code').hide();
                     }
-                    $('body').append(
-                        $('<link />')
-                            .attr('rel', 'stylesheet')
-                            .attr('type', 'text/css')
-                            .attr('href', '/infra/public/js/prism/prism.css')
-                    );
+                    if ($('.prism').length === 0) {
+                        $('body').append(
+                            $('<link />')
+                                .attr('rel', 'stylesheet')
+                                .attr('type', 'text/css')
+                                .addClass('prism')
+                                .attr('href', '/infra/public/js/prism/prism.css')
+                        );
+                        
+                        http().get('/infra/public/js/prism/prism.js');
+                    }
 
-                    http().get('/infra/public/js/prism/prism.js');
+                    if (ui.breakpoints.tablette < $(window).width() && !window.html_beautify) {
+                        $('<script></script>')
+                            .attr('type', 'text/javascript')
+                            .attr('src', '/infra/public/js/beautify-html.js')
+                            .appendTo('body');
+                    }
 
                     element.find('.close-focus').on('click', function(){
                         element.removeClass('focus');
@@ -2953,6 +2963,7 @@ export let RTE = {
                         setTimeout(function () {
                             editorInstance.trigger('contentupdated');
                         }, 300);
+<<<<<<< 371302cdea61c3a62b69171893252af8aee732f6
                         if(window.html_beautify){
                             return;
                         }
@@ -2962,6 +2973,12 @@ export let RTE = {
                             highlightZone.text(window.html_beautify(ngModel(scope)));
                             window.Prism.highlightAll();
                         });
+=======
+
+                        htmlZone.val(window.html_beautify(ngModel(scope)));
+                        highlightZone.text(window.html_beautify(ngModel(scope)));
+                        Prism.highlightAll();
+>>>>>>> prism conditional loading
                     });
 
                     element.children('popover').find('li:nth-child(3)').on('click', function(){
@@ -2973,6 +2990,7 @@ export let RTE = {
                         setTimeout(function () {
                             editorInstance.trigger('contentupdated');
                         }, 300);
+<<<<<<< 371302cdea61c3a62b69171893252af8aee732f6
                         if(window.html_beautify){
                             return;
                         }
@@ -2982,6 +3000,12 @@ export let RTE = {
                             highlightZone.text(window.html_beautify(ngModel(scope)));
                             window.Prism.highlightAll();
                         });
+=======
+                        
+                        htmlZone.val(window.html_beautify(ngModel(scope)));
+                        highlightZone.text(window.html_beautify(ngModel(scope)));
+                        Prism.highlightAll();
+>>>>>>> prism conditional loading
                     });
 
                     function b64toBlob(b64Data, contentType = '', sliceSize = 512) {
