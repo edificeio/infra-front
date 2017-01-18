@@ -106,7 +106,12 @@ export let cleanJSON = (obj) => {
                 }
             }
             else if (obj.hasOwnProperty(prop) && prop !== 'callbacks' && prop !== 'data' && prop !== '$$hashKey') {
-                dup[prop] = obj[prop];
+                if(obj[prop] && obj[prop].toJSON){
+                    dup[prop] = obj[prop].toJSON();
+                }
+                else{
+                    dup[prop] = obj[prop];
+                }
             }
         }
     }

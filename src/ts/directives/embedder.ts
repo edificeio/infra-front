@@ -10,7 +10,7 @@ export let embedder = ng.directive('embedder', () => {
             onChange: '&',
             show: '='
         },
-        templateUrl: '/' + appPrefix + '/public/template/embedder.html',
+        templateUrl: '/' + appPrefix + '/public/template/entcore/embedder.html',
         link: function(scope, element, attributes){
             scope.display = {
                 provider: {
