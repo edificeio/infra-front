@@ -215,7 +215,7 @@ export class Document extends Model {
 
 export let workspace = {
 	quality: 0.7,
-	thumbnails: "thumbnail=120x120&thumbnail=150x150&thumbnail=100x100&thumbnail=290x290&thumbnail=48x48&thumbnail=82x82&thumbnail=381x381",
+	thumbnails: "thumbnail=120x120&thumbnail=150x150&thumbnail=100x100&thumbnail=290x290&thumbnail=48x48&thumbnail=82x82&thumbnail=381x381&thumbnail=1600x0",
 	Document: Document,
 	Folder: function(data){
 		this.updateData(data);

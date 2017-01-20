@@ -1860,7 +1860,7 @@ export let RTE = {
                         }
                         var html = '<div>';
                         scope.imageOption.display.files.forEach(function (file) {
-                            html += '<img src="' + path + file._id + '" draggable native />';
+                            html += '<img src="' + path + file._id + '?thumbnail=1600x0" draggable native />';
                         });
 
                         html += '<div><br></div><div><br></div></div>';
@@ -2775,6 +2775,9 @@ export let RTE = {
                     if (navigator.userAgent.indexOf('Trident') !== -1 || navigator.userAgent.indexOf('Edge') !== -1) {
                         element.find('code').hide();
                     }
+                    if (attributes.placeholder) {
+                        element.find('[contenteditable]').html('<p class="placeholder">' + idiom.translate(attributes.placeholder) + '</p>');
+                    }
                     if ($('.prism').length === 0) {
                         $('body').append(
                             $('<link />')
@@ -3097,7 +3100,7 @@ export let RTE = {
                         if(e.target === element.find('.close-focus')[0]){
                             return;
                         }
-
+                        element.find('.placeholder').remove();
                         element.trigger('editor-focus');
                         element.addClass('focus');
                         element.parent().data('lock', true);
@@ -3123,8 +3126,12 @@ export let RTE = {
 
                         if(element.find(e.target).length === 0 && !$(e.target).hasClass('sp-choose')){
                             element.children('editor-toolbar').removeClass('show');
-                            element.trigger('editor-blur');
                             element.removeClass('focus');
+                            element.trigger('editor-blur');
+                            
+                            if (attributes.placeholder && !element.find('[contenteditable]').html()) {
+                                element.find('[contenteditable]').html('<p class="placeholder">' + idiom.translate(attributes.placeholder) + '</p>');
+                            }
                             $('body').css({ overflow: 'auto' });
                             element.parent().data('lock', false);
                             element.parents('grid-cell').data('lock', false);
@@ -3496,7 +3503,7 @@ export let RTE = {
                                     }
                                     else if (name.toLowerCase().indexOf('.png') !== -1 || name.toLowerCase().indexOf('.jpg') !== -1 || name.toLowerCase().indexOf('.jpeg') !== -1 || name.toLowerCase().indexOf('.svg') !== -1) {
                                         el = $('<img draggable native />');
-                                        el.attr('src', path + doc._id)
+                                        el.attr('src', path + doc._id + '?thumbnail=1600x0')
                                     }
                                     else {
                                         el = $('<div class="download-attachments">' +

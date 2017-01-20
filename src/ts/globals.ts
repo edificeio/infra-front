@@ -93,7 +93,14 @@ export let routes:any = {
 };
 
 export let cleanJSON = (obj) => {
+    if (!obj) {
+        return obj;
+    }
     let dup = {};
+    if (obj.toJSON) {
+        dup = obj.toJSON();
+        return dup;
+    }
     for (let prop in obj) {
         if (typeof obj[prop] === 'object' && !(obj[prop] instanceof Array)) {
             dup[prop] = cleanJSON(obj[prop])
@@ -106,12 +113,7 @@ export let cleanJSON = (obj) => {
                 }
             }
             else if (obj.hasOwnProperty(prop) && prop !== 'callbacks' && prop !== 'data' && prop !== '$$hashKey') {
-                if(obj[prop] && obj[prop].toJSON){
-                    dup[prop] = obj[prop].toJSON();
-                }
-                else{
-                    dup[prop] = obj[prop];
-                }
+                dup[prop] = obj[prop];
             }
         }
     }
