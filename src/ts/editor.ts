@@ -2775,9 +2775,7 @@ export let RTE = {
                     if (navigator.userAgent.indexOf('Trident') !== -1 || navigator.userAgent.indexOf('Edge') !== -1) {
                         element.find('code').hide();
                     }
-                    if (attributes.placeholder) {
-                        element.find('[contenteditable]').html('<p class="placeholder">' + idiom.translate(attributes.placeholder) + '</p>');
-                    }
+                    
                     if ($('.prism').length === 0) {
                         $('body').append(
                             $('<link />')
@@ -2880,12 +2878,19 @@ export let RTE = {
                                 $(item).append(mathItem);
                             });
 
+                            if (!ngModel(scope) && attributes.placeholder && !element.find('[contenteditable]').html() &&!element.hasClass('focus')) {
+                                element.find('[contenteditable]').html('<p class="placeholder">' + idiom.translate(attributes.placeholder) + '</p>');
+                            }
+
                             if (
                                 newValue !== editZone.html() &&
                                 !editZone.is(':focus') &&
                                 $('editor-toolbar').find(':focus').length === 0
                             ) {
-                                editZone.html($compile(ngModel(scope))(scope));
+                                if (ngModel(scope)) {
+                                    editZone.html($compile(ngModel(scope))(scope));
+                                }
+                                
                             }
                             if (newValue !== htmlZone.val() && !htmlZone.is(':focus')) {
                                 if (window.html_beautify && window.Prism) {

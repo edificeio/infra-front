@@ -3776,7 +3776,6 @@ module.controller('MediaLibrary', ['$scope', function($scope){
 	};
 
 	$scope.importFiles = function(){
-		workspace.quality = $scope.upload.quality / 100;
 		var waitNumber = $scope.upload.files.length;
 		for(var i = 0; i < $scope.upload.files.length; i++){
 			$scope.upload.loading.push($scope.upload.files[i]);

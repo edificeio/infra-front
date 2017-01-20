@@ -1,6 +1,7 @@
 import { ng } from '../ng-start';
 import { appPrefix } from '../globals';
 import { http } from '../http';
+import { $ } from '../libs/jquery/jquery';
 
 export let embedder = ng.directive('embedder', () => {
     return {
@@ -19,6 +20,20 @@ export let embedder = ng.directive('embedder', () => {
             };
 
             scope.providers = [];
+
+            element.on('focus', 'textarea', (e) => {
+                $(e.target).next().addClass('focus');
+                $(e.target).next().addClass('move');
+                $(e.target).prev().addClass('focus');
+            });
+
+            element.on('blur', 'textarea', (e) => {
+                if (!$(e.target).val()) {
+                    $(e.target).next().removeClass('move');
+                }
+                $(e.target).next().removeClass('focus');
+                $(e.target).prev().removeClass('focus');
+            });
 
             scope.$watch('show', function(){
                 scope.unselectProvider();
