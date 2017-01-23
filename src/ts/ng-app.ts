@@ -953,7 +953,7 @@ module.directive('workflow', function($compile){
 		link: function(scope, element, attributes){
 			attributes.$observe('workflow', function(){
 				var auth = attributes.workflow.split('.');
-				var right = model.me.workflow;
+				var right = model.me && model.me.workflow;
 				auth.forEach(function(prop){
 					right = right[prop];
 				});
