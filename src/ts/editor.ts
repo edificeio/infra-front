@@ -1872,6 +1872,7 @@ export let RTE = {
                     };
 
                     instance.element.on('drop', function (e) {
+                        e.stopPropagation();
                         var image;
                         if (e.originalEvent.dataTransfer.mozSourceNode) {
                             image = e.originalEvent.dataTransfer.mozSourceNode;
@@ -2774,6 +2775,10 @@ export let RTE = {
                 link: function (scope, element, attributes) {
                     if (navigator.userAgent.indexOf('Trident') !== -1 || navigator.userAgent.indexOf('Edge') !== -1) {
                         element.find('code').hide();
+                    }
+
+                    if (element.attr('visibility') && scope.$eval(element.attr('visibility')).toLowerCase() === 'public') {
+                        element.attr('public', true);
                     }
                     
                     if ($('.prism').length === 0) {

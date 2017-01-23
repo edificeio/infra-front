@@ -6,5 +6,6 @@ export * from './imageSelect';
 export * from './explorer';
 export * from './lightbox';
 export * from './recorder';
+export * from './resourceRight';
 export * from './slider';
 export * from './sortableList';

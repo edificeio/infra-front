@@ -1064,56 +1064,6 @@ module.directive('behaviour', function($compile){
 	}
 });
 
-module.directive('resourceRight', function($compile){
-	return {
-		restrict: 'EA',
-		template: '<div></div>',
-		replace: false,
-		transclude: true,
-		scope: {
-			resource: '=',
-			name: '@'
-		},
-		controller: function($scope, $transclude){
-			this.transclude = $transclude;
-		},
-		link: function(scope, element, attributes, controller){
-			if(attributes.name === undefined){
-				throw "Right name is required";
-			}
-			var content = element.children('div');
-			var transcludeScope;
-
-			var switchHide = function(){
-				var hide = attributes.name && (scope.resource instanceof Array && _.find(scope.resource, function(resource){ return !resource.myRights || resource.myRights[attributes.name] === undefined; }) !== undefined) ||
-                    (scope.resource instanceof Model && (!scope.resource.myRights || scope.resource.myRights[attributes.name] === undefined))
-                    || (scope.resource.myRights && scope.resource.myRights[attributes.name] === undefined);
-
-				if(hide){
-					if(transcludeScope){
-						transcludeScope.$destroy();
-						transcludeScope = null;
-					}
-					content.children().remove();
-					element.hide();
-				}
-				else{
-					if(!transcludeScope){
-						controller.transclude(function(clone, newScope) {
-							transcludeScope = newScope;
-							content.append(clone);
-						});
-					}
-					element.show();
-				}
-			};
-
-			attributes.$observe('name', switchHide);
-			scope.$watchCollection('resource', switchHide);
-		}
-	}
-});
-
 module.directive('authorize', function($compile){
 	return {
 		restrict: 'EA',

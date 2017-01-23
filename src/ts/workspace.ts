@@ -102,9 +102,12 @@ export class Document extends Model {
         if (data.created) {
             this.created = moment(data.created.split('.')[0]);
         }
-		else{
+		else if(data.sent){
 			this.created = moment(data.sent.split('.')[0]);
-		}
+        }
+        else {
+            this.created = moment();
+        }
 
 		this.owner = { userId: data.owner };
 
