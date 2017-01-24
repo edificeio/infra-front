@@ -22,3 +22,4 @@ if(!(window as any).entcore){
 	(window as any).entcore = {};
 }
 (window as any).entcore.notify = notify;
+(window as any).notify = notify;

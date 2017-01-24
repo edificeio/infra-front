@@ -1198,7 +1198,8 @@ module.directive('snipletSource', function($parse, $timeout){
 		controller: function($scope, $timeout){
 			$scope.setSnipletSource = function(source){
 				$scope.ngModel.assign($scope, source);
-				$scope.ngChange();
+                $scope.ngChange();
+                $scope.snipletResource.save();
 			};
 
 			$timeout(function(){
