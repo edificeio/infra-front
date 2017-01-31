@@ -84,6 +84,17 @@ export let embedder = ng.directive('embedder', () => {
                     }, 20);
                 }
             );
+
+            scope.$watch(
+                function () {
+                    return scope.display.url;
+                },
+                function (newVal) {
+                    setTimeout(function () {
+                        scope.updatePreview();
+                    }, 20);
+                }
+            );
             
             scope.updatePreview = function () {
                 if(scope.display.provider.name === 'other'){
