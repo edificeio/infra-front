@@ -12,12 +12,17 @@ export let dotsMenu = ng.directive('dotsMenu', () => {
         link: (scope, element, attributes) => {
             let opener = element.children('.opener');
             opener.on('click', () => {
-                if (element.hasClass('opened')) {
-                    element.removeClass('opened');
+                if(element.offset().left < 400){
+                    element.addClass('right');
                 }
-                else {
-                    element.addClass('opened');
-                }
+                setTimeout(() => {
+                    if (element.hasClass('opened')) {
+                        element.removeClass('opened');
+                    }
+                    else {
+                        element.addClass('opened');
+                    }
+                }, 10);
             });
             
             $('body, lightbox').on('click', (e) => {

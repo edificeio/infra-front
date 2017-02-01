@@ -1,10 +1,11 @@
 import { appPrefix, infraPrefix } from './globals';
 import { http } from './http';
 import { model } from './modelDefinitions';
+import { Shareable } from './rights';
 
 export var Behaviours = (function(){
 	return {
-		copyRights: function(params){
+		copyRights: function(params: { provider: { resource: Shareable, application: string }, target: { resources: Shareable[], application: string }}){
 			if(!params.provider.resource.shared){
 				return;
 			}
