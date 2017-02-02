@@ -4666,8 +4666,8 @@ module.controller('Account', ['$scope', function($scope) {
 	$scope.refreshAvatar = function(){
 		http().get('/userbook/api/person', {}, {requestName: "refreshAvatar"}).done(function(result){
 			$scope.avatar = result.result['0'].photo;
-			if(!$scope.avatar || $scope.avatar === 'no-avatar.jpg'){
-				$scope.avatar = '/directory/public/img/no-avatar.jpg';
+			if(!$scope.avatar || $scope.avatar === 'no-avatar.jpg' || $scope.avatar === 'no-avatar.svg'){
+				$scope.avatar = '/img/illustrations/no-avatar.svg';
 			}
 			$scope.username = result.result['0'].displayName;
 			model.me.profiles = result.result['0'].type;
