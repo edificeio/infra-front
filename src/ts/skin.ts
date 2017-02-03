@@ -1,5 +1,6 @@
 import { http } from './http';
 import { ui } from './ui';
+import { model } from './modelDefinitions';
 
 export var skin = {
 	addDirectives: undefined as any,
@@ -36,6 +37,44 @@ export var skin = {
 	setTheme: function(theme){
 		ui.setStyle(theme.path);
 		http().get('/userbook/api/edit-userbook-info?prop=theme&value=' + theme._id);
+	},
+	loadBookmarks: async function(){
+		return new Promise<any>((resolve, reject) => {
+			http().get('/userbook/preference/apps').done(function(data){
+				if(!data.preference){
+					data.preference = null;
+				}
+				model.me.bookmarkedApps = JSON.parse(data.preference) || [];
+				var upToDate = true;
+				let remove = [];
+				model.me.bookmarkedApps.forEach(function(app, index){
+					var foundApp = _.findWhere(model.me.apps, { name: app.name });
+					var updateApp = true;
+					if(foundApp){
+						updateApp = JSON.stringify(foundApp) !== JSON.stringify(app);
+						if(updateApp){
+							for(var property in foundApp){
+								app[property] = foundApp[property];
+							}
+						}
+					}
+					else{
+						remove.push(app);
+					}
+					
+					upToDate = upToDate && !updateApp;
+				});
+				remove.forEach(function(app) {
+					var index = model.me.bookmarkedApps.indexOf(app);
+					model.me.bookmarkedApps.splice(index, 1);
+				});
+				if(!upToDate){
+					http().put('/userbook/preference/apps', model.me.bookmarkedApps);
+				}
+
+				resolve();
+			});
+		});
 	},
 	loadConnected: async function(): Promise<any>{
 		var rand = Math.random();

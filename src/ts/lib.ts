@@ -682,14 +682,8 @@ export function bootstrap(func) {
 		model.trigger('me.change');
 
 		calendar.init();
-
-		http().get('/userbook/preference/apps').done(function(data){
-			if(!data.preference){
-				data.preference = null;
-			}
-			model.me.bookmarkedApps = JSON.parse(data.preference) || [];
-			func();
-		});
+		await skin.loadBookmarks();
+		func();
 	})
 	.e404(function(){
 		func();
