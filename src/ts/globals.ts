@@ -21,6 +21,17 @@ if((window as any).appPrefix === undefined){
 	}
 }
 
+var xsrfCookie;
+if(document.cookie){
+    var cookies = _.map(document.cookie.split(';'), function(c){
+        return {
+            name: c.split('=')[0].trim(), 
+            val: c.split('=')[1].trim()
+        };
+    });
+    xsrfCookie = _.findWhere(cookies, { name: 'XSRF-TOKEN' });
+}
+
 export var appPrefix: string = (window as any).appPrefix;
 
 if((window as any).infraPrefix === undefined){
@@ -35,6 +46,9 @@ export var currentLanguage = '';
     // User preferences language
     var preferencesRequest = new XMLHttpRequest();
 	preferencesRequest.open('GET', '/userbook/preference/language');
+    if(xsrfCookie){
+        preferencesRequest.setRequestHeader('X-XSRF-TOKEN', xsrfCookie.val);
+    }
 	(preferencesRequest as any).async = false;
 
 	preferencesRequest.onload = function(){
@@ -42,6 +56,9 @@ export var currentLanguage = '';
             // Fallback : navigator language
             var request = new XMLHttpRequest();
             request.open('GET', '/locale');
+            if(xsrfCookie){
+                request.setRequestHeader('X-XSRF-TOKEN', xsrfCookie.val);
+            }
             (request as any).async = false;
             request.onload = function(){
                 if(request.status === 200){

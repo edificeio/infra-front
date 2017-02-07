@@ -9,13 +9,16 @@ export function Http(){
 
 export var http = (function(){
 	var statusEvents = ['done', 'error', 'e401', 'e404', 'e409', 'e500', 'e400', 'e413', 'e504', 'e0'];
-	var cookies = _.map(document.cookie.split(';'), function(c){
-		return {
-			name: c.split('=')[0].trim(), 
-			val: c.split('=')[1].trim()
-		};
-	});
-	var xsrfCookie = _.findWhere(cookies, { name: 'XSRF-TOKEN' });
+	var xsrfCookie;
+	if(document.cookie){
+		var cookies = _.map(document.cookie.split(';'), function(c){
+			return {
+				name: c.split('=')[0].trim(), 
+				val: c.split('=')[1].trim()
+			};
+		});
+		xsrfCookie = _.findWhere(cookies, { name: 'XSRF-TOKEN' });
+	}
 
 	Http.prototype = {
 		serialize: function(obj){
