@@ -1,6 +1,7 @@
 import { http } from './http';
 import { ui } from './ui';
 import { model } from './modelDefinitions';
+import { _ } from './libs/underscore/underscore';
 
 export var skin = {
 	addDirectives: undefined as any,
@@ -69,7 +70,7 @@ export var skin = {
 					model.me.bookmarkedApps.splice(index, 1);
 				});
 				if(!upToDate){
-					http().put('/userbook/preference/apps', model.me.bookmarkedApps);
+					http().putJson('/userbook/preference/apps', model.me.bookmarkedApps);
 				}
 
 				resolve();
