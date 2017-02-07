@@ -1,5 +1,4 @@
 import { idiom } from './idiom';
-import http from 'axios';
 
 require('core.js');
 var _ = require('underscore');
@@ -20,17 +19,6 @@ if((window as any).appPrefix === undefined){
 		(window as any).appPrefix = window.location.pathname.split('/')[1];
         (window as any).entcore.appPrefix = (window as any).appPrefix;
 	}
-}
-
-var cookies = _.map(document.cookie.split(';'), function(c){
-    return {
-        name: c.split('=')[0].trim(), 
-        val: c.split('=')[1].trim()
-    };
-});
-var xsrfCookie = _.findWhere(cookies, { name: 'XSRF-TOKEN' });
-if(xsrfCookie){
-    http.defaults.headers['X-XSRF-TOKEN'] = xsrfCookie.val;
 }
 
 export var appPrefix: string = (window as any).appPrefix;
