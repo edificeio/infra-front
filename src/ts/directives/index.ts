@@ -1,4 +1,5 @@
 ﻿export * from './autocomplete';
+export * from './bindHtml';
 export * from './calendar';
 export * from './dotsMenu';
 export * from './embedder';

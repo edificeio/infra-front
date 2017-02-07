@@ -10,7 +10,7 @@ export let bindHtml = ng.directive('bindHtml', function($compile){
 		},
 		link: function(scope, element){
 			scope.$watch('bindHtml', function(newVal){
-				var htmlVal = $('<div>' + (newVal || '') + '</div>')
+				let htmlVal = $('<div>' + (newVal || '') + '</div>');
 				//Remove resizable attributes
 				htmlVal.find('[resizable]').removeAttr('resizable').css('cursor', 'initial');
 				htmlVal.find('[bind-html]').removeAttr('bind-html');
@@ -18,7 +18,16 @@ export let bindHtml = ng.directive('bindHtml', function($compile){
 				htmlVal.find('[ng-transclude]').removeAttr('ng-transclude');
                 htmlVal.find('[draggable]').removeAttr('draggable').css('cursor', 'initial');
                 htmlVal.find('[contenteditable]').removeAttr('contenteditable');
-				var htmlContent = htmlVal[0].outerHTML;
+				htmlVal.find('script').remove();
+				htmlVal.find('*').each((index, item: HTMLElement) => {
+					let attributes = item.attributes;
+					for(let i = 0; i < attributes.length; i++){
+						if(attributes[i].name.startsWith('on')){
+							item.removeAttribute(attributes[i].name);
+						}
+					}
+				});
+				let htmlContent = htmlVal[0].outerHTML;
 				if (!window.MathJax && !(window as any).MathJaxLoading) {
 				    (window as any).MathJaxLoading = true;
                     http().loadScript('/infra/public/mathjax/MathJax.js').then(function () {
@@ -38,7 +47,7 @@ export let bindHtml = ng.directive('bindHtml', function($compile){
 				element.html($compile(htmlContent)(scope.$parent));
 				//weird browser bug with audio tags
 				element.find('audio').each(function(index, item){
-					var parent = $(item).parent();
+					let parent = $(item).parent();
 					$(item)
 						.attr("src", item.src)
                         .attr('preload', 'none')
