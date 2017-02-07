@@ -1,15 +1,16 @@
 {
-  "name": "js-infra",
+  "name": "infra-front",
   "version": "1.0.0",
   "description": "",
   "main": "gulpfile.js",
   "dependencies": {
+    "@types/core-js": "^0.9.35",
+    "axios": "^0.15.3",
     "gulp": "^3.9.1",
     "gulp-typescript": "^2.12.2",
     "gulp-watch": "^4.3.5",
     "merge2": "^1.0.2",
-    "typescript": "^2.0.10",
-    "@types/core-js": "^0.9.35"
+    "typescript": "^2.0.10"
   },
   "devDependencies": {
     "@types/core-js": "^0.9.35"
@@ -19,12 +20,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/entcore/js-infra.git"
+    "url": "https://github.com/entcore/infra-front.git"
   },
   "author": "",
   "license": "AGPL-3.0",
   "bugs": {
-    "url": "https://github.com/entcore/js-infra/issues"
+    "url": "https://github.com/entcore/infra-front/issues"
   },
-  "homepage": "https://github.com/entcore/js-infra"
+  "homepage": "https://github.com/entcore/infra-front"
 }
