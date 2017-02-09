@@ -1046,53 +1046,6 @@ module.directive('authorize', function($compile){
 	}
 });
 
-module.directive('bottomScroll', function($compile){
-	return {
-		restrict: 'A',
-		link: function (scope, element, attributes) {
-		    var scrollElement = element;
-		    var getContentHeight = function () {
-		        return element[0].scrollHeight;
-            };
-            if (element.css('overflow') !== 'auto' && !attributes.scrollable) {
-		        scrollElement = $(window);
-		        var getContentHeight = function () {
-		            return $(document).height();
-		        };
-		    }
-		    scrollElement.scroll(function () {
-		        var scrollHeight = scrollElement[0].scrollY || scrollElement[0].scrollTop;
-				//adding ten pixels to account for system specific behaviours
-				scrollHeight += 10;
-
-				if (getContentHeight() - scrollElement.height() < scrollHeight) {
-				    scope.$eval(attributes.bottomScroll);
-				    if (!scope.$$phase) {
-				        scope.$apply();
-					}
-				}
-			})
-		}
-	}
-});
-
-module.directive('bottomScrollAction', function($compile){
-    return {
-        restrict: 'A',
-        link: function($scope, $element, $attributes){
-            $element[0].onscroll = function(){
-                if(this.scrollHeight - this.scrollTop === this.clientHeight){
-                    this.scrollTop = this.scrollTop - 1
-                    $scope.$eval($attributes.bottomScrollAction);
-                    if(!$scope.$$phase){
-                        $scope.$apply();
-                    }
-                }
-            }
-        }
-    }
-});
-
 module.directive('drawingZone', function(){
 	return function($scope, $element, $attributes){
 		$element.addClass('drawing-zone');
