@@ -9,3 +9,4 @@ export * from './recorder';
 export * from './resourceRight';
 export * from './slider';
 export * from './sortableList';
+export * from './bindHtml';
