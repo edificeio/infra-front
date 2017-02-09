@@ -11,7 +11,6 @@ export let bindHtml = ng.directive('bindHtml', function($compile){
 		link: function(scope, element){
 			scope.$watch('bindHtml', function(newVal){
 				let htmlVal = $('<div>' + (newVal || '') + '</div>');
-				//Remove resizable attributes
 				htmlVal.find('[resizable]').removeAttr('resizable').css('cursor', 'initial');
 				htmlVal.find('[bind-html]').removeAttr('bind-html');
 				htmlVal.find('[ng-include]').removeAttr('ng-include');
