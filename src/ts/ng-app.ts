@@ -581,8 +581,7 @@ module.directive('skinSrc', function($compile){
 			if(!$('#theme').attr('href')){
 				return;
 			}
-			var skinPath = $('#theme').attr('href').split('/');
-			var path = skinPath.slice(0, skinPath.length - 2).join('/');
+			var path = skin.basePath;
 			$attributes.$observe('skinSrc', function(){
 				if($attributes.skinSrc.indexOf('http://') === -1 && $attributes.skinSrc.indexOf('https://') === -1 && $attributes.skinSrc.indexOf('/workspace/') === -1){
 					$element.attr('src', path + $attributes.skinSrc);
@@ -842,7 +841,7 @@ module.directive('loadingIcon', function($compile){
 			var addImage = function(){
                 if($('#theme').length === 0)
                     return;
-				var loadingIllustrationPath = $('#theme').attr('href').split('/theme.css')[0] + '/../img/icons/anim_loading_small.gif';
+				var loadingIllustrationPath = skin.basePath + '/img/icons/anim_loading_small.gif';
 				$('<img>')
 					.attr('src', loadingIllustrationPath)
 					.attr('class', $attributes.class)
@@ -859,7 +858,7 @@ module.directive('loadingIcon', function($compile){
 
             if($attributes.onlyLoadingIcon === undefined){
     			http().bind('request-ended.' + $attributes.request, function(e){
-    				var loadingDonePath = $('#theme').attr('href').split('/theme.css')[0] + '/../img/icons/checkbox-checked.png';
+    				var loadingDonePath = skin.basePath + '/img/icons/checkbox-checked.png';
     				$element.find('.loading-icon').remove();
     				$('<img>')
     					.attr('src', loadingDonePath)
@@ -2916,7 +2915,7 @@ module.controller('Account', ['$scope', function($scope) {
 		http().get('/userbook/api/person', {}, {requestName: "refreshAvatar"}).done(function(result){
 			$scope.avatar = result.result['0'].photo;
 			if (!$scope.avatar || $scope.avatar === 'no-avatar.jpg' || $scope.avatar === 'no-avatar.svg') {
-                $scope.avatar = '/assets/themes/' + skin.skin + '/img/illustrations/no-avatar.svg';
+                $scope.avatar = skin.basePath + '/img/illustrations/no-avatar.svg';
             }
 			$scope.username = result.result['0'].displayName;
 			model.me.profiles = result.result['0'].type;

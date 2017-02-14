@@ -83,7 +83,7 @@ export var skin = {
 		return new Promise((resolve, reject) => {
 			http().get('/theme').done(function(data){
 				that.theme = data.skin;
-				that.basePath = that.theme + '../';
+				that.basePath = that.theme + '../../';
 				that.skin = that.theme.split('/assets/themes/')[1].split('/')[0];
 				that.portalTemplate = '/assets/themes/' + that.skin + '/portal.html';
 				that.logoutCallback = data.logoutCallback;
