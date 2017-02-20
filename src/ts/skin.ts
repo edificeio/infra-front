@@ -14,18 +14,17 @@ export var skin = {
 	loadDisconnected: async function(): Promise<any>{
 		return new Promise((resolve, reject) => {
 			var rand = Math.random();
-			var that = this;
-			http().get('/skin', { token: rand }).done(function(data){
-				that.skin = data.skin;
-				that.theme = '/assets/themes/' + data.skin + '/default/';
-				that.basePath = that.theme + '../';
+			http().get('/skin', { token: rand }).done((data) => {
+				this.skin = data.skin;
+				this.theme = '/assets/themes/' + data.skin + '/default/';
+				this.basePath = this.theme + '../../';
 
-				http().get('/assets/themes/' + data.skin + '/template/override.json', { token: rand }, { disableNotifications: true }).done(function(override){
-					that.templateMapping = override;
+				http().get('/assets/themes/' + data.skin + '/template/override.json', { token: rand }, { disableNotifications: true }).done((override) => {
+					this.templateMapping = override;
 					resolve();
 				})
 				.e404(() => resolve());
-			}).e404(function(){});
+			}).e404(() => {});
 		});
 	},
 	listThemes: function(cb){
