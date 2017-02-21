@@ -40,7 +40,7 @@ export let bindHtml = ng.directive('bindHtml', function($compile){
 								extensions: ["AMSmath.js", "AMSsymbols.js", "noErrors.js", "noUndefined.js"]
 							}
 						});
-						window.MathJax.Hub.Typeset();
+						window.MathJax.Hub.Queue(["Typeset", window.MathJax.Hub]);
 					});
                 }
 				element.html($compile(htmlContent)(scope.$parent));
@@ -55,7 +55,7 @@ export let bindHtml = ng.directive('bindHtml', function($compile){
 				});
 
 				if(window.MathJax && window.MathJax.Hub){
-					window.MathJax.Hub.Typeset();
+					window.MathJax.Hub.Queue(["Typeset", window.MathJax.Hub]);
 				}
 			});
 		}

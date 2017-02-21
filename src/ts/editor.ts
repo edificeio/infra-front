@@ -3693,7 +3693,7 @@ export let RTE = {
                                     extensions: ["AMSmath.js", "AMSsymbols.js", "noErrors.js", "noUndefined.js"]
                                 }
                             });
-                            window.MathJax.Hub.Typeset();
+                            window.MathJax.Hub.Queue(["Typeset", window.MathJax.Hub]);
                         });
                     }
 
@@ -3709,7 +3709,7 @@ export let RTE = {
                                     extensions: ["AMSmath.js", "AMSsymbols.js", "noErrors.js", "noUndefined.js"]
                                 }
                             });
-                            window.MathJax.Hub.Typeset();
+                            window.MathJax.Hub.Queue(["Typeset", window.MathJax.Hub]);
                         }
                     };
 
