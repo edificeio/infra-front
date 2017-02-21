@@ -15,6 +15,8 @@
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
+import { skin } from './skin';
+
 var $ = require('jquery');
 
 var mainLightbox = {
@@ -587,7 +589,17 @@ export let ui = {
                 }
             });
         },
-        draggable: function (element, params) {
+        draggable: function (element, params: { 
+            lock?: any, 
+            restrict?: any, 
+            tick?: any, 
+            dragOver?: any, 
+            dragOut?: any, 
+            allowDefault?: boolean,
+            startDrag?: any,
+            mouseMove?: any,
+            mouseUp?: any
+        }) {
             if (!params) {
                 params = {};
             }
@@ -880,7 +892,7 @@ export let ui = {
             });
             var favicon = $('<link>', {
                 rel: 'icon',
-                href: stylePath + '../img/illustrations/favicon.ico'
+                href: skin.basePath + 'img/illustrations/favicon.ico'
             });
             style.on('load', function () {
                 $('body').show();
