@@ -24,9 +24,9 @@ export declare interface Model{
 	remove();
 	models: Model[];
 	collection(ctr: any, mixin?: any);
-	on(eventName: string, callback: () => void);
+	on(eventName: string, callback: (data?: any) => void);
 	unbind(eventName: string, callback: () => void);
-	one(eventName: string, callback: () => void);
+	one(eventName: string, callback: (data?: any) => void);
 	trigger(eventName: string, eventData?: any);
 	behaviours(serviceName: string);
     inherits(target: any, prototypeFn: any);
@@ -68,8 +68,8 @@ export declare interface Collection<T>{
 	sync: any;
 	composer: any;
 	model?: any;
-	on(eventName: string, cb: () => void);
-	one(eventName: string, cb: () => void);
+	on(eventName: string, cb: (data?: any) => void);
+	one(eventName: string, cb: (data?: any) => void);
 	trigger: (eventName: string) => void;
 	unbind(eventName: string, callback: () => void);
     forEach(callback: (item: T) => void);
