@@ -116,7 +116,13 @@ export let cleanJSON = (obj) => {
     if (!obj) {
         return obj;
     }
+    
+    if(obj instanceof Array){
+        return obj.map((e) => cleanJSON(e));
+    }
+
     let dup = {};
+    
     if (obj.toJSON) {
         dup = obj.toJSON();
         return dup;
