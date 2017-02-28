@@ -8,6 +8,7 @@ import { http } from './http';
 import { _ } from './libs/underscore/underscore';
 import { appPrefix } from './globals';
 import { notify } from './notify';
+import { skin } from './skin';
 
 declare let Prism: any;
 
@@ -2561,8 +2562,7 @@ export let RTE = {
                 '</ul>' +
                 '</lightbox>',
                 link: function (scope, element, attributes) {
-                    var split = $('#theme').attr('href').split('/');
-                    var skinPath = split.slice(0, split.length - 2).join('/') + '/../entcore-css-lib/editor-resources/img/';
+                    var skinPath = skin.basePath + '/../entcore-css-lib/editor-resources/img/';
                     scope.templates = [
                         {
                             title: 'editor.templates.emptypage.title',
