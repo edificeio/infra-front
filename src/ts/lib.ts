@@ -673,7 +673,10 @@ export function bootstrap(func) {
 		model.me.workflow = {
 			load: async function(services): Promise<void>{
 				for(let service of services){
-					this[service] = await Behaviours.findWorkflow(service);
+					let workflows = await Behaviours.findWorkflow(service);
+					console.log('Workflows loaded from ' + service);
+					console.log(workflows);
+					this[service] = workflows;
 				}
 			}
 		};

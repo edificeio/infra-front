@@ -195,6 +195,7 @@ export var Behaviours = (function(){
 		findWorkflow: function(serviceName): Promise<any>{
 			var returnWorkflows = function(){
 				if(!this.applicationsBehaviours[serviceName]){
+					console.log('Behaviours from ' + serviceName + ' not found.');
 					return {};
 				}
 				if(typeof this.applicationsBehaviours[serviceName].workflow === 'function'){
@@ -225,6 +226,7 @@ export var Behaviours = (function(){
 		},
 		workflowsFrom: function(obj, dependencies){
 			if(typeof obj !== 'object'){
+				console.log('Empty workflows');
 				return {};
 			}
 			if(typeof dependencies !== 'object'){
