@@ -211,7 +211,7 @@ export var Behaviours = (function(){
 				}
 			}.bind(this);
 
-			if(this.applicationsBehaviours[serviceName]){
+			if(this.applicationsBehaviours[serviceName] && !this.applicationsBehaviours[serviceName].callbacks){
 				return returnWorkflows();
 			}
 
