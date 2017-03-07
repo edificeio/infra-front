@@ -25,9 +25,24 @@ export let resourceRight = ng.directive('resourceRight', ($compile) => {
             var switchHide = function () {
                 let hide = true;
                 if (scope.resource !== undefined) {
-                    hide = attributes.name && (scope.resource instanceof Array && _.find(scope.resource, function (resource) { return !resource.myRights || resource.myRights[attributes.name] === undefined; }) !== undefined) ||
-                        (scope.resource instanceof Model && (!scope.resource.myRights || scope.resource.myRights[attributes.name] === undefined))
-                        || (scope.resource.myRights && scope.resource.myRights[attributes.name] === undefined);
+                    hide = attributes.name && 
+                    (
+                        (
+                            scope.resource instanceof Array && 
+                            scope.resource.find(resource => !resource.myRights || resource.myRights[attributes.name] !== true ) !== undefined
+                        )
+                            ||
+                        (
+                            scope.resource instanceof Model && 
+                            (
+                                !scope.resource.myRights || scope.resource.myRights[attributes.name] === undefined
+                            )
+                        )
+                        || 
+                        (
+                            scope.resource.myRights && scope.resource.myRights[attributes.name] === undefined
+                        )
+                    );
                 }
 
                 if (hide) {

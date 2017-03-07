@@ -896,30 +896,6 @@ module.directive('loadingPanel', function($compile){
 	}
 });
 
-module.directive('workflow', function($compile){
-	return {
-		restrict: 'A',
-		link: function(scope, element, attributes){
-			attributes.$observe('workflow', function(){
-				var auth = attributes.workflow.split('.');
-				var right = model.me && model.me.workflow;
-				auth.forEach(function(prop){
-					right = right[prop];
-				});
-				var content = element.children();
-				if(!right){
-					content.remove();
-					element.hide();
-				}
-				else{
-					element.show();
-					element.append(content);
-				}
-			});
-		}
-	}
-});
-
 module.directive('userRole', function($compile){
 	return {
 		restrict: 'A',

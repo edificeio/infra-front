@@ -192,6 +192,16 @@ export var Behaviours = (function(){
 
 			return actions;
 		},
+		load: function(serviceName: string): Promise<any>{
+			return new Promise((resolve, reject) => {
+                Behaviours.loadBehaviours(serviceName, () => {
+                    resolve(this.applicationsBehaviours[serviceName]);
+                })
+                .error(() => {
+                    reject();
+                });
+            });
+		},
 		findWorkflow: function(serviceName): Promise<any>{
 			var returnWorkflows = function(){
 				if(!this.applicationsBehaviours[serviceName]){

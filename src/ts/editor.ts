@@ -2562,7 +2562,7 @@ export let RTE = {
                 '</ul>' +
                 '</lightbox>',
                 link: function (scope, element, attributes) {
-                    var skinPath = skin.basePath + '/../entcore-css-lib/editor-resources/img/';
+                    var skinPath = skin.basePath + '../entcore-css-lib/editor-resources/img/';
                     scope.templates = [
                         {
                             title: 'editor.templates.emptypage.title',
