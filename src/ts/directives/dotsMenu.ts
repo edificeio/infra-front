@@ -26,7 +26,7 @@ export let dotsMenu = ng.directive('dotsMenu', () => {
             });
             
             $('body, lightbox').on('click', (e) => {
-                if(element.find(e.target).length === 0){
+                if(!$(element).hasClass('opener')){
                     element.removeClass('opened');
                 }
             });

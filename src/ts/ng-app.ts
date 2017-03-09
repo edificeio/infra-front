@@ -911,53 +911,6 @@ module.directive('userRole', function($compile){
 	}
 });
 
-module.directive('tooltip', function($compile){
-	return {
-		restrict: 'A',
-		link: function(scope, element, attributes){
-			var tip;
-			element.on('mouseover', function(){
-				if(!attributes.tooltip || attributes.tooltip === 'undefined'){
-					return;
-				}
-				tip = $('<div />')
-					.addClass('tooltip')
-					.html($compile('<div class="arrow"></div><div class="content">' + lang.translate(attributes.tooltip) + '</div> ')(scope))
-					.appendTo('body');
-				scope.$apply();
-
-				var top = parseInt(element.offset().top + element.height());
-				var left = parseInt(element.offset().left + element.width() / 2 - tip.width() / 2);
-				if(top < 5){
-					top = 5;
-				}
-				if(left < 5){
-					left = 5;
-				}
-				tip.offset({
-					top: top,
-					left: left
-				});
-				tip.fadeIn();
-				element.one('mouseout', function(){
-					tip.fadeOut(200, function(){
-						$(this).remove();
-					})
-				});
-			});
-
-			scope.$on("$destroy", function() {
-				if(tip){
-					tip.remove();
-				}
-
-				element.off();
-			});
-
-		}
-	}
-});
-
 module.directive('behaviour', function($compile){
 	return {
 		restrict: 'E',
@@ -968,7 +921,7 @@ module.directive('behaviour', function($compile){
 			resource: '='
 		},
 		link: function($scope, $element, $attributes){
-			console.log('This directive is deprecated. Please use "authorize" instead.');
+			console.error('This directive is deprecated. Please use "authorize" instead.');
 			if(!$attributes.name){
 				throw "Behaviour name is required";
 			}
@@ -1038,68 +991,6 @@ module.directive('resizable', function(){
 					vertical: element.attr('vertical-resize-lock')
 				}
 			});
-		}
-	}
-});
-
-module.directive('sniplet', function($parse, $timeout){
-	return {
-		restrict: 'E',
-		scope: true,
-		controller: function($scope, $timeout){
-			$timeout(function(){
-				Behaviours.loadBehaviours($scope.application, function(behaviours){
-					var snipletControllerExpansion = behaviours.sniplets[$scope.template].controller;
-					for(var prop in snipletControllerExpansion){
-						$scope[prop] = snipletControllerExpansion[prop];
-					}
-					if(typeof $scope.init === 'function'){
-						$scope.init();
-					}
-				});
-			}, 1);
-		},
-		template: "<div ng-include=\"'/' + application + '/public/template/behaviours/sniplet-' + template + '.html'\"></div>",
-		link: function(scope, element, attributes){
-			scope.application = attributes.application;
-			scope.template = attributes.template;
-			scope.source = scope.$eval(attributes.source);
-		}
-	}
-});
-
-module.directive('snipletSource', function($parse, $timeout){
-	return {
-		restrict: 'E',
-		scope: true,
-		template: "<div ng-include=\"'/' + application + '/public/template/behaviours/sniplet-source-' + template + '.html'\"></div>",
-		controller: function($scope, $timeout){
-			$scope.setSnipletSource = function(source){
-				$scope.ngModel.assign($scope, source);
-                $scope.ngChange();
-                $scope.snipletResource.save();
-			};
-
-			$timeout(function(){
-				Behaviours.loadBehaviours($scope.application, function(behaviours){
-					var snipletControllerExpansion = behaviours.sniplets[$scope.template].controller;
-					for(var prop in snipletControllerExpansion){
-						$scope[prop] = snipletControllerExpansion[prop];
-					}
-
-					if(typeof $scope.initSource === 'function'){
-						$scope.initSource();
-					}
-				});
-			}, 1);
-		},
-		link: function(scope, element, attributes){
-			scope.application = attributes.application;
-			scope.template = attributes.template;
-			scope.ngModel = $parse(attributes.ngModel);
-			scope.ngChange = function(){
-				scope.$eval(attributes.ngChange);
-			}
 		}
 	}
 });

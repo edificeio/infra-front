@@ -868,16 +868,21 @@ export let ui = {
         var scope = angular.element(document.getElementById('my-photo')).scope();
         scope.refreshAvatar();
     },
-    scrollToId: function (id) {
-        //jquery doesn't like selecting elements with slashes in their id,
-        //whereas native API doesn't care
-        var targetElement = document.getElementById(id);
-        if (!targetElement) {
-            return;
-        }
-        $('html, body').animate({
-            scrollTop: $(targetElement).offset().top
-        }, 250);
+    scrollToId: function (id): Promise<void> {
+        return new Promise<any>((resolve, reject) => {
+            //jquery doesn't like selecting elements with slashes in their id,
+            //whereas native API doesn't care
+            var targetElement = document.getElementById(id);
+            if (!targetElement) {
+                resolve();
+            }
+            $('html, body').animate({
+                scrollTop: $(targetElement).offset().top - 60
+            }, 800, () => {
+                resolve();
+            });
+        });
+        
     },
     setStyle: function (stylePath) {
         if ($('#theme').length === 0) {
