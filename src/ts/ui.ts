@@ -734,7 +734,7 @@ export let ui = {
                                         }
                                     }
                                     dragoverred = dropElementInfos.item;
-                                    dropElementInfos.item.trigger('dragover');
+                                    dropElementInfos.item.trigger('dragover', { x: mouse.x, y: mouse.y });
                                 }
                             } else {
                                 if (dragoverred && dragoverred[0] === dropElementInfos.item[0]) {
