@@ -1443,7 +1443,10 @@ module.directive('dragItem', function(){
 					firstTick = true;
                     element.attr('style', '');
                     element.trigger('stopdrag');
-                    firstTick = true;
+					element.removeClass('dragging');
+				},
+				startDrag: () => {
+					element.addClass('dragging');
 				},
 				dragOver: function(item){
                     item.addClass('dragover');

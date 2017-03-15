@@ -674,7 +674,7 @@ export let ui = {
                         dropItemsAreas.push(dropElementInfos);
                     });
 
-                    var dragoverred = undefined;
+                    let dragoverred = [];
 
 
                     var moveElement = function (e) {
@@ -715,7 +715,9 @@ export let ui = {
                         // hit test
                         let left = mouse.x;
                         let top = mouse.y + window.scrollY;
+
                         dropItemsAreas.forEach(function (dropElementInfos) {
+                            let index = dragoverred.indexOf(dropElementInfos.item);
                             if (
                                 dropElementInfos.offset.left < left &&
                                     dropElementInfos.offset.left + dropElementInfos.width > left
@@ -727,18 +729,18 @@ export let ui = {
                                 if (params && typeof params.dragOver === 'function') {
                                     //on applique le dragover sur l'item (donc declenche le 'faux' mouseover)
                                     params.dragOver(dropElementInfos.item);
-                                    if (dragoverred && dragoverred[0] !== dropElementInfos.item[0]) {
-                                        dragoverred.trigger('dragout');
+                                    if (index === -1) {
+                                        dropElementInfos.item.trigger('dragout');
                                         if (params && typeof params.dragOut === 'function') {
-                                            params.dragOut(dragoverred);
+                                            params.dragOut(dropElementInfos.item);
                                         }
                                     }
-                                    dragoverred = dropElementInfos.item;
-                                    dropElementInfos.item.trigger('dragover', { x: mouse.x, y: mouse.y });
+                                    dragoverred.push(dropElementInfos.item);
+                                    dropElementInfos.item.trigger('dragover', { x: left, y: top });
                                 }
                             } else {
-                                if (dragoverred && dragoverred[0] === dropElementInfos.item[0]) {
-                                    dragoverred = undefined;
+                                if (index !== -1) {
+                                    dragoverred.splice(index, 1);
                                     dropElementInfos.item.trigger('dragout');
 
                                     if (params && typeof params.dragOut === 'function') {
@@ -824,9 +826,11 @@ export let ui = {
                                 if (params && typeof params.mouseUp === 'function' && moved) {
                                     params.mouseUp(e);
                                 }
-                                if (params && typeof params.dragOut === 'function' && dragoverred) {
-                                    params.dragOut(dragoverred)
-                                    dragoverred.trigger('dragout');
+                                if (params && typeof params.dragOut === 'function' && dragoverred.length) {
+                                    dragoverred.forEach(d => {
+                                        params.dragOut(d)
+                                        d.trigger('dragout');
+                                    });
                                 }
                             }
                         }, 100);
