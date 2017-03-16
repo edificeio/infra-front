@@ -661,7 +661,6 @@ export let ui = {
                     var elementWidth = element.width();
                     var elementHeight = element.height();
 
-                    //$('[drop-item]') > array
                     var dropItemsAreas = [];
                     $('.droppable').each(function (index, item) {
                         var dropItemPos = $(item).offset();
@@ -675,9 +674,15 @@ export let ui = {
                     });
 
                     let dragoverred = [];
-
-
                     var moveElement = function (e) {
+                        for(let i = 0; i < dropItemsAreas.length; i++){
+                            dropItemsAreas[i].width = dropItemsAreas[i].item.width();
+                            dropItemsAreas[i].height = dropItemsAreas[i].item.height();
+                            dropItemsAreas[i].offset = {
+                                left: dropItemsAreas[i].item.offset().left,
+                                top: dropItemsAreas[i].item.offset().top,
+                            }
+                        }
                         var newOffset = {
                             top: parseInt((mouse.y - elementDistance.y) + (window.pageYOffset - initialScroll)),
                             left: parseInt(mouse.x - elementDistance.x)
