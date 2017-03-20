@@ -13,5 +13,6 @@ export * from './resourceRight';
 export * from './slider';
 export * from './sniplet';
 export * from './sortableList';
+export * from './stickyRow';
 export * from './tooltip';
 export * from './workflow';
