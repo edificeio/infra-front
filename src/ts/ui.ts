@@ -619,19 +619,19 @@ export let ui = {
                 catcher = element.find(params.restrict);
             }
 
-            catcher.on('touchstart mousedown', function (e) {
+            catcher.on('touchstart mousedown', (e) => {
                 if (element.data('lock') === true || (e.target.tagName === 'INPUT' && $(e.target).attr('type') === 'text') || (e.target.tagName === 'TEXTAREA' && $(e.target).is(':focus'))) {
                     return;
                 }
-                var initialScroll = $(window).scrollTop();
-                var interrupt = false;
+                let initialScroll = $(window).scrollTop();
+                let interrupt = false;
                 if (element.data('resizing') !== true) {
 
-                    var mouse = {
+                    let mouse = {
                         y: e.clientY || e.originalEvent.touches[0].clientY,
                         x: e.clientX || e.originalEvent.touches[0].clientX
                     };
-                    var initialMouse = JSON.parse(JSON.stringify(mouse));
+                    let initialMouse = JSON.parse(JSON.stringify(mouse));
                     var elementDistance = {
                         y: mouse.y - element.offset().top,
                         x: mouse.x - element.offset().left
@@ -674,7 +674,7 @@ export let ui = {
                     });
 
                     let dragoverred = [];
-                    var moveElement = function (e) {
+                    var moveElement = (e) => {
                         for(let i = 0; i < dropItemsAreas.length; i++){
                             dropItemsAreas[i].width = dropItemsAreas[i].item.width();
                             dropItemsAreas[i].height = dropItemsAreas[i].item.height();
@@ -688,11 +688,11 @@ export let ui = {
                             left: parseInt(mouse.x - elementDistance.x)
                         };
 
-                        if (newOffset.top < (window.scrollY || window.pageYOffset)) {
+                        if (mouse.y < 30) {
                             window.scrollTo(0, (window.scrollY || window.pageYOffset) - 10);
                         }
 
-                        if (newOffset.top > (window.scrollY || window.pageYOffset) + $(window).height()) {
+                        if (mouse.y > $(window).height() - 30) {
                             window.scrollTo(0, (window.scrollY || window.pageYOffset) + 10);
                         }
 
