@@ -632,13 +632,13 @@ export let ui = {
                         x: e.clientX || e.originalEvent.touches[0].clientX
                     };
                     let initialMouse = JSON.parse(JSON.stringify(mouse));
-                    var elementDistance = {
+                    let elementDistance = {
                         y: mouse.y - element.offset().top,
                         x: mouse.x - element.offset().left
                     };
-                    var moved = false;
+                    let moved = false;
 
-                    var parent = element.parents('.drawing-zone');
+                    let parent = element.parents('.drawing-zone');
                     var parentWidth = parent.width();
                     var parentHeight = parent.height();
                     var parentPosition = parent.offset();
@@ -753,10 +753,7 @@ export let ui = {
                                     }
                                 }
                             }
-                        })
-
-
-
+                        });
 
                         if (params && typeof params.tick === 'function') {
                             params.tick(e, mouse);
@@ -785,11 +782,24 @@ export let ui = {
                             return;
                         }
                         if (!element.data('dragging')) {
+                            element.trigger('startDrag', [{
+                                elementDistance: elementDistance,
+                                mouse: mouse
+                            }]);
+
                             if (params && typeof params.startDrag === 'function') {
-                                params.startDrag();
+                                let newData = params.startDrag({
+                                    elementDistance: elementDistance,
+                                    mouse: mouse
+                                });
+                                if(!newData){
+                                    newData = {};
+                                }
+                                if(newData.elementDistance){
+                                    elementDistance = newData.elementDistance;
+                                }
                             }
 
-                            element.trigger('startDrag');
                             $('body').css({
                                 '-webkit-user-select': 'none',
                                 '-moz-user-select': 'none',

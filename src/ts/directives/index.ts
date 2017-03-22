@@ -3,6 +3,7 @@ export * from './bindHtml';
 export * from './bottomScroll';
 export * from './calendar';
 export * from './dotsMenu';
+export * from './dragItem';
 export * from './embedder';
 export * from './explorer';
 export * from './imageSelect';
