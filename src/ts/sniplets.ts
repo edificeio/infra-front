@@ -8,6 +8,10 @@ import { _ } from './libs/underscore/underscore';
 export let sniplets = {
     load: function (): Promise<any>{
         return new Promise((resolve, reject) => {
+            if(this.sniplets.length){
+                resolve(this.sniplets);
+                return;
+            }
             let sniplets = this;
             http().get('/resources-applications').done(function (apps) {
                 if (model.me) {
