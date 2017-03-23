@@ -201,7 +201,7 @@ export var idiom = {
             return {
                 restrict: 'E',
                 link: function(scope, element, attributes){
-                    element.html($compile('<span class="no-style">' + idiom.translate(element.text()) + '</span>')(scope));
+                    element.html($compile('<span class="no-style">' + idiom.translate(element.text().trim()) + '</span>')(scope));
                 }
             }
         });
