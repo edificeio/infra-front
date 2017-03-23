@@ -655,6 +655,7 @@ export function bootstrap(func) {
 			if(right === 'owner'){
 				return resource.owner && resource.owner.userId === model.me.userId;
 			}
+			let rightName = right.right || right;
 
 			var currentSharedRights = _.filter(resource.shared, function(sharedRight){
 				return model.me.groupsIds.indexOf(sharedRight.groupId) !== -1
@@ -662,10 +663,13 @@ export function bootstrap(func) {
 			});
 
 			var resourceRight = _.find(currentSharedRights, function(resourceRight){
-				return resourceRight[right.right] || resourceRight.manager;
+				return resourceRight[rightName] || resourceRight.manager;
 			}) !== undefined;
 
-			var workflowRight = this.hasWorkflow(right.workflow);
+			var workflowRight = true;
+			if(right.workflow){
+				workflowRight = this.hasWorkflow(right.workflow);
+			}
 
 			return resourceRight && workflowRight;
 		};
