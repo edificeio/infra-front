@@ -3036,6 +3036,18 @@ export let RTE = {
                         });
                     });
 
+                    editorInstance.on('change', function(){
+                        editorInstance.trigger('contentupdated');
+                        setTimeout(function(){
+                            
+                            if(attributes.onChange){
+                                scope.$eval(attributes.onChange);
+                            }
+                            
+                            scope.$apply();
+                        }, 10);
+                    });
+
                     editorInstance.on('contentupdated', function () {
                         if(parseInt(htmlZone.css('min-height')) < editZone.height()){
                             htmlZone.css('min-height', editZone.height() + 'px');
