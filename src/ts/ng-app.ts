@@ -879,7 +879,7 @@ module.directive('loadingPanel', function($compile){
 		link: function($scope, $element, $attributes){
 			$attributes.$observe('loadingPanel', function(val) {
 				http().bind('request-started.' + $attributes.loadingPanel, function(e){
-					var loadingIllustrationPath = $('#theme').attr('href').split('/theme.css')[0] + '/../img/illustrations/loading.gif';
+					var loadingIllustrationPath = skin.basePath + '/img/illustrations/loading.gif';
 					if($element.children('.loading-panel').length === 0){
 						$element.append('<div class="loading-panel">' +
 							'<h1>' + lang.translate('loading') + '</h1>' +
@@ -1670,7 +1670,7 @@ module.directive('wizard', function(){
                         }
                     }
 				});
-				
+
 				element.find('div.steps').hide();
 				scope.currentStep = 0;
 
