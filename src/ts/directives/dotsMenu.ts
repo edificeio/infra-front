@@ -6,7 +6,7 @@ export let dotsMenu = ng.directive('dotsMenu', () => {
         restrict: 'E',
         transclude: true,
         template: `
-            <div class="opener"></div>
+            <i class="opener"></i>
             <div class="options" ng-transclude></div>
         `,
         link: (scope, element, attributes) => {
@@ -24,7 +24,7 @@ export let dotsMenu = ng.directive('dotsMenu', () => {
                     }
                 }, 10);
             });
-            
+
             $('body, lightbox').on('click', (e) => {
                 if(!$(element).hasClass('opener')){
                     element.removeClass('opened');
