@@ -435,7 +435,7 @@ export let RTE = {
             that.instance.addState(that.editZone.html());
             setTimeout(function () {
                 this.instance.trigger('selectionchange', { selection: this.instance.selection });
-                this.instance.trigger('contentupdated');
+                this.instance.trigger('change');
             }.bind(this), 100);
         };
 
@@ -487,7 +487,7 @@ export let RTE = {
                 addedNodes.forEach(that.selectNode);
             }
 
-            that.instance.trigger('contentupdated');
+            that.instance.trigger('change');
         };
 
         function applyCSSCursor(css){
@@ -856,7 +856,7 @@ export let RTE = {
                 this.editZone.append(wrapper);
             }
 
-            this.instance.trigger('contentupdated');
+            this.instance.trigger('change');
         };
 
         this.replaceHTMLInline = function (htmlContent) {
@@ -871,7 +871,7 @@ export let RTE = {
                 this.editZone.append(wrapper);
             }
 
-            this.instance.trigger('contentupdated');
+            this.instance.trigger('change');
         };
 
         this.$ = function(){
@@ -945,7 +945,7 @@ export let RTE = {
                         else{
                             element.removeClass('disabled');
                         }
-                        instance.trigger('contentupdated')
+                        instance.trigger('change');
                     });
 
                     instance.on('contentupdated', function(e){
@@ -973,7 +973,7 @@ export let RTE = {
                         else{
                             element.removeClass('disabled');
                         }
-                        instance.trigger('contentupdated');
+                        instance.trigger('change');
                     });
 
                     instance.on('contentupdated', function(e){
@@ -1824,7 +1824,7 @@ export let RTE = {
                             label: 'editor.remove.image',
                             action: function (e) {
                                 $(e.target).remove();
-                                instance.trigger('contentupdated');
+                                instance.trigger('change');
                             }
                         },
                         {
@@ -1832,7 +1832,7 @@ export let RTE = {
                             action: function (e) {
                                 $(e.target).css({ float: 'right', margin: '10px', 'z-index': '0' });
                                 instance.selection.selectNode(e.target);
-                                instance.trigger('contentupdated');
+                                instance.trigger('change');
                                 instance.trigger('justify-changed');
                             }
                         },
@@ -1841,7 +1841,7 @@ export let RTE = {
                             action: function (e) {
                                 $(e.target).css({ float: 'left', margin: '10px', 'z-index': '0' });
                                 instance.selection.selectNode(e.target);
-                                instance.trigger('contentupdated');
+                                instance.trigger('change');
                                 instance.trigger('justify-changed');
                             }
                         },
@@ -1850,7 +1850,7 @@ export let RTE = {
                             action: function (e) {
                                 $(e.target).css({ float: 'none', margin: 'auto', 'z-index': '1' });
                                 instance.selection.selectNode(e.target);
-                                instance.trigger('contentupdated');
+                                instance.trigger('change');
                                 instance.trigger('justify-changed');
                             }
                         }
@@ -2088,6 +2088,7 @@ export let RTE = {
                         if(editNode){
                             $(editNode).attr('formula', scope.display.formula);
                             angular.element(editNode.firstChild).scope().updateFormula(scope.display.formula);
+                            instance.trigger('change');
                         }
                         else{
                             instance.selection.replaceHTMLInline(instance.compile(
@@ -2301,7 +2302,7 @@ export let RTE = {
 
                         if (selectedNode && selectedNode.nodeName === 'A') {
                             instance.selection.moveCaret(linkNode[0], linkNode.text().length);
-                            instance.trigger('contentupdated');
+                            instance.trigger('change');
                             scope.linker.display.chooseLink = false;
                             scope.linker.params = {};
                             scope.linker.display.search = {
@@ -3154,6 +3155,7 @@ export let RTE = {
                             element.children('editor-toolbar').removeClass('show');
                             element.removeClass('focus');
                             element.trigger('editor-blur');
+                            editorInstance.trigger('change');
                             
                             if (attributes.placeholder && !element.find('[contenteditable]').html()) {
                                 element.find('[contenteditable]').html('<p class="placeholder">' + idiom.translate(attributes.placeholder) + '</p>');
@@ -3184,7 +3186,7 @@ export let RTE = {
                             $(editZone.contents()[0]).remove();
                             editZone.prepend(div);
                             editorInstance.selection.moveCaret(div[0], div.text().length);
-                            editorInstance.trigger('contentupdated');
+                            editorInstance.trigger('change');
                         }
                     }
 
