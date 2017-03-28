@@ -28,6 +28,7 @@ export let lightbox = ng.directive('lightbox', ($compile) => {
                 $('body').removeClass('lightbox-opened');
 
 				scope.$eval(scope.onClose);
+				scope.show = false;
 				if(!scope.$$phase){
 					scope.$parent.$apply();
 				}
