@@ -2897,7 +2897,7 @@ export let RTE = {
                                 !editZone.is(':focus') &&
                                 $('editor-toolbar').find(':focus').length === 0
                             ) {
-                                if (ngModel(scope)) {
+                                if (ngModel(scope) || !attributes.placeholder) {
                                     editZone.html($compile(ngModel(scope))(scope));
                                 }
                                 
