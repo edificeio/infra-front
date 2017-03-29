@@ -16,6 +16,9 @@ export let infotip = ng.directive('infotip', () => {
              if(infotips[scope.name] === false){
                  element.remove();
              }
+             else{
+                 element.css({ 'display': 'block' });
+             }
 
              element.children('i').on('click', () => {
                  element.slideUp();
