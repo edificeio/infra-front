@@ -26,7 +26,10 @@ export class Rights<T extends Shareable> {
 
         return new Promise((resolve, reject) => {
             if (Behaviours.applicationsBehaviours[prefix] && !Behaviours.applicationsBehaviours[prefix].callbacks) {
-                resolve(this.fromObject(Behaviours.applicationsBehaviours[prefix].rights, prefix));
+                this.fromObject(Behaviours.applicationsBehaviours[prefix].rights, prefix).then((result) => {
+                     resolve(result);
+                });
+               
             }
             else {
                 if (waitingFor[prefix]) {
@@ -35,9 +38,11 @@ export class Rights<T extends Shareable> {
                 else {
                     waitingFor[prefix] = [];
                     Behaviours.loadBehaviours(prefix, () => {
-                        resolve(this.fromObject(Behaviours.applicationsBehaviours[prefix].rights, prefix));
-                        waitingFor[prefix].forEach((f) => f());
-                        delete waitingFor[prefix];
+                        this.fromObject(Behaviours.applicationsBehaviours[prefix].rights, prefix).then((result) => {
+                            resolve(result);
+                            waitingFor[prefix].forEach((f) => f());
+                            delete waitingFor[prefix];
+                        });
                     });
                 }
             }
@@ -65,6 +70,11 @@ export class Rights<T extends Shareable> {
 
             if (model.me) {
                 computeRights();
+                resolve();
+                return;
+            }
+
+            if(model.bootstrapped && !model.me){
                 resolve();
                 return;
             }

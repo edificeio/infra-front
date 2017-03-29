@@ -41,6 +41,7 @@ export class BaseModel extends Model{
     calendar: any;
     widgets: any;
 	mediaLibrary: any;
+	bootstrapped: boolean;
 	
 	build(){
 		

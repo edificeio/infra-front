@@ -2977,8 +2977,8 @@ $(document).ready(function(){
 					lang.addBundle('/' + appPrefix + '/i18n', function(){
                         angular.bootstrap($('html'), ['app']);
                         model.trigger('bootstrap');
+						model.bootstrapped = true;
 						model.sync();
-						model.trigger('bootstrap');
 					});
 				});
 			}

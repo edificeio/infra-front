@@ -16,7 +16,7 @@ export var skin = {
 			var rand = Math.random();
 			http().get('/skin', { token: rand }).done((data) => {
 				this.skin = data.skin;
-				this.theme = '/assets/themes/' + data.skin + '/default/';
+				this.theme = '/assets/themes/' + data.skin + '/skins/default/';
 				this.basePath = this.theme + '../../';
 
 				http().get('/assets/themes/' + data.skin + '/template/override.json', { token: rand }, { disableNotifications: true }).done((override) => {
