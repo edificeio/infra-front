@@ -17,11 +17,7 @@ export let explorer = ng.directive('explorer', () => {
 
             function select() {
                 scope.ngModel = !scope.ngModel;
-                if (scope.ngModel) {
-                    element.addClass('selected')
-                } else {
-                    element.removeClass('selected')
-                }
+                
                 if (scope.ngClick) {
                     scope.ngClick();
                 }
@@ -79,6 +75,14 @@ export let explorer = ng.directive('explorer', () => {
             }
             setGest();
             $(window).on('resize', function () { setGest(true) });
+
+            scope.$watch('ngModel', (newVal) => {
+                if (newVal) {
+                    element.addClass('selected')
+                } else {
+                    element.removeClass('selected')
+                }
+            });
         }
     }
 });
