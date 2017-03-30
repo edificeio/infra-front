@@ -900,7 +900,7 @@ export let ui = {
                 resolve();
             }
             $('html, body').animate({
-                scrollTop: $(targetElement).offset().top - 60
+                scrollTop: $(targetElement).offset().top - 60 - $('sticky-row').outerHeight() - 10
             }, 800, () => {
                 resolve();
             });
