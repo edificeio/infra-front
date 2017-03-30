@@ -2785,6 +2785,8 @@ export let RTE = {
                     if (element.attr('visibility') && scope.$eval(element.attr('visibility')).toLowerCase() === 'public') {
                         element.attr('public', true);
                     }
+
+                    scope.$on('$destroy', () => $('body').off('mousedown.editor'))
                     
                     if ($('.prism').length === 0) {
                         $('body').append(
@@ -3145,7 +3147,7 @@ export let RTE = {
                         }
                     });
 
-                    $('body').on('mousedown', function(e){
+                    $('body').on('mousedown.editor', function(e){
                         if(e.target !== element.find('.editor-toolbar-opener')[0] && element.find('editor-toolbar, .editor-toolbar-opener').find(e.target).length === 0){
                             element.find('editor-toolbar').removeClass('opened');
                             element.find('.editor-toolbar-opener').removeClass('active');
@@ -3175,7 +3177,7 @@ export let RTE = {
                         }
                     });
 
-                    $('editor-toolbar').on('mousedown', function(e){
+                    element.find('editor-toolbar').on('mousedown', function(e){
                         e.preventDefault();
                     });
 
