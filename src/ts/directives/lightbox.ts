@@ -39,7 +39,6 @@ export let lightbox = ng.directive('lightbox', ($compile) => {
 
 			scope.$watch('show', function(newVal){
                 if (newVal) {
-                    $('body').addClass('lightbox-opened');
                     var lightboxWindow = element.children('.lightbox');
 
                     //Backup overflow hidden elements + z-index of parents
@@ -62,36 +61,46 @@ export let lightbox = ng.directive('lightbox', ($compile) => {
                     };
 
                     //Removing overflow properties
-				    _.forEach(scope.backup.overflow, function(element) {
+				    scope.backup.overflow.forEach((element) => {
 				        $(element).css({ 'overflow': 'visible' })
 				    });
 
                     //Ensuring proper z-index
-                    _.forEach(scope.backup.zIndex, function(elementObj) {
+                    scope.backup.zIndex.forEach((elementObj) => {
                         elementObj.element.css('z-index', 99999)
                     })
 
-					setTimeout(function(){
+					setTimeout(() => {
+						$('body').addClass('lightbox-opened');
 						lightboxWindow.fadeIn();
 					}, 100);
 
 					$('body').css({ overflow: 'hidden' });
 				}
                 else {
-                    $('body').removeClass('lightbox-opened');
+					let updateBody = true;
+					$('lightbox .lightbox').each((index, item) => {
+						if(item !== element.children('.lightbox')[0] && $(item).css('display') === 'block'){
+							updateBody = false;
+						}
+					});
+
+					if(updateBody){
+						$('body').removeClass('lightbox-opened');
+						$('body').css({ overflow: 'auto' });
+					}
 
                     if(scope.backup){
                         //Restoring stored elements properties
-                        _.forEach(scope.backup.overflow, function(element) {
+                        scope.backup.overflow.forEach((element) => {
                             $(element).css('overflow', '')
                         })
-                        _.forEach(scope.backup.zIndex, function(elementObj) {
+                        scope.backup.zIndex.forEach((elementObj) => {
                             elementObj.element.css('z-index', elementObj.index)
                         })
                     }
 
 					element.children('.lightbox').fadeOut();
-					$('body').css({ overflow: 'auto' });
 				}
 			});
 
