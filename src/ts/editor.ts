@@ -284,7 +284,7 @@ export let RTE = {
             sel.addRange(range);
         };
 
-        this.selectNode = function(element, start, end){
+        this.selectNode = (element, start, end) => {
             var range = document.createRange();
             var sel = getSelection();
 
@@ -3723,7 +3723,9 @@ export let RTE = {
                     }
 
                     scope.updateFormula = function(newVal){
+                        element.children().remove();
                         element.text('$$' + newVal + '$$');
+                        
                         if (window.MathJax && window.MathJax.Hub) {
                             window.MathJax.Hub.Config({
                                 messageStyle: 'none',
