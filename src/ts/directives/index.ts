@@ -2,6 +2,7 @@
 export * from './bindHtml';
 export * from './bottomScroll';
 export * from './calendar';
+export * from './carousel';
 export * from './dotsMenu';
 export * from './dragItem';
 export * from './embedder';
