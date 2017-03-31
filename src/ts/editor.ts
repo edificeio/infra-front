@@ -3096,16 +3096,18 @@ export let RTE = {
                             }
                         });
 
+                        let content = editZone.html();
+                        let contentSelector = $('<div>' + content + '</div>');
+                        contentSelector.find('.placeholder').remove();
+                        content = contentSelector.html();
                         if (!scope.$$phase) {
                             scope.$apply(function () {
                                 scope.$eval(attributes.ngChange);
-                                var content = editZone.html();
                                 ngModel.assign(scope, content);
                             });
                         }
                         else {
                             scope.$eval(attributes.ngChange);
-                            var content = editZone.html();
                             ngModel.assign(scope, content);
                         }
                     });
