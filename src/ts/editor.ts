@@ -3705,7 +3705,10 @@ export let RTE = {
                 },
                 link: function (scope, element, attributes) {
                     if (!window.MathJax) {
-                        http().get('/infra/public/mathjax/MathJax.js').done(() => {
+                        let script = $('<script></script>')
+                            .attr('src', '/infra/public/mathjax/MathJax.js')
+                            .appendTo('head');
+                        script[0].onload = () => {
                             window.MathJax.Hub.Config({
                                 messageStyle: 'none',
                                 tex2jax: { preview: 'none' },
@@ -3716,7 +3719,7 @@ export let RTE = {
                                 }
                             });
                             window.MathJax.Hub.Queue(["Typeset", window.MathJax.Hub]);
-                        });
+                        }
                     }
 
                     scope.updateFormula = function(newVal){
