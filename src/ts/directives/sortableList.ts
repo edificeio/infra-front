@@ -86,14 +86,14 @@ export let sortableElement = ng.directive('sortableElement', function ($parse) {
                             return;
                         }
                         var sortableTopDistance = $(sortable).offset().top - parseInt($(sortable).css('margin-top'));
-                        if (element.offset().top + element.height() / 2 > sortableTopDistance &&
-                            element.offset().top + element.height() / 2 < sortableTopDistance + $(sortable).height()) {
-                            $(sortable).css({ 'margin-top': element.height() });
+                        if (element.offset().top + element.outerHeight() / 2 > sortableTopDistance &&
+                            element.offset().top + element.outerHeight() / 2 < sortableTopDistance + $(sortable).outerHeight()) {
+                            $(sortable).css({ 'margin-top': element.outerHeight() });
                             moved.push(sortable);
                         }
                         //first widget case
-                        if (element.offset().top + element.height() / 2 - 2 < sortableTopDistance && index === 0) {
-                            $(sortable).css({ 'margin-top': element.height() });
+                        if (element.offset().top + element.outerHeight() / 2 - 2 < sortableTopDistance && index === 0) {
+                            $(sortable).css({ 'margin-top': element.outerHeight() });
                             moved.push(sortable);
                         }
                     });
