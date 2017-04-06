@@ -1876,12 +1876,6 @@ export let RTE = {
                         instance.focus();
                     };
 
-                    instance.element.on('dragstart', 'img', (e) => {
-                        if(!instance.element.hasClass('focus')){
-                            e.preventDefault();
-                        }
-                    });
-
                     instance.element.on('drop', function (e) {
                         e.stopPropagation();
                         var image;
