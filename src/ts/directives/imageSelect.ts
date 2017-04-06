@@ -31,20 +31,24 @@ export let imageSelect = ng.directive('imageSelect', function($compile){
 			}
 			scope.selectedFile.visibility = scope.selectedFile.visibility.toLowerCase();
 
-			element.on('dragenter', function(e){
+			element.on('dragenter', (e) => {
 				e.preventDefault();
 			});
 
-			element.on('dragover', function(e){
+			element.on('dragstart', 'img', (e) => {
+				e.preventDefault();
+			})
+
+			element.on('dragover', (e) => {
 				element.addClass('droptarget');
 				e.preventDefault();
 			});
 
-			element.on('dragleave', function(){
+			element.on('dragleave', () => {
 				element.removeClass('droptarget');
 			});
 
-			element.on('drop', function(e){
+			element.on('drop', (e) => {
 				element.removeClass('droptarget');
 				element.addClass('loading-panel');
 				e.preventDefault();
@@ -56,21 +60,21 @@ export let imageSelect = ng.directive('imageSelect', function($compile){
 				}, scope.selectedFile.visibility);
 			});
 
-			scope.$watch('thumbnails', function(thumbs){
+			scope.$watch('thumbnails', (thumbs) => {
 				var evaledThumbs = scope.$eval(thumbs);
 				if(!evaledThumbs){
 					return;
 				}
-				scope.getThumbnails = function(){
+				scope.getThumbnails = () => {
 					var link = '';
-					evaledThumbs.forEach(function(th){
+					evaledThumbs.forEach((th) =>{
 						link += 'thumbnail=' + th.width + 'x' + th.height + '&';
 					});
 					return link;
 				}
 			});
 
-			scope.updateDocument = function(){
+			scope.updateDocument = () => {
 				scope.userSelecting = false;
 				var path = '/workspace/document/';
 				if(scope.selectedFile.visibility === 'public'){
@@ -80,7 +84,7 @@ export let imageSelect = ng.directive('imageSelect', function($compile){
 				scope.$apply();
 				scope.ngChange();
 			};
-			element.on('click', '.pick-file', function(){
+			element.on('click', '.pick-file', () => {
 				scope.userSelecting = true;
 				scope.$apply('userSelecting');
 			});
