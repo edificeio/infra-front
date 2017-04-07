@@ -1,4 +1,5 @@
 import { ng } from '../ng-start';
+import { ui } from '../ui';
 import { $ } from '../libs/jquery/jquery';
 
 let initialPosition;
@@ -35,7 +36,17 @@ export let stickyRow = ng.directive('stickyRow', () => {
         scope: { name: '@' },
         transclude: true,
         link: async (scope, element, attributes) => {
-            $(window).on('scroll', () => placeRow(element))
+            let applyListener = () => {
+                if($(window).width() > ui.breakpoints.tablette){
+                    $(window).on('scroll.stickyRow', () => placeRow(element));
+                }
+                else{
+                    $(window).off('scroll.stickyRow');
+                    element.removeClass('floating');
+                }
+            }
+            $(window).on('resize', applyListener());
+            applyListener();
         }
     }
 })
