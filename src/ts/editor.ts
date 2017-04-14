@@ -3748,3 +3748,8 @@ export let RTE = {
         });
     }
 };
+
+if(!(window as any).entcore){
+	(window as any).entcore = {};
+}
+(window as any).entcore.RTE = RTE;
