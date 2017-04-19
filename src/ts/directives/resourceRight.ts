@@ -29,7 +29,13 @@ export let resourceRight = ng.directive('resourceRight', ($compile) => {
                     (
                         (
                             scope.resource instanceof Array && 
-                            scope.resource.find(resource => !resource.myRights || resource.myRights[attributes.name] !== true ) !== undefined
+                            scope.resource.find(resource => 
+                                !resource.myRights || 
+                                (
+                                    resource.myRights[attributes.name] !== true && 
+                                    !(resource.myRights[attributes.name] && resource.myRights[attributes.name].right)
+                                )
+                            ) !== undefined
                         )
                             ||
                         (
