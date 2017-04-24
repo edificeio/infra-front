@@ -832,11 +832,10 @@ export let RTE = {
                     applyCSS(params, range);
                 });
 
-                if(this.isCursor()){
-                    return;
+                if(this.nextRanges.length){
+                    this.applyNextRanges();
                 }
 
-                this.applyNextRanges();
                 //cleanup
                 that.editZone.find('span').each(function(index, item){
                     if(item.childNodes.length === 1 && item.childNodes[0].nodeType === 1){
