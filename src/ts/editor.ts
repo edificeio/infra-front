@@ -2945,6 +2945,7 @@ export let RTE = {
 
                     $(window).on('resize', function () {
                         highlightZone.css({ top: (element.find('editor-toolbar').height() + 1) + 'px' });
+                        toolbarElement.css({ 'position': 'relative' });
                     });
 
                     var previousScroll = 0;
@@ -3146,6 +3147,7 @@ export let RTE = {
                         }
                     }
 
+                    $(window).on('resize', placeToolbar);
                     element.parents().on('resizing', placeToolbar)
                     element.on('click', function (e) {
                         if (element.hasClass('focus')) {
