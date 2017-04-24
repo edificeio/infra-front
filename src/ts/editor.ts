@@ -654,8 +654,10 @@ export let RTE = {
 
             if(that.isCursor()){
                 applyCSSCursor(css);
+                return;
             }
-            else if (range.startContainer === range.endContainer &&
+            
+            if (range.startContainer === range.endContainer &&
                 (
                     range.startContainer.nodeType === 3 &&
                     range.startOffset === 0 &&
@@ -828,7 +830,12 @@ export let RTE = {
                 }
                 this.ranges.forEach(function(range){
                     applyCSS(params, range);
-                })
+                });
+
+                if(this.isCursor()){
+                    return;
+                }
+
                 this.applyNextRanges();
                 //cleanup
                 that.editZone.find('span').each(function(index, item){
