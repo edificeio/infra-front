@@ -816,6 +816,15 @@ export let RTE = {
         this.css = function(params){
             if(typeof params === 'object'){
                 let selection = window.getSelection();
+                if(!this.instance.editZone.html()){
+                    this.instance.editZone.html('<div>&#8203;</div>');
+                }
+                if(!this.instance.editZone.is(':focus')){
+                    this.instance.editZone[0].focus();
+                    let range = selection.getRangeAt(0);
+                    this.range = range;
+                }
+
                 this.ranges = [];
                 for(let i = 0; i < selection.rangeCount; i++){
                     let range = selection.getRangeAt(i);
@@ -1603,7 +1612,7 @@ export let RTE = {
 
                     scope.setFontFamily = function (font) {
                         scope.font = font;
-                        instance.execCommand('fontName', false, scope.font.fontFamily);
+                        instance.selection.css({ 'font-family': font.fontFamily });
                     };
 
                     instance.on('selectionchange', function(e){
