@@ -958,8 +958,10 @@ export let RTE = {
                         }
                     }
                     if(item.childNodes.length === 1 && item.childNodes[0].nodeType === 1){
-                        let cssObj = '{' + $(item).attr('style').replace(/;/i, ',').slice(0,-1) + '}';
-                        $(item).css(cssObj);
+                        for(let i = 0; i < item.childNodes[0].style.length; i++){
+                            let prop = item.childNodes[0].style[i];
+                            $(item).css(prop, $(item.childNodes[0]).css(prop));
+                        }
                         $(item).html($(item).children().first().html());
                     }
                     if(item.nextSibling && item.nextSibling.nodeType === 1 && item.nextSibling.nodeName === 'SPAN'){
