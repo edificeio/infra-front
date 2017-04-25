@@ -12,15 +12,6 @@ import { skin } from './skin';
 
 declare let Prism: any;
 
-if (!String.prototype.startsWith) {
-    String.prototype.startsWith = function (str) {
-        if (this.indexOf(str) !== -1 && this.split(str)[0] === '') {
-            return true;
-        }
-        return false;
-    };
-}
-
 var textNodes = ['SPAN', 'A', 'STRONG', 'EM', 'B', 'I'];
 var formatNodes = ['P', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6'];
 
@@ -29,9 +20,14 @@ function rgb(r, g, b) {
 }
 var rgba = rgb;
 var transparent = 'rgba(255, 255, 255, 0)';
+ var textNodes = ['SPAN', 'A', 'STRONG', 'EM', 'B', 'I'];
+var formatNodes = ['P', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6'];
+
+var rgba = rgb;
+var transparent = 'rgba(255, 255, 255, 0)';
 
 export let RTE = {
-    baseToolbarConf: undefined,
+    baseToolbarConf: {} as any,
     Instance: function(data){
         var that = this;
         this.states = [];
@@ -59,7 +55,7 @@ export let RTE = {
             this.trigger('contentupdated');
         };
 
-        var mousePosition: { top?: number, left?: number } = {};
+        var mousePosition: { left?: number, top?: number } = {};
         this.editZone.on('mousemove', function(e){
             mousePosition = {
                 left: e.pageX,
@@ -185,11 +181,11 @@ export let RTE = {
 
         this.toolbar = new RTE.Toolbar(this);
     },
-    Selection: function(data: any){
+    Selection: function(data?){
         var that = this;
         this.selectedElements = [];
         this.nextRanges = [];
- 
+
         this.applyNextRanges = function(){
             let selection = window.getSelection();
             selection.removeAllRanges();
@@ -267,8 +263,12 @@ export let RTE = {
             }
             var range = sel.getRangeAt(0);
 
-            var same = this.range && this.range.startContainer === range.startContainer && this.range.startOffset === range.startOffset
-                    && this.range.endContainer === range.endContainer && range.endOffset === this.range.endOffset;
+            var same = this.range && 
+            this.range.startContainer === range.startContainer && 
+            this.range.startOffset === range.startOffset && 
+            this.range.endContainer === range.endContainer && 
+            range.endOffset === this.range.endOffset &&
+            sel.rangeCount === this.rangeCount;
             same = same || (this.editZone.find(range.startContainer).length === 0 && this.editZone[0] !== range.startContainer);
             var selectedElements = getSelectedElements();
 
@@ -277,6 +277,7 @@ export let RTE = {
             }
             if (!same && this.editZone.is(':focus')) {
                 this.range = range;
+                this.rangeCount = sel.rangeCount;
             }
             return !same;
         };
@@ -291,14 +292,15 @@ export let RTE = {
             var range = document.createRange();
             range.setStart(element.firstChild || element, offset);
             this.range = range;
-
+            
             var sel = getSelection();
+            this.rangeCount = sel.rangeCount;
             this.selectedElements = [];
             sel.removeAllRanges();
             sel.addRange(range);
         };
 
-        this.selectNode = (element, start, end) => {
+        this.selectNode = function(element, start, end){
             var range = document.createRange();
             var sel = getSelection();
 
@@ -324,6 +326,7 @@ export let RTE = {
 
             sel.removeAllRanges();
             sel.addRange(range);
+            this.rangeCount = 1;
         };
 
         this.wrap = function(element){
@@ -454,56 +457,157 @@ export let RTE = {
         };
 
         this.isCursor = function () {
-            return window.getSelection().rangeCount === 1 && 
- 				this.range.startContainer === this.range.endContainer && 
- 				this.range.startOffset === this.range.endOffset;
+            return (this.rangeCount === 1 || this.rangeCount === 0) && 
+            this.range.startContainer === this.range.endContainer && 
+            this.range.startOffset === this.range.endOffset;
         }
+
+        let wrapTextOnNode = function(el, node, last){
+            if(!node){
+                node = this.range.commonAncestorContainer;
+            }
+            if(node.nodeType === 3){
+                let start = 0;
+                if(node === this.range.startContainer){
+                    start = this.range.startOffset;
+                }
+                let textNode = document.createTextNode(node.textContent.substring(start));
+                if(node === this.range.endContainer){
+                    textNode = document.createTextNode(node.textContent.substring(start, this.range.endOffset));
+                    let nextText = document.createTextNode(node.textContent.substring(this.range.endOffset));
+                    node.parentNode.insertBefore(nextText, node.nextSibling);
+                }
+                el.append(textNode);
+                
+                node.textContent = node.textContent.substring(0, start);
+            }
+
+            let foundFirst = false;
+            if(last){
+                foundFirst = true;
+            }
+            let nodes = [];
+            for(let i = 0; i < node.childNodes.length; i++){
+                let child = node.childNodes[i];
+                nodes.push(child);
+            }
+
+            for(let i = 0; i < nodes.length; i++){
+                let child = nodes[i];
+                
+                if(child === this.range.startContainer){
+                    foundFirst = true;
+                    if(this.range.startOffset === 0){
+                        el.append(child);
+                    }
+                    if(child.nodeType === 1){
+                        let last = child.childNodes.length;
+                        if(this.range.startContainer === this.range.endContainer){
+                            last = this.range.endOffset;
+                        }
+
+                        for(let i = this.range.startOffset; i < last; i++){
+                            el.append(child.childNodes[i]);
+                        }
+                    }
+                    else{
+                        let textNode;
+                        if(this.range.startContainer === this.range.endContainer){
+                            textNode = document.createTextNode(child.textContent.substring(this.range.startOffset, this.range.endOffset));
+                            
+                            let nextText = document.createTextNode(child.textContent.substring(this.range.endOffset));
+                            child.parentNode.insertBefore(nextText, child.nextSibling);
+                            child.textContent = child.textContent.substring(0, this.range.startOffset);
+                        }
+                        else{
+                            textNode = document.createTextNode(child.textContent.substring(this.range.startOffset));
+                            child.textContent = child.textContent.substring(0, this.range.startOffset);
+                        }
+                        el.append(textNode);
+                    }
+                    
+                    continue;
+                }
+
+                if(child.contains(this.range.startContainer)){
+                    let container = document.createElement(child.nodeName);
+                    $(container).attr('style', $(child).attr('style'));
+                    el.append(container);
+                    wrapTextOnNode(container, child);
+                    foundFirst = true;
+                    continue;
+                }
+
+                if(!foundFirst){
+                    continue;
+                }
+
+                if(child === this.range.endContainer){
+                    if(child.nodeType === 1){
+                        let last = this.range.endOffset;
+                        for(let i = this.range.startOffset; i < last; i++){
+                            el.append(child.childNodes[i]);
+                        }
+                    }
+                    else{
+                        let textNode = document.createTextNode(child.textContent.substring(0, this.range.endOffset));
+                        child.textContent = child.textContent.substring(this.range.endOffset);
+
+                        el.append(textNode);
+                    }
+
+                    break;
+                }
+
+                if(child.contains(this.range.endContainer)){
+                    let container = document.createElement(child.nodeName);
+                    $(container).attr('style', $(child).attr('style'));
+                    el.append(container);
+                    wrapTextOnNode(container, child, true);
+                    break;
+                }
+
+                el.append(child);
+            }
+        }.bind(this);
 
         this.wrapText = function(el){
             this.instance.addState(this.editZone.html());
-            if(!this.selectedElements.length){
+            if(this.isCursor()){
                 el.html('<br />');
                 this.editZone.append(el);
                 this.selectNode(el[0]);
             }
-            else{
-                var addedNodes = [];
-                this.selectedElements.forEach(function(item, index){
-                    var node = $(el[0].outerHTML);
-                    if(item.nodeType === 1){
-                        $(item).wrapInner(node);
+            else if(
+                this.range.startContainer === this.range.commonAncestorContainer && 
+                this.range.startContainer === this.range.endContainer &&
+                this.range.startContainer.nodeType === 1
+            ){
+                let container = this.range.startContainer;
+                if(this.instance.editZone[0] === this.range.startContainer){
+                    let newEl = document.createElement('div');
+                    
+                    while (this.instance.editZone[0].childNodes.length) {
+                        $(newEl).append(this.instance.editZone[0].childNodes[0]);
                     }
-                    else{
-                        if(that.range.startContainer === item && that.range.startOffset >= 0 && that.range.startContainer !== that.range.endContainer){
-                            node.html(item.textContent.substring(that.range.startOffset));
-                            item.parentNode.insertBefore(node[0], item.nextSibling);
-                            item.textContent = item.textContent.substring(0, that.range.startOffset);
-                        }
-                        else if (that.range.endContainer === item && that.range.endOffset <= item.textContent.length && that.range.startContainer !== that.range.endContainer) {
-                            node.text(item.textContent.substring(0, that.range.endOffset));
-                            item.parentNode.insertBefore(node[0], item);
-                            item.textContent = item.textContent.substring(that.range.endOffset);
-                        }
-                        else if (that.range.startContainer === that.range.endContainer && that.range.startContainer === item) {
-                            node.html(item.textContent.substring(that.range.startOffset, that.range.endOffset));
-                            var textBefore = document.createTextNode('');
-                            textBefore.textContent = item.textContent.substring(0, that.range.startOffset);
-                            item.parentNode.insertBefore(node[0], item);
-                            item.parentNode.insertBefore(textBefore, node[0]);
-                            item.textContent = item.textContent.substring(that.range.endOffset);
-                        }
-                        else {
-                            node.html(item.textContent);
-                            item.parentNode.insertBefore(node[0], item);
-                            item.textContent = "";
-                        }
-                        addedNodes.push(node[0]);
-                    }
-                });
-                addedNodes.forEach(that.selectNode);
+                    this.instance.editZone.append(newEl);
+                    container = newEl;
+                }
+                while(container.childNodes.length === 1){
+                    container = container.firstChild;
+                }
+                container.parentNode.insertBefore(el[0], container);
+                el.append(container);
+                
             }
-
-            that.instance.trigger('change');
+            else{
+                wrapTextOnNode(el);
+                this.range.startContainer.parentNode.insertBefore(el[0], this.range.startContainer.nextSibling);
+            }
+                
+            
+            this.instance.trigger('change');
+            this.selectNode(el[0]);
         };
 
         function applyCSSCursor(css){
@@ -535,7 +639,7 @@ export let RTE = {
         }
 
         function applyCSSNode(css, range){
- 	        let element = range.startContainer;
+            var element = range.startContainer;
             if (element.nodeType !== 1 && element.parentNode.nodeName !== 'SPAN') {
                 var el = document.createElement('span');
                 el.textContent = element.textContent;
@@ -572,7 +676,7 @@ export let RTE = {
                             sibling.parentNode.insertBefore(afterText, el[0].nextSibling);
                             sibling.textContent = sibling.textContent.substring(0, startOffset);
                             that.moveRanges(range, sibling, -(el.text().length), afterText);
-                            let r = document.createRange();
+                            var r = document.createRange();
                             if (keepRangeStart) {
                                 r = that.nextRanges[that.nextRanges.length - 1];
                                 r.setEnd(el[0], 1);
@@ -586,7 +690,7 @@ export let RTE = {
                     }
                     else if (
                         sibling === nodeEnd
-                        || (sibling.parentNode === that.range.endContainer && sibling === range.endContainer.childNodes[range.endOffset])
+                        || (sibling.parentNode === range.endContainer && sibling === range.endContainer.childNodes[range.endOffset])
                     ) {
                         el.text(sibling.textContent.substring(0, range.endOffset));
                         if (el.text()) {
@@ -622,6 +726,7 @@ export let RTE = {
                 if(sibling !== nodeEnd){
                     sibling = sibling.nextSibling;
                 }
+                
                 i++;
             } while (
                 sibling && sibling !== nodeEnd
@@ -682,11 +787,9 @@ export let RTE = {
                 }
             }
             else{
-                var addedNodes = [];
-
                 if(range.commonAncestorContainer.nodeType === 3){
- 					applyCSSText(css, range);
-  				}
+                    applyCSSText(css, range);
+                }
                 else{
                     var foundFirst = false;
                     for(var i = 0; i < range.commonAncestorContainer.childNodes.length; i++){
@@ -702,12 +805,15 @@ export let RTE = {
                             continue;
                         }
 
-                        if(sibling === range.endContainer && range.endOffset === 0){
+                        if(
+                            (sibling === range.endContainer && range.endOffset === 0) ||
+                            ($(range.endContainer).find(sibling).length && range.endOffset === i)
+                        ){
                             break;
                         }
 
                         if (
-                            sibling.nodeType === 1 && $(sibling).find(that.range.startContainer).length
+                            sibling.nodeType === 1 && $(sibling).find(range.startContainer).length
                         ) {
                             applyCSSBetween(range, range.startContainer, range.endContainer, css);
                             continue;
@@ -740,11 +846,6 @@ export let RTE = {
                         }
 
                         if (
-                            (
-                                range.endContainer.nodeType === 1
-                                && $(range.endContainer).find(sibling).length
-                                && range.endOffset === i
-                            ) ||
                                 sibling === range.endContainer
                             )
                         {
@@ -752,7 +853,7 @@ export let RTE = {
                             if (!firstChild) {
                                 firstChild = range.endContainer;
                             }
-                            applyCSSBetween(firstChild,  range.endContainer, css, true);
+                            applyCSSBetween(range, firstChild, range.endContainer, css, true, 0);
                             break;
                         }
 
@@ -781,6 +882,17 @@ export let RTE = {
             return !this.range || this.isCursor();
         };
 
+        this.elementAtCaret = function () {
+            if (!this.range || !this.editZone.is(':focus')) {
+                return $();
+            }
+            var element = this.range.startContainer;
+            if (element.nodeType !== 1) {
+                element = element.parentNode;
+            }
+            return $(element);
+        }
+
         this.moveRanges = function(mover, container, offset, newContainer){
             let selection = window.getSelection();
             this.ranges.forEach(function(range){
@@ -802,17 +914,6 @@ export let RTE = {
             });
         };
 
-        this.elementAtCaret = function () {
-            if (!this.range || !this.editZone.is(':focus')) {
-                return $();
-            }
-            var element = this.range.startContainer;
-            if (element.nodeType !== 1) {
-                element = element.parentNode;
-            }
-            return $(element);
-        }
-
         this.css = function(params){
             if(typeof params === 'object'){
                 let selection = window.getSelection();
@@ -823,8 +924,8 @@ export let RTE = {
                     this.instance.editZone[0].focus();
                     let range = selection.getRangeAt(0);
                     this.range = range;
+                    this.rangeCount = 1;
                 }
-
                 this.ranges = [];
                 for(let i = 0; i < selection.rangeCount; i++){
                     let range = selection.getRangeAt(i);
@@ -840,19 +941,35 @@ export let RTE = {
                 this.ranges.forEach(function(range){
                     applyCSS(params, range);
                 });
-
                 if(this.nextRanges.length){
                     this.applyNextRanges();
                 }
-
+                
                 //cleanup
                 that.editZone.find('span').each(function(index, item){
+                    if(item.childNodes.length > 1){
+                        let child = item.firstChild;
+                        while(child !== null){
+                            let nextChild = child.nextSibling;
+                            if(child.nodeType === 3 && child.textContent === ""){
+                                child.remove();
+                            }
+                            child = nextChild;
+                        }
+                    }
                     if(item.childNodes.length === 1 && item.childNodes[0].nodeType === 1){
                         let cssObj = '{' + $(item).attr('style').replace(/;/i, ',').slice(0,-1) + '}';
                         $(item).css(cssObj);
                         $(item).html($(item).children().first().html());
                     }
-                    if(!$(item).html()){
+                    if(item.nextSibling && item.nextSibling.nodeType === 1 && item.nextSibling.nodeName === 'SPAN'){
+                        let nextCss = $(item.nextSibling).attr('style');
+                        if(nextCss.indexOf($(item).attr('style')) !== -1){
+                            item.nextSibling.innerHTML = item.innerHTML + item.nextSibling.innerHTML;
+                            item.remove();
+                        }
+                    }
+                    if($(item).html() === ""){
                         $(item).remove();
                     }
                 });
@@ -911,7 +1028,7 @@ export let RTE = {
                 this.editZone.append(wrapper);
             }
 
-            this.instance.trigger('change');
+            that.instance.trigger('change');
         };
 
         this.replaceHTMLInline = function (htmlContent) {
@@ -924,9 +1041,14 @@ export let RTE = {
             }
             else {
                 this.editZone.append(wrapper);
+                var sel = window.getSelection();
+                var range = document.createRange();
+                range.setStart(wrapper[0], wrapper[0].childNodes.length);
+                sel.removeAllRanges();
+                sel.addRange(range);
             }
 
-            this.instance.trigger('change');
+            that.instance.trigger('change');
         };
 
         this.$ = function(){
@@ -1516,7 +1638,7 @@ export let RTE = {
                     });
 
                     scope.$watch('backColor', function () {
-                        var rgbColor: { r?: number, g?: number, b?: number, a?: number } = {};
+                        var rgbColor: { r: number, g: number, b: number, a?: number } = { r: 0, g: 0, b: 0};
                         if (typeof scope.backColor === 'string') {
                             if(scope.backColor[0] === '#'){
                                 rgbColor = {
@@ -1920,11 +2042,15 @@ export let RTE = {
                         }
                         var html = '<div>';
                         scope.imageOption.display.files.forEach(function (file) {
-                            html += '<img src="' + path + file._id + '?thumbnail=1600x0" />';
+                            html += '<img src="' + path + file._id + '" class="latest-image" />';
                         });
 
                         html += '<div><br></div><div><br></div></div>';
                         instance.selection.replaceHTML(html);
+                        let image = instance.editZone
+                            .find('.latest-image')
+                            .removeClass('latest-image');
+                        instance.selection.selectNode(image[0]);
                         instance.addState(instance.editZone.html());
                         scope.imageOption.display.pickFile = false;
                         scope.imageOption.display.files = [];
@@ -1932,7 +2058,6 @@ export let RTE = {
                     };
 
                     instance.element.on('drop', function (e) {
-                        e.stopPropagation();
                         var image;
                         if (e.originalEvent.dataTransfer.mozSourceNode) {
                             image = e.originalEvent.dataTransfer.mozSourceNode;
@@ -1944,7 +2069,6 @@ export let RTE = {
                                 image.remove();
                             }
                             instance.addState(instance.editZone.html());
-
                             ui.extendElement.resizable(instance.editZone.find('img'), {
                                 moveWithResize: false,
                                 mouseUp: function() {
@@ -1952,7 +2076,7 @@ export let RTE = {
                                     instance.addState(instance.editZone.html());
                                 }
                             });
-                        }, 200)
+                        }, 20)
                     });
                 }
             }
@@ -2122,7 +2246,7 @@ export let RTE = {
                         if(editNode){
                             $(editNode).attr('formula', scope.display.formula);
                             angular.element(editNode.firstChild).scope().updateFormula(scope.display.formula);
-                            instance.trigger('change');
+            instance.trigger('change');
                         }
                         else{
                             instance.selection.replaceHTMLInline(instance.compile(
@@ -2201,6 +2325,7 @@ export let RTE = {
                     scope.linker.openLinker = function (appPrefix, address, element) {
                         var sel = window.getSelection();
                         instance.selection.range = sel.getRangeAt(0);
+                        this.rangeCount = 1;
                         scope.linker.display.chooseLink = true;
                         if (appPrefix) {
                             scope.linker.search.application.address = '/' + appPrefix;
@@ -2349,7 +2474,7 @@ export let RTE = {
 
                         if (instance.selection.isCursor()) {
                             linkNode.text(scope.linker.params.link);
-                            instance.selection.replaceHTML(instance.compile(linkNode[0].outerHTML)(scope));
+                            instance.selection.replaceHTMLInline(instance.compile(linkNode[0].outerHTML)(scope));
                         }
                         else {
                             instance.selection.wrapText(linkNode);
@@ -2379,8 +2504,8 @@ export let RTE = {
                         scope.linker.apps = _.filter(model.me.apps, function(app){
                             return _.find(
                                 apps,
-                                function(match){
-                                    return app.address.indexOf(match) !== -1 && app.icon
+                                function (match) {
+                                    return app.address.indexOf(match) !== -1 && app.icon && app.address.indexOf('#') === -1
                                 }
                             );
                         });
@@ -2815,31 +2940,14 @@ export let RTE = {
                     if (navigator.userAgent.indexOf('Trident') !== -1 || navigator.userAgent.indexOf('Edge') !== -1) {
                         element.find('code').hide();
                     }
+                    $('body').append(
+                        $('<link />')
+                            .attr('rel', 'stylesheet')
+                            .attr('type', 'text/css')
+                            .attr('href', '/infra/public/js/prism/prism.css')
+                    );
 
-                    if (element.attr('visibility') && scope.$eval(element.attr('visibility')).toLowerCase() === 'public') {
-                        element.attr('public', true);
-                    }
-
-                    scope.$on('$destroy', () => $('body').off('mousedown.editor'))
-                    
-                    if ($('.prism').length === 0) {
-                        $('body').append(
-                            $('<link />')
-                                .attr('rel', 'stylesheet')
-                                .attr('type', 'text/css')
-                                .addClass('prism')
-                                .attr('href', '/infra/public/js/prism/prism.css')
-                        );
-                        
-                        http().get('/infra/public/js/prism/prism.js');
-                    }
-
-                    if (ui.breakpoints.tablette < $(window).width() && !window.html_beautify) {
-                        $('<script></script>')
-                            .attr('type', 'text/javascript')
-                            .attr('src', '/infra/public/js/beautify-html.js')
-                            .appendTo('body');
-                    }
+                    http().get('/infra/public/js/prism/prism.js');
 
                     element.find('.close-focus').on('click', function(){
                         element.removeClass('focus');
@@ -2896,14 +3004,21 @@ export let RTE = {
                     if(attributes.toolbarConf){
                         toolbarConf = scope.$eval(attributes.toolbarConf);
                     }
-
-                    var editorInstance = new RTE.Instance({
-                        toolbarConfiguration: toolbarConf,
-                        element: element,
-                        scope: scope,
-                        compile: $compile,
-                        editZone: editZone
-                    });
+                    
+                    var editorInstance;
+                    var instance = $parse(attributes.instance);
+                    if(!instance(scope)){
+                        editorInstance = new RTE.Instance({
+                            toolbarConfiguration: toolbarConf,
+                            element: element,
+                            scope: scope,
+                            compile: $compile,
+                            editZone: editZone
+                        });
+                    }
+                    else{
+                        editorInstance = instance;
+                    }
 
                     editorInstance.addState('');
                     var ngModel = $parse(attributes.ngModel);
@@ -2924,25 +3039,18 @@ export let RTE = {
                                 $(item).append(mathItem);
                             });
 
-                            if (!ngModel(scope) && attributes.placeholder && !element.find('[contenteditable]').html() &&!element.hasClass('focus')) {
-                                element.find('[contenteditable]').html('<p class="placeholder">' + idiom.translate(attributes.placeholder) + '</p>');
-                            }
-
                             if (
                                 newValue !== editZone.html() &&
                                 !editZone.is(':focus') &&
                                 $('editor-toolbar').find(':focus').length === 0
                             ) {
-                                if (ngModel(scope) || !attributes.placeholder) {
-                                    editZone.html($compile(ngModel(scope))(scope));
-                                }
-                                
+                                editZone.html($compile(ngModel(scope))(scope));
                             }
-                            if (newValue !== htmlZone.val() && !htmlZone.is(':focus')) {
-                                if (window.html_beautify && window.Prism) {
+                            if(newValue !== htmlZone.val() && !htmlZone.is(':focus')){
+                                if(window.html_beautify){
                                     htmlZone.val(window.html_beautify(newValue));
                                     highlightZone.text(window.html_beautify(newValue));
-                                    window.Prism.highlightAll();
+                                    Prism.highlightAll();
                                 }
                                 //beautifier is not loaded on mobile
                                 else{
@@ -3020,10 +3128,15 @@ export let RTE = {
                         setTimeout(function () {
                             editorInstance.trigger('contentupdated');
                         }, 300);
-
-                        htmlZone.val(window.html_beautify(ngModel(scope)));
-                        highlightZone.text(window.html_beautify(ngModel(scope)));
-                        Prism.highlightAll();
+                        if(window.html_beautify){
+                            return;
+                        }
+                        http().get('/infra/public/js/beautify-html.js').done(function(content){
+                            eval(content);
+                            htmlZone.val(window.html_beautify(ngModel(scope)));
+                            highlightZone.text(window.html_beautify(ngModel(scope)));
+                            Prism.highlightAll();
+                        });
                     });
 
                     element.children('popover').find('li:nth-child(3)').on('click', function(){
@@ -3035,13 +3148,21 @@ export let RTE = {
                         setTimeout(function () {
                             editorInstance.trigger('contentupdated');
                         }, 300);
-                        
-                        htmlZone.val(window.html_beautify(ngModel(scope)));
-                        highlightZone.text(window.html_beautify(ngModel(scope)));
-                        Prism.highlightAll();
+                        if(window.html_beautify){
+                            return;
+                        }
+                        http().get('/infra/public/js/beautify-html.js').done(function(content){
+                            eval(content);
+                            htmlZone.val(window.html_beautify(ngModel(scope)));
+                            highlightZone.text(window.html_beautify(ngModel(scope)));
+                            Prism.highlightAll();
+                        });
                     });
 
-                    function b64toBlob(b64Data, contentType = '', sliceSize = 512) {
+                    function b64toBlob(b64Data, contentType, sliceSize) {
+                        contentType = contentType || '';
+                        sliceSize = sliceSize || 512;
+
                         var byteCharacters = atob(b64Data);
                         var byteArrays = [];
 
@@ -3070,7 +3191,9 @@ export let RTE = {
 
                         scope.$apply(function(){
                             scope.$eval(attributes.ngChange);
-                            ngModel.assign(scope, editZone.html());
+                            let content = editZone.html();
+                            $(content).find('mathjax').html('');
+                            ngModel.assign(scope, content);
                         });
                     });
 
@@ -3120,7 +3243,7 @@ export let RTE = {
                         editZone.find('img').each(function(index, item){
                             if($(item).attr('src').startsWith('data:')){
                                 var split = $(item).attr('src').split('data:')[1].split(',');
-                                var blob = b64toBlob(split[1], split[0].split(';')[0]);
+                                var blob = (b64toBlob as any)(split[1], split[0].split(';')[0]);
                                 blob.name = 'image';
                                 $(item).attr('src', 'http://loading');
                                 workspace.Document.prototype.upload(blob, '', function(file){
@@ -3131,18 +3254,18 @@ export let RTE = {
                             }
                         });
 
-                        let content = editZone.html();
-                        let contentSelector = $('<div>' + content + '</div>');
-                        contentSelector.find('.placeholder').remove();
-                        content = contentSelector.html();
                         if (!scope.$$phase) {
                             scope.$apply(function () {
                                 scope.$eval(attributes.ngChange);
+                                var content = editZone.html();
+                                $(content).find('mathjax').html('');
                                 ngModel.assign(scope, content);
                             });
                         }
                         else {
                             scope.$eval(attributes.ngChange);
+                            var content = editZone.html();
+                            $(content).find('mathjax').html('');
                             ngModel.assign(scope, content);
                         }
                     });
@@ -3156,18 +3279,14 @@ export let RTE = {
                         }
                     }
 
-                    $(window).on('resize', placeToolbar);
                     element.parents().on('resizing', placeToolbar)
-                    element.on('click', function (e) {
-                        if (element.hasClass('focus')) {
-                            return;
-                        }
+                    element.on('click', function(e){
                         placeToolbar();
 
-                        if(e.target === element.find('.close-focus')[0]){
+                        if(e.target === element.find('.close-focus')[0] || element.hasClass('focus')){
                             return;
                         }
-                        element.find('.placeholder').remove();
+
                         element.trigger('editor-focus');
                         element.addClass('focus');
                         element.parent().data('lock', true);
@@ -3185,21 +3304,17 @@ export let RTE = {
                         }
                     });
 
-                    $('body').on('mousedown.editor', function(e){
+                    $('body').on('mousedown', function(e){
                         if(e.target !== element.find('.editor-toolbar-opener')[0] && element.find('editor-toolbar, .editor-toolbar-opener').find(e.target).length === 0){
                             element.find('editor-toolbar').removeClass('opened');
                             element.find('.editor-toolbar-opener').removeClass('active');
                         }
 
-                        if(element.find(e.target).length === 0 && !$(e.target).hasClass('sp-choose')){
+                        if (element.find(e.target).length === 0 && !$(e.target).hasClass('sp-choose') && element.hasClass('focus')) {
                             element.children('editor-toolbar').removeClass('show');
-                            element.removeClass('focus');
                             element.trigger('editor-blur');
+                            element.removeClass('focus');
                             editorInstance.trigger('change');
-                            
-                            if (attributes.placeholder && !element.find('[contenteditable]').html()) {
-                                element.find('[contenteditable]').html('<p class="placeholder">' + idiom.translate(attributes.placeholder) + '</p>');
-                            }
                             $('body').css({ overflow: 'auto' });
                             element.parent().data('lock', false);
                             element.parents('grid-cell').data('lock', false);
@@ -3215,7 +3330,7 @@ export let RTE = {
                         }
                     });
 
-                    element.find('editor-toolbar').on('mousedown', function(e){
+                    $('editor-toolbar').on('mousedown', function(e){
                         e.preventDefault();
                     });
 
@@ -3226,7 +3341,7 @@ export let RTE = {
                             $(editZone.contents()[0]).remove();
                             editZone.prepend(div);
                             editorInstance.selection.moveCaret(div[0], div.text().length);
-                            editorInstance.trigger('change');
+                            editorInstance.trigger('contentupdated');
                         }
                     }
 
@@ -3239,6 +3354,16 @@ export let RTE = {
 
                     editZone.on('paste', function () {
                         setTimeout(function(){
+                            editorInstance.editZone.find('[resizable]').removeAttr('resizable').css('cursor', 'initial');
+                            editorInstance.editZone.find('[bind-html]').removeAttr('bind-html');
+                            editorInstance.editZone.find('[ng-include]').removeAttr('ng-include');
+                            editorInstance.editZone.find('[ng-repeat]').removeAttr('ng-repeat');
+                            editorInstance.editZone.find('[data-ng-repeat]').removeAttr('data-ng-repeat');
+                            editorInstance.editZone.find('[ng-transclude]').removeAttr('ng-transclude');
+                            if(editorInstance.editZone.find('portal').length){
+                                var portal = editorInstance.editZone.find('portal');
+                                editorInstance.editZone[0].innerHTML = $('<div>' + (portal.find('[bind-html]').html() || '') + '</div>')
+                            }
                             editorInstance.addState(editZone.html());
                             if(editorInstance.editZone[0].childNodes.length > editorInstance.editZone[0].children.length){
                                 var wrapper = $('<div></div>');
@@ -3367,7 +3492,11 @@ export let RTE = {
                             while (nodeCursor !== blockContainer) {
                                 var cursorClone;
                                 if (nodeCursor.nodeType === 1) {
-                                    cursorClone = document.createElement(nodeCursor.nodeName.toLowerCase());
+                                    let nodeName = nodeCursor.nodeName.toLowerCase();
+                                    if(nodeName === 'a'){
+                                        nodeName = 'span';
+                                    }
+                                    cursorClone = document.createElement(nodeName);
                                     $(cursorClone).attr('style', $(nodeCursor).attr('style'));
                                     $(cursorClone).attr('class', $(nodeCursor).attr('class'));
                                     $(cursorClone).append(newLine[0].firstChild);
@@ -3495,10 +3624,8 @@ export let RTE = {
                     htmlZone.on('keydown', function (e) {
                         // free main thread so it can render textarea changes
                         setTimeout(function () {
-                            if (window.Prism) {
-                                highlightZone.text($(this).val());
-                                Prism.highlightAll();
-                            }
+                            highlightZone.text($(this).val());
+                            Prism.highlightAll();
                         }.bind(this), 200);
                         if(e.keyCode === 9){
                             e.preventDefault();
@@ -3516,6 +3643,7 @@ export let RTE = {
                             scope.$eval(attributes.ngChange);
                             ngModel.assign(scope, htmlZone.val());
                         });
+                        editorInstance.trigger('change');
                     });
 
                     element.on('dragover', function(e){
@@ -3530,13 +3658,13 @@ export let RTE = {
                         if(!e.originalEvent.dataTransfer){
                             return;
                         }
-                        var visibility: 'public' | 'protected' = 'protected';
+                        var visibility: 'public'|'protected' = 'protected';
                         if (element.attr('public') !== undefined) {
                             visibility = 'public';
                         }
 
                         element.removeClass('droptarget');
-                        var el = undefined;
+                        var el = {} as any;
                         var files = e.originalEvent.dataTransfer.files;
                         if(!files.length){
                             return;
@@ -3553,10 +3681,10 @@ export let RTE = {
                             range.setStart(caretPosition.offsetNode, caretPosition.offset);
                         }
                         if (range) {
-                            
                             sel.removeAllRanges();
                             sel.addRange(range);
                             editorInstance.selection.range = range;
+                            editorInstance.selection.rangeCount = 1;
                         }
 
                         for(var i = 0; i < files.length; i++){
@@ -3574,7 +3702,7 @@ export let RTE = {
                                     }
                                     else if (name.toLowerCase().indexOf('.png') !== -1 || name.toLowerCase().indexOf('.jpg') !== -1 || name.toLowerCase().indexOf('.jpeg') !== -1 || name.toLowerCase().indexOf('.svg') !== -1) {
                                         el = $('<img />');
-                                        el.attr('src', path + doc._id + '?thumbnail=1600x0')
+                                        el.attr('src', path + doc._id)
                                     }
                                     else {
                                         el = $('<div class="download-attachments">' +
@@ -3743,11 +3871,12 @@ export let RTE = {
                     formula: '@'
                 },
                 link: function (scope, element, attributes) {
-                    if (!window.MathJax) {
+                    if (!window.MathJax && !(window as any).MathJaxLoading) {
                         let script = $('<script></script>')
                             .attr('src', '/infra/public/mathjax/MathJax.js')
                             .appendTo('head');
-                        script[0].onload = () => {
+                            
+                            script[0].async = false;
                             window.MathJax.Hub.Config({
                                 messageStyle: 'none',
                                 tex2jax: { preview: 'none' },
@@ -3758,23 +3887,11 @@ export let RTE = {
                                 }
                             });
                             window.MathJax.Hub.Queue(["Typeset", window.MathJax.Hub]);
-                        }
                     }
 
                     scope.updateFormula = function(newVal){
-                        element.children().remove();
                         element.text('$$' + newVal + '$$');
-                        
                         if (window.MathJax && window.MathJax.Hub) {
-                            window.MathJax.Hub.Config({
-                                messageStyle: 'none',
-                                tex2jax: { preview: 'none' },
-                                jax: ["input/TeX", "output/CommonHTML"],
-                                extensions: ["tex2jax.js", "MathMenu.js", "MathZoom.js"],
-                                TeX: {
-                                    extensions: ["AMSmath.js", "AMSsymbols.js", "noErrors.js", "noUndefined.js"]
-                                }
-                            });
                             window.MathJax.Hub.Queue(["Typeset", window.MathJax.Hub]);
                         }
                     };
