@@ -20,11 +20,6 @@ function rgb(r, g, b) {
 }
 var rgba = rgb;
 var transparent = 'rgba(255, 255, 255, 0)';
- var textNodes = ['SPAN', 'A', 'STRONG', 'EM', 'B', 'I'];
-var formatNodes = ['P', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6'];
-
-var rgba = rgb;
-var transparent = 'rgba(255, 255, 255, 0)';
 
 export let RTE = {
     baseToolbarConf: {} as any,
@@ -55,7 +50,7 @@ export let RTE = {
             this.trigger('contentupdated');
         };
 
-        var mousePosition: { left?: number, top?: number } = {};
+        var mousePosition: { left: number, top: number } = { left: 0, top: 0 };
         this.editZone.on('mousemove', function(e){
             mousePosition = {
                 left: e.pageX,
@@ -189,14 +184,24 @@ export let RTE = {
         this.applyNextRanges = function(){
             let selection = window.getSelection();
             selection.removeAllRanges();
-            this.nextRanges.forEach(function(range){
-                selection.addRange(range);
-            });
-            that.instance.trigger('selectionchange', {
-                selection: that.instance.selection
-            });
+            if(selection.rangeCount > 1){
+                this.nextRanges.forEach(function(range){
+                    selection.addRange(range);
+                });
+                that.instance.trigger('selectionchange', {
+                    selection: that.instance.selection
+                });
 
-            this.nextRanges = [];
+                this.nextRanges = [];
+            }
+            else{
+                selection.addRange(this.nextRanges[0]);
+                that.instance.trigger('selectionchange', {
+                    selection: that.instance.selection
+                });
+
+                this.nextRanges = [];
+            }
         };
 
         function getSelectedElements(){
@@ -457,6 +462,10 @@ export let RTE = {
         };
 
         this.isCursor = function () {
+            let sel = window.getSelection();
+            this.rangeCount = sel.rangeCount;
+            this.range = sel.getRangeAt(0);
+
             return (this.rangeCount === 1 || this.rangeCount === 0) && 
             this.range.startContainer === this.range.endContainer && 
             this.range.startOffset === this.range.endOffset;
@@ -611,12 +620,18 @@ export let RTE = {
         };
 
         function applyCSSCursor(css){
+            var elementAtCaret;
             var el = $('<span>&#8203;</span>');
-            if (!that.range && !that.editZone.html()) {
-                var elementAtCaret = $('<div></div>').appendTo(that.editZone);
+            if (!that.range && !that.editZone.html() || that.range.startContainer === that.editZone[0]) {
+                if(that.editZone.children('div').length > 0){
+                    elementAtCaret = that.editZone.children('div')[0].firstChild;
+                }
+                else{
+                    elementAtCaret = $('<div>&#8203;</div>').appendTo(that.editZone)[0].firstChild;
+                }
             }
             else {
-                var elementAtCaret = that.range.startContainer;
+                elementAtCaret = that.range.startContainer;
                 if (elementAtCaret.nodeType === 1 && elementAtCaret.nodeName === 'SPAN') {
                     el.attr('style', $(elementAtCaret).attr('style'));
                 }
@@ -656,6 +671,7 @@ export let RTE = {
         }
 
         function applyCSSBetween(range, nodeStart, nodeEnd, css, keepRangeStart?, startOffset?) {
+            let startSet = false;
             if (startOffset === undefined) {
                 startOffset = range.startOffset;
             }
@@ -663,6 +679,17 @@ export let RTE = {
             var i = startOffset;
             do {
                 if (sibling.nodeType === 1) {
+                    let r;
+                    if(!keepRangeStart && !startSet){
+                        r = document.createRange();
+                        r.setStart(sibling, 0);
+                        that.nextRanges.push(r);
+                        startSet = true;
+                    }
+                    else{
+                        r = that.nextRanges[that.nextRanges.length - 1];
+                    }
+                    r.setEnd(sibling, 1);
                     $(sibling).css(css);
                 }
                 else {
@@ -677,11 +704,12 @@ export let RTE = {
                             sibling.textContent = sibling.textContent.substring(0, startOffset);
                             that.moveRanges(range, sibling, -(el.text().length), afterText);
                             var r = document.createRange();
-                            if (keepRangeStart) {
+                            if (keepRangeStart || startSet) {
                                 r = that.nextRanges[that.nextRanges.length - 1];
                                 r.setEnd(el[0], 1);
                             }
                             else {
+                                startSet = true;
                                 r.setStart(el[0], 0);
                                 r.setEnd(el[0], 1);
                                 that.nextRanges.push(r);
@@ -706,10 +734,16 @@ export let RTE = {
                         if(el.text()){
                             sibling.parentNode.insertBefore(el[0], sibling.nextSibling);
                             sibling.textContent = sibling.textContent.substring(0, startOffset);
-                            if (!keepRangeStart) {
+                            if (!keepRangeStart && !startSet) {
                                 let r = document.createRange();
                                 r.setStart(el[0], 0);
+                                r.setEnd(el[0], 1);
                                 that.nextRanges.push(r);
+                                startSet = true;
+                            }
+                            else{
+                                let r = that.nextRanges[that.nextRanges.length - 1];
+                                r.setEnd(el[0], 1);
                             }
                         }
                     }
@@ -962,12 +996,56 @@ export let RTE = {
                             let prop = item.childNodes[0].style[i];
                             $(item).css(prop, $(item.childNodes[0]).css(prop));
                         }
-                        $(item).html($(item).children().first().html());
+                        let sel = window.getSelection();
+                        let newRanges = [];
+                        for(let i = 0; i < sel.rangeCount; i++){
+                            let range = {
+                                startContainer: sel.getRangeAt(i).startContainer,
+                                endContainer: sel.getRangeAt(i).endContainer,
+                                startOffset: sel.getRangeAt(i).startOffset,
+                                endOffset: sel.getRangeAt(i).endOffset
+                            };
+
+                            if(range.startContainer === item.childNodes[0]){
+                                if(range.startContainer.nodeType === 1 && item.nodeType === 3 && range.startOffset === 1){
+                                    range.startOffset = item.textContent.length;
+                                }
+                                range.startContainer = item;
+                            }
+                            if(range.endContainer === item.childNodes[0]){
+                                if(range.endContainer.nodeType === 1 && item.nodeType === 3 && range.endOffset === 1){
+                                    range.endOffset = item.textContent.length;
+                                }
+                                range.endContainer = item;
+                            }
+                            newRanges.push(range);
+                        }
+
+                        while(item.childNodes[0].childNodes.length){
+                            $(item).append(item.childNodes[0].childNodes[0]);
+                        }
+                        item.childNodes[0].remove();
+
+                        sel.removeAllRanges();
+                        newRanges.forEach(function(rangeDef){
+                            let range = document.createRange();
+                            range.setStart(rangeDef.startContainer, rangeDef.startOffset);
+                            range.setEnd(rangeDef.endContainer, rangeDef.endOffset);
+                            sel.addRange(range);
+                        });
                     }
                     if(item.nextSibling && item.nextSibling.nodeType === 1 && item.nextSibling.nodeName === 'SPAN'){
-                        let nextCss = $(item.nextSibling).attr('style');
-                        if(nextCss.indexOf($(item).attr('style')) !== -1){
-                            item.nextSibling.innerHTML = item.innerHTML + item.nextSibling.innerHTML;
+                        let sameStyle = true;
+                        for(let i = 0; i < item.nextSibling.style.length; i++){
+                            sameStyle = sameStyle && $(item).css(item.nextSibling.style[i]) === $(item.nextSibling).css(item.nextSibling.style[i]);
+                        }
+                        for(let i = 0; i < item.style.length; i++){
+                            sameStyle = sameStyle && $(item.nextSibling).css(item.style[i]) === $(item).css(item.style[i]);
+                        }
+                        if(sameStyle){
+                            while(item.childNodes.length){
+                                $(item.nextSibling).prepend(item.childNodes[item.childNodes.length - 1]);
+                            }
                             item.remove();
                         }
                     }
@@ -3259,14 +3337,14 @@ export let RTE = {
                         if (!scope.$$phase) {
                             scope.$apply(function () {
                                 scope.$eval(attributes.ngChange);
-                                var content = editZone.html();
+                                let content = editZone.html();
                                 $(content).find('mathjax').html('');
                                 ngModel.assign(scope, content);
                             });
                         }
                         else {
                             scope.$eval(attributes.ngChange);
-                            var content = editZone.html();
+                            let content = editZone.html();
                             $(content).find('mathjax').html('');
                             ngModel.assign(scope, content);
                         }
@@ -3660,7 +3738,7 @@ export let RTE = {
                         if(!e.originalEvent.dataTransfer){
                             return;
                         }
-                        var visibility: 'public'|'protected' = 'protected';
+                        var visibility: 'protected' | 'public' = 'protected';
                         if (element.attr('public') !== undefined) {
                             visibility = 'public';
                         }
@@ -3873,12 +3951,10 @@ export let RTE = {
                     formula: '@'
                 },
                 link: function (scope, element, attributes) {
-                    if (!window.MathJax && !(window as any).MathJaxLoading) {
-                        let script = $('<script></script>')
-                            .attr('src', '/infra/public/mathjax/MathJax.js')
-                            .appendTo('head');
-                            
-                            script[0].async = false;
+                    if (!window.MathJax) {
+                        (window as any).MathJaxLoading = true;
+                        http().loadScript('/infra/public/mathjax/MathJax.js').then(function () {
+                            (window as any).MathJaxLoading = false;
                             window.MathJax.Hub.Config({
                                 messageStyle: 'none',
                                 tex2jax: { preview: 'none' },
@@ -3889,6 +3965,7 @@ export let RTE = {
                                 }
                             });
                             window.MathJax.Hub.Queue(["Typeset", window.MathJax.Hub]);
+                        });
                     }
 
                     scope.updateFormula = function(newVal){
@@ -3906,8 +3983,3 @@ export let RTE = {
         });
     }
 };
-
-if(!(window as any).entcore){
-	(window as any).entcore = {};
-}
-(window as any).entcore.RTE = RTE;
