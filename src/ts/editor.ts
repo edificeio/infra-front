@@ -1,6 +1,6 @@
 import { $ } from './libs/jquery/jquery';
 import { Behaviours } from './behaviours';
-import { idiom } from './idiom';
+import { idiom as lang } from './idiom';
 import { workspace } from './workspace';
 import { ui } from './ui';
 import { model } from './modelDefinitions';
@@ -50,7 +50,7 @@ export let RTE = {
             this.trigger('contentupdated');
         };
 
-        var mousePosition: { left: number, top: number } = { left: 0, top: 0 };
+        var mousePosition = {} as any;
         this.editZone.on('mousemove', function(e){
             mousePosition = {
                 left: e.pageX,
@@ -78,7 +78,7 @@ export let RTE = {
                         item.action(e);
                         scope.$apply();
                     });
-                    node.html(idiom.translate(item.label));
+                    node.html(lang.translate(item.label));
                     contextualMenu.children('ul').append(node)
                 });
 
@@ -176,7 +176,7 @@ export let RTE = {
 
         this.toolbar = new RTE.Toolbar(this);
     },
-    Selection: function(data?){
+    Selection: function(data){
         var that = this;
         this.selectedElements = [];
         this.nextRanges = [];
@@ -463,8 +463,10 @@ export let RTE = {
 
         this.isCursor = function () {
             let sel = window.getSelection();
-            this.rangeCount = sel.rangeCount;
-            this.range = sel.getRangeAt(0);
+            if(sel.rangeCount > 0){
+                this.rangeCount = sel.rangeCount;
+                this.range = sel.getRangeAt(0);
+            }
 
             return (this.rangeCount === 1 || this.rangeCount === 0) && 
             this.range.startContainer === this.range.endContainer && 
@@ -991,7 +993,7 @@ export let RTE = {
                             child = nextChild;
                         }
                     }
-                    if(item.childNodes.length === 1 && item.childNodes[0].nodeType === 1){
+                    if(item.childNodes.length === 1 && item.childNodes[0].nodeType === 1 && item.childNodes[0].nodeName === 'SPAN'){
                         for(let i = 0; i < item.childNodes[0].style.length; i++){
                             let prop = item.childNodes[0].style[i];
                             $(item).css(prop, $(item.childNodes[0]).css(prop));
@@ -1718,7 +1720,7 @@ export let RTE = {
                     });
 
                     scope.$watch('backColor', function () {
-                        var rgbColor: { r: number, g: number, b: number, a?: number } = { r: 0, g: 0, b: 0};
+                        var rgbColor = {} as any;
                         if (typeof scope.backColor === 'string') {
                             if(scope.backColor[0] === '#'){
                                 rgbColor = {
@@ -1805,6 +1807,9 @@ export let RTE = {
                         var importedFonts = loadImportedFonts();
                         importedFonts = _.uniq(importedFonts, function(item, key, a) { 
                             return item.fontFamily;
+                        });
+                        importedFonts = _.reject(importedFonts, function(font){ 
+                            return font.fontFamily.trim() === 'generic-icons' || font.fontFamily.trim() === 'editor';
                         });
                         scope.fonts = scope.fonts.concat(importedFonts);
                         scope.font = _.find(scope.fonts, function (font) {
@@ -2234,7 +2239,7 @@ export let RTE = {
                         }
 
                         var html = '<div class="download-attachments">' +
-                            '<h2>' + idiom.translate('editor.attachment.title') + '</h2>' +
+                            '<h2>' + lang.translate('editor.attachment.title') + '</h2>' +
                             '<div class="attachments">';
                         scope.attachmentOption.display.files.forEach(function (file) {
                             html += '<a href="' + path + file._id + '"><div class="download"></div>' + file.name + '</a>';
@@ -2465,7 +2470,7 @@ export let RTE = {
                         scope.linker.params.appPrefix = prefix;
                         Behaviours.loadBehaviours(scope.linker.params.appPrefix, function(appBehaviour){
                             scope.linker.resources = _.filter(appBehaviour.resources, function(resource) {
-                                return scope.linker.search.text !== '' && (idiom.removeAccents(resource.title.toLowerCase()).indexOf(idiom.removeAccents(scope.linker.search.text).toLowerCase()) !== -1 ||
+                                return scope.linker.search.text !== '' && (lang.removeAccents(resource.title.toLowerCase()).indexOf(lang.removeAccents(scope.linker.search.text).toLowerCase()) !== -1 ||
                                     resource._id === scope.linker.search.text);
                             });
                             if(typeof cb === 'function'){
@@ -2591,7 +2596,7 @@ export let RTE = {
                         });
 
                         scope.linker.apps = _.map(scope.linker.apps, function(app) {
-                            app.displayName = idiom.translate(app.displayName);
+                            app.displayName = lang.translate(app.displayName);
                             return app;
                         });
 
@@ -2680,7 +2685,7 @@ export let RTE = {
         RTE.baseToolbarConf.option('table', function(instance){
             return {
                 template: '' +
-                '<popover mouse-event="click">' +
+                '<popover mouse-event="click" on-close="resetScroll()">' +
                 '<i popover-opener opening-event="click" tooltip="editor.option.table"></i>' +
                 '<popover-content>' +
                 '<div class="draw-table"></div>' +
@@ -2697,6 +2702,13 @@ export let RTE = {
                             line.append('<div class="one cell"></div>');
                         }
                     }
+
+                    scope.resetScroll = function(){
+                        element.parents().css({ overflow: '' });
+                        element.parents('editor-toolbar').each(function (index, item) {
+                            $(item).css({ 'margin-top': '', 'min-height': '', height: '' })
+                        });
+                    };
 
                     ui.extendSelector.touchEvents('[contenteditable] td');
 
@@ -2750,8 +2762,10 @@ export let RTE = {
                                 row.append(cell);
                             }
                         }
+
                         instance.selection.replaceHTML('<div>' + table.outerHTML + '</div>');
                         instance.trigger('contentupdated');
+                        
                     });
 
                     instance.bindContextualMenu(scope, 'td', [
@@ -2821,20 +2835,20 @@ export let RTE = {
                             '<div class="six cell column">' +
                                 '<article>' +
                                     '<h2>' +
-                                    idiom.translate('editor.templates.coltitle') +
+                                    lang.translate('editor.templates.coltitle') +
                                     '</h2>' +
                                     '<p>' +
-                                    idiom.translate('editor.templates.colfiller') +
+                                    lang.translate('editor.templates.colfiller') +
                                     '</p>' +
                                 '</article>' +
                             '</div>' +
                             '<div class="six cell column">' +
                                 '<article>' +
                                     '<h2>' +
-                                    idiom.translate('editor.templates.coltitle') +
+                                    lang.translate('editor.templates.coltitle') +
                                     '</h2>' +
                                     '<p>' +
-                                    idiom.translate('editor.templates.colfiller') +
+                                    lang.translate('editor.templates.colfiller') +
                                     '</p>' +
                                 '</article>' +
                             '</div>' +
@@ -2848,30 +2862,30 @@ export let RTE = {
                             '<div class="four cell column">' +
                                 '<article>' +
                                     '<h2>' +
-                                    idiom.translate('editor.templates.coltitle') +
+                                    lang.translate('editor.templates.coltitle') +
                                     '</h2>' +
                                     '<p>' +
-                                    idiom.translate('editor.templates.colfiller') +
+                                    lang.translate('editor.templates.colfiller') +
                                     '</p>' +
                                 '</article>' +
                             '</div>' +
                             '<div class="four cell column">' +
                                 '<article>' +
                                     '<h2>' +
-                                    idiom.translate('editor.templates.coltitle') +
+                                    lang.translate('editor.templates.coltitle') +
                                     '</h2>' +
                                     '<p>' +
-                                    idiom.translate('editor.templates.colfiller') +
+                                    lang.translate('editor.templates.colfiller') +
                                     '</p>' +
                                 '</article>' +
                             '</div>' +
                             '<div class="four cell column">' +
                                 '<article>' +
                                     '<h2>' +
-                                    idiom.translate('editor.templates.coltitle') +
+                                    lang.translate('editor.templates.coltitle') +
                                     '</h2>' +
                                     '<p>' +
-                                    idiom.translate('editor.templates.colfiller') +
+                                    lang.translate('editor.templates.colfiller') +
                                     '</p>' +
                                 '</article>' +
                             '</div>' +
@@ -2891,10 +2905,10 @@ export let RTE = {
                                 '<div class="nine cell column">' +
                                     '<article>' +
                                         '<h2>' +
-                                            idiom.translate('editor.templates.illustration.titlefiller') +
+                                            lang.translate('editor.templates.illustration.titlefiller') +
                                         '</h2>' +
                                         '<p>' +
-                                        idiom.translate('editor.templates.illustration.textfiller') +
+                                        lang.translate('editor.templates.illustration.textfiller') +
                                         '</p>' +
                                     '</article>' +
                                 '</div>' +
@@ -2912,7 +2926,7 @@ export let RTE = {
                                     '</div>' +
                                     '<div class="bottom">' +
                                         '<div class="content">' +
-                                            idiom.translate('editor.templates.dominos.textfiller') +
+                                            lang.translate('editor.templates.dominos.textfiller') +
                                         '</div>' +
                                     '</div>' +
                                     '</section>' +
@@ -2924,7 +2938,7 @@ export let RTE = {
                                         '</div>' +
                                         '<div class="bottom">' +
                                             '<div class="content">' +
-                                                idiom.translate('editor.templates.dominos.textfiller') +
+                                                lang.translate('editor.templates.dominos.textfiller') +
                                             '</div>' +
                                         '</div>' +
                                     '</section>' +
@@ -2936,7 +2950,7 @@ export let RTE = {
                                         '</div>' +
                                             '<div class="bottom">' +
                                             '<div class="content">' +
-                                                idiom.translate('editor.templates.dominos.textfiller') +
+                                                lang.translate('editor.templates.dominos.textfiller') +
                                             '</div>' +
                                         '</div>' +
                                     '</section>' +
@@ -2948,7 +2962,7 @@ export let RTE = {
                                         '</div>' +
                                         '<div class="bottom">' +
                                             '<div class="content">' +
-                                                idiom.translate('editor.templates.dominos.textfiller') +
+                                                lang.translate('editor.templates.dominos.textfiller') +
                                             '</div>' +
                                         '</div>' +
                                     '</section>' +
@@ -2960,7 +2974,7 @@ export let RTE = {
                                         '</div>' +
                                         '<div class="bottom">' +
                                             '<div class="content">' +
-                                                idiom.translate('editor.templates.dominos.textfiller') +
+                                                lang.translate('editor.templates.dominos.textfiller') +
                                             '</div>' +
                                         '</div>' +
                                     '</section>' +
@@ -2972,7 +2986,7 @@ export let RTE = {
                                         '</div>' +
                                             '<div class="bottom">' +
                                             '<div class="content">' +
-                                                idiom.translate('editor.templates.dominos.textfiller') +
+                                                lang.translate('editor.templates.dominos.textfiller') +
                                             '</div>' +
                                         '</div>' +
                                     '</section>' +
@@ -3786,7 +3800,7 @@ export let RTE = {
                                     }
                                     else {
                                         el = $('<div class="download-attachments">' +
-                                            '<h2>' + idiom.translate('editor.attachment.title') + '</h2>' +
+                                            '<h2>' + lang.translate('editor.attachment.title') + '</h2>' +
                                             '<div class="attachments">' +
                                                 '<a href="'+ path + doc._id + '"><div class="download"></div>' + name + '</a>' +
                                         '</div></div><div><br /><div><br /></div></div>');
@@ -3823,12 +3837,12 @@ export let RTE = {
                 link: function(scope, element, attributes){
                     scope.showValue = function(){
                         if(!scope.display){
-                            return idiom.translate(scope.placeholder);
+                            return lang.translate(scope.placeholder);
                         }
                         if(!scope.displayAs){
-                            return idiom.translate(scope.display);
+                            return lang.translate(scope.display);
                         }
-                        return idiom.translate(scope.display[scope.displayAs]);
+                        return lang.translate(scope.display[scope.displayAs]);
                     };
 
                     element.children('.options').on('mouseover', function (e){
@@ -3890,7 +3904,11 @@ export let RTE = {
                 controller: function(){},
                 restrict: 'E',
                 link: function (scope, element, attributes) {
-
+                    element.on('close', function(){
+                        if(attributes.onClose){
+                            scope.$eval(attributes.onClose);
+                        }
+                    });
                 }
             };
         });
@@ -3909,6 +3927,7 @@ export let RTE = {
                             }
 
                             $('body').one('click', function (e) {
+                                parentNode.trigger('close');
                                 popover.addClass("hidden");
                             });
                         }
@@ -3927,6 +3946,7 @@ export let RTE = {
 
                         if(mouseEvent === 'mouseover') {
                         parentNode.on('mouseout', function (e) {
+                            parentNode.trigger('close');
                             popover.addClass("hidden");
                         });
                     }
@@ -3951,10 +3971,12 @@ export let RTE = {
                     formula: '@'
                 },
                 link: function (scope, element, attributes) {
-                    if (!window.MathJax) {
-                        (window as any).MathJaxLoading = true;
-                        http().loadScript('/infra/public/mathjax/MathJax.js').then(function () {
-                            (window as any).MathJaxLoading = false;
+                    if (!window.MathJax && !(window as any).MathJaxLoading) {
+                        let script = $('<script></script>')
+                            .attr('src', '/infra/public/mathjax/MathJax.js')
+                            .appendTo('head');
+                            
+                            script[0].async = false;
                             window.MathJax.Hub.Config({
                                 messageStyle: 'none',
                                 tex2jax: { preview: 'none' },
@@ -3965,7 +3987,6 @@ export let RTE = {
                                 }
                             });
                             window.MathJax.Hub.Queue(["Typeset", window.MathJax.Hub]);
-                        });
                     }
 
                     scope.updateFormula = function(newVal){
@@ -3983,3 +4004,9 @@ export let RTE = {
         });
     }
 };
+
+if(!window.entcore){
+    window.entcore = {};
+}
+
+window.entcore.RTE = RTE;
