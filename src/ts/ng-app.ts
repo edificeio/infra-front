@@ -2707,7 +2707,16 @@ module.controller('Share', ['$rootScope','$scope', function($rootScope, $scope) 
 		$scope.found = [];
 		$scope.varyingRights = false;
 		feedData();
-	})
+	});
+
+	$scope.$watchCollection('resources', function(){
+		$scope.actions = [];
+		$scope.sharingModel.edited = [];
+		$scope.search = '';
+		$scope.found = [];
+		$scope.varyingRights = false;
+		feedData();
+	});
 
 	$scope.addEdit = function(item){
 		item.actions = {};
