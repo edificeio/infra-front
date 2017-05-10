@@ -2338,7 +2338,7 @@ export let RTE = {
                         if(editNode){
                             $(editNode).attr('formula', scope.display.formula);
                             angular.element(editNode.firstChild).scope().updateFormula(scope.display.formula);
-            instance.trigger('change');
+                            instance.trigger('change');
                         }
                         else{
                             instance.selection.replaceHTMLInline(instance.compile(
@@ -3293,7 +3293,6 @@ export let RTE = {
                         scope.$apply(function(){
                             scope.$eval(attributes.ngChange);
                             let content = editZone.html();
-                            $(content).find('mathjax').html('');
                             ngModel.assign(scope, content);
                         });
                     });
@@ -3993,6 +3992,7 @@ export let RTE = {
                                     extensions: ["AMSmath.js", "AMSsymbols.js", "noErrors.js", "noUndefined.js"]
                                 }
                             });
+                            $('.MathJax_CHTML_Display').remove();
                             window.MathJax.Hub.Queue(["Typeset", window.MathJax.Hub]);
                     }
 
