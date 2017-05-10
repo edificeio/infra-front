@@ -3036,6 +3036,10 @@ module.controller('Widgets', ['$scope', 'model', 'lang', 'date', function($scope
 }]);
 
 module.controller('MediaLibrary', ['$scope', function($scope){
+	if(!model.me){
+		return;
+	}
+	
 	if(!model.mediaLibrary){
 		model.makeModels(workspace);
 		model.mediaLibrary = new Model();
@@ -3083,7 +3087,7 @@ module.controller('MediaLibrary', ['$scope', function($scope){
 	};
 
 	$scope.$watch('visibility', function(newVal){
-		if(model.me.workflow.workspace.create){
+		if(model.me && model.me.workflow.workspace.create){
 			if($scope.visibility === 'public'){
 				$scope.display.listFrom = 'publicDocuments';
 			}
@@ -3091,7 +3095,7 @@ module.controller('MediaLibrary', ['$scope', function($scope){
 				$scope.display.listFrom = 'appDocuments';
 			}
 		}
-		else if(model.me.workflow.workspace.list){
+		else if(model.me && model.me.workflow.workspace.list){
 			$scope.display.listFrom = 'sharedDocuments';
 		}
 
