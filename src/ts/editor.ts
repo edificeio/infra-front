@@ -12,7 +12,7 @@ import { skin } from './skin';
 
 declare let Prism: any;
 
-var textNodes = ['SPAN', 'A', 'STRONG', 'EM', 'B', 'I'];
+var textNodes = ['SPAN', 'A', 'STRONG', 'EM', 'B', 'I', 'I18N'];
 var formatNodes = ['P', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6'];
 
 function rgb(r, g, b) {
@@ -2075,7 +2075,7 @@ export let RTE = {
                         visibility: 'protected'
                     }
 
-                    if(instance.element.attr('public')){
+                    if(instance.visibility === 'public'){
                         scope.imageOption.visibility = 'public'
                     }
 
@@ -2193,7 +2193,7 @@ export let RTE = {
                         visibility: 'protected'
                     }
 
-                    if (instance.element.attr('public')) {
+                    if (instance.visibility === 'public') {
                         scope.attachmentOption.visibility = 'public'
                     }
 
@@ -2279,7 +2279,7 @@ export let RTE = {
                         visibility: 'protected'
                     }
 
-                    if (instance.element.attr('public')) {
+                    if (instance.visibility === 'public') {
                         scope.soundOption.visibility = 'public'
                     }
                     scope.updateContent = function () {
@@ -3114,7 +3114,8 @@ export let RTE = {
                             element: element,
                             scope: scope,
                             compile: $compile,
-                            editZone: editZone
+                            editZone: editZone,
+                            visibility: scope.$parent.$eval(element.attr('visibility'))
                         });
                     }
                     else{
@@ -3759,7 +3760,7 @@ export let RTE = {
                             return;
                         }
                         var visibility: 'protected' | 'public' = 'protected';
-                        if (element.attr('public') !== undefined) {
+                        if (editorInstance.visibility === 'public') {
                             visibility = 'public';
                         }
 
