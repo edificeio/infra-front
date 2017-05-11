@@ -17,14 +17,15 @@ export let explorer = ng.directive('explorer', () => {
 
             function select() {
                 scope.ngModel = !scope.ngModel;
-                
+                scope.$apply('ngModel');
+
                 if (scope.ngClick) {
                     scope.ngClick();
                 }
                 if (scope.ngChange) {
                     scope.ngChange();
                 }
-                scope.$apply('ngModel');
+                scope.$apply();
             }
 
             $('body').on('click', function (e) {
@@ -33,8 +34,15 @@ export let explorer = ng.directive('explorer', () => {
                     && ($(e.target).parents('body').length || e.target.nodeName === 'BODY')
                 ) {
                     scope.ngModel = false;
-                    element.removeClass('selected');
                     scope.$apply('ngModel');
+
+                    if (scope.ngChange) {
+                        scope.ngChange();
+                    }
+
+                    scope.$apply();
+                    element.removeClass('selected');
+
                 }
             })
 
