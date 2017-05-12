@@ -617,7 +617,7 @@ export function bootstrap(func) {
         });
     }
     else {
-        moment.updateLocale(currentLanguage);
+        moment.locale(currentLanguage);
     }
 
 	if((window as any).notLoggedIn){
