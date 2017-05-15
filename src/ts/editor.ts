@@ -3147,6 +3147,12 @@ export let RTE = {
                                 $('editor-toolbar').find(':focus').length === 0
                             ) {
                                 editZone.html($compile(ngModel(scope))(scope));
+                                editZone.find('i18n').each(function(index, item){
+                                    var parent = $(item).parent()[0];
+                                    var newEl = $('<span></span>').html($(item).html());
+                                    parent.insertBefore(newEl[0], item);
+                                    item.remove();
+                                });
                             }
                             if(newValue !== htmlZone.val() && !htmlZone.is(':focus')){
                                 if(window.html_beautify){
@@ -3414,6 +3420,8 @@ export let RTE = {
                         if (element.find(e.target).length === 0 && !$(e.target).hasClass('sp-choose') && element.hasClass('focus')) {
                             element.children('editor-toolbar').removeClass('show');
                             element.removeClass('focus');
+                            let content = editZone.html();
+                            ngModel.assign(scope, content);
                             element.trigger('editor-blur');
                             editorInstance.trigger('change');
                             $('body').css({ overflow: 'auto' });
