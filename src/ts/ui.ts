@@ -723,7 +723,7 @@ export let ui = {
 
                         // hit test
                         let left = mouse.x;
-                        let top = mouse.y + window.scrollY;
+                        let top = mouse.y + (window.scrollY || window.pageYOffset);
 
                         dropItemsAreas.forEach(function (dropElementInfos) {
                             let index = dragoverred.indexOf(dropElementInfos.item);
