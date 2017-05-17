@@ -6,6 +6,7 @@ export * from './calendar';
 export * from './carousel';
 export * from './dotsMenu';
 export * from './dragItem';
+export * from './dropdownButtons';
 export * from './embedder';
 export * from './explorer';
 export * from './imageSelect';
