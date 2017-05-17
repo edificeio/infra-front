@@ -18,9 +18,14 @@ export let dropdownButtons = ng.directive('dropdownButtons', () => {
                 else{
                     element.removeClass('bottom');
                 }
+
+                if(element.css('position') === 'static'){
+                    setTimeout(() => setClasses(), 500);
+                }
+                
             };
 
-            setTimeout(() => setClasses(), 1000);
+            setClasses();
             $(window).on('resize', setClasses);
 
             element.find('open').on('click', () => {
