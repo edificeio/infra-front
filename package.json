@@ -4,7 +4,7 @@
   "description": "",
   "main": "gulpfile.js",
   "dependencies": {
-    "@types/core-js": "^0.9.35",
+    "@types/core-js": "0.9.36",
     "axios": "^0.15.3",
     "core-js": "^2.4.1",
     "gulp": "^3.9.1",
@@ -21,7 +21,7 @@
     "source-map-loader": "^0.1.6",
     "typescript": "^2.0.10",
     "webpack-stream": "^3.2.0",
-    "toolkit": "git+https://git@github.com/entcore/toolkit.git#dev"
+    "entcore-toolkit": "1.0.0"
   },
   "devDependencies": {
     "@types/core-js": "^0.9.35"

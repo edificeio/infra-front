@@ -206,6 +206,8 @@ export var http = (function(){
 	}
 }());
 
+export let toFormData : (obj) => string = http().serialize;
+
 var $ = require('jquery');
 var humane = require('humane-js');
 
@@ -213,4 +215,5 @@ if(!(window as any).entcore){
 	(window as any).entcore = {};
 }
 (window as any).entcore.http = http;
+(window as any).entcore.toFormData = http().serialize;
 (window as any).http = http;
