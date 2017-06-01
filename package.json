@@ -1,12 +1,13 @@
 {
   "name": "entcore",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "",
   "main": "gulpfile.js",
   "dependencies": {
     "@types/core-js": "0.9.36",
     "axios": "^0.15.3",
     "core-js": "^2.4.1",
+    "entcore-toolkit": "^1.0.0",
     "gulp": "^3.9.1",
     "gulp-clean": "^0.3.2",
     "gulp-rev": "^7.1.2",
@@ -20,8 +21,7 @@
     "moment": "^2.17.1",
     "source-map-loader": "^0.1.6",
     "typescript": "^2.0.10",
-    "webpack-stream": "^3.2.0",
-    "entcore-toolkit": "1.0.0"
+    "webpack-stream": "^3.2.0"
   },
   "devDependencies": {
     "@types/core-js": "^0.9.35"
