@@ -1483,13 +1483,17 @@ module.directive('help', function(){
 			var setHtml = function(content){
 				helpContent = $('<div>' + content + '</div>');
 				helpContent.find('img').each(function(index, item){
-					$(item).attr('src', scope.helpPath + $(item).attr('src'));
+					//Hack until imgs will be all in the 'assets' folder
+                    if ($(item).attr('src').includes("/assets/"))
+                        $(item).attr('src', scope.helpPath + "../.." + $(item).attr('src'));
+                    else
+                        $(item).attr('src', scope.helpPath + $(item).attr('src'));
 				});
 				helpContent.find('script').remove();
 				element.find('div.content').html(helpContent.html());
 				element.find('a').on('click', function(e){
-					element.find('.app-content-section').slideUp();
-					$('#' + $(e.target).attr('href').split('#')[1]).slideDown();
+					element.find('.sect1').slideUp();
+                    $('#' + $(e.target).attr('href').split('#')[1]).parent().slideDown();
 				});
 				element.find('a').first().click();
 				scope.display.read = true;
