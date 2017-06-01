@@ -1,6 +1,6 @@
 import { idiom } from './idiom';
 
-require('core.js');
+require('core-js');
 var _ = require('underscore');
 (window as any)._ = _;
 (window as any).lang = idiom;
