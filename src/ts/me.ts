@@ -1,6 +1,6 @@
 import { model } from './modelDefinitions';
 import http from 'axios';
-import { Eventer } from 'toolkit';
+import { Eventer } from 'entcore-toolkit';
 
 export class Me{
     static preferences: any;
