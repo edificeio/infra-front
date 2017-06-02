@@ -3,9 +3,11 @@ import { ng } from './ng-start';
 import { http } from './http';
 import { idiom as lang } from './idiom';
 
-function Widget(){}
+export let widgets = {
+	Widget: function(){}
+}
 
-Widget.prototype.switchHide = function(){
+widgets.Widget.prototype.switchHide = function(){
     if(this.mandatory)
         return
 	if(!this.hide){
@@ -18,8 +20,8 @@ Widget.prototype.switchHide = function(){
 }
 
 function WidgetModel(){
-	model.makeModels([Widget]);
-	model.collection(Widget, {
+	model.makeModels(widgets);
+	model.collection(widgets.Widget, {
 		preferences: {},
 		savePreferences: function(){
 			var that = this;
@@ -75,7 +77,7 @@ function WidgetModel(){
 	});
 }
 
-let ctrl = ng.controller('Widgets', ['$scope', 'model', 'lang', 'date', function($scope, model){
+let ctrl = ng.controller('Widgets', ['$scope', 'model', function($scope, model){
 	if(!model.widgets){
 		WidgetModel();
 		model.widgets.sync();

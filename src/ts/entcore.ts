@@ -13,3 +13,4 @@ export * from './modelDefinitions';
 export * from './sniplets';
 export * from './rights';
 export * from './ng-start';
+export * from './widget';

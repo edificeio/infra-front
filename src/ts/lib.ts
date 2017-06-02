@@ -605,6 +605,7 @@ Model.prototype.sync = function(){
 
 export function bootstrap(func) {
     if (currentLanguage === 'fr') {
+		moment.locale(currentLanguage);
         moment.updateLocale(currentLanguage, {
             calendar: {
                 lastDay: '[Hier à] HH[h]mm',

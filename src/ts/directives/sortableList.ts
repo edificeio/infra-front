@@ -2,7 +2,7 @@
 import { ui } from '../ui';
 import { $ } from '../libs/jquery/jquery';
 
-export let sortableList = ng.directive('sortableList', function ($compile) {
+export let sortableList = ng.directive('sortableList', ['$compile', function ($compile) {
     return {
         restrict: 'A',
         controller: function () { },
@@ -23,11 +23,12 @@ export let sortableList = ng.directive('sortableList', function ($compile) {
                     }
 
                     //get new elements order
-                    sortables = element.find('[sortable-element]');
+                    sortables = element.find('[sortable-element] > div');
                     sortables.each(function (index, item) {
                         var itemScope = angular.element(item).scope();
                         if (index !== itemScope.ngModel) {
                             itemScope.ngModel = index;
+                            itemScope.$apply();
                         }
                     });
 
@@ -41,9 +42,9 @@ export let sortableList = ng.directive('sortableList', function ($compile) {
             }
         }
     }
-});
+}]);
 
-export let sortableElement = ng.directive('sortableElement', function ($parse) {
+export let sortableElement = ng.directive('sortableElement', ['$parse', function ($parse) {
     return {
         scope: {
             ngModel: '=',
@@ -106,4 +107,4 @@ export let sortableElement = ng.directive('sortableElement', function ($parse) {
             });
         }
     };
-});
+}]);

@@ -1,109 +1,95 @@
-import { $ } from './libs/jquery/jquery';
-import { Behaviours } from './behaviours';
-import { idiom as lang } from './idiom';
-import { workspace } from './workspace';
-import { ui } from './ui';
-import { model } from './modelDefinitions';
-import { http } from './http';
-import { _ } from './libs/underscore/underscore';
-import { appPrefix } from './globals';
-import { notify } from './notify';
-import { skin } from './skin';
-
-declare let Prism: any;
-
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+var jquery_1 = require("./libs/jquery/jquery");
+var behaviours_1 = require("./behaviours");
+var idiom_1 = require("./idiom");
+var workspace_1 = require("./workspace");
+var ui_1 = require("./ui");
+var modelDefinitions_1 = require("./modelDefinitions");
+var http_1 = require("./http");
+var underscore_1 = require("./libs/underscore/underscore");
+var globals_1 = require("./globals");
+var notify_1 = require("./notify");
+var skin_1 = require("./skin");
 var textNodes = ['SPAN', 'A', 'STRONG', 'EM', 'B', 'I', 'I18N'];
 var formatNodes = ['P', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6'];
-
 function rgb(r, g, b) {
     return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
 }
 var rgba = rgb;
 var transparent = 'rgba(255, 255, 255, 0)';
-
-export let RTE = {
-    baseToolbarConf: {} as any,
-    Instance: function(data){
+exports.RTE = {
+    baseToolbarConf: {},
+    Instance: function (data) {
         var that = this;
         this.states = [];
         this.stateIndex = 0;
         this.editZone = this.element.find('[contenteditable]');
-        this.selection = new RTE.Selection({
+        this.selection = new exports.RTE.Selection({
             instance: this,
             editZone: this.editZone
         });
-
-        this.focus = function(){
+        this.focus = function () {
             var sel = window.getSelection();
             sel.removeAllRanges();
             if (this.selection.range) {
                 sel.addRange(this.selection.range);
-            } else {
+            }
+            else {
                 this.editZone.focus();
             }
         };
-
-        this.execCommand = function(commandId, useUi, value){
+        this.execCommand = function (commandId, useUi, value) {
             this.addState(this.editZone.html());
             document.execCommand(commandId, useUi, value);
-
             this.trigger('contentupdated');
         };
-
-        var mousePosition = {} as any;
-        this.editZone.on('mousemove', function(e){
+        var mousePosition = {};
+        this.editZone.on('mousemove', function (e) {
             mousePosition = {
                 left: e.pageX,
                 top: e.pageY
-            }
+            };
         });
-
         var contextualMenu = this.element.children('contextual-menu');
-        contextualMenu.on('contextmenu', function(e){
+        contextualMenu.on('contextmenu', function (e) {
             e.preventDefault();
             return false;
         });
-        this.bindContextualMenu = function(scope, selector, items){
-            this.editZone.on('contextmenu longclick', selector, function(e, position){
+        this.bindContextualMenu = function (scope, selector, items) {
+            this.editZone.on('contextmenu longclick', selector, function (e, position) {
                 e.preventDefault();
-
                 if (position) {
                     mousePosition = position;
                 }
-
                 contextualMenu.children('ul').html('');
                 items.forEach(function (item) {
-                    var node = $('<li></li>');
+                    var node = jquery_1.$('<li></li>');
                     node.on('click', function (event) {
                         item.action(e);
                         scope.$apply();
                     });
-                    node.html(lang.translate(item.label));
-                    contextualMenu.children('ul').append(node)
+                    node.html(idiom_1.idiom.translate(item.label));
+                    contextualMenu.children('ul').append(node);
                 });
-
                 contextualMenu.addClass('show');
                 e.preventDefault();
                 contextualMenu.offset({
                     top: mousePosition.top,
                     left: mousePosition.left
                 });
-
                 contextualMenu.children('li').on('click', function () {
                     contextualMenu.removeClass('show');
                 });
-
                 return false;
             });
         };
-
-        $('body').on('click', function(e){
+        jquery_1.$('body').on('click', function (e) {
             contextualMenu.removeClass('show');
         });
-
-        $('body').on('touchstart', this.editZone, function (e) {
-            $('body').on('touchend touchleave', this.editZone, function(f){
-                if($(e.target).parents('lightbox').parents('editor').length > 0 || !that.selection.changed()){
+        jquery_1.$('body').on('touchstart', this.editZone, function (e) {
+            jquery_1.$('body').on('touchend touchleave', this.editZone, function (f) {
+                if (jquery_1.$(e.target).parents('lightbox').parents('editor').length > 0 || !that.selection.changed()) {
                     return;
                 }
                 that.trigger('selectionchange', {
@@ -111,19 +97,17 @@ export let RTE = {
                 });
             });
         });
-
-        $('body').on('mouseup', function(e){
-            if($(e.target).parents('lightbox').parents('editor').length > 0 || !that.selection.changed()){
+        jquery_1.$('body').on('mouseup', function (e) {
+            if (jquery_1.$(e.target).parents('lightbox').parents('editor').length > 0 || !that.selection.changed()) {
                 return;
             }
             that.trigger('selectionchange', {
                 selection: that.selection
             });
         });
-
-        data.element.on('keyup', function(e){
+        data.element.on('keyup', function (e) {
             that.trigger('contentupdated');
-            if(!that.selection.changed()){
+            if (!that.selection.changed()) {
                 return;
             }
             that.trigger('selectionchange', {
@@ -131,82 +115,70 @@ export let RTE = {
             });
             that.scope.$apply();
         });
-
         this.applyState = function () {
-            this.editZone.html(
-                this.compile(this.states[this.stateIndex - 1].html)(this.scope)
-            );
-            
+            this.editZone.html(this.compile(this.states[this.stateIndex - 1].html)(this.scope));
             if (this.states[this.stateIndex - 1].range) {
                 var sel = window.getSelection();
                 sel.removeAllRanges();
                 sel.addRange(this.states[this.stateIndex - 1].range);
             }
         };
-
-        this.undo = function(){
-            if(this.stateIndex === 0){
+        this.undo = function () {
+            if (this.stateIndex === 0) {
                 return;
             }
-            this.stateIndex --;
+            this.stateIndex--;
             this.applyState();
         };
-
-        this.redo = function(){
-            if(this.stateIndex === this.states.length){
+        this.redo = function () {
+            if (this.stateIndex === this.states.length) {
                 return;
             }
-            this.stateIndex ++;
+            this.stateIndex++;
             this.applyState();
         };
-
-        this.addState = function(state){
+        this.addState = function (state) {
             if (this.states[this.stateIndex - 1] && state === this.states[this.stateIndex - 1].html) {
                 return;
             }
-            if(this.stateIndex === this.states.length){
-                this.states.push({ html: state, range: this.selection.range});
-                this.stateIndex ++;
+            if (this.stateIndex === this.states.length) {
+                this.states.push({ html: state, range: this.selection.range });
+                this.stateIndex++;
             }
-            else{
+            else {
                 this.states = this.states.slice(0, this.stateIndex);
                 this.addState({ html: state, range: this.selection.range });
             }
         };
-
-        this.toolbar = new RTE.Toolbar(this);
+        this.toolbar = new exports.RTE.Toolbar(this);
     },
-    Selection: function(data){
+    Selection: function (data) {
         var that = this;
         this.selectedElements = [];
         this.nextRanges = [];
-
-        this.applyNextRanges = function(){
-            let selection = window.getSelection();
+        this.applyNextRanges = function () {
+            var selection = window.getSelection();
             selection.removeAllRanges();
-            if(selection.rangeCount > 1){
-                this.nextRanges.forEach(function(range){
+            if (selection.rangeCount > 1) {
+                this.nextRanges.forEach(function (range) {
                     selection.addRange(range);
                 });
                 that.instance.trigger('selectionchange', {
                     selection: that.instance.selection
                 });
-
                 this.nextRanges = [];
             }
-            else{
+            else {
                 selection.addRange(this.nextRanges[0]);
                 that.instance.trigger('selectionchange', {
                     selection: that.instance.selection
                 });
-
                 this.nextRanges = [];
             }
         };
-
-        function getSelectedElements(){
+        function getSelectedElements() {
             var selection = getSelection();
-            if(!selection.rangeCount){
+            if (!selection.rangeCount) {
                 return;
             }
             var range = selection.getRangeAt(0);
@@ -221,18 +193,17 @@ export let RTE = {
                 !that.editZone.find(range.endContainer.parentNode).length && range.endContainer.parentNode !== that.editZone[0]) {
                 return;
             }
-            
-            if(range.startContainer === range.endContainer){
-                if(range.startContainer.childNodes.length){
-                    for(var i = range.startOffset; i <= range.endOffset; i++){
+            if (range.startContainer === range.endContainer) {
+                if (range.startContainer.childNodes.length) {
+                    for (var i = range.startOffset; i <= range.endOffset; i++) {
                         selector.push(range.startContainer.childNodes[i]);
                     }
                 }
-                else{
-                    if(range.startContainer !== that.editZone[0] && range.startOffset !== range.endOffset){
+                else {
+                    if (range.startContainer !== that.editZone[0] && range.startOffset !== range.endOffset) {
                         selector.push(range.startContainer);
                     }
-                    else{
+                    else {
                         return [];
                     }
                 }
@@ -241,43 +212,37 @@ export let RTE = {
                 if (range.startOffset < range.startContainer.textContent.length) {
                     selector.push(range.startContainer);
                 }
-                
                 that.editZone.find('*').each(function (index, item) {
-                    if (((range.intersectsNode && range.intersectsNode(item)) || (!range.intersectsNode && $(range.commonAncestorContainer).find(item).length > 0))
+                    if (((range.intersectsNode && range.intersectsNode(item)) || (!range.intersectsNode && jquery_1.$(range.commonAncestorContainer).find(item).length > 0))
                         && item !== range.startContainer.parentNode
                         && item !== range.endContainer.parentNode
                         && item !== range.endContainer
-                        && !$(item).find(range.startContainer.parentNode).length
-                        && !$(item).find(range.endContainer.parentNode).length) {
+                        && !jquery_1.$(item).find(range.startContainer.parentNode).length
+                        && !jquery_1.$(item).find(range.endContainer.parentNode).length) {
                         selector.push(item);
                     }
                 });
-
-                if (range.endContainer !== that.editZone[0] && range.endOffset > 0 && $(range.endContainer).find(range.startContainer).length === 0) {
+                if (range.endContainer !== that.editZone[0] && range.endOffset > 0 && jquery_1.$(range.endContainer).find(range.startContainer).length === 0) {
                     selector.push(range.endContainer);
                 }
             }
-
             return selector;
         }
-
-        this.changed = function(){
+        this.changed = function () {
             var sel = getSelection();
-            if(sel.rangeCount === 0){
+            if (sel.rangeCount === 0) {
                 return;
             }
             var range = sel.getRangeAt(0);
-
-            var same = this.range && 
-            this.range.startContainer === range.startContainer && 
-            this.range.startOffset === range.startOffset && 
-            this.range.endContainer === range.endContainer && 
-            range.endOffset === this.range.endOffset &&
-            sel.rangeCount === this.rangeCount;
+            var same = this.range &&
+                this.range.startContainer === range.startContainer &&
+                this.range.startOffset === range.startOffset &&
+                this.range.endContainer === range.endContainer &&
+                range.endOffset === this.range.endOffset &&
+                sel.rangeCount === this.rangeCount;
             same = same || (this.editZone.find(range.startContainer).length === 0 && this.editZone[0] !== range.startContainer);
             var selectedElements = getSelectedElements();
-
-            if(!same && selectedElements){
+            if (!same && selectedElements) {
                 this.selectedElements = selectedElements || this.selectedElements;
             }
             if (!same && this.editZone.is(':focus')) {
@@ -286,103 +251,84 @@ export let RTE = {
             }
             return !same;
         };
-
         this.selectedElements = getSelectedElements() || this.selectedElements;
-
-        this.moveCaret = function(element, offset){
-            if(!offset){
+        this.moveCaret = function (element, offset) {
+            if (!offset) {
                 offset = 0;
             }
-
             var range = document.createRange();
             range.setStart(element.firstChild || element, offset);
             this.range = range;
-            
             var sel = getSelection();
             this.rangeCount = sel.rangeCount;
             this.selectedElements = [];
             sel.removeAllRanges();
             sel.addRange(range);
         };
-
-        this.selectNode = function(element, start, end){
+        this.selectNode = function (element, start, end) {
             var range = document.createRange();
             var sel = getSelection();
-
-            if(!(element.textContent) && !(element.nodeName && element.nodeName === 'IMG')){
+            if (!(element.textContent) && !(element.nodeName && element.nodeName === 'IMG')) {
                 return;
             }
-            if(!start){
+            if (!start) {
                 start = 0;
             }
             if (!end && element.textContent) {
                 end = (element.firstChild || element).textContent.length;
             }
-
             if (element.nodeType === 1) {
                 range.selectNode(element);
-            } else {
+            }
+            else {
                 range.setStart(element.firstChild || element, start);
                 range.setEnd(element.firstChild || element, end);
             }
-
             this.selectedElements = [element.firstChild || element];
             this.range = range;
-
             sel.removeAllRanges();
             sel.addRange(range);
             this.rangeCount = 1;
         };
-
-        this.wrap = function(element){
+        this.wrap = function (element) {
             that.instance.addState(that.editZone.html());
             var commonAncestor = that.range.commonAncestorContainer;
             var startOffset = that.range.startOffset;
             var endOffset = that.range.endOffset;
-            
             var elementAtCaret = commonAncestor;
-            if (
-                elementAtCaret.nodeType === 1
-                && (elementAtCaret.getAttribute('contenteditable') || elementAtCaret.nodeName === 'TD')
-            ) {
-                var wrapper = $('<div>&#8203;</div>');
-                $(elementAtCaret).append(wrapper);
+            if (elementAtCaret.nodeType === 1
+                && (elementAtCaret.getAttribute('contenteditable') || elementAtCaret.nodeName === 'TD')) {
+                var wrapper = jquery_1.$('<div>&#8203;</div>');
+                jquery_1.$(elementAtCaret).append(wrapper);
                 elementAtCaret = wrapper[0];
             }
             if (elementAtCaret.parentNode.nodeName === 'TD') {
-                var wrapper = $('<div>&#8203;</div>');
-                $(elementAtCaret.parentNode).append(wrapper);
+                var wrapper = jquery_1.$('<div>&#8203;</div>');
+                jquery_1.$(elementAtCaret.parentNode).append(wrapper);
                 wrapper.append(elementAtCaret);
             }
-
-            if(
-                this.isCursor() || commonAncestor.nodeType === 3 || textNodes.indexOf(commonAncestor.nodeName) !== -1
-            ){
+            if (this.isCursor() || commonAncestor.nodeType === 3 || textNodes.indexOf(commonAncestor.nodeName) !== -1) {
                 element.html('&#8203;');
-
                 while (textNodes.indexOf(elementAtCaret.nodeName) !== -1 || elementAtCaret.nodeType === 3) {
                     if (elementAtCaret.parentNode.nodeType === 1 && elementAtCaret.parentNode.getAttribute('contenteditable') || elementAtCaret.parentNode.nodeName === 'TD') {
                         var newEl = document.createElement('div');
-                        if(elementAtCaret.nodeType === 1){
-                            $(newEl).html($(elementAtCaret).html());
+                        if (elementAtCaret.nodeType === 1) {
+                            jquery_1.$(newEl).html(jquery_1.$(elementAtCaret).html());
                         }
-                        else{
-                            $(newEl).text(elementAtCaret.textContent);
+                        else {
+                            jquery_1.$(newEl).text(elementAtCaret.textContent);
                         }
-                        
                         elementAtCaret.parentNode.insertBefore(newEl, elementAtCaret);
                         elementAtCaret.remove();
                         elementAtCaret = newEl;
                     }
-                    else{
+                    else {
                         elementAtCaret = elementAtCaret.parentNode;
                     }
                 }
-
-                element.html($(elementAtCaret).html());
+                element.html(jquery_1.$(elementAtCaret).html());
                 elementAtCaret.parentNode.insertBefore(element[0], elementAtCaret);
                 elementAtCaret.parentNode.removeChild(elementAtCaret);
-
                 var sel = window.getSelection();
                 var r = document.createRange();
                 r.setStart(element[0].firstChild, startOffset);
@@ -392,14 +338,14 @@ export let RTE = {
             }
             else {
                 if (formatNodes.indexOf(elementAtCaret.nodeName) !== -1) {
-                    element.html($(elementAtCaret).html());
+                    element.html(jquery_1.$(elementAtCaret).html());
                     elementAtCaret.parentNode.insertBefore(element[0], elementAtCaret);
                     elementAtCaret.remove();
                     var sel = window.getSelection();
                     var r = document.createRange();
                     r.setStart(element[0], 0);
                     var endOffset = element[0].textContent.length;
-                    if(element[0].childNodes.length){
+                    if (element[0].childNodes.length) {
                         endOffset = element[0].childNodes.length;
                     }
                     r.setEnd(element[0], endOffset);
@@ -412,13 +358,13 @@ export let RTE = {
                     for (var i = 0; i < elementAtCaret.childNodes.length; i++) {
                         var item = elementAtCaret.childNodes[i];
                         if (item === this.range.startContainer ||
-                            (this.range.startContainer.nodeType === 1 && $(this.range.startContainer).find(item).length) ||
-                            (item.nodeType === 1 && $(item).find(this.range.startContainer).length)) {
+                            (this.range.startContainer.nodeType === 1 && jquery_1.$(this.range.startContainer).find(item).length) ||
+                            (item.nodeType === 1 && jquery_1.$(item).find(this.range.startContainer).length)) {
                             foundFirst = true;
                         }
                         if (item === this.range.endContainer ||
-                            (this.range.endContainer.nodeType === 1 && $(this.range.endContainer).find(item).length) ||
-                            (item.nodeType === 1 && $(item).find(this.range.endContainer).length)) {
+                            (this.range.endContainer.nodeType === 1 && jquery_1.$(this.range.endContainer).find(item).length) ||
+                            (item.nodeType === 1 && jquery_1.$(item).find(this.range.endContainer).length)) {
                             foundLast = true;
                             if (this.range.endOffset === 0) {
                                 break;
@@ -427,14 +373,13 @@ export let RTE = {
                         if (!foundFirst) {
                             continue;
                         }
-                        var el = $(element[0].outerHTML);
+                        var el = jquery_1.$(element[0].outerHTML);
                         while (textNodes.indexOf(item.nodeName) !== -1 || item.nodeType === 3) {
                             item = item.parentNode;
                         }
-                        if(!item.parentNode){
+                        if (!item.parentNode) {
                             continue;
                         }
-
                         el.html(item.innerHTML || item.textContent);
                         item.parentNode.insertBefore(el[0], item);
                         item.remove();
@@ -442,7 +387,7 @@ export let RTE = {
                         var r = document.createRange();
                         r.setStart(el[0], 0);
                         var endOffset = el[0].textContent.length;
-                        if(el[0].childNodes.length){
+                        if (el[0].childNodes.length) {
                             endOffset = el[0].childNodes.length;
                         }
                         r.setEnd(el[0], endOffset);
@@ -460,188 +405,162 @@ export let RTE = {
                 this.instance.trigger('change');
             }.bind(this), 100);
         };
-
         this.isCursor = function () {
-            let sel = window.getSelection();
-            if(sel.rangeCount > 0 && this.instance.editZone.find(sel.getRangeAt(0).startContainer).length > 0){
+            var sel = window.getSelection();
+            if (sel.rangeCount > 0 && this.instance.editZone.find(sel.getRangeAt(0).startContainer).length > 0) {
                 this.rangeCount = sel.rangeCount;
                 this.range = sel.getRangeAt(0);
             }
-
-            return (this.rangeCount === 1 || this.rangeCount === 0) && 
-            this.range.startContainer === this.range.endContainer && 
-            this.range.startOffset === this.range.endOffset;
-        }
-
-        let wrapTextOnNode = function(el, node, last){
-            if(!node){
+            return (this.rangeCount === 1 || this.rangeCount === 0) &&
+                this.range.startContainer === this.range.endContainer &&
+                this.range.startOffset === this.range.endOffset;
+        };
+        var wrapTextOnNode = function (el, node, last) {
+            if (!node) {
                 node = this.range.commonAncestorContainer;
             }
-            if(node.nodeType === 3){
-                let start = 0;
-                if(node === this.range.startContainer){
+            if (node.nodeType === 3) {
+                var start = 0;
+                if (node === this.range.startContainer) {
                     start = this.range.startOffset;
                 }
-                let textNode = document.createTextNode(node.textContent.substring(start));
-                if(node === this.range.endContainer){
+                var textNode = document.createTextNode(node.textContent.substring(start));
+                if (node === this.range.endContainer) {
                     textNode = document.createTextNode(node.textContent.substring(start, this.range.endOffset));
-                    let nextText = document.createTextNode(node.textContent.substring(this.range.endOffset));
+                    var nextText = document.createTextNode(node.textContent.substring(this.range.endOffset));
                     node.parentNode.insertBefore(nextText, node.nextSibling);
                 }
                 el.append(textNode);
-                
                 node.textContent = node.textContent.substring(0, start);
             }
-
-            let foundFirst = false;
-            if(last){
+            var foundFirst = false;
+            if (last) {
                 foundFirst = true;
             }
-            let nodes = [];
-            for(let i = 0; i < node.childNodes.length; i++){
-                let child = node.childNodes[i];
+            var nodes = [];
+            for (var i = 0; i < node.childNodes.length; i++) {
+                var child = node.childNodes[i];
                 nodes.push(child);
             }
-
-            for(let i = 0; i < nodes.length; i++){
-                let child = nodes[i];
-                
-                if(child === this.range.startContainer){
+            for (var i = 0; i < nodes.length; i++) {
+                var child = nodes[i];
+                if (child === this.range.startContainer) {
                     foundFirst = true;
-                    if(this.range.startOffset === 0){
+                    if (this.range.startOffset === 0) {
                         el.append(child);
                     }
-                    if(child.nodeType === 1){
-                        let last = child.childNodes.length;
-                        if(this.range.startContainer === this.range.endContainer){
-                            last = this.range.endOffset;
+                    if (child.nodeType === 1) {
+                        var last_1 = child.childNodes.length;
+                        if (this.range.startContainer === this.range.endContainer) {
+                            last_1 = this.range.endOffset;
                         }
-
-                        for(let i = this.range.startOffset; i < last; i++){
-                            el.append(child.childNodes[i]);
+                        for (var i_1 = this.range.startOffset; i_1 < last_1; i_1++) {
+                            el.append(child.childNodes[i_1]);
                         }
                     }
-                    else{
-                        let textNode;
-                        if(this.range.startContainer === this.range.endContainer){
+                    else {
+                        var textNode = void 0;
+                        if (this.range.startContainer === this.range.endContainer) {
                             textNode = document.createTextNode(child.textContent.substring(this.range.startOffset, this.range.endOffset));
-                            
-                            let nextText = document.createTextNode(child.textContent.substring(this.range.endOffset));
+                            var nextText = document.createTextNode(child.textContent.substring(this.range.endOffset));
                             child.parentNode.insertBefore(nextText, child.nextSibling);
                             child.textContent = child.textContent.substring(0, this.range.startOffset);
                         }
-                        else{
+                        else {
                             textNode = document.createTextNode(child.textContent.substring(this.range.startOffset));
                             child.textContent = child.textContent.substring(0, this.range.startOffset);
                         }
                         el.append(textNode);
                     }
-                    
                     continue;
                 }
-
-                if(child.contains(this.range.startContainer)){
-                    let container = document.createElement(child.nodeName);
-                    $(container).attr('style', $(child).attr('style'));
+                if (child.contains(this.range.startContainer)) {
+                    var container = document.createElement(child.nodeName);
+                    jquery_1.$(container).attr('style', jquery_1.$(child).attr('style'));
                     el.append(container);
                     wrapTextOnNode(container, child);
                     foundFirst = true;
                     continue;
                 }
-
-                if(!foundFirst){
+                if (!foundFirst) {
                     continue;
                 }
-
-                if(child === this.range.endContainer){
-                    if(child.nodeType === 1){
-                        let last = this.range.endOffset;
-                        for(let i = this.range.startOffset; i < last; i++){
-                            el.append(child.childNodes[i]);
+                if (child === this.range.endContainer) {
+                    if (child.nodeType === 1) {
+                        var last_2 = this.range.endOffset;
+                        for (var i_2 = this.range.startOffset; i_2 < last_2; i_2++) {
+                            el.append(child.childNodes[i_2]);
                         }
                     }
-                    else{
-                        let textNode = document.createTextNode(child.textContent.substring(0, this.range.endOffset));
+                    else {
+                        var textNode = document.createTextNode(child.textContent.substring(0, this.range.endOffset));
                         child.textContent = child.textContent.substring(this.range.endOffset);
-
                         el.append(textNode);
                     }
-
                     break;
                 }
-
-                if(child.contains(this.range.endContainer)){
-                    let container = document.createElement(child.nodeName);
-                    $(container).attr('style', $(child).attr('style'));
+                if (child.contains(this.range.endContainer)) {
+                    var container = document.createElement(child.nodeName);
+                    jquery_1.$(container).attr('style', jquery_1.$(child).attr('style'));
                     el.append(container);
                     wrapTextOnNode(container, child, true);
                     break;
                 }
-
                 el.append(child);
             }
         }.bind(this);
-
-        this.wrapText = function(el){
+        this.wrapText = function (el) {
             this.instance.addState(this.editZone.html());
-            if(this.isCursor()){
+            if (this.isCursor()) {
                 el.html('<br />');
                 this.editZone.append(el);
                 this.selectNode(el[0]);
             }
-            else if(
-                this.range.startContainer === this.range.commonAncestorContainer && 
+            else if (this.range.startContainer === this.range.commonAncestorContainer &&
                 this.range.startContainer === this.range.endContainer &&
-                this.range.startContainer.nodeType === 1
-            ){
-                let container = this.range.startContainer;
-                if(this.instance.editZone[0] === this.range.startContainer){
-                    let newEl = document.createElement('div');
-                    
+                this.range.startContainer.nodeType === 1) {
+                var container = this.range.startContainer;
+                if (this.instance.editZone[0] === this.range.startContainer) {
+                    var newEl = document.createElement('div');
                     while (this.instance.editZone[0].childNodes.length) {
-                        $(newEl).append(this.instance.editZone[0].childNodes[0]);
+                        jquery_1.$(newEl).append(this.instance.editZone[0].childNodes[0]);
                     }
                     this.instance.editZone.append(newEl);
                     container = newEl;
                 }
-                while(container.childNodes.length === 1){
+                while (container.childNodes.length === 1) {
                     container = container.firstChild;
                 }
                 container.parentNode.insertBefore(el[0], container);
                 el.append(container);
-                
             }
-            else{
+            else {
                 wrapTextOnNode(el);
                 this.range.startContainer.parentNode.insertBefore(el[0], this.range.startContainer.nextSibling);
             }
-                
-            
             this.instance.trigger('change');
             this.selectNode(el[0]);
         };
-
-        function applyCSSCursor(css){
+        function applyCSSCursor(css) {
             var elementAtCaret;
-            var el = $('<span>&#8203;</span>');
+            var el = jquery_1.$('<span>&#8203;</span>');
             if (!that.range && !that.editZone.html() || that.range.startContainer === that.editZone[0]) {
-                if(that.editZone.children('div').length > 0){
+                if (that.editZone.children('div').length > 0) {
                     elementAtCaret = that.editZone.children('div')[0].firstChild;
                 }
-                else{
-                    elementAtCaret = $('<div>&#8203;</div>').appendTo(that.editZone)[0].firstChild;
+                else {
+                    elementAtCaret = jquery_1.$('<div>&#8203;</div>').appendTo(that.editZone)[0].firstChild;
                 }
             }
             else {
                 elementAtCaret = that.range.startContainer;
                 if (elementAtCaret.nodeType === 1 && elementAtCaret.nodeName === 'SPAN') {
-                    el.attr('style', $(elementAtCaret).attr('style'));
+                    el.attr('style', jquery_1.$(elementAtCaret).attr('style'));
                 }
             }
-            
             el.css(css);
-            var nodeBefore = $('<span>' + elementAtCaret.textContent.substring(0, that.range.startOffset) + '</span>');
-            var nodeAfter = $('<span>' + elementAtCaret.textContent.substring(that.range.startOffset) + '</span>');
+            var nodeBefore = jquery_1.$('<span>' + elementAtCaret.textContent.substring(0, that.range.startOffset) + '</span>');
+            var nodeAfter = jquery_1.$('<span>' + elementAtCaret.textContent.substring(that.range.startOffset) + '</span>');
             if (nodeAfter.text().length) {
                 elementAtCaret.parentNode.insertBefore(nodeAfter[0], elementAtCaret);
                 elementAtCaret.parentNode.insertBefore(el[0], nodeAfter[0]);
@@ -651,29 +570,26 @@ export let RTE = {
             else {
                 elementAtCaret.parentNode.insertBefore(el[0], elementAtCaret.nextSibling);
             }
-            
             that.moveCaret(el[0], 1);
         }
-
-        function applyCSSNode(css, range){
+        function applyCSSNode(css, range) {
             var element = range.startContainer;
             if (element.nodeType !== 1 && element.parentNode.nodeName !== 'SPAN') {
                 var el = document.createElement('span');
                 el.textContent = element.textContent;
                 element.parentNode.insertBefore(el, element.nextSibling);
-                $(element).remove();
+                jquery_1.$(element).remove();
                 element = el;
             }
             else {
                 element = element.parentNode;
             }
-            $(element).css(css);
-            $(element).find('*').css(css);
+            jquery_1.$(element).css(css);
+            jquery_1.$(element).find('*').css(css);
             that.selectNode(element);
         }
-
-        function applyCSSBetween(range, nodeStart, nodeEnd, css, keepRangeStart?, startOffset?) {
-            let startSet = false;
+        function applyCSSBetween(range, nodeStart, nodeEnd, css, keepRangeStart, startOffset) {
+            var startSet = false;
             if (startOffset === undefined) {
                 startOffset = range.startOffset;
             }
@@ -681,27 +597,27 @@ export let RTE = {
             var i = startOffset;
             do {
                 if (sibling.nodeType === 1) {
-                    let r;
-                    if(!keepRangeStart && !startSet){
-                        r = document.createRange();
-                        r.setStart(sibling, 0);
-                        that.nextRanges.push(r);
+                    var r_1 = void 0;
+                    if (!keepRangeStart && !startSet) {
+                        r_1 = document.createRange();
+                        r_1.setStart(sibling, 0);
+                        that.nextRanges.push(r_1);
                         startSet = true;
                     }
-                    else{
-                        r = that.nextRanges[that.nextRanges.length - 1];
+                    else {
+                        r_1 = that.nextRanges[that.nextRanges.length - 1];
                     }
-                    r.setEnd(sibling, 1);
-                    $(sibling).css(css);
+                    r_1.setEnd(sibling, 1);
+                    jquery_1.$(sibling).css(css);
                 }
                 else {
-                    var el = $('<span></span>')
+                    var el = jquery_1.$('<span></span>')
                         .css(css);
                     if (sibling === nodeStart && sibling === nodeEnd) {
                         el.html(sibling.textContent.substring(startOffset, range.endOffset));
                         if (el.html().length > 0) {
                             sibling.parentNode.insertBefore(el[0], sibling);
-                            let afterText = document.createTextNode(sibling.textContent.substring(range.endOffset));
+                            var afterText = document.createTextNode(sibling.textContent.substring(range.endOffset));
                             sibling.parentNode.insertBefore(afterText, el[0].nextSibling);
                             sibling.textContent = sibling.textContent.substring(0, startOffset);
                             that.moveRanges(range, sibling, -(el.text().length), afterText);
@@ -718,34 +634,32 @@ export let RTE = {
                             }
                         }
                     }
-                    else if (
-                        sibling === nodeEnd
-                        || (sibling.parentNode === range.endContainer && sibling === range.endContainer.childNodes[range.endOffset])
-                    ) {
+                    else if (sibling === nodeEnd
+                        || (sibling.parentNode === range.endContainer && sibling === range.endContainer.childNodes[range.endOffset])) {
                         el.text(sibling.textContent.substring(0, range.endOffset));
                         if (el.text()) {
                             sibling.parentNode.insertBefore(el[0], sibling);
                             sibling.textContent = sibling.textContent.substring(range.endOffset);
                             that.moveRanges(range, sibling, -(el.text().length + range.startOffset));
-                            let r = that.nextRanges[that.nextRanges.length - 1];
-                            r.setEnd(el[0], 1);
+                            var r_2 = that.nextRanges[that.nextRanges.length - 1];
+                            r_2.setEnd(el[0], 1);
                         }
                     }
                     else if (sibling === nodeStart) {
                         el.text(sibling.textContent.substring(startOffset, sibling.textContent.length));
-                        if(el.text()){
+                        if (el.text()) {
                             sibling.parentNode.insertBefore(el[0], sibling.nextSibling);
                             sibling.textContent = sibling.textContent.substring(0, startOffset);
                             if (!keepRangeStart && !startSet) {
-                                let r = document.createRange();
-                                r.setStart(el[0], 0);
-                                r.setEnd(el[0], 1);
-                                that.nextRanges.push(r);
+                                var r_3 = document.createRange();
+                                r_3.setStart(el[0], 0);
+                                r_3.setEnd(el[0], 1);
+                                that.nextRanges.push(r_3);
                                 startSet = true;
                             }
-                            else{
-                                let r = that.nextRanges[that.nextRanges.length - 1];
-                                r.setEnd(el[0], 1);
+                            else {
+                                var r_4 = that.nextRanges[that.nextRanges.length - 1];
+                                r_4.setEnd(el[0], 1);
                             }
                         }
                     }
@@ -756,135 +670,98 @@ export let RTE = {
                             sibling.textContent = sibling.textContent.substring(sibling.textContent.length);
                             that.moveRanges(range, sibling, -el.text().length);
                         }
-                        
                     }
                 }
-                if(sibling !== nodeEnd){
+                if (sibling !== nodeEnd) {
                     sibling = sibling.nextSibling;
                 }
-                
                 i++;
-            } while (
-                sibling && sibling !== nodeEnd
+            } while (sibling && sibling !== nodeEnd
                 && !(sibling.parentNode === range.endContainer && sibling === range.endContainer.childNodes[range.endOffset])
-                && !$(sibling).find(range.endContainer).length
-            );
+                && !jquery_1.$(sibling).find(range.endContainer).length);
         }
-
-        function applyCSSText(css, range){
-            var el = $(document.createElement('span'));
-            $(el).css(css);
-
+        function applyCSSText(css, range) {
+            var el = jquery_1.$(document.createElement('span'));
+            jquery_1.$(el).css(css);
             el.html(range.startContainer.textContent.substring(range.startOffset, range.endOffset));
             var textBefore = document.createTextNode('');
             textBefore.textContent = range.startContainer.textContent.substring(0, range.startOffset);
             range.startContainer.parentNode.insertBefore(el[0], range.startContainer);
             range.startContainer.parentNode.insertBefore(textBefore, el[0]);
             range.startContainer.textContent = range.startContainer.textContent.substring(range.endOffset);
-
             that.moveRanges(range, range.startContainer, -(el.text().length + range.startOffset));
-
             var r = document.createRange();
             r.setStart(el[0], 0);
             r.setEnd(el[0], 1);
             that.nextRanges.push(r);
         }
-
         function applyCSS(css, range) {
             that.instance.addState(that.editZone.html());
-
-            if(that.isCursor()){
+            if (that.isCursor()) {
                 applyCSSCursor(css);
                 return;
             }
-            
             if (range.startContainer === range.endContainer &&
-                (
-                    range.startContainer.nodeType === 3 &&
+                (range.startContainer.nodeType === 3 &&
                     range.startOffset === 0 &&
-                    range.endOffset === range.startContainer.textContent.length
-                )
-            ) {
-                applyCSSNode(css, range)
+                    range.endOffset === range.startContainer.textContent.length)) {
+                applyCSSNode(css, range);
             }
-            else if(range.startContainer === range.endContainer && 
-                (
-                    range.startContainer.nodeType === 1 &&
+            else if (range.startContainer === range.endContainer &&
+                (range.startContainer.nodeType === 1 &&
                     range.startOffset === 0 &&
-                    range.endOffset === range.startContainer.childNodes.length
-                )
-            ){
-                if(range.startContainer !== that.editZone[0]){
-                    $(range.startContainer).css(css);
-                    $(range.startContainer).find('span').css(css);
+                    range.endOffset === range.startContainer.childNodes.length)) {
+                if (range.startContainer !== that.editZone[0]) {
+                    jquery_1.$(range.startContainer).css(css);
+                    jquery_1.$(range.startContainer).find('span').css(css);
                 }
-                else{
-                    $(range.startContainer).find('*').css(css);
+                else {
+                    jquery_1.$(range.startContainer).find('*').css(css);
                 }
             }
-            else{
-                if(range.commonAncestorContainer.nodeType === 3){
+            else {
+                if (range.commonAncestorContainer.nodeType === 3) {
                     applyCSSText(css, range);
                 }
-                else{
+                else {
                     var foundFirst = false;
-                    for(var i = 0; i < range.commonAncestorContainer.childNodes.length; i++){
+                    for (var i = 0; i < range.commonAncestorContainer.childNodes.length; i++) {
                         var sibling = range.commonAncestorContainer.childNodes[i];
-                        if(
-                            sibling === range.startContainer || 
-                            (sibling.nodeType === 1 && $(sibling).find(range.startContainer).length) || 
-                            (range.startContainer.nodeType === 1 && $(range.startContainer).find(sibling).length && range.startOffset === i)
-                        ){
+                        if (sibling === range.startContainer ||
+                            (sibling.nodeType === 1 && jquery_1.$(sibling).find(range.startContainer).length) ||
+                            (range.startContainer.nodeType === 1 && jquery_1.$(range.startContainer).find(sibling).length && range.startOffset === i)) {
                             foundFirst = true;
                         }
-                        if(!foundFirst){
+                        if (!foundFirst) {
                             continue;
                         }
-
-                        if(
-                            (sibling === range.endContainer && range.endOffset === 0) ||
-                            ($(range.endContainer).find(sibling).length && range.endOffset === i)
-                        ){
+                        if ((sibling === range.endContainer && range.endOffset === 0) ||
+                            (jquery_1.$(range.endContainer).find(sibling).length && range.endOffset === i)) {
                             break;
                         }
-
-                        if (
-                            sibling.nodeType === 1 && $(sibling).find(range.startContainer).length
-                        ) {
+                        if (sibling.nodeType === 1 && jquery_1.$(sibling).find(range.startContainer).length) {
                             applyCSSBetween(range, range.startContainer, range.endContainer, css);
                             continue;
                         }
-
-                        if (
-                            (
-                                range.startContainer.nodeType === 1
-                                && $(range.startContainer).find(sibling).length
-                                && range.startOffset === i
-                            )
-                            || sibling === range.startContainer
-                        ) {
+                        if ((range.startContainer.nodeType === 1
+                            && jquery_1.$(range.startContainer).find(sibling).length
+                            && range.startOffset === i)
+                            || sibling === range.startContainer) {
                             applyCSSBetween(range, sibling, range.endContainer, css);
                             continue;
                         }
-
-                        if (
-                            sibling.nodeType === 1 
-                            && $(sibling).find(range.endContainer).length
-                        ) {
+                        if (sibling.nodeType === 1
+                            && jquery_1.$(sibling).find(range.endContainer).length) {
                             var firstChild = sibling.firstChild;
                             var startOffset = 0;
-                            if ($(sibling).find(range.startContainer).length) {
+                            if (jquery_1.$(sibling).find(range.startContainer).length) {
                                 firstChild = range.startContainer;
                                 startOffset = range.startOffset;
                             }
                             applyCSSBetween(range, firstChild, range.endContainer, css, true, startOffset);
                             break;
                         }
-
-                        if (
-                                sibling === range.endContainer
-                            )
-                        {
+                        if (sibling === range.endContainer) {
                             var firstChild = range.endContainer.firstChild;
                             if (!firstChild) {
                                 firstChild = range.endContainer;
@@ -892,79 +769,73 @@ export let RTE = {
                             applyCSSBetween(range, firstChild, range.endContainer, css, true, 0);
                             break;
                         }
-
-                        if(sibling.nodeType === 1){
-                            $(sibling).css(css);
-                            $(sibling).find('*').css(css);
+                        if (sibling.nodeType === 1) {
+                            jquery_1.$(sibling).css(css);
+                            jquery_1.$(sibling).find('*').css(css);
                             continue;
                         }
-                        else{
-                            var el = $(document.createElement('span'));
+                        else {
+                            var el = jquery_1.$(document.createElement('span'));
                             el.css(css);
                             el.text(sibling.textContent);
                             sibling.parentNode.insertBefore(el[0], sibling);
                             sibling.remove();
                         }
-
-                        if(sibling === range.endContainer){
+                        if (sibling === range.endContainer) {
                             break;
                         }
                     }
                 }
             }
         }
-
         this.isEmpty = function () {
             return !this.range || this.isCursor();
         };
-
         this.elementAtCaret = function () {
             if (!this.range || !this.editZone.is(':focus')) {
-                return $();
+                return jquery_1.$();
             }
             var element = this.range.startContainer;
             if (element.nodeType !== 1) {
                 element = element.parentNode;
             }
-            return $(element);
-        }
-
-        this.moveRanges = function(mover, container, offset, newContainer){
-            let selection = window.getSelection();
-            this.ranges.forEach(function(range){
-                if(range === mover){
+            return jquery_1.$(element);
+        };
+        this.moveRanges = function (mover, container, offset, newContainer) {
+            var selection = window.getSelection();
+            this.ranges.forEach(function (range) {
+                if (range === mover) {
                     return;
                 }
-                if(range.startContainer === container){
+                if (range.startContainer === container) {
                     range.startOffset += offset;
-                    if(newContainer){
+                    if (newContainer) {
                         range.startContainer = newContainer;
                     }
                 }
-                if(range.endContainer === container){
+                if (range.endContainer === container) {
                     range.endOffset += offset;
-                    if(newContainer){
+                    if (newContainer) {
                         range.endContainer = newContainer;
                     }
                 }
             });
         };
-
-        this.css = function(params){
-            if(typeof params === 'object'){
-                let selection = window.getSelection();
-                if(!this.instance.editZone.html()){
+        this.css = function (params) {
+            if (typeof params === 'object') {
+                var selection = window.getSelection();
+                if (!this.instance.editZone.html()) {
                     this.instance.editZone.html('<div>&#8203;</div>');
                 }
-                if(!this.instance.editZone.is(':focus')){
+                if (!this.instance.editZone.is(':focus')) {
                     this.instance.editZone[0].focus();
-                    let range = selection.getRangeAt(0);
+                    var range = selection.getRangeAt(0);
                     this.range = range;
                     this.rangeCount = 1;
                 }
                 this.ranges = [];
-                for(let i = 0; i < selection.rangeCount; i++){
-                    let range = selection.getRangeAt(i);
+                for (var i = 0; i < selection.rangeCount; i++) {
+                    var range = selection.getRangeAt(i);
                     this.ranges.push({
                         startContainer: range.startContainer,
                         endContainer: range.endContainer,
@@ -972,90 +843,84 @@ export let RTE = {
                         endOffset: range.endOffset,
                         commonAncestorContainer: range.commonAncestorContainer
                     });
-                    
                 }
-                this.ranges.forEach(function(range){
+                this.ranges.forEach(function (range) {
                     applyCSS(params, range);
                 });
-                if(this.nextRanges.length){
+                if (this.nextRanges.length) {
                     this.applyNextRanges();
                 }
-                
                 //cleanup
-                that.editZone.find('span').each(function(index, item){
-                    if(item.childNodes.length > 1){
-                        let child = item.firstChild;
-                        while(child !== null){
-                            let nextChild = child.nextSibling;
-                            if(child.nodeType === 3 && child.textContent === ""){
+                that.editZone.find('span').each(function (index, item) {
+                    if (item.childNodes.length > 1) {
+                        var child = item.firstChild;
+                        while (child !== null) {
+                            var nextChild = child.nextSibling;
+                            if (child.nodeType === 3 && child.textContent === "") {
                                 child.remove();
                             }
                             child = nextChild;
                         }
                     }
-                    if(item.childNodes.length === 1 && item.childNodes[0].nodeType === 1 && item.childNodes[0].nodeName === 'SPAN'){
-                        for(let i = 0; i < item.childNodes[0].style.length; i++){
-                            let prop = item.childNodes[0].style[i];
-                            $(item).css(prop, $(item.childNodes[0]).css(prop));
+                    if (item.childNodes.length === 1 && item.childNodes[0].nodeType === 1 && item.childNodes[0].nodeName === 'SPAN') {
+                        for (var i = 0; i < item.childNodes[0].style.length; i++) {
+                            var prop = item.childNodes[0].style[i];
+                            jquery_1.$(item).css(prop, jquery_1.$(item.childNodes[0]).css(prop));
                         }
-                        let sel = window.getSelection();
-                        let newRanges = [];
-                        for(let i = 0; i < sel.rangeCount; i++){
-                            let range = {
-                                startContainer: sel.getRangeAt(i).startContainer,
-                                endContainer: sel.getRangeAt(i).endContainer,
-                                startOffset: sel.getRangeAt(i).startOffset,
-                                endOffset: sel.getRangeAt(i).endOffset
+                        var sel_1 = window.getSelection();
+                        var newRanges = [];
+                        for (var i = 0; i < sel_1.rangeCount; i++) {
+                            var range = {
+                                startContainer: sel_1.getRangeAt(i).startContainer,
+                                endContainer: sel_1.getRangeAt(i).endContainer,
+                                startOffset: sel_1.getRangeAt(i).startOffset,
+                                endOffset: sel_1.getRangeAt(i).endOffset
                             };
-
-                            if(range.startContainer === item.childNodes[0]){
-                                if(range.startContainer.nodeType === 1 && item.nodeType === 3 && range.startOffset === 1){
+                            if (range.startContainer === item.childNodes[0]) {
+                                if (range.startContainer.nodeType === 1 && item.nodeType === 3 && range.startOffset === 1) {
                                     range.startOffset = item.textContent.length;
                                 }
                                 range.startContainer = item;
                             }
-                            if(range.endContainer === item.childNodes[0]){
-                                if(range.endContainer.nodeType === 1 && item.nodeType === 3 && range.endOffset === 1){
+                            if (range.endContainer === item.childNodes[0]) {
+                                if (range.endContainer.nodeType === 1 && item.nodeType === 3 && range.endOffset === 1) {
                                     range.endOffset = item.textContent.length;
                                 }
                                 range.endContainer = item;
                             }
                             newRanges.push(range);
                         }
-
-                        while(item.childNodes[0].childNodes.length){
-                            $(item).append(item.childNodes[0].childNodes[0]);
+                        while (item.childNodes[0].childNodes.length) {
+                            jquery_1.$(item).append(item.childNodes[0].childNodes[0]);
                         }
                         item.childNodes[0].remove();
-
-                        sel.removeAllRanges();
-                        newRanges.forEach(function(rangeDef){
-                            let range = document.createRange();
+                        sel_1.removeAllRanges();
+                        newRanges.forEach(function (rangeDef) {
+                            var range = document.createRange();
                             range.setStart(rangeDef.startContainer, rangeDef.startOffset);
                             range.setEnd(rangeDef.endContainer, rangeDef.endOffset);
-                            sel.addRange(range);
+                            sel_1.addRange(range);
                         });
                     }
-                    if(item.nextSibling && item.nextSibling.nodeType === 1 && item.nextSibling.nodeName === 'SPAN'){
-                        let sameStyle = true;
-                        for(let i = 0; i < item.nextSibling.style.length; i++){
-                            sameStyle = sameStyle && $(item).css(item.nextSibling.style[i]) === $(item.nextSibling).css(item.nextSibling.style[i]);
+                    if (item.nextSibling && item.nextSibling.nodeType === 1 && item.nextSibling.nodeName === 'SPAN') {
+                        var sameStyle = true;
+                        for (var i = 0; i < item.nextSibling.style.length; i++) {
+                            sameStyle = sameStyle && jquery_1.$(item).css(item.nextSibling.style[i]) === jquery_1.$(item.nextSibling).css(item.nextSibling.style[i]);
                         }
-                        for(let i = 0; i < item.style.length; i++){
-                            sameStyle = sameStyle && $(item.nextSibling).css(item.style[i]) === $(item).css(item.style[i]);
+                        for (var i = 0; i < item.style.length; i++) {
+                            sameStyle = sameStyle && jquery_1.$(item.nextSibling).css(item.style[i]) === jquery_1.$(item).css(item.style[i]);
                         }
-                        if(sameStyle){
-                            while(item.childNodes.length){
-                                $(item.nextSibling).prepend(item.childNodes[item.childNodes.length - 1]);
+                        if (sameStyle) {
+                            while (item.childNodes.length) {
+                                jquery_1.$(item.nextSibling).prepend(item.childNodes[item.childNodes.length - 1]);
                             }
                             item.remove();
                         }
                     }
-                    if($(item).html() === ""){
-                        $(item).remove();
+                    if (jquery_1.$(item).html() === "") {
+                        jquery_1.$(item).remove();
                     }
                 });
-
                 that.instance.addState(that.editZone.html());
                 that.instance.trigger('contentupdated');
             }
@@ -1066,26 +931,25 @@ export let RTE = {
                     }
                     var node = this.range.startContainer;
                     if (node.nodeType === 1) {
-                        return $(node).css(params);
+                        return jquery_1.$(node).css(params);
                     }
                     else {
-                        return $(node.parentNode).css(params);
+                        return jquery_1.$(node.parentNode).css(params);
                     }
                 }
                 var different = false;
                 var val = undefined;
                 this.selectedElements.forEach(function (item) {
-                    if(!item){
+                    if (!item) {
                         return;
                     }
                     var itemVal;
                     if (item.nodeType === 1) {
-                        itemVal = $(item).css(params);
+                        itemVal = jquery_1.$(item).css(params);
                     }
-                    else{
-                        itemVal = $(item.parentNode).css(params);
+                    else {
+                        itemVal = jquery_1.$(item.parentNode).css(params);
                     }
-
                     if (itemVal !== val && val !== undefined) {
                         different = true;
                     }
@@ -1097,25 +961,22 @@ export let RTE = {
                 return val;
             }
         };
-
-        this.replaceHTML = function(htmlContent){
+        this.replaceHTML = function (htmlContent) {
             that.instance.addState(that.editZone.html());
-            var wrapper = $('<div></div>');
+            var wrapper = jquery_1.$('<div></div>');
             wrapper.html(htmlContent + '&#8203;');
             if (this.range) {
                 this.range.deleteContents();
                 this.range.insertNode(wrapper[0]);
             }
-            else{
+            else {
                 this.editZone.append(wrapper);
             }
-
             that.instance.trigger('change');
         };
-
         this.replaceHTMLInline = function (htmlContent) {
             that.instance.addState(that.editZone.html());
-            var wrapper = $('<span></span>');
+            var wrapper = jquery_1.$('<span></span>');
             wrapper.html(htmlContent);
             if (this.range) {
                 this.range.deleteContents();
@@ -1129,133 +990,122 @@ export let RTE = {
                 sel.removeAllRanges();
                 sel.addRange(range);
             }
-
             that.instance.trigger('change');
         };
-
-        this.$ = function(){
-            var jSelector = $();
-            this.selectedElements.forEach(function(item){
-                if(!item){
+        this.$ = function () {
+            var jSelector = jquery_1.$();
+            this.selectedElements.forEach(function (item) {
+                if (!item) {
                     return;
                 }
-                if(item.nodeType === 1){
+                if (item.nodeType === 1) {
                     jSelector = jSelector.add(item);
                 }
-                else{
+                else {
                     jSelector = jSelector.add(item.parentNode);
                 }
-
             });
             return jSelector;
         };
     },
-    Toolbar: function(instance){
-        instance.toolbarConfiguration.options.forEach(function(option){
-            var optionElement = $('<div></div>');
+    Toolbar: function (instance) {
+        instance.toolbarConfiguration.options.forEach(function (option) {
+            var optionElement = jquery_1.$('<div></div>');
             optionElement.addClass('option');
             optionElement.addClass(option.name.replace(/([A-Z])/g, "-$1").toLowerCase());
             instance.element.find('editor-toolbar').append(optionElement);
             var optionScope = instance.scope.$new();
-
             var optionResult = option.run(instance);
             if (optionResult.template) {
                 optionElement.html(instance.compile(optionResult.template)(optionScope));
                 optionResult.link(optionScope, optionElement, instance.attributes);
             }
             if (optionResult.templateUrl) {
-                http().get(optionResult.templateUrl).done(function (content) {
+                http_1.http().get(optionResult.templateUrl).done(function (content) {
                     optionElement.html(instance.compile(content)(optionScope));
                     optionResult.link(optionScope, optionElement, instance.attributes);
                 }.bind(this));
             }
         });
     },
-    ToolbarConfiguration: function(){
-        this.collection(RTE.Option);
-        this.option = function(name, fn){
+    ToolbarConfiguration: function () {
+        this.collection(exports.RTE.Option);
+        this.option = function (name, fn) {
             this.options.push({
                 name: name,
                 run: fn
             });
         };
     },
-    Option: function(){
-
+    Option: function () {
     },
-    setModel: function(){
-        model.makeModels(RTE);
-        RTE.baseToolbarConf = new RTE.ToolbarConfiguration();
+    setModel: function () {
+        modelDefinitions_1.model.makeModels(exports.RTE);
+        exports.RTE.baseToolbarConf = new exports.RTE.ToolbarConfiguration();
     },
-    addDirectives: function(module){
+    addDirectives: function (module) {
         this.setModel();
-
         // Editor options
-        RTE.baseToolbarConf.option('undo', function(instance){
+        exports.RTE.baseToolbarConf.option('undo', function (instance) {
             return {
                 template: '<i tooltip="editor.option.undo"></i>',
-                link: function(scope, element, attributes){
+                link: function (scope, element, attributes) {
                     element.addClass('disabled');
-                    element.on('click', function(){
+                    element.on('click', function () {
                         instance.undo();
-                        if(instance.stateIndex === 0){
+                        if (instance.stateIndex === 0) {
                             element.addClass('disabled');
                         }
-                        else{
+                        else {
                             element.removeClass('disabled');
                         }
                         instance.trigger('change');
                     });
-
-                    instance.on('contentupdated', function(e){
-                        if(instance.stateIndex === 0){
+                    instance.on('contentupdated', function (e) {
+                        if (instance.stateIndex === 0) {
                             element.addClass('disabled');
                         }
-                        else{
+                        else {
                             element.removeClass('disabled');
                         }
                     });
                 }
             };
         });
-
-        RTE.baseToolbarConf.option('redo', function(instance){
+        exports.RTE.baseToolbarConf.option('redo', function (instance) {
             return {
                 template: '<i tooltip="editor.option.redo"></i>',
-                link: function(scope, element, attributes){
+                link: function (scope, element, attributes) {
                     element.addClass('disabled');
-                    element.on('click', function(){
+                    element.on('click', function () {
                         instance.redo();
-                        if(instance.stateIndex === instance.states.length){
-                            element.addClass('disabled');
-                        }
-                        else{
-                            element.removeClass('disabled');
-                        }
-                        instance.trigger('change');
-                    });
-
-                    instance.on('contentupdated', function(e){
                         if (instance.stateIndex === instance.states.length) {
                             element.addClass('disabled');
                         }
-                        else{
+                        else {
+                            element.removeClass('disabled');
+                        }
+                        instance.trigger('change');
+                    });
+                    instance.on('contentupdated', function (e) {
+                        if (instance.stateIndex === instance.states.length) {
+                            element.addClass('disabled');
+                        }
+                        else {
                             element.removeClass('disabled');
                         }
                     });
                 }
             };
         });
-
-        RTE.baseToolbarConf.option('bold', function(instance){
+        exports.RTE.baseToolbarConf.option('bold', function (instance) {
             return {
                 template: '<i tooltip="editor.option.bold"></i>',
-                link: function(scope, element, attributes){
+                link: function (scope, element, attributes) {
                     element.on('click', function () {
                         if (!instance.editZone.is(':focus')) {
                             instance.focus();
                         }
-
                         if (document.queryCommandState('bold')) {
                             element.removeClass('toggled');
                             instance.selection.css({ 'font-weight': 'normal' });
@@ -1265,7 +1115,6 @@ export let RTE = {
                             instance.selection.css({ 'font-weight': 'bold' });
                         }
                     });
-
                     instance.on('selectionchange', function (e) {
                         if (document.queryCommandState('bold')) {
                             element.addClass('toggled');
@@ -1277,43 +1126,39 @@ export let RTE = {
                 }
             };
         });
-
-        RTE.baseToolbarConf.option('italic', function(instance){
+        exports.RTE.baseToolbarConf.option('italic', function (instance) {
             return {
                 template: '<i tooltip="editor.option.italic"></i>',
-                link: function(scope, element, attributes){
-                    element.on('click', function(){
-                        if(!instance.editZone.is(':focus')){
+                link: function (scope, element, attributes) {
+                    element.on('click', function () {
+                        if (!instance.editZone.is(':focus')) {
                             instance.focus();
                         }
-
-                        if(document.queryCommandState('italic')){
+                        if (document.queryCommandState('italic')) {
                             element.removeClass('toggled');
                             instance.selection.css({ 'font-style': 'normal' });
                         }
-                        else{
+                        else {
                             element.addClass('toggled');
                             instance.selection.css({ 'font-style': 'italic' });
                         }
                     });
-
-                    instance.on('selectionchange', function(e){
-                        if(document.queryCommandState('italic')){
+                    instance.on('selectionchange', function (e) {
+                        if (document.queryCommandState('italic')) {
                             element.addClass('toggled');
                         }
-                        else{
+                        else {
                             element.removeClass('toggled');
                         }
                     });
                 }
             };
         });
-
-        RTE.baseToolbarConf.option('underline', function(instance){
+        exports.RTE.baseToolbarConf.option('underline', function (instance) {
             return {
                 template: '<i tooltip="editor.option.underline"></i>',
-                link: function(scope, element, attributes){
-                    element.on('click', function(){
+                link: function (scope, element, attributes) {
+                    element.on('click', function () {
                         if (document.queryCommandState('underline')) {
                             instance.execCommand('underline');
                             element.removeClass('toggled');
@@ -1323,321 +1168,284 @@ export let RTE = {
                             element.addClass('toggled');
                         }
                     });
-
-                    instance.on('selectionchange', function(e){
-                        if(document.queryCommandState('underline')){
+                    instance.on('selectionchange', function (e) {
+                        if (document.queryCommandState('underline')) {
                             element.addClass('toggled');
                         }
-                        else{
+                        else {
                             element.removeClass('toggled');
                         }
                     });
                 }
             };
         });
-
-        function beforeJustify(instance){
+        function beforeJustify(instance) {
             instance.editZone.find('mathjax').html('');
             instance.editZone.find('mathjax').removeAttr('contenteditable');
         }
-
-        function afterJustify(instance){
-            instance.editZone.find('mathjax').each(function(index, item){
+        function afterJustify(instance) {
+            instance.editZone.find('mathjax').each(function (index, item) {
                 var scope = angular.element(item).scope();
-                scope.updateFormula(scope.formula)
-            })
+                scope.updateFormula(scope.formula);
+            });
             instance.editZone.find('mathjax').attr('contenteditable', 'false');
-
             instance.trigger('justify-changed');
         }
-
-        RTE.baseToolbarConf.option('justifyLeft', function(instance){
+        exports.RTE.baseToolbarConf.option('justifyLeft', function (instance) {
             return {
                 template: '<i tooltip="editor.option.justify.left"></i>',
-                link: function(scope, element, attributes){
+                link: function (scope, element, attributes) {
                     element.addClass('toggled');
                     element.on('click', function () {
-                        if(!instance.editZone.is(':focus')){
+                        if (!instance.editZone.is(':focus')) {
                             instance.focus();
                         }
-                        beforeJustify(instance)
+                        beforeJustify(instance);
                         instance.execCommand('justifyLeft');
-                        if(document.queryCommandState('justifyLeft')){
-                            element.addClass('toggled');							}
-                        else{
+                        if (document.queryCommandState('justifyLeft')) {
+                            element.addClass('toggled');
+                        }
+                        else {
                             element.removeClass('toggled');
                         }
-
                         instance.editZone.find('img').each(function (index, item) {
-                            if ($(item).css('text-align') === 'left' && !$(item).hasClass('smiley')) {
-                                $(item).css({ 'float': 'left', 'z-index': 0 });
+                            if (jquery_1.$(item).css('text-align') === 'left' && !jquery_1.$(item).hasClass('smiley')) {
+                                jquery_1.$(item).css({ 'float': 'left', 'z-index': 0 });
                             }
                         });
-
-                        afterJustify(instance)
+                        afterJustify(instance);
                     });
-
-                    instance.on('selectionchange', function(e){
-                        if(document.queryCommandState('justifyLeft') && instance.selection.css('float') !== 'right' && instance.selection.css('z-index') !== "1"){
+                    instance.on('selectionchange', function (e) {
+                        if (document.queryCommandState('justifyLeft') && instance.selection.css('float') !== 'right' && instance.selection.css('z-index') !== "1") {
                             element.addClass('toggled');
                         }
-                        else{
+                        else {
                             element.removeClass('toggled');
                         }
                     });
-
-                    instance.on('justify-changed', function(e){
-                        if(document.queryCommandState('justifyLeft') && instance.selection.css('float') !== 'right' && instance.selection.css('z-index') !== "1"){
+                    instance.on('justify-changed', function (e) {
+                        if (document.queryCommandState('justifyLeft') && instance.selection.css('float') !== 'right' && instance.selection.css('z-index') !== "1") {
                             element.addClass('toggled');
                         }
-                        else{
+                        else {
                             element.removeClass('toggled');
                         }
                     });
                 }
             };
         });
-
-        RTE.baseToolbarConf.option('justifyRight', function(instance){
+        exports.RTE.baseToolbarConf.option('justifyRight', function (instance) {
             return {
                 template: '<i tooltip="editor.option.justify.right"></i>',
-                link: function(scope, element, attributes){
+                link: function (scope, element, attributes) {
                     element.on('click', function () {
-                        if(!instance.editZone.is(':focus')){
+                        if (!instance.editZone.is(':focus')) {
                             instance.focus();
                         }
-
                         beforeJustify(instance);
-                        if(!document.queryCommandState('justifyRight')){
+                        if (!document.queryCommandState('justifyRight')) {
                             instance.execCommand('justifyRight');
                             element.addClass('toggled');
                         }
-                        else{
+                        else {
                             instance.execCommand('justifyLeft');
                             element.removeClass('toggled');
                         }
-
                         instance.editZone.find('img').each(function (index, item) {
-                            if ($(item).css('text-align') === 'right' && !$(item).hasClass('smiley')) {
-                                $(item).css({ 'float': 'right', 'z-index': '0' });
+                            if (jquery_1.$(item).css('text-align') === 'right' && !jquery_1.$(item).hasClass('smiley')) {
+                                jquery_1.$(item).css({ 'float': 'right', 'z-index': '0' });
                             }
                         });
-
                         afterJustify(instance);
                     });
-
                     instance.on('selectionchange', function (e) {
-                        if(document.queryCommandState('justifyRight') || instance.selection.css('float') === 'right'){
+                        if (document.queryCommandState('justifyRight') || instance.selection.css('float') === 'right') {
                             element.addClass('toggled');
                         }
-                        else{
+                        else {
                             element.removeClass('toggled');
                         }
                     });
-
-                    instance.on('justify-changed', function(e){
-                        if(document.queryCommandState('justifyRight') || instance.selection.css('float') === 'right'){
+                    instance.on('justify-changed', function (e) {
+                        if (document.queryCommandState('justifyRight') || instance.selection.css('float') === 'right') {
                             element.addClass('toggled');
                         }
-                        else{
+                        else {
                             element.removeClass('toggled');
                         }
                     });
                 }
             };
         });
-
-        RTE.baseToolbarConf.option('justifyCenter', function(instance){
+        exports.RTE.baseToolbarConf.option('justifyCenter', function (instance) {
             return {
                 template: '<i tooltip="editor.option.justify.center"></i>',
-                link: function(scope, element, attributes){
-                    element.on('click', function(){
-                        if(!instance.editZone.is(':focus')){
+                link: function (scope, element, attributes) {
+                    element.on('click', function () {
+                        if (!instance.editZone.is(':focus')) {
                             instance.focus();
                         }
-
                         beforeJustify(instance);
-                        if(!document.queryCommandState('justifyCenter')){
+                        if (!document.queryCommandState('justifyCenter')) {
                             instance.execCommand('justifyCenter');
                             element.addClass('toggled');
                         }
-                        else{
+                        else {
                             instance.execCommand('justifyLeft');
                             element.removeClass('toggled');
                         }
-
                         instance.editZone.find('img').each(function (index, item) {
-                            if ($(item).css('text-align') === 'center' && !$(item).hasClass('smiley')) {
+                            if (jquery_1.$(item).css('text-align') === 'center' && !jquery_1.$(item).hasClass('smiley')) {
                                 // z-index is a hack to track margin width; auto width is computed as 0 in FF
-                                $(item).css({ 'float': 'none', 'margin': 'auto', 'z-index': '1' });
+                                jquery_1.$(item).css({ 'float': 'none', 'margin': 'auto', 'z-index': '1' });
                             }
-                            else if(!$(item).hasClass('smiley')){
+                            else if (!jquery_1.$(item).hasClass('smiley')) {
                                 // z-index is a hack to track margin width; auto width is computed as 0 in FF
-                                $(item).css({ 'float': 'left', 'z-index': '0' });
+                                jquery_1.$(item).css({ 'float': 'left', 'z-index': '0' });
                             }
                         });
-
                         afterJustify(instance);
                     });
-
-                    instance.on('selectionchange', function(e){
+                    instance.on('selectionchange', function (e) {
                         // z-index is a hack to track margin width; auto width is computed as 0 in FF
-                        if(document.queryCommandState('justifyCenter')
-                            || (instance.selection.css('margin-left') === instance.selection.css('margin-right') && instance.selection.css('z-index') === '1')){
+                        if (document.queryCommandState('justifyCenter')
+                            || (instance.selection.css('margin-left') === instance.selection.css('margin-right') && instance.selection.css('z-index') === '1')) {
                             element.addClass('toggled');
                         }
-                        else{
+                        else {
                             element.removeClass('toggled');
                         }
                     });
-
-                    instance.on('justify-changed', function(e){
+                    instance.on('justify-changed', function (e) {
                         // z-index is a hack to track margin width; auto width is computed as 0 in FF
-                        if(document.queryCommandState('justifyCenter')
-                            || (instance.selection.css('margin-left') === instance.selection.css('margin-right') && instance.selection.css('z-index') === '1')){
+                        if (document.queryCommandState('justifyCenter')
+                            || (instance.selection.css('margin-left') === instance.selection.css('margin-right') && instance.selection.css('z-index') === '1')) {
                             element.addClass('toggled');
                         }
-                        else{
+                        else {
                             element.removeClass('toggled');
                         }
                     });
                 }
             };
         });
-
-        RTE.baseToolbarConf.option('justifyFull', function(instance){
+        exports.RTE.baseToolbarConf.option('justifyFull', function (instance) {
             return {
                 template: '<i tooltip="editor.option.justify.full"></i>',
-                link: function(scope, element, attributes){
-                    element.on('click', function(){
-                        if(!instance.editZone.is(':focus')){
+                link: function (scope, element, attributes) {
+                    element.on('click', function () {
+                        if (!instance.editZone.is(':focus')) {
                             instance.focus();
                         }
-
                         beforeJustify(instance);
-                        if(!document.queryCommandState('justifyFull')){
+                        if (!document.queryCommandState('justifyFull')) {
                             element.addClass('toggled');
                             instance.execCommand('justifyFull');
                         }
-                        else{
+                        else {
                             instance.execCommand('justifyLeft');
                             element.removeClass('toggled');
                         }
-
                         afterJustify(instance);
                     });
-
-                    instance.on('selectionchange', function(e){
-                        if(document.queryCommandState('justifyFull')){
+                    instance.on('selectionchange', function (e) {
+                        if (document.queryCommandState('justifyFull')) {
                             element.addClass('toggled');
                         }
-                        else{
+                        else {
                             element.removeClass('toggled');
                         }
                     });
-
-                    instance.on('justify-changed', function(e){
-                        if(document.queryCommandState('justifyFull')){
+                    instance.on('justify-changed', function (e) {
+                        if (document.queryCommandState('justifyFull')) {
                             element.addClass('toggled');
                         }
-                        else{
+                        else {
                             element.removeClass('toggled');
                         }
                     });
                 }
             };
         });
-
-        RTE.baseToolbarConf.option('ulist', function(instance){
+        exports.RTE.baseToolbarConf.option('ulist', function (instance) {
             return {
                 template: '<i tooltip="editor.option.ulist"></i>',
-                link: function(scope, element, attributes){
+                link: function (scope, element, attributes) {
                     element.on('mousedown', function () {
-
-                        if(!instance.editZone.is(':focus')){
+                        if (!instance.editZone.is(':focus')) {
                             instance.editZone.focus();
                         }
-
                         if (instance.editZone.children('div').length === 0) {
                             instance.editZone.append('<div><br></div>');
                             instance.editZone.focus();
                         }
-
                         instance.execCommand('insertUnorderedList', false, null);
-                        if(document.queryCommandState('insertUnorderedList')){
+                        if (document.queryCommandState('insertUnorderedList')) {
                             element.addClass('toggled');
                         }
-                        else{
+                        else {
                             element.removeClass('toggled');
                         }
                     });
-
-                    instance.on('selectionchange', function(e){
-                        if(document.queryCommandState('insertUnorderedList')){
+                    instance.on('selectionchange', function (e) {
+                        if (document.queryCommandState('insertUnorderedList')) {
                             element.addClass('toggled');
                         }
-                        else{
+                        else {
                             element.removeClass('toggled');
                         }
                     });
                 }
             };
         });
-
-        RTE.baseToolbarConf.option('olist', function(instance){
+        exports.RTE.baseToolbarConf.option('olist', function (instance) {
             return {
                 template: '<i tooltip="editor.option.olist"></i>',
-                link: function(scope, element, attributes){
-                    element.on('mousedown', function(){
-                        if(!instance.editZone.is(':focus')){
+                link: function (scope, element, attributes) {
+                    element.on('mousedown', function () {
+                        if (!instance.editZone.is(':focus')) {
                             instance.editZone.focus();
                         }
-
                         if (instance.editZone.children('div').length === 0) {
                             instance.editZone.append('<div><br></div>');
                             instance.editZone.focus();
                         }
-
                         instance.execCommand('insertOrderedList', false, null);
-                        if(document.queryCommandState('insertOrderedList')){
+                        if (document.queryCommandState('insertOrderedList')) {
                             element.addClass('toggled');
                         }
-                        else{
+                        else {
                             element.removeClass('toggled');
                         }
                     });
-
-                    instance.on('selectionchange', function(e){
-                        if(document.queryCommandState('insertOrderedList')){
+                    instance.on('selectionchange', function (e) {
+                        if (document.queryCommandState('insertOrderedList')) {
                             element.addClass('toggled');
                         }
-                        else{
+                        else {
                             element.removeClass('toggled');
                         }
                     });
                 }
             };
         });
-
-        function setSpectrum(){
-            if($('.sp-replacer').length === 0){
+        function setSpectrum() {
+            if (jquery_1.$('.sp-replacer').length === 0) {
                 return;
             }
-            
-            $('input[type=color]').css({
+            jquery_1.$('input[type=color]').css({
                 position: 'absolute',
                 opacity: 0,
                 'pointer-events': 'none'
             });
-            $('.sp-replacer').on('mouseover', function(e){ 
-                $(e.target).parent().find('input[type=color]').trigger('mouseover', [e]);
+            jquery_1.$('.sp-replacer').on('mouseover', function (e) {
+                jquery_1.$(e.target).parent().find('input[type=color]').trigger('mouseover', [e]);
             });
-            $('.sp-replacer').on('mouseout', function(e){ 
-                $(e.target).parent().find('input[type=color]').trigger('mouseout', [e]);
+            jquery_1.$('.sp-replacer').on('mouseout', function (e) {
+                jquery_1.$(e.target).parent().find('input[type=color]').trigger('mouseout', [e]);
             });
-        } 
-
-        RTE.baseToolbarConf.option('color', function(instance){
+        }
+        exports.RTE.baseToolbarConf.option('color', function (instance) {
             return {
                 template: '<i tooltip="editor.option.color"></i>' +
                     '<input tooltip="editor.option.color" type="color" />',
@@ -1648,86 +1456,82 @@ export let RTE = {
                     if (navigator.userAgent.indexOf('Edge') !== -1) {
                         element.find('input').attr('type', 'text');
                     }
-                    if (!$.spectrum) {
-                        $.spectrum = {};
-                        http().get('/infra/public/spectrum/spectrum.js').done(function(data){
+                    if (!jquery_1.$.spectrum) {
+                        jquery_1.$.spectrum = {};
+                        http_1.http().get('/infra/public/spectrum/spectrum.js').done(function (data) {
                             eval(data);
                             setSpectrum();
-                            if ($.spectrum && $.spectrum.palettes && element.find('input')[0].type === 'text') {
-                                $('body').find('.option.color input, .option.background-color input').spectrum({preferredFormat: "hex"});
+                            if (jquery_1.$.spectrum && jquery_1.$.spectrum.palettes && element.find('input')[0].type === 'text') {
+                                jquery_1.$('body').find('.option.color input, .option.background-color input').spectrum({ preferredFormat: "hex" });
                                 setSpectrum();
                             }
                         });
-                        var stylesheet = $('<link rel="stylesheet" type="text/css" href="/infra/public/spectrum/spectrum.css" />');
-                        $('head').prepend(stylesheet);
+                        var stylesheet = jquery_1.$('<link rel="stylesheet" type="text/css" href="/infra/public/spectrum/spectrum.css" />');
+                        jquery_1.$('head').prepend(stylesheet);
                     }
-                    if ($.spectrum && $.spectrum.palettes && element.find('input')[0].type === 'text') {
+                    if (jquery_1.$.spectrum && jquery_1.$.spectrum.palettes && element.find('input')[0].type === 'text') {
                         element.find('input').spectrum({ preferredFormat: "hex" });
                         setSpectrum();
                     }
                     scope.foreColor = "#000000";
-                    element.children('input').on('change', function(){
-                        scope.foreColor = $(this).val();
+                    element.children('input').on('change', function () {
+                        scope.foreColor = jquery_1.$(this).val();
                         scope.$apply('foreColor');
                     });
-
-                    scope.$watch('foreColor', function(){
-                        if(scope.foreColor !== eval(instance.selection.css('color')) && !(instance.selection.isEmpty() && scope.foreColor === '#000000')) {
+                    scope.$watch('foreColor', function () {
+                        if (scope.foreColor !== eval(instance.selection.css('color')) && !(instance.selection.isEmpty() && scope.foreColor === '#000000')) {
                             instance.selection.css({ 'color': scope.foreColor });
                         }
                     });
-
-                    instance.on('selectionchange', function(e){
+                    instance.on('selectionchange', function (e) {
                         scope.foreColor = eval(instance.selection.css('color'));
                         element.children('input').val(scope.foreColor);
                     });
                 }
             };
         });
-
-        RTE.baseToolbarConf.option('backgroundColor', function(instance){
+        exports.RTE.baseToolbarConf.option('backgroundColor', function (instance) {
             return {
                 template: '<i></i><input tooltip="editor.option.backgroundcolor" type="color" />',
-                link: function(scope, element, attributes){
+                link: function (scope, element, attributes) {
                     element.on('click', 'i', function () {
                         element.find('input').click();
                     });
                     if (navigator.userAgent.indexOf('Edge') !== -1) {
                         element.find('input').attr('type', 'text');
                     }
-                    if(!$.spectrum){
-                        $.spectrum = {};
-                        http().get('/infra/public/spectrum/spectrum.js').done(function(data){
+                    if (!jquery_1.$.spectrum) {
+                        jquery_1.$.spectrum = {};
+                        http_1.http().get('/infra/public/spectrum/spectrum.js').done(function (data) {
                             eval(data);
-                            if ($.spectrum && $.spectrum.palettes && element.find('input')[0].type === 'text') {
-                                $('body').find('.option.color input, .option.background-color input').spectrum({ preferredFormat: "hex" });
+                            if (jquery_1.$.spectrum && jquery_1.$.spectrum.palettes && element.find('input')[0].type === 'text') {
+                                jquery_1.$('body').find('.option.color input, .option.background-color input').spectrum({ preferredFormat: "hex" });
                                 setSpectrum();
                             }
                         });
-                        var stylesheet = $('<link rel="stylesheet" type="text/css" href="/infra/public/spectrum/spectrum.css" />');
-                        $('head').prepend(stylesheet);
+                        var stylesheet = jquery_1.$('<link rel="stylesheet" type="text/css" href="/infra/public/spectrum/spectrum.css" />');
+                        jquery_1.$('head').prepend(stylesheet);
                     }
-                    else if ($.spectrum && $.spectrum.palettes && element.find('input')[0].type === 'text') {
+                    else if (jquery_1.$.spectrum && jquery_1.$.spectrum.palettes && element.find('input')[0].type === 'text') {
                         element.find('input[type=color]').spectrum({ preferredFormat: "hex" });
                         setSpectrum();
                     }
                     element.children('input').on('change', function () {
-                        if (!$(this).val()) {
+                        if (!jquery_1.$(this).val()) {
                             return;
                         }
-                        scope.backColor = $(this).val();
+                        scope.backColor = jquery_1.$(this).val();
                         scope.$apply('backColor');
                     });
-
                     scope.$watch('backColor', function () {
-                        var rgbColor = {} as any;
+                        var rgbColor = {};
                         if (typeof scope.backColor === 'string') {
-                            if(scope.backColor[0] === '#'){
+                            if (scope.backColor[0] === '#') {
                                 rgbColor = {
                                     r: parseInt(scope.backColor.substring(1, 3), 16),
                                     g: parseInt(scope.backColor.substring(3, 5), 16),
                                     b: parseInt(scope.backColor.substring(5, 7), 16)
-                                }
+                                };
                             }
                             else if (scope.backColor.startsWith('rgb')) {
                                 var spl = scope.backColor.split('(')[1].split(',');
@@ -1736,9 +1540,8 @@ export let RTE = {
                                     g: parseInt(spl[1]),
                                     b: parseInt(spl[2]),
                                     a: parseInt(spl[3])
-                                }
+                                };
                             }
-                        
                             if (rgbColor.r > 130 && rgbColor.g > 130 && rgbColor.b > 130 && rgbColor.a !== 0) {
                                 element.find('i').css({ 'color': '#000' });
                             }
@@ -1746,13 +1549,11 @@ export let RTE = {
                                 element.find('i').css({ 'color': '#fff' });
                             }
                         }
-                        
-                        if(scope.backColor !== eval(instance.selection.css('background-color')) && rgbColor.a !== 0 && scope.backColor) {
+                        if (scope.backColor !== eval(instance.selection.css('background-color')) && rgbColor.a !== 0 && scope.backColor) {
                             instance.selection.css({ 'background-color': scope.backColor });
                         }
                     });
-
-                    instance.on('selectionchange', function(e){
+                    instance.on('selectionchange', function (e) {
                         scope.backColor = eval(instance.selection.css('background-color'));
                         if (scope.backColor === 'rgba(255, 255, 255, 0)') {
                             scope.backColor = '';
@@ -1763,89 +1564,70 @@ export let RTE = {
                 }
             };
         });
-
-        RTE.baseToolbarConf.option('font', function(instance){
+        exports.RTE.baseToolbarConf.option('font', function (instance) {
             return {
-                template:
-                '<select-list display="font" display-as="fontFamily" placeholder="editor.font.placeholder" tooltip="editor.option.font">' +
-                '<opt ng-repeat="font in fonts" ng-click="setFontFamily(font)" ' +
-                'value="font" ng-style="{ \'font-family\': font.fontFamily }">[[font.fontFamily]]</opt>' +
-                '</select-list>',
-                link: function(scope, element, attributes){
-
-                    function loadImportedFonts(){
-                        return _.map(
-                            _.flatten(
-                                _.map(
-                                    document.styleSheets,
-                                    function(stylesheet){
-                                        return _.filter(
-                                            stylesheet.cssRules,
-                                            function(cssRule){
-                                                return cssRule instanceof CSSFontFaceRule &&
-                                                    cssRule.style.cssText.toLowerCase().indexOf('fontello') === -1 &&
-                                                    cssRule.style.cssText.toLowerCase().indexOf('glyphicon') === -1 &&
-                                                    cssRule.style.cssText.toLowerCase().indexOf('fontawesome') === -1 &&
-                                                    cssRule.style.cssText.toLowerCase().indexOf('mathjax') === -1;
-                                            }
-                                        )
-                                    }
-                                )
-                            ),
-                            function(fontFace){
-                                var fontName = fontFace.style.cssText.split('font-family:')[1].split(';')[0].trim();
-                                if(fontName.startsWith('"')){
-                                    fontName = fontName.substring(1);
-                                }
-                                if(fontName.endsWith('"')){
-                                    fontName = fontName.substring(0, fontName.length - 1);
-                                }
-                                return {
-                                    fontFamily: fontName
-                                }
+                template: '<select-list display="font" display-as="fontFamily" placeholder="editor.font.placeholder" tooltip="editor.option.font">' +
+                    '<opt ng-repeat="font in fonts" ng-click="setFontFamily(font)" ' +
+                    'value="font" ng-style="{ \'font-family\': font.fontFamily }">[[font.fontFamily]]</opt>' +
+                    '</select-list>',
+                link: function (scope, element, attributes) {
+                    function loadImportedFonts() {
+                        return underscore_1._.map(underscore_1._.flatten(underscore_1._.map(document.styleSheets, function (stylesheet) {
+                            return underscore_1._.filter(stylesheet.cssRules, function (cssRule) {
+                                return cssRule instanceof CSSFontFaceRule &&
+                                    cssRule.style.cssText.toLowerCase().indexOf('fontello') === -1 &&
+                                    cssRule.style.cssText.toLowerCase().indexOf('glyphicon') === -1 &&
+                                    cssRule.style.cssText.toLowerCase().indexOf('fontawesome') === -1 &&
+                                    cssRule.style.cssText.toLowerCase().indexOf('mathjax') === -1;
+                            });
+                        })), function (fontFace) {
+                            var fontName = fontFace.style.cssText.split('font-family:')[1].split(';')[0].trim();
+                            if (fontName.startsWith('"')) {
+                                fontName = fontName.substring(1);
                             }
-                        );
+                            if (fontName.endsWith('"')) {
+                                fontName = fontName.substring(0, fontName.length - 1);
+                            }
+                            return {
+                                fontFamily: fontName
+                            };
+                        });
                     }
-
                     scope.fonts = [{ fontFamily: 'Arial' }, { fontFamily: 'Verdana' }, { fontFamily: 'Tahoma' }, { fontFamily: "Comic Sans MS" }];
                     scope.font = '';
-
-                    setTimeout(function() {
+                    setTimeout(function () {
                         var importedFonts = loadImportedFonts();
-                        importedFonts = _.uniq(importedFonts, function(item, key, a) { 
+                        importedFonts = underscore_1._.uniq(importedFonts, function (item, key, a) {
                             return item.fontFamily;
                         });
-                        importedFonts = _.reject(importedFonts, function(font){ 
+                        importedFonts = underscore_1._.reject(importedFonts, function (font) {
                             return font.fontFamily.trim() === 'generic-icons' || font.fontFamily.trim() === 'editor';
                         });
                         scope.fonts = scope.fonts.concat(importedFonts);
-                        scope.font = _.find(scope.fonts, function (font) {
-                            return $('p').css('font-family').toLowerCase().indexOf(font.fontFamily.toLowerCase()) !== -1
+                        scope.font = underscore_1._.find(scope.fonts, function (font) {
+                            return jquery_1.$('p').css('font-family').toLowerCase().indexOf(font.fontFamily.toLowerCase()) !== -1;
                         });
                     }, 1000);
-
                     scope.setFontFamily = function (font) {
                         scope.font = font;
                         instance.selection.css({ 'font-family': font.fontFamily });
                     };
-
-                    instance.on('selectionchange', function(e){
-                        scope.font = _.find(scope.fonts, function (font) {
+                    instance.on('selectionchange', function (e) {
+                        scope.font = underscore_1._.find(scope.fonts, function (font) {
                             return font.fontFamily.trim() === instance.selection.css('font-family');
                         });
                     });
                 }
             };
         });
-
-        RTE.baseToolbarConf.option('fontSize', function(instance) {
+        exports.RTE.baseToolbarConf.option('fontSize', function (instance) {
             return {
                 template: '<select-list placeholder="size" display="font.fontSize.size" tooltip="editor.option.fontSize">' +
-                '<opt ng-repeat="fontSize in font.fontSizes" ng-click="setSize(fontSize)" ' +
+                    '<opt ng-repeat="fontSize in font.fontSizes" ng-click="setSize(fontSize)" ' +
                     'ng-style="{ \'font-size\': fontSize.size + \'px\', \'line-height\': fontSize.size + \'px\'}">' +
-                        '[[fontSize.size]]' +
+                    '[[fontSize.size]]' +
                     '</opt>' +
-                '</select-list>',
+                    '</select-list>',
                 link: function (scope, element, attributes) {
                     scope.font = {
                         fontSizes: [{ size: 8 }, { size: 10 }, { size: 12 }, { size: 14 },
@@ -1853,7 +1635,6 @@ export let RTE = {
                             { size: 34 }, { size: 42 }, { size: 64 }, { size: 72 }],
                         fontSize: {}
                     };
-
                     scope.setSize = function (fontSize) {
                         scope.font.fontSize = { size: fontSize.size };
                         instance.selection.css({
@@ -1861,7 +1642,6 @@ export let RTE = {
                             'line-height': fontSize.size + 'px'
                         });
                     };
-
                     instance.on('selectionchange', function (e) {
                         if (instance.selection.css('font-size')) {
                             scope.font.fontSize = { size: parseInt(instance.selection.css('font-size')) };
@@ -1869,22 +1649,19 @@ export let RTE = {
                         else {
                             scope.font.fontSize = { size: undefined };
                         }
-
                     });
-
                     element.children('.options').on('click', 'opt', function () {
                         element.children('.options').addClass('hidden');
                     });
                 }
-            }
+            };
         });
-
-        RTE.baseToolbarConf.option('format', function(instance) {
+        exports.RTE.baseToolbarConf.option('format', function (instance) {
             return {
                 template: '<select-list model="format" placeholder="editor.format.paragraph" display-as="label" display="format" tooltip="editor.option.format">' +
-                '<opt ng-repeat="format in formats" value="format" ng-click="wrap(format)"><div bind-html="format.option"></div></opt>' +
-                '</select-list>',
-                link: function(scope, element, attributes){
+                    '<opt ng-repeat="format in formats" value="format" ng-click="wrap(format)"><div bind-html="format.option"></div></opt>' +
+                    '</select-list>',
+                link: function (scope, element, attributes) {
                     scope.formats = [
                         {
                             apply: { tag: 'p' },
@@ -1917,9 +1694,8 @@ export let RTE = {
                             label: 'editor.format.warning'
                         }
                     ];
-
                     instance.on('selectionchange', function (e) {
-                        if(!e){
+                        if (!e) {
                             return;
                         }
                         var testElement = e.selection.$();
@@ -1934,33 +1710,29 @@ export let RTE = {
                                     hasClass = hasClass && testElement.hasClass(className);
                                 });
                             }
-
                             if (testElement.is(format.apply.tag) && hasClass) {
                                 scope.format = format;
                                 found = true;
                             }
                         });
-                        if(!found){
+                        if (!found) {
                             scope.format = scope.formats[0];
                         }
                     });
-
                     scope.wrap = function (format) {
                         scope.format = format;
-                        var newEl = $('<' + scope.format.apply.tag + '></' + scope.format.apply.tag + '>');
-                        if(scope.format.apply.classes){
-                            scope.format.apply.classes.forEach(function(element){
+                        var newEl = jquery_1.$('<' + scope.format.apply.tag + '></' + scope.format.apply.tag + '>');
+                        if (scope.format.apply.classes) {
+                            scope.format.apply.classes.forEach(function (element) {
                                 newEl.addClass(element);
                             });
                         }
-
                         instance.selection.wrap(newEl);
-                    }
+                    };
                 }
-            }
+            };
         });
-
-        RTE.baseToolbarConf.option('subscript', function (instance) {
+        exports.RTE.baseToolbarConf.option('subscript', function (instance) {
             return {
                 template: '<i tooltip="editor.option.subscript"></i>',
                 link: function (scope, element, attributes) {
@@ -1968,7 +1740,6 @@ export let RTE = {
                         if (!instance.editZone.is(':focus')) {
                             instance.focus();
                         }
-
                         if (instance.selection.css('vertical-align') !== 'sub') {
                             element.addClass('toggled');
                             instance.selection.css({ 'vertical-align': 'sub', 'font-size': '12px' });
@@ -1978,7 +1749,6 @@ export let RTE = {
                             instance.selection.css({ 'vertical-align': '', 'font-size': '' });
                         }
                     });
-
                     instance.on('selectionchange', function (e) {
                         if (instance.selection.css('vertical-align') === 'sub') {
                             element.addClass('toggled');
@@ -1990,8 +1760,7 @@ export let RTE = {
                 }
             };
         });
-
-        RTE.baseToolbarConf.option('superscript', function (instance) {
+        exports.RTE.baseToolbarConf.option('superscript', function (instance) {
             return {
                 template: '<i tooltip="editor.option.superscript"></i>',
                 link: function (scope, element, attributes) {
@@ -1999,7 +1768,6 @@ export let RTE = {
                         if (!instance.editZone.is(':focus')) {
                             instance.focus();
                         }
-
                         if (instance.selection.css('vertical-align') !== 'super') {
                             element.addClass('toggled');
                             instance.selection.css({ 'vertical-align': 'super', 'font-size': '12px' });
@@ -2009,7 +1777,6 @@ export let RTE = {
                             instance.selection.css({ 'vertical-align': '', 'font-size': '' });
                         }
                     });
-
                     instance.on('selectionchange', function (e) {
                         if (instance.selection.css('vertical-align') === 'super') {
                             element.addClass('toggled');
@@ -2021,8 +1788,7 @@ export let RTE = {
                 }
             };
         });
-
-        RTE.baseToolbarConf.option('removeFormat', function (instance) {
+        exports.RTE.baseToolbarConf.option('removeFormat', function (instance) {
             return {
                 template: '<i tooltip="editor.option.removeformat"></i>',
                 link: function (scope, element, attributes) {
@@ -2030,7 +1796,6 @@ export let RTE = {
                         if (!instance.editZone.is(':focus')) {
                             instance.focus();
                         }
-
                         var format = {
                             'font-style': 'normal',
                             'background-color': 'transparent',
@@ -2041,12 +1806,10 @@ export let RTE = {
                             'line-height': 'initial',
                             'font-family': 'inherit'
                         };
-
                         instance.selection.css(format);
                         instance.execCommand('removeFormat');
                         instance.trigger('selectionchange', { selection: instance.selection });
                     });
-
                     instance.on('selectionchange', function (e) {
                         if (document.queryCommandEnabled('removeFormat')) {
                             element.removeClass('disabled');
@@ -2058,27 +1821,23 @@ export let RTE = {
                 }
             };
         });
-
-        RTE.baseToolbarConf.option('image', function(instance){
+        exports.RTE.baseToolbarConf.option('image', function (instance) {
             return {
                 template: '<i ng-click="imageOption.display.pickFile = true" tooltip="editor.option.image"></i>' +
-                '<div ng-if="imageOption.display.pickFile">' +
-                '<lightbox show="imageOption.display.pickFile" on-close="imageOption.display.pickFile = false;">' +
-                '<media-library ng-change="updateContent()" multiple="true" ng-model="imageOption.display.files" file-format="\'img\'" visibility="imageOption.visibility"></media-library>' +
-                '</lightbox>' +
-                '</div>',
+                    '<div ng-if="imageOption.display.pickFile">' +
+                    '<lightbox show="imageOption.display.pickFile" on-close="imageOption.display.pickFile = false;">' +
+                    '<media-library ng-change="updateContent()" multiple="true" ng-model="imageOption.display.files" file-format="\'img\'" visibility="imageOption.visibility"></media-library>' +
+                    '</lightbox>' +
+                    '</div>',
                 link: function (scope, element, attributes) {
-                    ui.extendSelector.touchEvents('[contenteditable] img');
-
+                    ui_1.ui.extendSelector.touchEvents('[contenteditable] img');
                     scope.imageOption = {
                         display: { pickFile: false },
                         visibility: 'protected'
+                    };
+                    if (instance.visibility === 'public') {
+                        scope.imageOption.visibility = 'public';
                     }
-
-                    if(instance.visibility === 'public'){
-                        scope.imageOption.visibility = 'public'
-                    }
-
                     // border-color is a hack to track margin width; auto width is computed as 0 in FF
                     instance.bindContextualMenu(scope, 'img', [
                         {
@@ -2087,19 +1846,18 @@ export let RTE = {
                                 instance.selection.selectNode(e.target);
                                 scope.imageOption.display.pickFile = true;
                             }
-
                         },
                         {
                             label: 'editor.remove.image',
                             action: function (e) {
-                                $(e.target).remove();
+                                jquery_1.$(e.target).remove();
                                 instance.trigger('change');
                             }
                         },
                         {
                             label: 'editor.align.right',
                             action: function (e) {
-                                $(e.target).css({ float: 'right', margin: '10px', 'z-index': '0' });
+                                jquery_1.$(e.target).css({ float: 'right', margin: '10px', 'z-index': '0' });
                                 instance.selection.selectNode(e.target);
                                 instance.trigger('change');
                                 instance.trigger('justify-changed');
@@ -2108,7 +1866,7 @@ export let RTE = {
                         {
                             label: 'editor.align.left',
                             action: function (e) {
-                                $(e.target).css({ float: 'left', margin: '10px', 'z-index': '0' });
+                                jquery_1.$(e.target).css({ float: 'left', margin: '10px', 'z-index': '0' });
                                 instance.selection.selectNode(e.target);
                                 instance.trigger('change');
                                 instance.trigger('justify-changed');
@@ -2117,14 +1875,13 @@ export let RTE = {
                         {
                             label: 'editor.align.center',
                             action: function (e) {
-                                $(e.target).css({ float: 'none', margin: 'auto', 'z-index': '1' });
+                                jquery_1.$(e.target).css({ float: 'none', margin: 'auto', 'z-index': '1' });
                                 instance.selection.selectNode(e.target);
                                 instance.trigger('change');
                                 instance.trigger('justify-changed');
                             }
                         }
                     ]);
-
                     instance.editZone.addClass('drawing-zone');
                     scope.display = {};
                     scope.updateContent = function () {
@@ -2136,10 +1893,9 @@ export let RTE = {
                         scope.imageOption.display.files.forEach(function (file) {
                             html += '<img src="' + path + file._id + '" class="latest-image" />';
                         });
-
                         html += '<div><br></div><div><br></div></div>';
                         instance.selection.replaceHTML(html);
-                        let image = instance.editZone
+                        var image = instance.editZone
                             .find('.latest-image')
                             .removeClass('latest-image');
                         instance.selection.selectNode(image[0]);
@@ -2148,76 +1904,67 @@ export let RTE = {
                         scope.imageOption.display.files = [];
                         instance.focus();
                     };
-
                     instance.element.on('drop', function (e) {
                         var image;
                         if (e.originalEvent.dataTransfer.mozSourceNode) {
                             image = e.originalEvent.dataTransfer.mozSourceNode;
                         }
-
                         //delay to account for image destruction and recreation
-                        setTimeout(function(){
-                            if(image && image.tagName && image.tagName === 'IMG'){
+                        setTimeout(function () {
+                            if (image && image.tagName && image.tagName === 'IMG') {
                                 image.remove();
                             }
                             instance.addState(instance.editZone.html());
-                            ui.extendElement.resizable(instance.editZone.find('img'), {
+                            ui_1.ui.extendElement.resizable(instance.editZone.find('img'), {
                                 moveWithResize: false,
-                                mouseUp: function() {
+                                mouseUp: function () {
                                     instance.trigger('contentupdated');
                                     instance.addState(instance.editZone.html());
                                 }
                             });
-                        }, 20)
+                        }, 20);
                     });
                 }
-            }
+            };
         });
-
-        RTE.baseToolbarConf.option('attachment', function (instance) {
+        exports.RTE.baseToolbarConf.option('attachment', function (instance) {
             return {
                 template: '<i ng-click="attachmentOption.display.pickFile = true" tooltip="editor.option.attachment"></i>' +
-                '<div ng-if="attachmentOption.display.pickFile">' +
-                '<lightbox show="attachmentOption.display.pickFile" on-close="cancel()">' +
-                '<media-library ng-change="updateContent()" multiple="true" ng-model="attachmentOption.display.files" file-format="\'any\'" visibility="attachmentOption.visibility"></media-library>' +
-                '</lightbox>' +
-                '</div>',
+                    '<div ng-if="attachmentOption.display.pickFile">' +
+                    '<lightbox show="attachmentOption.display.pickFile" on-close="cancel()">' +
+                    '<media-library ng-change="updateContent()" multiple="true" ng-model="attachmentOption.display.files" file-format="\'any\'" visibility="attachmentOption.visibility"></media-library>' +
+                    '</lightbox>' +
+                    '</div>',
                 link: function (scope, element, attributes) {
                     element.on('mousedown', 'a', function (e) {
                         e.stopPropagation();
-                        $(e.target).parents('.download-attachments')[0].dispatchEvent(e);
+                        jquery_1.$(e.target).parents('.download-attachments')[0].dispatchEvent(e);
                     });
-
                     scope.attachmentOption = {
                         display: { pickFile: false },
                         visibility: 'protected'
-                    }
-
+                    };
                     if (instance.visibility === 'public') {
-                        scope.attachmentOption.visibility = 'public'
+                        scope.attachmentOption.visibility = 'public';
                     }
-
                     scope.cancel = function () {
                         scope.attachmentOption.display.pickFile = false;
-                    }
-
+                    };
                     instance.bindContextualMenu(scope, '.download-attachments', [
                         {
                             label: 'editor.edit.attachment',
                             action: function (e) {
-                                if (!$(e.target).hasClass('download-attachments')) {
-                                    e.target = $(e.target).parents('.download-attachments')[0];
+                                if (!jquery_1.$(e.target).hasClass('download-attachments')) {
+                                    e.target = jquery_1.$(e.target).parents('.download-attachments')[0];
                                 }
-                                
                                 instance.selection.selectNode(e.target);
-
                                 var files = [];
-                                $(e.target).find('a').each(function (index, item) {
-                                    var pathSplit = $(item).attr('href').split('/');
-                                    files.push(pathSplit[pathSplit.length - 1])
+                                jquery_1.$(e.target).find('a').each(function (index, item) {
+                                    var pathSplit = jquery_1.$(item).attr('href').split('/');
+                                    files.push(pathSplit[pathSplit.length - 1]);
                                 });
-                                model.mediaLibrary.appDocuments.documents.deselectAll();
-                                model.mediaLibrary.appDocuments.documents.map(function (doc) {
+                                modelDefinitions_1.model.mediaLibrary.appDocuments.documents.deselectAll();
+                                modelDefinitions_1.model.mediaLibrary.appDocuments.documents.map(function (doc) {
                                     if (files.indexOf(doc._id) !== -1) {
                                         doc.selected = true;
                                     }
@@ -2229,160 +1976,140 @@ export let RTE = {
                         {
                             label: 'editor.remove.attachment',
                             action: function (e) {
-                                if (!$(e.target).hasClass('download-attachments')) {
-                                    e.target = $(e.target).parents('.download-attachments')[0];
+                                if (!jquery_1.$(e.target).hasClass('download-attachments')) {
+                                    e.target = jquery_1.$(e.target).parents('.download-attachments')[0];
                                 }
-                                $(e.target).remove();
+                                jquery_1.$(e.target).remove();
                                 instance.trigger('contentupdated');
                             }
                         }
                     ]);
-
                     scope.display = {};
                     scope.updateContent = function () {
                         var path = '/workspace/document/';
                         if (scope.attachmentOption.visibility === 'public') {
                             path = '/workspace/pub/document/';
                         }
-
                         var html = '<div class="download-attachments">' +
-                            '<h2>' + lang.translate('editor.attachment.title') + '</h2>' +
+                            '<h2>' + idiom_1.idiom.translate('editor.attachment.title') + '</h2>' +
                             '<div class="attachments">';
                         scope.attachmentOption.display.files.forEach(function (file) {
                             html += '<a href="' + path + file._id + '"><div class="download"></div>' + file.name + '</a>';
                         });
-
                         html += '</div></div><div><br /><div><br /></div></div>';
                         instance.selection.replaceHTML(html);
                         instance.addState(instance.editZone.html());
                         scope.attachmentOption.display.pickFile = false;
                         scope.attachmentOption.display.files = [];
                         instance.focus();
-                        model.mediaLibrary.appDocuments.documents.deselectAll();
+                        modelDefinitions_1.model.mediaLibrary.appDocuments.documents.deselectAll();
                     };
                 }
-            }
+            };
         });
-
-        RTE.baseToolbarConf.option('sound', function(instance){
+        exports.RTE.baseToolbarConf.option('sound', function (instance) {
             return {
                 template: '<i ng-click="soundOption.display.pickFile = true" tooltip="editor.option.sound"></i>' +
-                '<div ng-if="soundOption.display.pickFile">' +
-                '<lightbox show="soundOption.display.pickFile" on-close="soundOption.display.pickFile = false;">' +
-                '<media-library ng-change="updateContent()" ng-model="soundOption.display.file" file-format="\'audio\'" visibility="soundOption.visibility"></media-library>' +
-                '</lightbox>' +
-                '</div>',
-                link: function(scope, element, attributes){
+                    '<div ng-if="soundOption.display.pickFile">' +
+                    '<lightbox show="soundOption.display.pickFile" on-close="soundOption.display.pickFile = false;">' +
+                    '<media-library ng-change="updateContent()" ng-model="soundOption.display.file" file-format="\'audio\'" visibility="soundOption.visibility"></media-library>' +
+                    '</lightbox>' +
+                    '</div>',
+                link: function (scope, element, attributes) {
                     instance.editZone.addClass('drawing-zone');
                     scope.soundOption = {
                         display: { pickFile: false },
                         visibility: 'protected'
-                    }
-
+                    };
                     if (instance.visibility === 'public') {
-                        scope.soundOption.visibility = 'public'
+                        scope.soundOption.visibility = 'public';
                     }
                     scope.updateContent = function () {
                         var path = '/workspace/document/';
                         if (scope.soundOption.visibility === 'public') {
                             path = '/workspace/pub/document/';
                         }
-
-                        instance.selection.replaceHTML(
-                            '<div><br /></div>' +
+                        instance.selection.replaceHTML('<div><br /></div>' +
                             '<div class="audio-wrapper"><audio src="' + path + scope.soundOption.display.file._id + '" controls preload="none"></audio></div>' +
-                            '<div><br /></div>'
-                        );
+                            '<div><br /></div>');
                         scope.soundOption.display.pickFile = false;
                         scope.soundOption.display.file = undefined;
                     };
                 }
-            }
+            };
         });
-
-        RTE.baseToolbarConf.option('embed', function (instance) {
+        exports.RTE.baseToolbarConf.option('embed', function (instance) {
             return {
                 template: '<i ng-click="display.copyEmbed = true" tooltip="editor.option.embed"></i>' +
-                '<embedder ng-model="display.htmlCode" on-change="applyHtml()" show="display.copyEmbed"></embedder>',
+                    '<embedder ng-model="display.htmlCode" on-change="applyHtml()" show="display.copyEmbed"></embedder>',
                 link: function (scope, element, attributes) {
                     scope.display = {
                         htmlCode: ''
                     };
-
                     scope.applyHtml = function (template) {
                         instance.selection.replaceHTML(scope.display.htmlCode);
                     };
                 }
-            }
+            };
         });
-
-        RTE.baseToolbarConf.option('mathjax', function(instance){
+        exports.RTE.baseToolbarConf.option('mathjax', function (instance) {
             return {
                 template: '<i ng-click="display.fillFormula = true" tooltip="editor.option.mathjax"></i>' +
-                '<lightbox show="display.fillFormula" on-close="display.fillFormula = false;">' +
-                '<textarea ng-model="display.formula"></textarea>' +
-                '<mathjax formula="[[display.formula]]"></mathjax>' +
-                '<div class="row">' +
-                '<button type="button" ng-click="updateContent()" class="right-magnet"><i18n>apply</i18n></button>' +
-                '<button type="button" ng-click="cancel()" class="right-magnet cancel"><i18n>cancel</i18n></button>' +
-                '</div>' +
-                '</lightbox>',
-                link: function(scope, element, attributes){
+                    '<lightbox show="display.fillFormula" on-close="display.fillFormula = false;">' +
+                    '<textarea ng-model="display.formula"></textarea>' +
+                    '<mathjax formula="[[display.formula]]"></mathjax>' +
+                    '<div class="row">' +
+                    '<button type="button" ng-click="updateContent()" class="right-magnet"><i18n>apply</i18n></button>' +
+                    '<button type="button" ng-click="cancel()" class="right-magnet cancel"><i18n>cancel</i18n></button>' +
+                    '</div>' +
+                    '</lightbox>',
+                link: function (scope, element, attributes) {
                     scope.display = {
                         formula: '{-b \\pm \\sqrt{b^2-4ac} \\over 2a}'
                     };
-                    
                     var editNode = undefined;
-                    
-                    scope.updateContent = function(){
-                        if(editNode){
-                            $(editNode).attr('formula', scope.display.formula);
+                    scope.updateContent = function () {
+                        if (editNode) {
+                            jquery_1.$(editNode).attr('formula', scope.display.formula);
                             angular.element(editNode.firstChild).scope().updateFormula(scope.display.formula);
                             instance.trigger('change');
                         }
-                        else{
-                            instance.selection.replaceHTMLInline(instance.compile(
-                                '<span>&nbsp;<mathjax contenteditable="false" formula="'+ scope.display.formula + '"></mathjax>&nbsp;</span>'
-                            )(scope));
+                        else {
+                            instance.selection.replaceHTMLInline(instance.compile('<span>&nbsp;<mathjax contenteditable="false" formula="' + scope.display.formula + '"></mathjax>&nbsp;</span>')(scope));
                         }
-                        
                         scope.display.fillFormula = false;
                         editNode = undefined;
                     };
-                    
-                    scope.cancel = function(){
+                    scope.cancel = function () {
                         editNode = undefined;
                         scope.display.fillFormula = false;
                     };
-                    
                     instance.bindContextualMenu(scope, 'mathjax', [
                         {
                             label: 'editor.edit.mathjax',
                             action: function (e) {
                                 instance.selection.selectNode(e.target);
                                 scope.display.fillFormula = true;
-                                scope.display.formula = $(e.target).attr('formula');
+                                scope.display.formula = jquery_1.$(e.target).attr('formula');
                                 editNode = e.target;
                             }
-
                         },
                         {
                             label: 'editor.remove.mathjax',
                             action: function (e) {
-                                $(e.target).remove();
+                                jquery_1.$(e.target).remove();
                             }
                         }
                     ]);
                 }
-            }
+            };
         });
-
-        RTE.baseToolbarConf.option('linker', function(instance){
+        exports.RTE.baseToolbarConf.option('linker', function (instance) {
             return {
                 template: '<i ng-click="linker.openLinker()" tooltip="editor.option.link"></i>' +
-                '<div ng-include="\'/infra/public/template/linker.html\'"></div>',
+                    '<div ng-include="\'/infra/public/template/linker.html\'"></div>',
                 link: function (scope, element, attributes) {
-                    ui.extendSelector.touchEvents('[contenteditable] a');
+                    ui_1.ui.extendSelector.touchEvents('[contenteditable] a');
                     scope.linker = {
                         display: {},
                         apps: [],
@@ -2393,27 +2120,24 @@ export let RTE = {
                         params: {},
                         resource: {}
                     };
-
                     instance.bindContextualMenu(scope, 'a', [
                         {
                             label: 'editor.edit.link',
                             action: function (e) {
                                 instance.selection.selectNode(e.target);
                                 scope.linker.display.chooseLink = true;
-                                scope.linker.openLinker($(e.target).data('app-prefix'), $(e.target).attr('href'), e.target);
+                                scope.linker.openLinker(jquery_1.$(e.target).data('app-prefix'), jquery_1.$(e.target).attr('href'), e.target);
                             }
-
                         },
                         {
                             label: 'editor.remove.link',
                             action: function (e) {
-                                var content = document.createTextNode($(e.target).text());
+                                var content = document.createTextNode(jquery_1.$(e.target).text());
                                 e.target.parentNode.insertBefore(content, e.target);
-                                $(e.target).remove();
+                                jquery_1.$(e.target).remove();
                             }
                         }
                     ]);
-
                     scope.linker.openLinker = function (appPrefix, address, element) {
                         var sel = window.getSelection();
                         instance.selection.range = sel.getRangeAt(0);
@@ -2423,7 +2147,7 @@ export let RTE = {
                             scope.linker.search.application.address = '/' + appPrefix;
                             scope.linker.loadApplicationResources(function () {
                                 scope.linker.searchApplication(function () {
-                                    var resource = _.findWhere(scope.linker.resources, { path: address });
+                                    var resource = underscore_1._.findWhere(scope.linker.resources, { path: address });
                                     scope.linker.applyResource(resource);
                                     scope.$apply();
                                 });
@@ -2438,10 +2162,9 @@ export let RTE = {
                                     element = element.parentNode;
                                 }
                                 if (element.nodeName === 'A') {
-                                    var link = $(element).attr('href');
-                                    scope.linker.params.blank = $(element).attr('target') === '_blank';
-                                    scope.linker.params.tooltip = $(element).attr('tooltip') || '';
-
+                                    var link = jquery_1.$(element).attr('href');
+                                    scope.linker.params.blank = jquery_1.$(element).attr('target') === '_blank';
+                                    scope.linker.params.tooltip = jquery_1.$(element).attr('tooltip') || '';
                                     if (link.split('http')[0] === '' && link.split('http').length > 1) {
                                         scope.linker.externalLink = true;
                                         scope.linker.params.link = link;
@@ -2454,63 +2177,55 @@ export let RTE = {
                             }
                         }
                     };
-
-                    scope.linker.loadApplicationResources = function(cb){
+                    scope.linker.loadApplicationResources = function (cb) {
                         var split = scope.linker.search.application.address.split('/');
                         var prefix = split[split.length - 1];
                         scope.linker.params.appPrefix = prefix;
-                        if(!cb){
-                            cb = function(){
+                        if (!cb) {
+                            cb = function () {
                                 scope.linker.searchApplication();
                                 scope.$apply('linker');
                             };
                         }
-                        Behaviours.loadBehaviours(scope.linker.params.appPrefix, function (appBehaviour) {
-                            Behaviours.applicationsBehaviours[prefix].loadResources(cb);
-                            scope.linker.addResource = Behaviours.applicationsBehaviours[prefix].create;
+                        behaviours_1.Behaviours.loadBehaviours(scope.linker.params.appPrefix, function (appBehaviour) {
+                            behaviours_1.Behaviours.applicationsBehaviours[prefix].loadResources(cb);
+                            scope.linker.addResource = behaviours_1.Behaviours.applicationsBehaviours[prefix].create;
                         });
                     };
-
-                    scope.linker.searchApplication = function(cb){
+                    scope.linker.searchApplication = function (cb) {
                         var split = scope.linker.search.application.address.split('/');
                         var prefix = split[split.length - 1];
                         scope.linker.params.appPrefix = prefix;
-                        Behaviours.loadBehaviours(scope.linker.params.appPrefix, function(appBehaviour){
-                            scope.linker.resources = _.filter(appBehaviour.resources, function(resource) {
-                                return scope.linker.search.text !== '' && (lang.removeAccents(resource.title.toLowerCase()).indexOf(lang.removeAccents(scope.linker.search.text).toLowerCase()) !== -1 ||
+                        behaviours_1.Behaviours.loadBehaviours(scope.linker.params.appPrefix, function (appBehaviour) {
+                            scope.linker.resources = underscore_1._.filter(appBehaviour.resources, function (resource) {
+                                return scope.linker.search.text !== '' && (idiom_1.idiom.removeAccents(resource.title.toLowerCase()).indexOf(idiom_1.idiom.removeAccents(scope.linker.search.text).toLowerCase()) !== -1 ||
                                     resource._id === scope.linker.search.text);
                             });
-                            if(typeof cb === 'function'){
+                            if (typeof cb === 'function') {
                                 cb();
                             }
                         });
                     };
-
-                    scope.linker.createResource = function(){
-                        Behaviours.loadBehaviours(scope.linker.params.appPrefix, function(appBehaviour){
-                            appBehaviour.create(scope.linker.resource, function(){
+                    scope.linker.createResource = function () {
+                        behaviours_1.Behaviours.loadBehaviours(scope.linker.params.appPrefix, function (appBehaviour) {
+                            appBehaviour.create(scope.linker.resource, function () {
                                 scope.linker.search.text = scope.linker.resource.title;
-                                
                                 scope.linker.searchApplication();
                                 scope.$apply();
                             });
                         });
                     };
-
-                    scope.linker.applyLink = function(link){
+                    scope.linker.applyLink = function (link) {
                         scope.linker.params.link = link;
                     };
-
-                    scope.linker.applyResource = function(resource){
+                    scope.linker.applyResource = function (resource) {
                         scope.linker.params.link = resource.path;
                         scope.linker.params.id = resource._id;
                     };
-
-                    scope.linker.saveLink = function(){
-                        if(scope.linker.params.blank){
+                    scope.linker.saveLink = function () {
+                        if (scope.linker.params.blank) {
                             scope.linker.params.target = '_blank';
                         }
-
                         var linkNode;
                         var selectedNode = instance.selection.range.startContainer;
                         if (selectedNode && selectedNode.nodeType !== 1
@@ -2520,37 +2235,34 @@ export let RTE = {
                             selectedNode = selectedNode.parentNode;
                         }
                         if (selectedNode && selectedNode.nodeName === 'A') {
-                            linkNode = $(selectedNode);
+                            linkNode = jquery_1.$(selectedNode);
                         }
                         else {
-                            linkNode = $('<a></a>');
+                            linkNode = jquery_1.$('<a></a>');
                         }
-
-                        if(scope.linker.params.link){
+                        if (scope.linker.params.link) {
                             linkNode.attr('href', scope.linker.params.link);
-
                             if (scope.linker.params.appPrefix && !scope.linker.externalLink) {
                                 linkNode.attr('data-app-prefix', scope.linker.params.appPrefix);
-                                if(scope.linker.params.appPrefix !== 'workspace' && !scope.linker.externalLink){
+                                if (scope.linker.params.appPrefix !== 'workspace' && !scope.linker.externalLink) {
                                     linkNode.data('reload', true);
                                 }
                             }
-                            if(scope.linker.params.id){
+                            if (scope.linker.params.id) {
                                 linkNode.attr('data-id', scope.linker.params.id);
                             }
-                            if(scope.linker.params.blank){
+                            if (scope.linker.params.blank) {
                                 scope.linker.params.target = '_blank';
                                 linkNode.attr('target', scope.linker.params.target);
                             }
-                            if(scope.linker.params.tooltip){
+                            if (scope.linker.params.tooltip) {
                                 linkNode.attr('tooltip', scope.linker.params.tooltip);
                             }
-                            else if(linkNode.attr('tooltip')){
+                            else if (linkNode.attr('tooltip')) {
                                 linkNode.removeAttr('tooltip');
                                 linkNode.off('mouseover');
                             }
                         }
-
                         if (selectedNode && selectedNode.nodeName === 'A') {
                             instance.selection.moveCaret(linkNode[0], linkNode.text().length);
                             instance.trigger('change');
@@ -2563,7 +2275,6 @@ export let RTE = {
                             scope.linker.externalLink = false;
                             return;
                         }
-
                         if (instance.selection.isCursor()) {
                             linkNode.text(scope.linker.params.link);
                             instance.selection.replaceHTMLInline(instance.compile(linkNode[0].outerHTML)(scope));
@@ -2571,7 +2282,6 @@ export let RTE = {
                         else {
                             instance.selection.wrapText(linkNode);
                         }
-
                         instance.focus();
                         scope.linker.display.chooseLink = false;
                         scope.linker.params = {};
@@ -2581,8 +2291,7 @@ export let RTE = {
                         };
                         scope.linker.externalLink = false;
                     };
-
-                    scope.linker.cancel = function(){
+                    scope.linker.cancel = function () {
                         scope.linker.display.chooseLink = false;
                         scope.linker.params = {};
                         scope.linker.display.search = {
@@ -2591,43 +2300,35 @@ export let RTE = {
                         };
                         scope.linker.externalLink = false;
                     };
-
-                    http().get('/resources-applications').done(function(apps){
-                        scope.linker.apps = _.filter(model.me.apps, function(app){
-                            return _.find(
-                                apps,
-                                function (match) {
-                                    return app.address.indexOf(match) !== -1 && app.icon && app.address.indexOf('#') === -1
-                                }
-                            );
+                    http_1.http().get('/resources-applications').done(function (apps) {
+                        scope.linker.apps = underscore_1._.filter(modelDefinitions_1.model.me.apps, function (app) {
+                            return underscore_1._.find(apps, function (match) {
+                                return app.address.indexOf(match) !== -1 && app.icon && app.address.indexOf('#') === -1;
+                            });
                         });
-
-                        scope.linker.apps = _.map(scope.linker.apps, function(app) {
-                            app.displayName = lang.translate(app.displayName);
+                        scope.linker.apps = underscore_1._.map(scope.linker.apps, function (app) {
+                            app.displayName = idiom_1.idiom.translate(app.displayName);
                             return app;
                         });
-
-                        scope.linker.search.application = _.find(scope.linker.apps, function(app){ return app.address.indexOf(appPrefix) !== -1 });
-                        if(!scope.linker.search.application){
+                        scope.linker.search.application = underscore_1._.find(scope.linker.apps, function (app) { return app.address.indexOf(globals_1.appPrefix) !== -1; });
+                        if (!scope.linker.search.application) {
                             scope.linker.search.application = scope.linker.apps[0];
-                            scope.linker.searchApplication(function(){
-                                scope.linker.loadApplicationResources(function(){});
-                            })
+                            scope.linker.searchApplication(function () {
+                                scope.linker.loadApplicationResources(function () { });
+                            });
                         }
-                        else{
-                            scope.linker.loadApplicationResources(function(){});
+                        else {
+                            scope.linker.loadApplicationResources(function () { });
                         }
-
                         scope.$apply('linker');
                     });
                 }
-            }
+            };
         });
-
-        RTE.baseToolbarConf.option('unlink', function(instance){
+        exports.RTE.baseToolbarConf.option('unlink', function (instance) {
             return {
                 template: '<i tooltip="editor.option.unlink"></i>',
-                link: function(scope, element, attributes){
+                link: function (scope, element, attributes) {
                     element.addClass('disabled');
                     element.on('click', function () {
                         var currentNode = instance.selection.range.startContainer;
@@ -2637,197 +2338,180 @@ export let RTE = {
                         if (currentNode.nodeName !== 'A') {
                             return;
                         }
-                        var content = document.createTextNode($(currentNode).text());
+                        var content = document.createTextNode(jquery_1.$(currentNode).text());
                         currentNode.parentNode.insertBefore(content, currentNode);
-                        $(currentNode).remove();
+                        jquery_1.$(currentNode).remove();
                         element.addClass('disabled');
                     });
-
                     instance.on('selectionchange', function (e) {
                         var currentNode = e.selection.range.startContainer;
-                        if(currentNode.nodeType !==1){
+                        if (currentNode.nodeType !== 1) {
                             currentNode = currentNode.parentNode;
                         }
                         if (currentNode.nodeName === 'A') {
                             element.removeClass('disabled');
                         }
-                        else{
+                        else {
                             element.addClass('disabled');
                         }
                     });
                 }
             };
         });
-
-        RTE.baseToolbarConf.option('smileys', function(instance){
+        exports.RTE.baseToolbarConf.option('smileys', function (instance) {
             return {
                 template: '' +
-                '<i tooltip="editor.option.smileys"></i>' +
-                '<lightbox show="display.pickSmiley" on-close="display.pickSmiley = false;">' +
-                '<h2>Insérer un smiley</h2>' +
-                '<div class="row smileys">' +
-                '<img ng-repeat="smiley in smileys" class="smiley" ng-click="addSmiley(smiley)" skin-src="/img/smileys/[[smiley]].png" />' +
-                '</div>' +
-                '</lightbox>',
-                link: function(scope, element, attributes){
+                    '<i tooltip="editor.option.smileys"></i>' +
+                    '<lightbox show="display.pickSmiley" on-close="display.pickSmiley = false;">' +
+                    '<h2>Insérer un smiley</h2>' +
+                    '<div class="row smileys">' +
+                    '<img ng-repeat="smiley in smileys" class="smiley" ng-click="addSmiley(smiley)" skin-src="/img/smileys/[[smiley]].png" />' +
+                    '</div>' +
+                    '</lightbox>',
+                link: function (scope, element, attributes) {
                     scope.display = {};
-                    scope.smileys = [ "happy", "proud", "dreamy", "love", "tired", "angry", "worried", "sick", "joker", "sad" ];
+                    scope.smileys = ["happy", "proud", "dreamy", "love", "tired", "angry", "worried", "sick", "joker", "sad"];
                     scope.addSmiley = function (smiley) {
                         //do not replace with i, as i is used by other websites for italic and
                         //is often copy-pasted in the editor
-                        var content = instance.compile(
-                            '<img skin-src="/img/smileys/' + smiley + '.png" class="smiley" />'
-                        )(scope.$parent);
+                        var content = instance.compile('<img skin-src="/img/smileys/' + smiley + '.png" class="smiley" />')(scope.$parent);
                         instance.selection.replaceHTMLInline(content);
                         scope.display.pickSmiley = false;
-                    }
-
-                    element.children('i').on('click', function(){
+                    };
+                    element.children('i').on('click', function () {
                         scope.display.pickSmiley = true;
                     });
                 }
             };
         });
-
-        RTE.baseToolbarConf.option('table', function(instance){
+        exports.RTE.baseToolbarConf.option('table', function (instance) {
             return {
                 template: '' +
-                '<popover mouse-event="click" on-close="resetScroll()">' +
-                '<i popover-opener opening-event="click" tooltip="editor.option.table"></i>' +
-                '<popover-content>' +
-                '<div class="draw-table"></div>' +
-                '</popover-content>' +
-                '</popover>',
-                link: function(scope, element, attributes){
+                    '<popover mouse-event="click" on-close="resetScroll()">' +
+                    '<i popover-opener opening-event="click" tooltip="editor.option.table"></i>' +
+                    '<popover-content>' +
+                    '<div class="draw-table"></div>' +
+                    '</popover-content>' +
+                    '</popover>',
+                link: function (scope, element, attributes) {
                     var nbRows = 12;
                     var nbCells = 12;
                     var drawer = element.find('.draw-table');
-                    for(var i = 0; i < nbRows; i++){
-                        var line = $('<div class="row"></div>');
+                    for (var i = 0; i < nbRows; i++) {
+                        var line = jquery_1.$('<div class="row"></div>');
                         drawer.append(line);
-                        for(var j = 0; j < nbCells; j++){
+                        for (var j = 0; j < nbCells; j++) {
                             line.append('<div class="one cell"></div>');
                         }
                     }
-
-                    scope.resetScroll = function(){
+                    scope.resetScroll = function () {
                         element.parents().css({ overflow: '' });
                         element.parents('editor-toolbar').each(function (index, item) {
-                            $(item).css({ 'margin-top': '', 'min-height': '', height: '' })
+                            jquery_1.$(item).css({ 'margin-top': '', 'min-height': '', height: '' });
                         });
                     };
-
-                    ui.extendSelector.touchEvents('[contenteditable] td');
-
-                    element.find('i').on('click', function(){
+                    ui_1.ui.extendSelector.touchEvents('[contenteditable] td');
+                    element.find('i').on('click', function () {
                         if (element.find('popover-content').hasClass('hidden')) {
                             setTimeout(function () {
-                                element.parents('editor-toolbar').each(function(index, item) {
-                                    $(item).css({
+                                element.parents('editor-toolbar').each(function (index, item) {
+                                    jquery_1.$(item).css({
                                         'margin-top': '-' + item.scrollTop + 'px',
                                         'min-height': '0',
                                         'height': 'auto'
-                                    })
+                                    });
                                 });
                                 element.parents().css({
-                                        overflow: 'visible'
+                                    overflow: 'visible'
                                 });
                             }, 0);
                         }
                         else {
                             element.parents().css({ overflow: '' });
                             element.parents('editor-toolbar').each(function (index, item) {
-                                $(item).css({ 'margin-top': '', 'min-height': '', height: '' })
+                                jquery_1.$(item).css({ 'margin-top': '', 'min-height': '', height: '' });
                             });
                         }
-                    })
-
-                    drawer.find('.cell').on('mouseover', function(){
-                        var line = $(this).parent();
-                        for(var i = 0; i <= line.index(); i++){
-                            var row = $(drawer.find('.row')[i]);
-                            for(var j = 0; j <= $(this).index(); j++){
-                                var cell = $(row.find('.cell')[j]);
+                    });
+                    drawer.find('.cell').on('mouseover', function () {
+                        var line = jquery_1.$(this).parent();
+                        for (var i = 0; i <= line.index(); i++) {
+                            var row = jquery_1.$(drawer.find('.row')[i]);
+                            for (var j = 0; j <= jquery_1.$(this).index(); j++) {
+                                var cell = jquery_1.$(row.find('.cell')[j]);
                                 cell.addClass('match');
                             }
                         }
                     });
-
-                    drawer.find('.cell').on('mouseout', function(){
+                    drawer.find('.cell').on('mouseout', function () {
                         drawer.find('.cell').removeClass('match');
                     });
-
-                    drawer.find('.cell').on('click', function(){
+                    drawer.find('.cell').on('click', function () {
                         var table = document.createElement('table');
-                        var line = $(this).parent();
-                        for(var i = 0; i <= line.index(); i++){
-                            var row = $('<tr></tr>');
-                            $(table).append(row);
-                            for(var j = 0; j <= $(this).index(); j++){
-                                var cell = $('<td></td>');
-                                cell.html('<br />')
+                        var line = jquery_1.$(this).parent();
+                        for (var i = 0; i <= line.index(); i++) {
+                            var row = jquery_1.$('<tr></tr>');
+                            jquery_1.$(table).append(row);
+                            for (var j = 0; j <= jquery_1.$(this).index(); j++) {
+                                var cell = jquery_1.$('<td></td>');
+                                cell.html('<br />');
                                 row.append(cell);
                             }
                         }
-
                         instance.selection.replaceHTML('<div>' + table.outerHTML + '</div>');
                         instance.trigger('contentupdated');
-                        
                     });
-
                     instance.bindContextualMenu(scope, 'td', [
                         {
                             label: 'editor.add.row',
-                            action: function(e){
-                                var newRow = $($(e.target).parent()[0].outerHTML);
+                            action: function (e) {
+                                var newRow = jquery_1.$(jquery_1.$(e.target).parent()[0].outerHTML);
                                 newRow.find('td').html('<br />');
-                                $(e.target).parent().after(newRow);
+                                jquery_1.$(e.target).parent().after(newRow);
                             }
-
                         },
                         {
                             label: 'editor.add.column',
-                            action: function(e){
-                                var colIndex = $(e.target).index();
-                                $(e.target).parents('table').find('tr').each(function(index, row){
-                                    $(row).children('td').eq(colIndex).after('<td><br /></td>')
+                            action: function (e) {
+                                var colIndex = jquery_1.$(e.target).index();
+                                jquery_1.$(e.target).parents('table').find('tr').each(function (index, row) {
+                                    jquery_1.$(row).children('td').eq(colIndex).after('<td><br /></td>');
                                 });
                             }
                         },
                         {
                             label: 'editor.remove.row',
-                            action: function(e){
-                                $(e.target).parent().remove();
+                            action: function (e) {
+                                jquery_1.$(e.target).parent().remove();
                             }
                         },
                         {
                             label: 'editor.remove.column',
-                            action: function(e){
-                                var colIndex = $(e.target).index();
-                                $(e.target).parents('table').find('tr').each(function(index, row){
-                                    $(row).children('td').eq(colIndex).remove();
+                            action: function (e) {
+                                var colIndex = jquery_1.$(e.target).index();
+                                jquery_1.$(e.target).parents('table').find('tr').each(function (index, row) {
+                                    jquery_1.$(row).children('td').eq(colIndex).remove();
                                 });
                             }
                         }
                     ]);
                 }
-            }
+            };
         });
-
-        RTE.baseToolbarConf.option('templates', function(instance){
+        exports.RTE.baseToolbarConf.option('templates', function (instance) {
             return {
                 template: '<i tooltip="editor.option.templates"></i>' +
-                '<lightbox show="display.pickTemplate" on-close="display.pickTemplate = false;">' +
-                '<h2><i18n>editor.option.templates</i18n></h2>' +
-                '<ul class="thought-out-actions">' +
-                '<li ng-repeat="template in templates" ng-click="applyTemplate(template)">' +
+                    '<lightbox show="display.pickTemplate" on-close="display.pickTemplate = false;">' +
+                    '<h2><i18n>editor.option.templates</i18n></h2>' +
+                    '<ul class="thought-out-actions">' +
+                    '<li ng-repeat="template in templates" ng-click="applyTemplate(template)">' +
                     '<img ng-src="[[template.image]]" class="cell" />' +
                     '<div class="cell vertical-spacing horizontal-spacing" translate content="[[template.title]]"></div>' +
-                '</li>' +
-                '</ul>' +
-                '</lightbox>',
+                    '</li>' +
+                    '</ul>' +
+                    '</lightbox>',
                 link: function (scope, element, attributes) {
-                    var skinPath = skin.basePath + '../entcore-css-lib/editor-resources/img/';
+                    var skinPath = skin_1.skin.basePath + '../entcore-css-lib/editor-resources/img/';
                     scope.templates = [
                         {
                             title: 'editor.templates.emptypage.title',
@@ -2837,186 +2521,179 @@ export let RTE = {
                         {
                             title: 'editor.templates.twocols.title',
                             image: skinPath + 'templates-preview-twocols.svg',
-                            html:
-                            '<div class="row">' +
-                            '<div class="six cell column">' +
+                            html: '<div class="row">' +
+                                '<div class="six cell column">' +
                                 '<article>' +
-                                    '<h2>' +
-                                    lang.translate('editor.templates.coltitle') +
-                                    '</h2>' +
-                                    '<p>' +
-                                    lang.translate('editor.templates.colfiller') +
-                                    '</p>' +
+                                '<h2>' +
+                                idiom_1.idiom.translate('editor.templates.coltitle') +
+                                '</h2>' +
+                                '<p>' +
+                                idiom_1.idiom.translate('editor.templates.colfiller') +
+                                '</p>' +
                                 '</article>' +
-                            '</div>' +
-                            '<div class="six cell column">' +
+                                '</div>' +
+                                '<div class="six cell column">' +
                                 '<article>' +
-                                    '<h2>' +
-                                    lang.translate('editor.templates.coltitle') +
-                                    '</h2>' +
-                                    '<p>' +
-                                    lang.translate('editor.templates.colfiller') +
-                                    '</p>' +
+                                '<h2>' +
+                                idiom_1.idiom.translate('editor.templates.coltitle') +
+                                '</h2>' +
+                                '<p>' +
+                                idiom_1.idiom.translate('editor.templates.colfiller') +
+                                '</p>' +
                                 '</article>' +
-                            '</div>' +
-                            '</div>'
+                                '</div>' +
+                                '</div>'
                         },
                         {
                             title: 'editor.templates.threecols.title',
                             image: skinPath + 'templates-preview-threecols.svg',
-                            html:
-                            '<div class="row">' +
-                            '<div class="four cell column">' +
+                            html: '<div class="row">' +
+                                '<div class="four cell column">' +
                                 '<article>' +
-                                    '<h2>' +
-                                    lang.translate('editor.templates.coltitle') +
-                                    '</h2>' +
-                                    '<p>' +
-                                    lang.translate('editor.templates.colfiller') +
-                                    '</p>' +
+                                '<h2>' +
+                                idiom_1.idiom.translate('editor.templates.coltitle') +
+                                '</h2>' +
+                                '<p>' +
+                                idiom_1.idiom.translate('editor.templates.colfiller') +
+                                '</p>' +
                                 '</article>' +
-                            '</div>' +
-                            '<div class="four cell column">' +
+                                '</div>' +
+                                '<div class="four cell column">' +
                                 '<article>' +
-                                    '<h2>' +
-                                    lang.translate('editor.templates.coltitle') +
-                                    '</h2>' +
-                                    '<p>' +
-                                    lang.translate('editor.templates.colfiller') +
-                                    '</p>' +
+                                '<h2>' +
+                                idiom_1.idiom.translate('editor.templates.coltitle') +
+                                '</h2>' +
+                                '<p>' +
+                                idiom_1.idiom.translate('editor.templates.colfiller') +
+                                '</p>' +
                                 '</article>' +
-                            '</div>' +
-                            '<div class="four cell column">' +
+                                '</div>' +
+                                '<div class="four cell column">' +
                                 '<article>' +
-                                    '<h2>' +
-                                    lang.translate('editor.templates.coltitle') +
-                                    '</h2>' +
-                                    '<p>' +
-                                    lang.translate('editor.templates.colfiller') +
-                                    '</p>' +
+                                '<h2>' +
+                                idiom_1.idiom.translate('editor.templates.coltitle') +
+                                '</h2>' +
+                                '<p>' +
+                                idiom_1.idiom.translate('editor.templates.colfiller') +
+                                '</p>' +
                                 '</article>' +
-                            '</div>' +
-                            '</div>'
+                                '</div>' +
+                                '</div>'
                         },
                         {
                             title: 'editor.templates.illustration.title',
                             image: skinPath + 'templates-preview-illustration.svg',
-                            html:
-                            '<div class="row">' +
+                            html: '<div class="row">' +
                                 '<div class="three cell column">' +
-                                    '<article>' +
-                                        '<img src="' + skinPath + 'image-default.svg" />' +
-                                    '</article>' +
-
+                                '<article>' +
+                                '<img src="' + skinPath + 'image-default.svg" />' +
+                                '</article>' +
                                 '</div>' +
                                 '<div class="nine cell column">' +
-                                    '<article>' +
-                                        '<h2>' +
-                                            lang.translate('editor.templates.illustration.titlefiller') +
-                                        '</h2>' +
-                                        '<p>' +
-                                        lang.translate('editor.templates.illustration.textfiller') +
-                                        '</p>' +
-                                    '</article>' +
+                                '<article>' +
+                                '<h2>' +
+                                idiom_1.idiom.translate('editor.templates.illustration.titlefiller') +
+                                '</h2>' +
+                                '<p>' +
+                                idiom_1.idiom.translate('editor.templates.illustration.textfiller') +
+                                '</p>' +
+                                '</article>' +
                                 '</div>' +
-                            '</div>'
+                                '</div>'
                         },
                         {
                             title: 'editor.templates.dominos.title',
                             image: skinPath + 'templates-preview-dominos.svg',
-                            html:
-                            '<div class="dominos">' +
+                            html: '<div class="dominos">' +
                                 '<div class="item">' +
-                                    '<section class="domino pink">' +
-                                    '<div class="top">' +
-                                        '<img src="' + skinPath + 'image-default.svg" class="fixed twelve cell" />' +
-                                    '</div>' +
-                                    '<div class="bottom">' +
-                                        '<div class="content">' +
-                                            lang.translate('editor.templates.dominos.textfiller') +
-                                        '</div>' +
-                                    '</div>' +
-                                    '</section>' +
+                                '<section class="domino pink">' +
+                                '<div class="top">' +
+                                '<img src="' + skinPath + 'image-default.svg" class="fixed twelve cell" />' +
+                                '</div>' +
+                                '<div class="bottom">' +
+                                '<div class="content">' +
+                                idiom_1.idiom.translate('editor.templates.dominos.textfiller') +
+                                '</div>' +
+                                '</div>' +
+                                '</section>' +
                                 '</div>' +
                                 '<div class="item">' +
-                                    '<section class="domino blue">' +
-                                        '<div class="top">' +
-                                            '<img src="' + skinPath + 'image-default.svg" class="fixed twelve cell" />' +
-                                        '</div>' +
-                                        '<div class="bottom">' +
-                                            '<div class="content">' +
-                                                lang.translate('editor.templates.dominos.textfiller') +
-                                            '</div>' +
-                                        '</div>' +
-                                    '</section>' +
+                                '<section class="domino blue">' +
+                                '<div class="top">' +
+                                '<img src="' + skinPath + 'image-default.svg" class="fixed twelve cell" />' +
+                                '</div>' +
+                                '<div class="bottom">' +
+                                '<div class="content">' +
+                                idiom_1.idiom.translate('editor.templates.dominos.textfiller') +
+                                '</div>' +
+                                '</div>' +
+                                '</section>' +
                                 '</div>' +
                                 '<div class="item">' +
-                                    '<section class="domino orange">' +
-                                        '<div class="top">' +
-                                            '<img src="' + skinPath + 'image-default.svg" class="fixed twelve cell" />' +
-                                        '</div>' +
-                                            '<div class="bottom">' +
-                                            '<div class="content">' +
-                                                lang.translate('editor.templates.dominos.textfiller') +
-                                            '</div>' +
-                                        '</div>' +
-                                    '</section>' +
+                                '<section class="domino orange">' +
+                                '<div class="top">' +
+                                '<img src="' + skinPath + 'image-default.svg" class="fixed twelve cell" />' +
+                                '</div>' +
+                                '<div class="bottom">' +
+                                '<div class="content">' +
+                                idiom_1.idiom.translate('editor.templates.dominos.textfiller') +
+                                '</div>' +
+                                '</div>' +
+                                '</section>' +
                                 '</div>' +
                                 '<div class="item">' +
-                                    '<section class="domino purple">' +
-                                        '<div class="top">' +
-                                            '<img src="' + skinPath + 'image-default.svg" class="fixed twelve cell" />' +
-                                        '</div>' +
-                                        '<div class="bottom">' +
-                                            '<div class="content">' +
-                                                lang.translate('editor.templates.dominos.textfiller') +
-                                            '</div>' +
-                                        '</div>' +
-                                    '</section>' +
+                                '<section class="domino purple">' +
+                                '<div class="top">' +
+                                '<img src="' + skinPath + 'image-default.svg" class="fixed twelve cell" />' +
+                                '</div>' +
+                                '<div class="bottom">' +
+                                '<div class="content">' +
+                                idiom_1.idiom.translate('editor.templates.dominos.textfiller') +
+                                '</div>' +
+                                '</div>' +
+                                '</section>' +
                                 '</div>' +
                                 '<div class="item">' +
-                                    '<section class="domino green">' +
-                                        '<div class="top">' +
-                                            '<img src="' + skinPath + 'image-default.svg" class="fixed twelve cell" />' +
-                                        '</div>' +
-                                        '<div class="bottom">' +
-                                            '<div class="content">' +
-                                                lang.translate('editor.templates.dominos.textfiller') +
-                                            '</div>' +
-                                        '</div>' +
-                                    '</section>' +
+                                '<section class="domino green">' +
+                                '<div class="top">' +
+                                '<img src="' + skinPath + 'image-default.svg" class="fixed twelve cell" />' +
+                                '</div>' +
+                                '<div class="bottom">' +
+                                '<div class="content">' +
+                                idiom_1.idiom.translate('editor.templates.dominos.textfiller') +
+                                '</div>' +
+                                '</div>' +
+                                '</section>' +
                                 '</div>' +
                                 '<div class="item">' +
-                                    '<section class="domino white">' +
-                                        '<div class="top">' +
-                                            '<img src="' + skinPath + 'image-default.svg" class="fixed twelve cell" />' +
-                                        '</div>' +
-                                            '<div class="bottom">' +
-                                            '<div class="content">' +
-                                                lang.translate('editor.templates.dominos.textfiller') +
-                                            '</div>' +
-                                        '</div>' +
-                                    '</section>' +
+                                '<section class="domino white">' +
+                                '<div class="top">' +
+                                '<img src="' + skinPath + 'image-default.svg" class="fixed twelve cell" />' +
                                 '</div>' +
-                            '</div>'
+                                '<div class="bottom">' +
+                                '<div class="content">' +
+                                idiom_1.idiom.translate('editor.templates.dominos.textfiller') +
+                                '</div>' +
+                                '</div>' +
+                                '</section>' +
+                                '</div>' +
+                                '</div>'
                         }
                     ];
                     scope.display = {};
-                    scope.applyTemplate = function(template){
+                    scope.applyTemplate = function (template) {
                         scope.display.pickTemplate = false;
-                        instance.selection.replaceHTML(_.findWhere(scope.templates, { title: template.title}).html);
+                        instance.selection.replaceHTML(underscore_1._.findWhere(scope.templates, { title: template.title }).html);
                     };
-
-                    element.children('i').on('click', function(){
+                    element.children('i').on('click', function () {
                         scope.display.pickTemplate = true;
                         scope.$apply('display');
                     });
                 }
-            }
+            };
         });
-
         //Editor
-        module.directive('editor', function($parse, $compile) {
+        module.directive('editor', function ($parse, $compile) {
             return {
                 restrict: 'E',
                 template: '' +
@@ -3041,78 +2718,67 @@ export let RTE = {
                     if (navigator.userAgent.indexOf('Trident') !== -1 || navigator.userAgent.indexOf('Edge') !== -1) {
                         element.find('code').hide();
                     }
-                    if($('.prism-css').length === 0){
-                        $('body').append(
-                            $('<link />')
-                                .attr('rel', 'stylesheet')
-                                .attr('type', 'text/css')
-                                .attr('class', 'prism-css')
-                                .attr('href', '/infra/public/js/prism/prism.css')
-                        );
-
-                        http().get('/infra/public/js/prism/prism.js')
+                    if (jquery_1.$('.prism-css').length === 0) {
+                        jquery_1.$('body').append(jquery_1.$('<link />')
+                            .attr('rel', 'stylesheet')
+                            .attr('type', 'text/css')
+                            .attr('class', 'prism-css')
+                            .attr('href', '/infra/public/js/prism/prism.css'));
+                        http_1.http().get('/infra/public/js/prism/prism.js');
                     }
-
-                    element.find('.close-focus').on('click', function(){
+                    element.find('.close-focus').on('click', function () {
                         element.removeClass('focus');
                         element.parent().data('lock', false);
                         element.parents('grid-cell').data('lock', false);
                         element.trigger('editor-blur');
-                        $('body').css({ overflow: 'auto' });
+                        jquery_1.$('body').css({ overflow: 'auto' });
                     });
-
-                    element.find('.editor-toolbar-opener').on('click', function(e){
-                        if(!$(this).hasClass('active')){
-                            $(this).addClass('active');
+                    element.find('.editor-toolbar-opener').on('click', function (e) {
+                        if (!jquery_1.$(this).hasClass('active')) {
+                            jquery_1.$(this).addClass('active');
                             element.find('editor-toolbar').addClass('opened');
                         }
-                        else{
-                            $(this).removeClass('active')
+                        else {
+                            jquery_1.$(this).removeClass('active');
                             element.find('editor-toolbar').removeClass('opened');
                         }
                     });
-                    
-                    element.find('.editor-toolbar-opener').on('touchstart', function(e){
+                    element.find('.editor-toolbar-opener').on('touchstart', function (e) {
                         e.preventDefault();
-                        if(!$(this).hasClass('active')){
-                            $(this).addClass('active');
+                        if (!jquery_1.$(this).hasClass('active')) {
+                            jquery_1.$(this).addClass('active');
                             element.find('editor-toolbar').addClass('opened');
                         }
-                        else{
-                            $(this).removeClass('active')
+                        else {
+                            jquery_1.$(this).removeClass('active');
                             element.find('editor-toolbar').removeClass('opened');
                         }
-                        setTimeout(function(){
+                        setTimeout(function () {
                             var sel = window.getSelection();
                             sel.removeAllRanges();
                             sel.addRange(editorInstance.selection.range);
                         }, 100);
                     });
-                    
                     document.execCommand("enableObjectResizing", false, false);
                     document.execCommand("enableInlineTableEditing", null, false);
                     document.execCommand("insertBrOnReturn", false, true);
-
                     element.addClass('edit');
                     var editZone = element.find('[contenteditable=true]');
                     var htmlZone = element.children('textarea');
                     var highlightZone = element.children('code');
                     var toolbarElement = element.children('editor-toolbar');
                     document.execCommand("styleWithCSS", false, true);
-
-                    if(attributes.inline !== undefined){
+                    if (attributes.inline !== undefined) {
                         element.children('editor-toolbar').addClass('inline');
                     }
-
-                    var toolbarConf = RTE.baseToolbarConf;
-                    if(attributes.toolbarConf){
+                    var toolbarConf = exports.RTE.baseToolbarConf;
+                    if (attributes.toolbarConf) {
                         toolbarConf = scope.$eval(attributes.toolbarConf);
                     }
-                    
                     var editorInstance;
                     var instance = $parse(attributes.instance);
-                    if(!instance(scope)){
-                        editorInstance = new RTE.Instance({
+                    if (!instance(scope)) {
+                        editorInstance = new exports.RTE.Instance({
                             toolbarConfiguration: toolbarConf,
                             element: element,
                             scope: scope,
@@ -3121,72 +2787,60 @@ export let RTE = {
                             visibility: scope.$parent.$eval(element.attr('visibility'))
                         });
                     }
-                    else{
+                    else {
                         editorInstance = instance;
                     }
-
                     editorInstance.addState('');
                     var ngModel = $parse(attributes.ngModel);
-                    if(!ngModel(scope)){
+                    if (!ngModel(scope)) {
                         ngModel.assign(scope, '');
                     }
-
-                    scope.$watch(
-                        function () {
-                            return ngModel(scope);
-                        },
-                        function (newValue) {
-                            $(newValue).find('.math-tex').each(function (index, item) {
-                                var mathItem = $('<mathjax></mathjax>');
-                                mathItem.attr('formula', item.textContent.replace('\\(', '$$$$').replace('\\)', '$$$$').replace('x = ', ''));
-                                $(item).removeClass('math-tex');
-                                $(item).text('');
-                                $(item).append(mathItem);
+                    scope.$watch(function () {
+                        return ngModel(scope);
+                    }, function (newValue) {
+                        jquery_1.$(newValue).find('.math-tex').each(function (index, item) {
+                            var mathItem = jquery_1.$('<mathjax></mathjax>');
+                            mathItem.attr('formula', item.textContent.replace('\\(', '$$$$').replace('\\)', '$$$$').replace('x = ', ''));
+                            jquery_1.$(item).removeClass('math-tex');
+                            jquery_1.$(item).text('');
+                            jquery_1.$(item).append(mathItem);
+                        });
+                        if (newValue !== editZone.html() &&
+                            !editZone.is(':focus') &&
+                            jquery_1.$('editor-toolbar').find(':focus').length === 0) {
+                            editZone.html($compile(ngModel(scope))(scope));
+                            editZone.find('i18n').each(function (index, item) {
+                                var parent = jquery_1.$(item).parent()[0];
+                                var newEl = jquery_1.$('<span></span>').html(jquery_1.$(item).html());
+                                parent.insertBefore(newEl[0], item);
+                                item.remove();
                             });
-
-                            if (
-                                newValue !== editZone.html() &&
-                                !editZone.is(':focus') &&
-                                $('editor-toolbar').find(':focus').length === 0
-                            ) {
-                                editZone.html($compile(ngModel(scope))(scope));
-                                editZone.find('i18n').each(function(index, item){
-                                    var parent = $(item).parent()[0];
-                                    var newEl = $('<span></span>').html($(item).html());
-                                    parent.insertBefore(newEl[0], item);
-                                    item.remove();
-                                });
+                        }
+                        if (newValue !== htmlZone.val() && !htmlZone.is(':focus')) {
+                            if (window.html_beautify) {
+                                htmlZone.val(window.html_beautify(newValue));
+                                highlightZone.text(window.html_beautify(newValue));
+                                Prism.highlightAll();
                             }
-                            if(newValue !== htmlZone.val() && !htmlZone.is(':focus')){
-                                if(window.html_beautify){
-                                    htmlZone.val(window.html_beautify(newValue));
-                                    highlightZone.text(window.html_beautify(newValue));
-                                    Prism.highlightAll();
-                                }
-                                //beautifier is not loaded on mobile
-                                else{
-                                    htmlZone.val(newValue);
-                                }
+                            else {
+                                htmlZone.val(newValue);
                             }
                         }
-                    );
-
-                    $(window).on('resize', function () {
+                    });
+                    jquery_1.$(window).on('resize', function () {
                         highlightZone.css({ top: (element.find('editor-toolbar').height() + 1) + 'px' });
                         toolbarElement.css({ 'position': 'relative' });
                     });
-
                     var previousScroll = 0;
                     function sticky() {
-                        if(element.parents('.editor-media').length > 0){
+                        if (element.parents('.editor-media').length > 0) {
                             return;
                         }
-                        
-                        if(toolbarElement.css('position') !== 'absolute'){
+                        if (toolbarElement.css('position') !== 'absolute') {
                             toolbarElement.css({ 'position': 'absolute', 'top': '0px' });
                             element.css({ 'padding-top': toolbarElement.height() + 1 + 'px' });
                         }
-                        var topDistance = element.offset().top - $('.height-marker').height();
+                        var topDistance = element.offset().top - jquery_1.$('.height-marker').height();
                         if (topDistance < (window.scrollY || window.pageYOffset)) {
                             topDistance = (window.scrollY || window.pageYOffset);
                         }
@@ -3195,42 +2849,36 @@ export let RTE = {
                         }
                         if (attributes.inline !== undefined) {
                             toolbarElement.offset({
-                                top: topDistance + $('.height-marker').height()
+                                top: topDistance + jquery_1.$('.height-marker').height()
                             });
                             element.children('popover').offset({
-                                top: topDistance + $('.height-marker').height() + 10 - parseInt(element.css('margin-top'))
+                                top: topDistance + jquery_1.$('.height-marker').height() + 10 - parseInt(element.css('margin-top'))
                             });
                         }
                         else {
                             toolbarElement.offset({
-                                top: topDistance + $('.height-marker').height()
+                                top: topDistance + jquery_1.$('.height-marker').height()
                             });
                             element.children('popover').offset({
-                                top: topDistance + $('.height-marker').height() + 10
+                                top: topDistance + jquery_1.$('.height-marker').height() + 10
                             });
                         }
-                        
                         setTimeout(function () {
                             highlightZone.offset({ top: htmlZone.offset().top });
                         }, 100);
-
                         previousScroll = (window.scrollY || window.pageYOffset);
-
                         var placeEditorToolbar = requestAnimationFrame(sticky);
                     }
-
-                    if(ui.breakpoints.tablette <= $(window).width()){
+                    if (ui_1.ui.breakpoints.tablette <= jquery_1.$(window).width()) {
                         var placeEditorToolbar = requestAnimationFrame(sticky);
                     }
-
-                    element.children('popover').find('li:first-child').on('click', function(){
+                    element.children('popover').find('li:first-child').on('click', function () {
                         element.removeClass('html');
                         element.removeClass('both');
                         element.addClass('edit');
                         editorInstance.trigger('contentupdated');
                     });
-
-                    element.children('popover').find('li:nth-child(2)').on('click', function(){
+                    element.children('popover').find('li:nth-child(2)').on('click', function () {
                         element.removeClass('edit');
                         element.removeClass('both');
                         element.addClass('html');
@@ -3239,18 +2887,17 @@ export let RTE = {
                         setTimeout(function () {
                             editorInstance.trigger('contentupdated');
                         }, 300);
-                        if(window.html_beautify){
+                        if (window.html_beautify) {
                             return;
                         }
-                        http().get('/infra/public/js/beautify-html.js').done(function(content){
+                        http_1.http().get('/infra/public/js/beautify-html.js').done(function (content) {
                             eval(content);
                             htmlZone.val(window.html_beautify(ngModel(scope)));
                             highlightZone.text(window.html_beautify(ngModel(scope)));
                             Prism.highlightAll();
                         });
                     });
-
-                    element.children('popover').find('li:nth-child(3)').on('click', function(){
+                    element.children('popover').find('li:nth-child(3)').on('click', function () {
                         element.removeClass('edit');
                         element.removeClass('html');
                         element.addClass('both');
@@ -3259,152 +2906,131 @@ export let RTE = {
                         setTimeout(function () {
                             editorInstance.trigger('contentupdated');
                         }, 300);
-                        if(window.html_beautify){
+                        if (window.html_beautify) {
                             return;
                         }
-                        http().get('/infra/public/js/beautify-html.js').done(function(content){
+                        http_1.http().get('/infra/public/js/beautify-html.js').done(function (content) {
                             eval(content);
                             htmlZone.val(window.html_beautify(ngModel(scope)));
                             highlightZone.text(window.html_beautify(ngModel(scope)));
                             Prism.highlightAll();
                         });
                     });
-
                     function b64toBlob(b64Data, contentType, sliceSize) {
                         contentType = contentType || '';
                         sliceSize = sliceSize || 512;
-
                         var byteCharacters = atob(b64Data);
                         var byteArrays = [];
-
                         for (var offset = 0; offset < byteCharacters.length; offset += sliceSize) {
                             var slice = byteCharacters.slice(offset, offset + sliceSize);
-
                             var byteNumbers = new Array(slice.length);
                             for (var i = 0; i < slice.length; i++) {
-                            byteNumbers[i] = slice.charCodeAt(i);
+                                byteNumbers[i] = slice.charCodeAt(i);
                             }
-
                             var byteArray = new Uint8Array(byteNumbers);
-
                             byteArrays.push(byteArray);
                         }
-
                         var blob = new Blob(byteArrays, { type: contentType });
                         blob.name = "image";
                         return blob;
                     }
-
-                    element.find('.option i').click(function(){
-                        if(!editZone.is(':focus')){
+                    element.find('.option i').click(function () {
+                        if (!editZone.is(':focus')) {
                             editZone.focus();
                         }
-
-                        scope.$apply(function(){
+                        scope.$apply(function () {
                             scope.$eval(attributes.ngChange);
-                            let content = editZone.html();
+                            var content = editZone.html();
                             ngModel.assign(scope, content);
                         });
                     });
-
-                    editorInstance.on('change', function(){
+                    editorInstance.on('change', function () {
                         editorInstance.trigger('contentupdated');
-                        setTimeout(function(){
-                            
-                            if(attributes.onChange){
+                        setTimeout(function () {
+                            if (attributes.onChange) {
                                 scope.$eval(attributes.onChange);
                             }
-                            
                             scope.$apply();
                         }, 10);
                     });
-
                     editorInstance.on('contentupdated', function () {
-                        if(parseInt(htmlZone.css('min-height')) < editZone.height()){
+                        if (parseInt(htmlZone.css('min-height')) < editZone.height()) {
                             htmlZone.css('min-height', editZone.height() + 'px');
                         }
-                        ui.extendElement.resizable(element.find('[contenteditable]').find('img, table, .column'), {
+                        ui_1.ui.extendElement.resizable(element.find('[contenteditable]').find('img, table, .column'), {
                             moveWithResize: false,
                             lock: {
                                 left: true,
                                 top: true
                             },
-                            mouseUp: function() {
+                            mouseUp: function () {
                                 editorInstance.trigger('contentupdated');
                                 editorInstance.addState(editorInstance.editZone.html());
                             }
                         });
                         htmlZone.css({ 'min-height': '250px', height: 0 });
                         var newHeight = htmlZone[0].scrollHeight + 2;
-                        if(newHeight > htmlZone.height()){
+                        if (newHeight > htmlZone.height()) {
                             htmlZone.height(newHeight);
                         }
-
                         if (htmlZone[0].scrollHeight > parseInt(htmlZone.css('min-height')) && !element.hasClass('edit')) {
                             editZone.css('min-height', htmlZone[0].scrollHeight + 2 + 'px');
                         }
-
-                        if(editorInstance.selection.changed()){
+                        if (editorInstance.selection.changed()) {
                             editorInstance.trigger('selectionchange', {
                                 selection: editorInstance.selection
                             });
                         }
-
-                        editZone.find('img').each(function(index, item){
-                            if($(item).attr('src').startsWith('data:')){
-                                var split = $(item).attr('src').split('data:')[1].split(',');
-                                var blob = (b64toBlob as any)(split[1], split[0].split(';')[0]);
+                        editZone.find('img').each(function (index, item) {
+                            if (jquery_1.$(item).attr('src').startsWith('data:')) {
+                                var split = jquery_1.$(item).attr('src').split('data:')[1].split(',');
+                                var blob = b64toBlob(split[1], split[0].split(';')[0]);
                                 blob.name = 'image';
-                                $(item).attr('src', 'http://loading');
-                                workspace.Document.prototype.upload(blob, '', function(file){
-                                    $(item).attr('src', '/workspace/document/' + file._id);
-                                    notify.info('editor.b64.uploaded');
+                                jquery_1.$(item).attr('src', 'http://loading');
+                                workspace_1.workspace.Document.prototype.upload(blob, '', function (file) {
+                                    jquery_1.$(item).attr('src', '/workspace/document/' + file._id);
+                                    notify_1.notify.info('editor.b64.uploaded');
                                     editorInstance.trigger('contentupdated');
                                 });
                             }
                         });
-
                         if (!scope.$$phase) {
                             scope.$apply(function () {
                                 scope.$eval(attributes.ngChange);
-                                let content = editZone.html();
-                                $(content).find('mathjax').html('');
+                                var content = editZone.html();
+                                jquery_1.$(content).find('mathjax').html('');
                                 ngModel.assign(scope, content);
                             });
                         }
                         else {
                             scope.$eval(attributes.ngChange);
-                            let content = editZone.html();
-                            $(content).find('mathjax').html('');
+                            var content = editZone.html();
+                            jquery_1.$(content).find('mathjax').html('');
                             ngModel.assign(scope, content);
                         }
                     });
-
                     var placeToolbar = function () {
-                        if (attributes.inline !== undefined && $(window).width() > ui.breakpoints.tablette) {
+                        if (attributes.inline !== undefined && jquery_1.$(window).width() > ui_1.ui.breakpoints.tablette) {
                             element.children('editor-toolbar').css({
                                 left: 0
                             });
                             element.css({ 'padding-top': toolbarElement.height() + 1 + 'px' });
                         }
-                    }
-
-                    element.parents().on('resizing', placeToolbar)
-                    element.on('click', function(e){
+                    };
+                    element.parents().on('resizing', placeToolbar);
+                    element.on('click', function (e) {
                         placeToolbar();
-
-                        if(e.target === element.find('.close-focus')[0] || element.hasClass('focus')){
+                        if (e.target === element.find('.close-focus')[0] || element.hasClass('focus')) {
                             return;
                         }
-
                         element.trigger('editor-focus');
                         element.addClass('focus');
                         element.parent().data('lock', true);
                         element.parents('grid-cell').data('lock', true);
-                        if ($(window).width() < ui.breakpoints.tablette) {
-                            $('body').css({ overflow: 'hidden' });
-                            window.scrollTo(0,0);
-                            setTimeout(function(){
+                        if (jquery_1.$(window).width() < ui_1.ui.breakpoints.tablette) {
+                            jquery_1.$('body').css({ overflow: 'hidden' });
+                            window.scrollTo(0, 0);
+                            setTimeout(function () {
                                 var sel = document.getSelection();
                                 var r = document.createRange();
                                 r.setStart(editZone[0].firstChild, 0);
@@ -3413,26 +3039,23 @@ export let RTE = {
                             }, 600);
                         }
                     });
-
-                    $('body').on('mousedown', function(e){
-                        if(e.target !== element.find('.editor-toolbar-opener')[0] && element.find('editor-toolbar, .editor-toolbar-opener').find(e.target).length === 0){
+                    jquery_1.$('body').on('mousedown', function (e) {
+                        if (e.target !== element.find('.editor-toolbar-opener')[0] && element.find('editor-toolbar, .editor-toolbar-opener').find(e.target).length === 0) {
                             element.find('editor-toolbar').removeClass('opened');
                             element.find('.editor-toolbar-opener').removeClass('active');
                         }
-
-                        if (element.find(e.target).length === 0 && !$(e.target).hasClass('sp-choose') && element.hasClass('focus')) {
+                        if (element.find(e.target).length === 0 && !jquery_1.$(e.target).hasClass('sp-choose') && element.hasClass('focus')) {
                             element.children('editor-toolbar').removeClass('show');
                             element.removeClass('focus');
-                            let content = editZone.html();
+                            var content = editZone.html();
                             ngModel.assign(scope, content);
                             element.trigger('editor-blur');
                             editorInstance.trigger('change');
-                            $('body').css({ overflow: 'auto' });
+                            jquery_1.$('body').css({ overflow: 'auto' });
                             element.parent().data('lock', false);
                             element.parents('grid-cell').data('lock', false);
                             element.find('code').attr('style', '');
-
-                            if(attributes.inline !== undefined){
+                            if (attributes.inline !== undefined) {
                                 element.css({
                                     'margin-top': 0,
                                     'padding-top': 0
@@ -3441,45 +3064,40 @@ export let RTE = {
                             }
                         }
                     });
-
-                    $('editor-toolbar').on('mousedown', function(e){
+                    jquery_1.$('editor-toolbar').on('mousedown', function (e) {
                         e.preventDefault();
                     });
-
                     function wrapFirstLine() {
                         if (editZone.contents()[0] && editZone.contents()[0].nodeType === 3) {
-                            var div = $('<div></div>');
+                            var div = jquery_1.$('<div></div>');
                             div.text(editZone.contents()[0].textContent);
-                            $(editZone.contents()[0]).remove();
+                            jquery_1.$(editZone.contents()[0]).remove();
                             editZone.prepend(div);
                             editorInstance.selection.moveCaret(div[0], div.text().length);
                             editorInstance.trigger('contentupdated');
                         }
                     }
-
-                    function editingDone(){
+                    function editingDone() {
                         editorInstance.addState(editZone.html());
                     }
-
                     var typingTimer;
                     var editingTimer;
-
                     editZone.on('paste', function () {
-                        setTimeout(function(){
+                        setTimeout(function () {
                             editorInstance.editZone.find('[resizable]').removeAttr('resizable').css('cursor', 'initial');
                             editorInstance.editZone.find('[bind-html]').removeAttr('bind-html');
                             editorInstance.editZone.find('[ng-include]').removeAttr('ng-include');
                             editorInstance.editZone.find('[ng-repeat]').removeAttr('ng-repeat');
                             editorInstance.editZone.find('[data-ng-repeat]').removeAttr('data-ng-repeat');
                             editorInstance.editZone.find('[ng-transclude]').removeAttr('ng-transclude');
-                            if(editorInstance.editZone.find('portal').length){
+                            if (editorInstance.editZone.find('portal').length) {
                                 var portal = editorInstance.editZone.find('portal');
-                                editorInstance.editZone[0].innerHTML = $('<div>' + (portal.find('[bind-html]').html() || '') + '</div>')
+                                editorInstance.editZone[0].innerHTML = jquery_1.$('<div>' + (portal.find('[bind-html]').html() || '') + '</div>');
                             }
                             editorInstance.addState(editZone.html());
-                            if(editorInstance.editZone[0].childNodes.length > editorInstance.editZone[0].children.length){
-                                var wrapper = $('<div></div>');
-                                while(editorInstance.editZone[0].childNodes.length){
+                            if (editorInstance.editZone[0].childNodes.length > editorInstance.editZone[0].children.length) {
+                                var wrapper = jquery_1.$('<div></div>');
+                                while (editorInstance.editZone[0].childNodes.length) {
                                     wrapper.append(editorInstance.editZone[0].childNodes[0]);
                                 }
                                 editorInstance.editZone.append(wrapper);
@@ -3488,16 +3106,14 @@ export let RTE = {
                             editorInstance.scope.$apply();
                         }, 100);
                     });
-
                     editZone.on('keydown', function (e) {
                         clearTimeout(typingTimer);
                         clearTimeout(editingTimer);
                         typingTimer = setTimeout(wrapFirstLine, 10);
-                        
                         var sel = window.getSelection();
                         if (sel.rangeCount > 0) {
                             var range = sel.getRangeAt(0);
-                            if (range.startContainer.nodeType !== 1 && e.which > 64 && e.which < 91 && range.startContainer.parentNode !== null) {     
+                            if (range.startContainer.nodeType !== 1 && e.which > 64 && e.which < 91 && range.startContainer.parentNode !== null) {
                                 var currentTextNode = range.startContainer;
                                 var initialOffset = range.startOffset;
                                 if (initialOffset === currentTextNode.textContent.length) {
@@ -3505,62 +3121,51 @@ export let RTE = {
                                 }
                                 if (range.startContainer.parentNode.innerHTML === '&#8203;' && range.startOffset === 1) {
                                     var node = range.startContainer.parentNode;
-                                    
                                     setTimeout(function () {
                                         node.innerHTML = node.innerHTML.substring(7);
                                         setTimeout(function () {
                                             var range = document.createRange();
                                             if (initialOffset === -1) {
-                                                initialOffset = (node.firstChild || node).textContent.length
+                                                initialOffset = (node.firstChild || node).textContent.length;
                                             }
                                             range.setStart((node.firstChild || node), initialOffset);
                                             sel.removeAllRanges();
                                             sel.addRange(range);
                                         }, 1);
                                     }, 1);
-                                    
                                 }
                             }
                         }
-                        
-
                         if (!e.ctrlKey) {
                             editingTimer = setTimeout(editingDone, 500);
                         }
-
                         if (e.keyCode === 13) {
                             editorInstance.addState(editZone.html());
-                            
                             var parentContainer = range.startContainer;
-
-                            if (
-                                    (parentContainer.nodeType === 1 && parentContainer.nodeName === 'LI') ||
-                                    (parentContainer.parentNode.nodeType === 1 && parentContainer.parentNode.nodeName === 'LI') ||
-                                    (parentContainer.nodeType === 1 && parentContainer.nodeName === 'TD') ||
-                                    (parentContainer.parentNode.nodeType === 1 && parentContainer.parentNode.nodeName === 'TD')
-                                ) {
+                            if ((parentContainer.nodeType === 1 && parentContainer.nodeName === 'LI') ||
+                                (parentContainer.parentNode.nodeType === 1 && parentContainer.parentNode.nodeName === 'LI') ||
+                                (parentContainer.nodeType === 1 && parentContainer.nodeName === 'TD') ||
+                                (parentContainer.parentNode.nodeType === 1 && parentContainer.parentNode.nodeName === 'TD')) {
                                 return;
                             }
-
                             var blockContainer = parentContainer;
                             while (blockContainer.nodeType !== 1 || textNodes.indexOf(blockContainer.nodeName) !== -1) {
                                 blockContainer = blockContainer.parentNode;
                             }
                             if (parentContainer === editZone[0]) {
-                                var wrapper = $('<div></div>');
-                                $(editZone[0]).append(wrapper);
+                                var wrapper = jquery_1.$('<div></div>');
+                                jquery_1.$(editZone[0]).append(wrapper);
                                 wrapper.html('&#8203;');
                                 blockContainer = wrapper[0];
                                 parentContainer = wrapper[0];
                             }
                             if (blockContainer === editZone[0]) {
                                 var startOffset = range.startOffset;
-                                var wrapper = $('<div></div>');
-                                
+                                var wrapper = jquery_1.$('<div></div>');
                                 while (editZone[0].childNodes.length) {
-                                    $(wrapper).append(editZone[0].childNodes[0]);
+                                    jquery_1.$(wrapper).append(editZone[0].childNodes[0]);
                                 }
-                                $(blockContainer).append(wrapper);
+                                jquery_1.$(blockContainer).append(wrapper);
                                 blockContainer = wrapper[0];
                                 var sel = document.getSelection();
                                 var r = document.createRange();
@@ -3574,18 +3179,15 @@ export let RTE = {
                                 || (parentContainer.nodeType === 3 && range.startOffset < parentContainer.textContent.length)) {
                                 newNodeName = blockContainer.nodeName.toLowerCase();
                             }
-                            var newLine = $('<' + newNodeName + '>&#8203;</' + newNodeName + '>');
-
+                            var newLine = jquery_1.$('<' + newNodeName + '>&#8203;</' + newNodeName + '>');
                             blockContainer.parentNode.insertBefore(newLine[0], blockContainer.nextSibling);
-
-                            newLine.attr('style', $(blockContainer).attr('style'));
-                            newLine.attr('class', $(blockContainer).attr('class'));
-                            
+                            newLine.attr('style', jquery_1.$(blockContainer).attr('style'));
+                            newLine.attr('class', jquery_1.$(blockContainer).attr('class'));
                             e.preventDefault();
                             var rangeStart = 1;
-                            if(parentContainer.nodeType === 3){
+                            if (parentContainer.nodeType === 3) {
                                 var content = parentContainer.textContent.substring(range.startOffset, parentContainer.textContent.length);
-                                if(!content){
+                                if (!content) {
                                     content = '&#8203;';
                                 }
                                 else {
@@ -3594,27 +3196,25 @@ export let RTE = {
                                 newLine.html(content);
                                 parentContainer.textContent = parentContainer.textContent.substring(0, range.startOffset);
                             }
-                            else{
-                                while(parentContainer.childNodes.length > range.startOffset){
+                            else {
+                                while (parentContainer.childNodes.length > range.startOffset) {
                                     newLine.append(parentContainer.childNodes[range.startOffset]);
                                 }
                             }
-
                             var nodeCursor = parentContainer;
                             while (nodeCursor !== blockContainer) {
                                 var cursorClone;
                                 if (nodeCursor.nodeType === 1) {
-                                    let nodeName = nodeCursor.nodeName.toLowerCase();
-                                    if(nodeName === 'a'){
+                                    var nodeName = nodeCursor.nodeName.toLowerCase();
+                                    if (nodeName === 'a') {
                                         nodeName = 'span';
                                     }
                                     cursorClone = document.createElement(nodeName);
-                                    $(cursorClone).attr('style', $(nodeCursor).attr('style'));
-                                    $(cursorClone).attr('class', $(nodeCursor).attr('class'));
-                                    $(cursorClone).append(newLine[0].firstChild);
+                                    jquery_1.$(cursorClone).attr('style', jquery_1.$(nodeCursor).attr('style'));
+                                    jquery_1.$(cursorClone).attr('class', jquery_1.$(nodeCursor).attr('class'));
+                                    jquery_1.$(cursorClone).append(newLine[0].firstChild);
                                     newLine.prepend(cursorClone);
                                 }
-                                        
                                 var sibling = nodeCursor.nextSibling;
                                 while (sibling !== null) {
                                     //order matters here. appending sibling before getting nextsibling breaks the loop
@@ -3622,27 +3222,22 @@ export let RTE = {
                                     sibling = sibling.nextSibling;
                                     newLine.append(currentSibling);
                                 }
-
                                 nodeCursor = nodeCursor.parentNode;
                             }
-
-                            if (!(parentContainer as any).wholeText && parentContainer.nodeType === 3) {
+                            if (!parentContainer.wholeText && parentContainer.nodeType === 3) {
                                 // FF forces encode on textContent, this is a hack to get the actual entities codes,
                                 // since innerHTML doesn't exist on text nodes
-                                parentContainer.textContent = $('<div>&#8203;</div>')[0].textContent;
+                                parentContainer.textContent = jquery_1.$('<div>&#8203;</div>')[0].textContent;
                             }
-
                             var range = document.createRange();
                             var newStartContainer = newLine[0];
-                            while(newStartContainer.firstChild){
+                            while (newStartContainer.firstChild) {
                                 newStartContainer = newStartContainer.firstChild;
                             }
                             range.setStart(newStartContainer, rangeStart);
-
                             sel.removeAllRanges();
                             sel.addRange(range);
                         }
-
                         if (e.keyCode === 8 || e.keyCode === 46) {
                             editorInstance.addState(editZone.html());
                             // for whatever reason, ff likes to create several ranges for table selection
@@ -3650,52 +3245,52 @@ export let RTE = {
                             for (var i = 0; i < sel.rangeCount; i++) {
                                 var startContainer = sel.getRangeAt(i).startContainer;
                                 if (startContainer.nodeType === 1 && startContainer.nodeName === 'TD' || startContainer.nodeName === 'TR') {
-                                    (startContainer as any).remove();
+                                    startContainer.remove();
                                 }
                             }
                             editZone.find('table').each(function (index, item) {
-                                if ($(item).find('tr').length === 0) {
-                                    $(item).remove();
+                                if (jquery_1.$(item).find('tr').length === 0) {
+                                    jquery_1.$(item).remove();
                                 }
                             });
                         }
                         if (e.ctrlKey && e.keyCode === 86) {
-                            setTimeout(function() {
+                            setTimeout(function () {
                                 editorInstance.editZone.find('i').contents().unwrap().wrap('<em/>');
                                 editorInstance.addState(editorInstance.editZone.html());
                             }, 0);
                         }
-                        if(e.keyCode === 90 && e.ctrlKey && !e.shiftKey){
+                        if (e.keyCode === 90 && e.ctrlKey && !e.shiftKey) {
                             editorInstance.undo();
                             e.preventDefault();
                             scope.$apply();
                         }
-                        if((e.keyCode === 90 && e.ctrlKey && e.shiftKey) || (e.keyCode === 89 && e.ctrlKey)){
+                        if ((e.keyCode === 90 && e.ctrlKey && e.shiftKey) || (e.keyCode === 89 && e.ctrlKey)) {
                             editorInstance.redo();
                             e.preventDefault();
                             scope.$apply();
                         }
-                        if(e.keyCode === 9){
+                        if (e.keyCode === 9) {
                             e.preventDefault();
                             var currentTag;
-                            if(editorInstance.selection.range.startContainer.tagName){
+                            if (editorInstance.selection.range.startContainer.tagName) {
                                 currentTag = editorInstance.selection.range.startContainer;
                             }
-                            else{
+                            else {
                                 currentTag = editorInstance.selection.range.startContainer.parentNode;
                             }
-                            if(currentTag.tagName === 'TD'){
+                            if (currentTag.tagName === 'TD') {
                                 var nextTag = currentTag.nextSibling;
-                                if(!nextTag){
-                                    nextTag = $(currentTag).parent('tr').next().children('td')[0];
+                                if (!nextTag) {
+                                    nextTag = jquery_1.$(currentTag).parent('tr').next().children('td')[0];
                                 }
-                                if(!nextTag){
-                                    var newLine = $('<tr></tr>');
-                                    for(var i = 0; i < $(currentTag).parent('tr').children('td').length; i++){
-                                        newLine.append($('<td><br /></td>'));
+                                if (!nextTag) {
+                                    var newLine = jquery_1.$('<tr></tr>');
+                                    for (var i = 0; i < jquery_1.$(currentTag).parent('tr').children('td').length; i++) {
+                                        newLine.append(jquery_1.$('<td><br /></td>'));
                                     }
                                     nextTag = newLine.children('td')[0];
-                                    $(currentTag).closest('table').append(newLine);
+                                    jquery_1.$(currentTag).closest('table').append(newLine);
                                 }
                                 editorInstance.selection.moveCaret(nextTag, nextTag.firstChild.textContent.length);
                             }
@@ -3703,19 +3298,17 @@ export let RTE = {
                                 document.execCommand('indent');
                             }
                             else {
-                                editorInstance.selection.range.insertNode($('<span style="padding-left: 25px;">&#8203;</span>')[0]);
+                                editorInstance.selection.range.insertNode(jquery_1.$('<span style="padding-left: 25px;">&#8203;</span>')[0]);
                             }
                         }
                     });
-
-                    editZone.on('keyup', function(e){
+                    editZone.on('keyup', function (e) {
                         htmlZone.css({ 'min-height': '250px', height: 0 });
                         var newHeight = htmlZone[0].scrollHeight + 2;
-                        if(newHeight > htmlZone.height()){
+                        if (newHeight > htmlZone.height()) {
                             htmlZone.height(newHeight);
                         }
                     });
-
                     editorInstance.on('contentupdated', function (e) {
                         htmlZone.css({ 'min-height': '250px', height: 0 });
                         editZone.css({ 'min-height': '250px' });
@@ -3726,59 +3319,50 @@ export let RTE = {
                         if (newHeight > parseInt(editZone.css('min-height')) && !element.hasClass('edit')) {
                             editZone.css('min-height', newHeight);
                         }
-
-                        scope.$apply(function(){
+                        scope.$apply(function () {
                             scope.$eval(attributes.ngChange);
                             ngModel.assign(scope, htmlZone.val());
                         });
                     });
-
                     htmlZone.on('keydown', function (e) {
                         // free main thread so it can render textarea changes
                         setTimeout(function () {
-                            highlightZone.text($(this).val());
+                            highlightZone.text(jquery_1.$(this).val());
                             Prism.highlightAll();
                         }.bind(this), 200);
-                        if(e.keyCode === 9){
+                        if (e.keyCode === 9) {
                             e.preventDefault();
                             var start = this.selectionStart;
                             var end = this.selectionEnd;
-
-                            $(this).val($(this).val().substring(0, start) + "\t" + $(this).val().substring(end));
-
+                            jquery_1.$(this).val(jquery_1.$(this).val().substring(0, start) + "\t" + jquery_1.$(this).val().substring(end));
                             this.selectionStart = this.selectionEnd = start + 1;
                         }
                     });
-
-                    htmlZone.on('blur', function(){
-                        scope.$apply(function(){
+                    htmlZone.on('blur', function () {
+                        scope.$apply(function () {
                             scope.$eval(attributes.ngChange);
                             ngModel.assign(scope, htmlZone.val());
                         });
                         editorInstance.trigger('change');
                     });
-
-                    element.on('dragover', function(e){
+                    element.on('dragover', function (e) {
                         element.addClass('droptarget');
                     });
-
-                    element.on('dragleave', function(){
+                    element.on('dragleave', function () {
                         element.removeClass('droptarget');
                     });
-
                     element.find('[contenteditable]').on('drop', function (e) {
-                        if(!e.originalEvent.dataTransfer){
+                        if (!e.originalEvent.dataTransfer) {
                             return;
                         }
-                        var visibility: 'protected' | 'public' = 'protected';
+                        var visibility = 'protected';
                         if (editorInstance.visibility === 'public') {
                             visibility = 'public';
                         }
-
                         element.removeClass('droptarget');
-                        var el = {} as any;
+                        var el = {};
                         var files = e.originalEvent.dataTransfer.files;
-                        if(!files.length){
+                        if (!files.length) {
                             return;
                         }
                         e.preventDefault();
@@ -3798,49 +3382,42 @@ export let RTE = {
                             editorInstance.selection.range = range;
                             editorInstance.selection.rangeCount = 1;
                         }
-
-                        for(var i = 0; i < files.length; i++){
-                            (function(){
+                        for (var i = 0; i < files.length; i++) {
+                            (function () {
                                 var name = files[i].name;
-                                workspace.Document.prototype.upload(files[i], 'file-upload-' + name + '-' + i, function(doc){
+                                workspace_1.workspace.Document.prototype.upload(files[i], 'file-upload-' + name + '-' + i, function (doc) {
                                     var path = '/workspace/document/';
                                     if (visibility === 'public') {
                                         path = '/workspace/pub/document/';
                                     }
-
                                     if (name.indexOf('.mp3') !== -1 || name.indexOf('.wav') !== -1 || name.indexOf('.ogg') !== -1) {
-                                        el = $('<audio controls></audio>');
-                                        el.attr('src', path + doc._id)
+                                        el = jquery_1.$('<audio controls></audio>');
+                                        el.attr('src', path + doc._id);
                                     }
                                     else if (name.toLowerCase().indexOf('.png') !== -1 || name.toLowerCase().indexOf('.jpg') !== -1 || name.toLowerCase().indexOf('.jpeg') !== -1 || name.toLowerCase().indexOf('.svg') !== -1) {
-                                        el = $('<img />');
-                                        el.attr('src', path + doc._id)
+                                        el = jquery_1.$('<img />');
+                                        el.attr('src', path + doc._id);
                                     }
                                     else {
-                                        el = $('<div class="download-attachments">' +
-                                            '<h2>' + lang.translate('editor.attachment.title') + '</h2>' +
+                                        el = jquery_1.$('<div class="download-attachments">' +
+                                            '<h2>' + idiom_1.idiom.translate('editor.attachment.title') + '</h2>' +
                                             '<div class="attachments">' +
-                                                '<a href="'+ path + doc._id + '"><div class="download"></div>' + name + '</a>' +
-                                        '</div></div><div><br /><div><br /></div></div>');
+                                            '<a href="' + path + doc._id + '"><div class="download"></div>' + name + '</a>' +
+                                            '</div></div><div><br /><div><br /></div></div>');
                                     }
-
                                     editorInstance.selection.replaceHTML('<div>' + el[0].outerHTML + '<div><br></div><div><br></div></div>');
                                 }, visibility);
-                            }())
+                            }());
                         }
                     });
-
                     scope.$on('$destroy', function () {
                         cancelAnimationFrame(placeEditorToolbar);
                     });
                 }
             };
         });
-
-
         //Style directives
-
-        module.directive('selectList', function(){
+        module.directive('selectList', function () {
             return {
                 restrict: 'E',
                 transclude: true,
@@ -3852,37 +3429,34 @@ export let RTE = {
                 template: '' +
                     '<div class="selected-value">[[showValue()]]</div>' +
                     '<div class="options hidden" ng-transclude></div>',
-                link: function(scope, element, attributes){
-                    scope.showValue = function(){
-                        if(!scope.display){
-                            return lang.translate(scope.placeholder);
+                link: function (scope, element, attributes) {
+                    scope.showValue = function () {
+                        if (!scope.display) {
+                            return idiom_1.idiom.translate(scope.placeholder);
                         }
-                        if(!scope.displayAs){
-                            return lang.translate(scope.display);
+                        if (!scope.displayAs) {
+                            return idiom_1.idiom.translate(scope.display);
                         }
-                        return lang.translate(scope.display[scope.displayAs]);
+                        return idiom_1.idiom.translate(scope.display[scope.displayAs]);
                     };
-
-                    element.children('.options').on('mouseover', function (e){
-                        e.stopPropagation()
+                    element.children('.options').on('mouseover', function (e) {
+                        e.stopPropagation();
                     });
-
-                    element.children('.selected-value').on('click', function(){
+                    element.children('.selected-value').on('click', function () {
                         if (element.children('.options').hasClass('hidden')) {
                             setTimeout(function () {
                                 element.parent().css({ 'z-index': 9999 });
-                                element.parents('editor-toolbar').each(function(index, item) {
-                                    $(item).css({
+                                element.parents('editor-toolbar').each(function (index, item) {
+                                    jquery_1.$(item).css({
                                         'margin-top': '-' + item.scrollTop + 'px',
                                         'min-height': '0',
                                         'height': 'auto'
-                                    })
+                                    });
                                 });
                                 element.parents().css({
-                                        overflow: 'visible'
+                                    overflow: 'visible'
                                 });
                             }, 0);
-                            
                             element.children('.options').removeClass('hidden');
                             element.children('.options').height(element.children('.options')[0].scrollHeight);
                         }
@@ -3890,51 +3464,45 @@ export let RTE = {
                             element.parent().css({ 'z-index': '' });
                             element.parents().css({ overflow: '' });
                             element.parents('editor-toolbar').each(function (index, item) {
-                                $(item).css({ 'margin-top': '', 'min-height': '', height: '' })
+                                jquery_1.$(item).css({ 'margin-top': '', 'min-height': '', height: '' });
                             });
                             element.children('.options').addClass('hidden');
                         }
                     });
-
-                    $('body').click(function(e){
+                    jquery_1.$('body').click(function (e) {
                         if (e.target === element.find('.selected-value')[0] ||
                             element.children('.options').hasClass('hidden')) {
                             return;
                         }
-
                         if (element.parents('lightbox').length === 0) {
                             element.parent().css({ 'z-index': '' });
                             element.parents().css({ overflow: '' });
                         }
-
                         element.parents('editor-toolbar').each(function (index, item) {
-                            $(item).css({ 'margin-top': '', 'min-height': '', height: '' })
+                            jquery_1.$(item).css({ 'margin-top': '', 'min-height': '', height: '' });
                         });
-
                         element.children('.options').addClass('hidden');
                     });
                 }
-            }
+            };
         });
-
-        module.directive('popover', function(){
+        module.directive('popover', function () {
             return {
-                controller: function(){},
+                controller: function () { },
                 restrict: 'E',
                 link: function (scope, element, attributes) {
-                    element.on('close', function(){
-                        if(attributes.onClose){
+                    element.on('close', function () {
+                        if (attributes.onClose) {
                             scope.$eval(attributes.onClose);
                         }
                     });
                 }
             };
         });
-
-        module.directive('popoverOpener', function(){
+        module.directive('popoverOpener', function () {
             return {
                 require: '^popover',
-                link: function(scope, element, attributes){
+                link: function (scope, element, attributes) {
                     var parentNode = element.parents('popover');
                     var mouseEvent = parentNode.attr('mouse-event') || 'mouseover';
                     var popover = parentNode.find('popover-content');
@@ -3943,26 +3511,23 @@ export let RTE = {
                             if (popover.hasClass('hidden')) {
                                 e.stopPropagation();
                             }
-
-                            $('body').one('click', function (e) {
+                            jquery_1.$('body').one('click', function (e) {
                                 parentNode.trigger('close');
                                 popover.addClass("hidden");
                             });
                         }
-
-                        if(popover.offset().left + popover.width() > $(window).width()){
+                        if (popover.offset().left + popover.width() > jquery_1.$(window).width()) {
                             popover.addClass('right');
                         }
-                        if(popover.offset().left < 0){
+                        if (popover.offset().left < 0) {
                             popover.addClass('left');
                         }
-                        if(popover.offset().top + popover.height() > $(window).height()){
+                        if (popover.offset().top + popover.height() > jquery_1.$(window).height()) {
                             popover.addClass('bottom');
                         }
                         popover.removeClass("hidden");
                     });
-
-                        if(mouseEvent === 'mouseover') {
+                    if (mouseEvent === 'mouseover') {
                         parentNode.on('mouseout', function (e) {
                             parentNode.trigger('close');
                             popover.addClass("hidden");
@@ -3971,61 +3536,55 @@ export let RTE = {
                 }
             };
         });
-
-        module.directive('popoverContent', function(){
+        module.directive('popoverContent', function () {
             return {
                 require: '^popover',
                 restrict: 'E',
-                link: function(scope, element, attributes){
+                link: function (scope, element, attributes) {
                     element.addClass("hidden");
                 }
             };
         });
-
-        module.directive('mathjax', function(){
+        module.directive('mathjax', function () {
             return {
                 restrict: 'E',
                 scope: {
                     formula: '@'
                 },
                 link: function (scope, element, attributes) {
-                    if (!window.MathJax && !(window as any).MathJaxLoading) {
-                        let script = $('<script></script>')
+                    if (!window.MathJax && !window.MathJaxLoading) {
+                        var script = jquery_1.$('<script></script>')
                             .attr('src', '/infra/public/mathjax/MathJax.js')
                             .appendTo('head');
-                            
-                            script[0].async = false;
-                            window.MathJax.Hub.Config({
-                                messageStyle: 'none',
-                                tex2jax: { preview: 'none' },
-                                jax: ["input/TeX", "output/CommonHTML"],
-                                extensions: ["tex2jax.js", "MathMenu.js", "MathZoom.js"],
-                                TeX: {
-                                    extensions: ["AMSmath.js", "AMSsymbols.js", "noErrors.js", "noUndefined.js"]
-                                }
-                            });
-                            $('.MathJax_CHTML_Display').remove();
-                            window.MathJax.Hub.Queue(["Typeset", window.MathJax.Hub]);
+                        script[0].async = false;
+                        window.MathJax.Hub.Config({
+                            messageStyle: 'none',
+                            tex2jax: { preview: 'none' },
+                            jax: ["input/TeX", "output/CommonHTML"],
+                            extensions: ["tex2jax.js", "MathMenu.js", "MathZoom.js"],
+                            TeX: {
+                                extensions: ["AMSmath.js", "AMSsymbols.js", "noErrors.js", "noUndefined.js"]
+                            }
+                        });
+                        jquery_1.$('.MathJax_CHTML_Display').remove();
+                        window.MathJax.Hub.Queue(["Typeset", window.MathJax.Hub]);
                     }
-
-                    scope.updateFormula = function(newVal){
+                    scope.updateFormula = function (newVal) {
                         element.text('$$' + newVal + '$$');
                         if (window.MathJax && window.MathJax.Hub) {
                             window.MathJax.Hub.Queue(["Typeset", window.MathJax.Hub]);
                         }
                     };
-
-                    attributes.$observe('formula', function(newVal){
+                    attributes.$observe('formula', function (newVal) {
                         scope.updateFormula(newVal);
                     });
                 }
-            }
+            };
         });
     }
 };
-
-if(!window.entcore){
+if (!window.entcore) {
     window.entcore = {};
 }
-
-window.entcore.RTE = RTE;
+window.entcore.RTE = exports.RTE;
+//# sourceMappingURL=editor.js.map
