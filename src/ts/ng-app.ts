@@ -36,16 +36,17 @@ var module = angular.module('app', ['ngSanitize', 'ngRoute'], function($interpol
 		$interpolateProvider.endSymbol(']]');
 	})
 	.factory('route', function($rootScope, $route, $routeParams){
-		var routes = {};
-		var currentAction = undefined;
-		var currentParams = undefined;
+		const routes = {};
+		let currentAction = undefined;
+		let currentParams = undefined;
 
 		$rootScope.$on("$routeChangeSuccess", function($currentRoute, $previousRoute){
-			if(typeof routes[$route.current.action] === 'function' &&
+			if(routes[$route.current.action] instanceof Array &&
 				(currentAction !== $route.current.action || (currentParams !== $route.current.params && !(Object.getOwnPropertyNames($route.current.params).length === 0)))){
 				currentAction = $route.current.action;
 				currentParams = $route.current.params;
-				routes[$route.current.action]($routeParams);
+
+				routes[$route.current.action].forEach(r => r($routeParams));
 				setTimeout(function () {
 				    ui.scrollToId(window.location.hash.split('#')[1]);
 				}, 100);
@@ -53,7 +54,12 @@ var module = angular.module('app', ['ngSanitize', 'ngRoute'], function($interpol
 		});
 
 		return function(setRoutes){
-			routes = setRoutes;
+			for(let prop in setRoutes){
+				if(!routes[prop]){
+					routes[prop] = [];
+				}
+				routes[prop].push(setRoutes[prop]);
+			}
 		}
 	})
 	.factory('model', function($timeout){
