@@ -691,7 +691,13 @@ export function bootstrap(func) {
 			}
 		};
 
-		await model.me.workflow.load(['workspace', appPrefix]);
+		if(appPrefix !== '.'){
+			await model.me.workflow.load(['workspace', appPrefix]);
+		}
+		else{
+			await model.me.workflow.load(['workspace']);
+		}
+		
 		model.trigger('me.change');
 
 		calendar.init();
