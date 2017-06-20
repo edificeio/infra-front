@@ -3180,15 +3180,8 @@ export let RTE = {
                         }
                     );
 
-                    $(window).on('resize', function () {
-                        highlightZone.css({ top: (element.find('editor-toolbar').height() + 1) + 'px' });
-                        if($(window).width() > ui.breakpoints.tablette){
-                            toolbarElement.css({ 'position': 'relative' });
-                        }
-                    });
-
                     var previousScroll = 0;
-                    function sticky() {
+                    var sticky = function() {
                         if(element.parents('.editor-media').length > 0){
                             return;
                         }
@@ -3233,6 +3226,19 @@ export let RTE = {
                     if(ui.breakpoints.tablette <= $(window).width()){
                         var placeEditorToolbar = requestAnimationFrame(sticky);
                     }
+
+                    $(window).on('resize', function () {
+                        highlightZone.css({ top: (element.find('editor-toolbar').height() + 1) + 'px' });
+                        if($(window).width() > ui.breakpoints.tablette){
+                            toolbarElement.css({ 'position': 'relative' });
+                            cancelAnimationFrame(placeEditorToolbar);
+                            var placeEditorToolbar = requestAnimationFrame(sticky);
+                        }
+                        else{
+                            cancelAnimationFrame(placeEditorToolbar);
+                        }
+                        placeToolbar();
+                    });
 
                     element.children('popover').find('li:first-child').on('click', function(){
                         element.removeClass('html');
@@ -3397,6 +3403,9 @@ export let RTE = {
                                 left: 0
                             });
                             element.css({ 'padding-top': toolbarElement.height() + 1 + 'px' });
+                        }
+                        else if($(window).width() < ui.breakpoints.tablette){
+                            element.css({ 'padding-top': '' });
                         }
                     }
 
