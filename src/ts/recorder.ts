@@ -4,7 +4,7 @@ import { http } from './http';
 import { notify } from './notify';
 declare const Zlib: any;
 
-var recorder = (function(){
+export var recorder = (function(){
 	//vendor prefixes
 	navigator.getUserMedia = navigator.getUserMedia || (navigator as any).webkitGetUserMedia ||
 		(navigator as any).mozGetUserMedia || (navigator as any).msGetUserMedia;
