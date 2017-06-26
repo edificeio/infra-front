@@ -172,6 +172,7 @@ export var recorder = (function(){
                 	} else if (event.data && event.data === "ok" && recorder.status === 'encoding') {
                 		closeWs();
                 		notify.info("recorder.saved");
+						notifyFollowers('saved');
                 	}
 
                 }
@@ -203,8 +204,7 @@ export var recorder = (function(){
 		},
 		title: "",
 		status: 'idle',
-		save: function(callback, format){
-//			this.stop();
+		save: function(){
 			sendWavChunk();
 			ws.send("save-" +  this.title);
 			this.status = 'encoding';

@@ -6,17 +6,16 @@ export let recorderComponent = ng.directive('recorder', function () {
     return {
         restrict: 'E',
         scope: {
-            ngModel: '=',
             format: '@',
             onUpload: '&'
         },
         templateUrl: '/' + appPrefix + '/public/template/entcore/recorder.html',
         link: function (scope, element, attributes) {
             scope.recorder = recorder;
-            if (attributes.protected !== undefined) {
-                recorder.protected = true;
-            }
-            recorder.state(function () {
+            recorder.state(function (eventName:string) {
+                if(eventName === 'saved'){
+                    scope.onUpload();
+                }
                 scope.$apply('recorder');
             });
             scope.switchRecord = function () {
@@ -47,11 +46,7 @@ export let recorderComponent = ng.directive('recorder', function () {
                 }
             };
             scope.saveRecord = function () {
-                recorder.save(function (doc) {
-                    scope.ngModel = doc;
-                    scope.onUpload();
-                    scope.$apply();
-                });
+                recorder.save();
             };
         }
     }
