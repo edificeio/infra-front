@@ -29,17 +29,31 @@ export class Filter {
     }
 }
 
+export class Service {
+    name: string;
+    contents: any;
+
+    constructor(name: string, contents: any) {
+        this.name = name;
+        this.contents = contents;
+    }
+}
+
 export class Ng {
     controllers: Controller[];
     directives: Directive[];
     filters: Filter[];
+    services: Service[];
     requiredModules: string[];
+    cb: ((module) => void)[];
 
     constructor() {
         this.controllers = [];
         this.directives = [];
         this.filters = [];
+        this.services = [];
         this.requiredModules = [];
+        this.cb = [];
     }
 
     init(module) {
@@ -52,16 +66,25 @@ export class Ng {
         this.filters.forEach((fil) => {
             module.filter(fil.name, fil.contents);
         });
+        this.services.forEach((s) => {
+            module.service(s.name, s.contents);
+        });
         this.requiredModules.forEach((m) => {
             module.requires.push(m);
         });
+
+        this.cb.forEach(cb => cb(module));
     }
 
     directive(name: string, contents: any): Directive {
         return new Directive(name, contents);
     }
 
-    controller (name: string, contents: any[]): Controller {
+    service(name: string, contents: any): Directive {
+        return new Service(name, contents);
+    }
+
+    controller (name: string, contents: any): Controller {
         return new Controller(name, contents);
     }
 
@@ -71,6 +94,10 @@ export class Ng {
 
     addRequiredModule(moduleName: string) {
         this.requiredModules.push(moduleName);
+    }
+
+    onInit(cb: (module) => void){
+        this.cb.push(cb);
     }
 };
 
