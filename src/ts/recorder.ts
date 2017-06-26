@@ -150,19 +150,19 @@ export var recorder = (function(){
 					}
 
 					that.status = 'recording';
-					notifyFollowers(this.status);
+					notifyFollowers(that.status);
 					if(!loaded){
 						http().get('/infra/public/js/zlib.min.js').done(function(){
 							that.loadComponents();
 						}.bind(this));
 					}
 				};
-				ws.onerror = function (event) {
+				ws.onerror = function (event: ErrorEvent) {
 					console.log(event);
 					that.status = 'stop';
                     notifyFollowers(that.status);
                     closeWs();
-                    notify.info(event.data);
+                    notify.info(event.error);
 				}
                 ws.onmessage = function (event) {
                 	if (event.data && event.data.indexOf("error") !== -1) {
