@@ -684,7 +684,12 @@ export let RTE = {
                     let r;
                     if(!keepRangeStart && !startSet){
                         r = document.createRange();
-                        r.setStart(sibling, 0);
+                        let newStartOffset = 0;
+                        if(range.startContainer === sibling){
+                            newStartOffset = startOffset;
+                        }
+                        
+                        r.setStart(sibling, newStartOffset);
                         that.nextRanges.push(r);
                         startSet = true;
                     }
@@ -692,16 +697,23 @@ export let RTE = {
                         r = that.nextRanges[that.nextRanges.length - 1];
                     }
                     r.setEnd(sibling, sibling.childNodes.length);
-                    $(sibling).css(css);
-                    $(sibling).find('*').each(function(index, item){
-                        for(var i = 0; i < item.style.length; i++){
-                            for(var prop in css){
-                                item.style.removeProperty(prop);
-                            }
-                        }
-                    });
+                    if(range.endContainer === sibling){
+                        r.setEnd(sibling, range.endOffset);
+                    }
+                    
                     if($(sibling).find(range.endContainer).length){
+                        applyCSSBetween(range, sibling.firstChild, range.endContainer, css, true, 0);
                         break;
+                    }
+                    else{
+                        $(sibling).css(css);
+                        $(sibling).find('*').each(function(index, item){
+                            for(var i = 0; i < item.style.length; i++){
+                                for(var prop in css){
+                                    item.style.removeProperty(prop);
+                                }
+                            }
+                        });
                     }
                 }
                 else {
