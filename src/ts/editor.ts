@@ -1005,6 +1005,10 @@ export let RTE = {
                     if(item.childNodes.length === 1 && item.childNodes[0].nodeType === 1 && item.childNodes[0].nodeName === 'SPAN'){
                         for(let i = 0; i < item.childNodes[0].style.length; i++){
                             let prop = item.childNodes[0].style[i];
+                            let val = $(item.childNodes[0]).css(prop);
+                            if(prop === 'text-decoration'){
+                                val = val.split(' ')[0];
+                            }
                             $(item).css(prop, $(item.childNodes[0]).css(prop));
                         }
                         let sel = window.getSelection();
