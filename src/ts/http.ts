@@ -152,17 +152,7 @@ export var http = (function(){
 				resolve(loadedScripts[url]);
 				return;
 			}
-			this.get(url).done((content) => {
-				var f = new Function(content);
-				loadedScripts[url] = f;
-				try{
-					f();
-					resolve(f);
-				}
-				catch(e){
-					reject(e);
-				}
-			});
+			this.get(url).done(() => resolve());
 		});
 	}
 
