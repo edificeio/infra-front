@@ -781,13 +781,17 @@ export let RTE = {
                         
                     }
                 }
+                if(sibling === nodeEnd){
+                    break;
+                }
+
                 if(sibling !== nodeEnd){
                     sibling = sibling.nextSibling;
                 }
                 
                 i++;
             } while (
-                sibling && sibling !== nodeEnd
+                sibling
                 && !(sibling.parentNode === range.endContainer && sibling === range.endContainer.childNodes[range.endOffset])
             );
         }
