@@ -12,7 +12,7 @@ export let bottomScroll = ng.directive('bottomScroll', function($compile){
 		        getContentHeight = () => $(document).height();
 		    }
 		    scrollElement.scroll(function () {
-		        let scrollHeight = scrollElement[0].scrollY || scrollElement[0].scrollTop;
+		        let scrollHeight = scrollElement[0].scrollY || scrollElement[0].scrollTop || scrollElement[0].pageYOffset;
 				//adding ten pixels to account for system specific behaviours
 				scrollHeight += 10;
 
