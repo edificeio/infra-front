@@ -1648,11 +1648,12 @@ export let RTE = {
             };
         });
 
-        function setSpectrum(){
+        function setSpectrum(el){
             if($('.sp-replacer').length === 0){
                 return;
             }
             
+            el.children('i').css({ 'pointer-events': 'none' });
             $('input[type=color]').css({
                 position: 'absolute',
                 opacity: 0,
@@ -1681,10 +1682,10 @@ export let RTE = {
                         $.spectrum = {};
                         http().get('/infra/public/spectrum/spectrum.js').done(function(data){
                             eval(data);
-                            setSpectrum();
+                            setSpectrum(element);
                             if ($.spectrum && $.spectrum.palettes && element.find('input')[0].type === 'text') {
                                 $('body').find('.option.color input, .option.background-color input').spectrum({preferredFormat: "hex"});
-                                setSpectrum();
+                                setSpectrum(element);
                             }
                         });
                         var stylesheet = $('<link rel="stylesheet" type="text/css" href="/infra/public/spectrum/spectrum.css" />');
@@ -1692,7 +1693,7 @@ export let RTE = {
                     }
                     if ($.spectrum && $.spectrum.palettes && element.find('input')[0].type === 'text') {
                         element.find('input').spectrum({ preferredFormat: "hex" });
-                        setSpectrum();
+                        setSpectrum(element);
                     }
                     scope.foreColor = "#000000";
                     element.children('input').on('change', function(){
@@ -1730,7 +1731,7 @@ export let RTE = {
                             eval(data);
                             if ($.spectrum && $.spectrum.palettes && element.find('input')[0].type === 'text') {
                                 $('body').find('.option.color input, .option.background-color input').spectrum({ preferredFormat: "hex" });
-                                setSpectrum();
+                                setSpectrum(element);
                             }
                         });
                         var stylesheet = $('<link rel="stylesheet" type="text/css" href="/infra/public/spectrum/spectrum.css" />');
@@ -1738,7 +1739,7 @@ export let RTE = {
                     }
                     else if ($.spectrum && $.spectrum.palettes && element.find('input')[0].type === 'text') {
                         element.find('input[type=color]').spectrum({ preferredFormat: "hex" });
-                        setSpectrum();
+                        setSpectrum(element);
                     }
                     element.children('input').on('change', function () {
                         if (!$(this).val()) {
