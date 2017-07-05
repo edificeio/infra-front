@@ -706,10 +706,10 @@ export let ui = {
                         if (mouse.x > boundaries.right + elementDistance.x && elementWidth < parentWidth) {
                             newOffset.left = boundaries.right - 2
                         }
-                        if (mouse.y < boundaries.top + elementDistance.y && elementHeight < parentHeight) {
+                        if (mouse.y + ((window.scrollY || window.pageYOffset) - initialScroll) < boundaries.top + elementDistance.y && elementHeight < parentHeight) {
                             newOffset.top = boundaries.top;
                         }
-                        if (mouse.y > boundaries.bottom + elementDistance.y && elementHeight < parentHeight) {
+                        if (mouse.y + ((window.scrollY || window.pageYOffset) - initialScroll) > boundaries.bottom + elementDistance.y && elementHeight < parentHeight) {
                             newOffset.top = boundaries.bottom - 2;
                         }
 
