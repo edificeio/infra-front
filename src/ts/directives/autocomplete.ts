@@ -3,7 +3,7 @@ import { $ } from '../libs/jquery/jquery';
 import { _ } from '../libs/underscore/underscore';
 import { idiom as lang } from '../idiom';
 
-export let autocomplete = ng.directive('autocomplete', function ($compile, $timeout) {
+export let autocomplete = ng.directive('autocomplete', ['$timeout', function ($timeout) {
     return {
         restrict: 'E',
         replace: true,
@@ -114,4 +114,4 @@ export let autocomplete = ng.directive('autocomplete', function ($compile, $time
             dropDownContainer.attr('data-opened-drop-down', true);
         }
     }
-});
+}]);

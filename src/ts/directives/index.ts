@@ -12,6 +12,7 @@ export * from './explorer';
 export * from './imageSelect';
 export * from './infotip';
 export * from './lightbox';
+export * from './placedBlock';
 export * from './pulsar';
 export * from './recorder';
 export * from './resourceRight';
