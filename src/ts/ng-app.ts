@@ -301,7 +301,7 @@ module.directive('soundSelect', function($compile){
 			visibility: '@'
 		},
         template: '<div><audio ng-src="[[ngModel]]" controls ng-if="ngModel" style="cursor: pointer"></audio>' +
-            '<button ng-click="display.userSelecting = true">Sélectionner un fichier audio</button>' +
+            '<button ng-click="display.userSelecting = true"><i18n>audio.pick</i18n></button>' +
 			'<lightbox show="display.userSelecting" on-close="userSelecting = false;">' +
 			'<media-library ' +
 				'visibility="selectedFile.visibility"' +
