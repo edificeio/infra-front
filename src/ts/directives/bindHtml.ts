@@ -2,7 +2,7 @@ import { ng } from '../ng-start';
 import { http } from '../http';
 import { $ } from '../libs/jquery/jquery';
 
-export let bindHtml = ng.directive('bindHtml', function($compile){
+export let bindHtml = ng.directive('bindHtml', ['$compile', function($compile){
 	return {
 		restrict: 'A',
 		scope: {
@@ -61,4 +61,4 @@ export let bindHtml = ng.directive('bindHtml', function($compile){
 			});
 		}
 	}
-});
+}]);

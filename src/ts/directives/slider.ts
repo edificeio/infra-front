@@ -3,7 +3,7 @@ import { idiom } from '../idiom';
 import { $ } from '../libs/jquery/jquery';
 import { ui } from '../ui';
 
-export let slider = ng.directive('slider', function ($compile, $parse) {
+export let slider = ng.directive('slider', ['$compile', '$parse', function ($compile, $parse) {
     return {
         restrict: 'E',
         scope: true,
@@ -65,4 +65,4 @@ export let slider = ng.directive('slider', function ($compile, $parse) {
             });
         }
     }
-});
+}]);

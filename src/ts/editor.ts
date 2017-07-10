@@ -2507,7 +2507,9 @@ export let RTE = {
                             };
                         }
                         Behaviours.loadBehaviours(scope.linker.params.appPrefix, function (appBehaviour) {
-                            Behaviours.applicationsBehaviours[prefix].loadResources(cb);
+                            Behaviours.applicationsBehaviours[prefix].loadResources().then(() => {
+                                cb(Behaviours.applicationsBehaviours[prefix].resources);
+                            });
                             scope.linker.addResource = Behaviours.applicationsBehaviours[prefix].create;
                         });
                     };
@@ -3057,7 +3059,7 @@ export let RTE = {
         });
 
         //Editor
-        module.directive('editor', function($parse, $compile) {
+        module.directive('editor', ['$parse', '$compile', function($parse, $compile) {
             return {
                 restrict: 'E',
                 template: '' +
@@ -3896,7 +3898,7 @@ export let RTE = {
                     });
                 }
             };
-        });
+        }]);
 
 
         //Style directives

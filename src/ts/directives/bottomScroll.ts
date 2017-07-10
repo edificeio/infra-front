@@ -1,7 +1,7 @@
 import { ng } from '../ng-start';
 import { $ } from '../libs/jquery/jquery';
 
-export let bottomScroll = ng.directive('bottomScroll', function($compile){
+export let bottomScroll = ng.directive('bottomScroll', function(){
 	return {
 		restrict: 'A',
 		link: function (scope, element, attributes) {

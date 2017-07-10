@@ -2,7 +2,7 @@ import { ng } from '../ng-start';
 import { model } from '../modelDefinitions';
 import { Behaviours } from '../behaviours';
 
-export let workflow = ng.directive('workflow', function($compile){
+export let workflow = ng.directive('workflow', ['$compile', function($compile){
 	return {
 		restrict: 'A',
 		link: function(scope, element, attributes){
@@ -37,4 +37,4 @@ export let workflow = ng.directive('workflow', function($compile){
 			});
 		}
 	}
-});
+}]);

@@ -2,7 +2,7 @@ import { ng } from '../ng-start';
 import { $ } from '../libs/jquery/jquery';
 import { _ } from '../libs/underscore/underscore';
 
-export let lightbox = ng.directive('lightbox', ($compile) => {
+export let lightbox = ng.directive('lightbox', () => {
 	return {
 		restrict: 'E',
 		transclude: true,

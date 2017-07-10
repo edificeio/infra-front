@@ -2,7 +2,7 @@ import { ng } from '../ng-start';
 import { idiom } from '../idiom';
 import { $ } from '../libs/jquery/jquery';
 
-export let tooltip = ng.directive('tooltip', function($compile){
+export let tooltip = ng.directive('tooltip', ['$compile', function($compile){
 	return {
 		restrict: 'A',
 		link: function(scope, element, attributes){
@@ -47,4 +47,4 @@ export let tooltip = ng.directive('tooltip', function($compile){
 
 		}
 	}
-});
+}]);

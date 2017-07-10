@@ -151,7 +151,7 @@ export var idiom = {
         return str;
     },
     addDirectives: function(module){
-        module.directive('translate', function($compile) {
+        module.directive('translate', ['$compile', function($compile) {
             return {
                 restrict: 'A',
                 replace: true,
@@ -201,18 +201,18 @@ export var idiom = {
                     });
                 }
             };
-        });
+        }]);
 
-        module.directive('i18n', function($compile){
+        module.directive('i18n', ['$compile', function($compile){
             return {
                 restrict: 'E',
                 link: function(scope, element, attributes){
                     element.html($compile('<span class="no-style">' + idiom.translate(element.text().trim()) + '</span>')(scope));
                 }
             }
-        });
+        }]);
 
-        module.directive('i18nPlaceholder', function($compile){
+        module.directive('i18nPlaceholder', ['$compile', function($compile){
             return {
                 link: function(scope, element, attributes){
                     attributes.$observe('i18nPlaceholder', function(val) {
@@ -223,9 +223,9 @@ export var idiom = {
                     });
                 }
             }
-        });
+        }]);
 
-        module.directive('i18nValue', function($compile){
+        module.directive('i18nValue', ['$compile', function($compile){
             return {
                 link: function(scope, element, attributes){
                     attributes.$observe('i18nValue', function(val) {
@@ -236,7 +236,7 @@ export var idiom = {
                     });
                 }
             }
-        });
+        }]);
     }
 };
 

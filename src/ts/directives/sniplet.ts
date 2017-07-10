@@ -1,7 +1,7 @@
 import { ng } from '../ng-start';
 import { Behaviours } from '../behaviours';
 
-export let sniplet = ng.directive('sniplet', function($parse, $timeout){
+export let sniplet = ng.directive('sniplet', function(){
 	return {
 		restrict: 'E',
 		scope: true,
@@ -27,7 +27,7 @@ export let sniplet = ng.directive('sniplet', function($parse, $timeout){
 	}
 });
 
-export let snipletSource = ng.directive('snipletSource', function($parse, $timeout){
+export let snipletSource = ng.directive('snipletSource', ['$parse', function($parse){
 	return {
 		restrict: 'E',
 		scope: true,
@@ -61,4 +61,4 @@ export let snipletSource = ng.directive('snipletSource', function($parse, $timeo
 			}
 		}
 	}
-});
+}]);
