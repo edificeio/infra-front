@@ -110,6 +110,7 @@ export declare interface Collection<T>{
 	contains(item: T);
 	last(): T;
 	removeAll();
+	toJSON(): any;
 }
 
 if (!window.entcore) {

@@ -1,16 +1,11 @@
-{
+﻿{
   "compilerOptions": {
-    "noImplicitAny": false,
-    "noEmitOnError": true,
-    "removeComments": false,
-    "sourceMap": true,
     "target": "es5",
+    "module": "commonjs",
+    "declaration": false,
     "moduleResolution": "node",
-    "typeRoots" : ["./node_modules/@types"],
-    "types": ["core-js"]
-  },
-  "exclude": [
-    "node_modules",
-    "wwwroot"
-  ]
+    "sourceMap": true,
+    "noImplicitAny": false,
+    "lib": ["es2015", "dom"]
+  }
 }

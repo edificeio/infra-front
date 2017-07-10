@@ -7,7 +7,7 @@ import { http } from '../http';
 import { quickstart } from '../quickstart';
 import { _ } from '../libs/underscore/underscore';
 
-export let pulsar = ng.directive('pulsar', function($compile){
+export let pulsar = ng.directive('pulsar', ['$compile', function($compile){
     return {
         restrict: 'A',
         scope: true,
@@ -425,4 +425,4 @@ export let pulsar = ng.directive('pulsar', function($compile){
             });
         }
     }
-});
+}]);

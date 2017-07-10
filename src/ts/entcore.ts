@@ -15,3 +15,4 @@ export * from './rights';
 export * from './ng-start';
 export * from './widget';
 export * from './me';
+export * from './libs';

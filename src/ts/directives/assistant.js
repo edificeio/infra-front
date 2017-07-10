@@ -50,6 +50,7 @@ exports.assistant = ng_start_1.ng.directive('assistant', function () {
                 scope.show.assistant = false;
                 jquery_1.$('.pulsar-button').removeClass('hidden');
                 clearTimeout(token);
+                quickstart_1.quickstart.seeAssistantLater();
             };
             scope.closeAssistant = function () {
                 scope.show.assistant = false;
