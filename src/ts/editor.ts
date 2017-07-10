@@ -876,7 +876,13 @@ export let RTE = {
                         if (
                             sibling.nodeType === 1 && $(sibling).find(range.startContainer).length
                         ) {
+                            let currentNode = range.startContainer;
+                            while(currentNode.parentNode !== sibling){
+                                applyCSSBetween(range, currentNode.nextSibling, range.endContainer, css);
+                                currentNode = currentNode.parentNode;
+                            }
                             applyCSSBetween(range, range.startContainer, range.endContainer, css);
+                            
                             continue;
                         }
 
