@@ -219,6 +219,17 @@ export class Document extends Model {
 export let workspace = {
 	thumbnails: "thumbnail=120x120&thumbnail=150x150&thumbnail=100x100&thumbnail=290x290&thumbnail=48x48&thumbnail=82x82&thumbnail=381x381&thumbnail=1600x0",
 	Document: Document,
+    upload: function(file: File | Blob, visibility?: 'public' | 'protected'): Promise<Document>{
+        if(!visibility){
+            visibility = 'protected';
+        }
+        return new Promise((resolve, reject) => {
+            workspace.Document.prototype.upload(file, '', function(file){
+                    const doc = new Document(file);
+                    resolve(doc);
+            }, visibility);
+        });
+    },
 	Folder: function(data){
 		this.updateData(data);
 

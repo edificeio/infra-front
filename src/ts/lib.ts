@@ -500,17 +500,17 @@ Model.prototype.sync = function(){
 			return;
 		}
 		var events = event.split(',');
-		var that = this;
-		events.forEach(function(e){
-			var eventName = e.trim();
+		if(!this.callbacks){
+			this.callbacks = {}
+		}
 
-			if(!that.callbacks){
-				that.callbacks = {}
+		events.forEach((e) => {
+			var eventName = e.trim();
+			
+			if(!this.callbacks[eventName]){
+				this.callbacks[eventName] = []
 			}
-			if(!that.callbacks[eventName]){
-				that.callbacks[eventName] = []
-			}
-			that.callbacks[eventName].push(cb);
+			this.callbacks[eventName].push(cb);
 
 			var propertiesChain = eventName.split('.');
 			if(propertiesChain.length > 1){
@@ -521,7 +521,7 @@ Model.prototype.sync = function(){
 				}
 				this[prop].on(propertiesChain.join('.'), cb);
 			}
-		}.bind(this));
+		});
 	};
 
 	Model.prototype.unbind = function(event, cb){

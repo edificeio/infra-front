@@ -8,7 +8,7 @@ var underscore_1 = require("../libs/underscore/underscore");
 var calendar_1 = require("../calendar");
 var template_1 = require("../template");
 var jquery_1 = require("../libs/jquery/jquery");
-exports.calendarComponent = ng_start_1.ng.directive('calendar', function ($compile) {
+exports.calendarComponent = ng_start_1.ng.directive('calendar', function () {
     return {
         restrict: 'E',
         scope: true,
@@ -113,7 +113,7 @@ exports.calendarComponent = ng_start_1.ng.directive('calendar', function ($compi
         }
     };
 });
-exports.scheduleItem = ng_start_1.ng.directive('scheduleItem', function ($compile) {
+exports.scheduleItem = ng_start_1.ng.directive('scheduleItem', function () {
     return {
         restrict: 'E',
         require: '^calendar',

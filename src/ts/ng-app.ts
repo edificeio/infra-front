@@ -31,11 +31,11 @@ import { workspace, notify, skin, RTE } from './entcore';
 import { ng } from './ng-start';
 import * as directives from './directives';
 
-var module = angular.module('app', ['ngSanitize', 'ngRoute'], function($interpolateProvider) {
+var module = angular.module('app', ['ngSanitize', 'ngRoute'], ['$interpolateProvider', function($interpolateProvider) {
 		$interpolateProvider.startSymbol('[[');
 		$interpolateProvider.endSymbol(']]');
-	})
-	.factory('route', function($rootScope, $route, $routeParams){
+	}])
+	.factory('route', ['$rootScope', '$route', '$routeParams', function($rootScope, $route, $routeParams){
 		const routes = {};
 		let currentAction = undefined;
 		let currentParams = undefined;
@@ -61,8 +61,8 @@ var module = angular.module('app', ['ngSanitize', 'ngRoute'], function($interpol
 				routes[prop].push(setRoutes[prop]);
 			}
 		}
-	})
-	.factory('model', function($timeout){
+	}])
+	.factory('model', ['$timeout', function($timeout){
 		var fa = Collection.prototype.trigger;
 		Collection.prototype.trigger = function(event){
 			$timeout(function(){
@@ -78,7 +78,7 @@ var module = angular.module('app', ['ngSanitize', 'ngRoute'], function($interpol
 		};
 
 		return model;
-	})
+	}])
     .factory('xmlHelper', function(){
         return {
             xmlToJson: function(xml, accumulator, stripNamespaces, flatten) {
@@ -151,7 +151,7 @@ var module = angular.module('app', ['ngSanitize', 'ngRoute'], function($interpol
 
 //routing
 if(routes.routing){
-	module.config(routes.routing);
+	module.config(['$routeProvider', routes.routing]);
 }
 
 for (let directive in directives) {
@@ -192,7 +192,7 @@ module.directive('completeChange', function() {
 	};
 });
 
-module.directive('mediaLibrary', function($compile){
+module.directive('mediaLibrary', function(){
 	return {
 		restrict: 'E',
 		scope: {
@@ -236,7 +236,7 @@ module.directive('mediaLibrary', function($compile){
 	}
 });
 
-module.directive('container', function($compile){
+module.directive('container', function(){
 	return {
 		restrict: 'E',
 		scope: true,
@@ -258,7 +258,7 @@ module.directive('container', function($compile){
 	}
 });
 
-module.directive('colorSelect', function($compile){
+module.directive('colorSelect', function(){
 	return {
 		restrict: 'E',
 		scope: {
@@ -291,7 +291,7 @@ module.directive('colorSelect', function($compile){
 	}
 });
 
-module.directive('soundSelect', function($compile){
+module.directive('soundSelect', function(){
 	return {
 		restrict: 'E',
 		transclude: true,
@@ -339,7 +339,7 @@ module.directive('soundSelect', function($compile){
 	}
 });
 
-module.directive('mediaSelect', function($compile){
+module.directive('mediaSelect', function(){
 	return {
 		restrict: 'E',
 		transclude: true,
@@ -410,7 +410,7 @@ module.directive('mediaSelect', function($compile){
 	}
 });
 
-module.directive('filesPicker', function($compile){
+module.directive('filesPicker', function(){
 	return {
 		restrict: 'E',
 		transclude: true,
@@ -444,7 +444,7 @@ module.directive('filesPicker', function($compile){
 	}
 })
 
-module.directive('filesInputChange', function($compile){
+module.directive('filesInputChange', function(){
 	return {
 		restrict: 'A',
 		scope: {
@@ -462,7 +462,7 @@ module.directive('filesInputChange', function($compile){
 	}
 })
 
-module.directive('iconsSelect', function($compile) {
+module.directive('iconsSelect', function() {
 	return {
 		restrict: 'E',
 		scope:{
@@ -496,7 +496,7 @@ module.directive('iconsSelect', function($compile) {
 	};
 });
 
-module.directive('preview', function($compile){
+module.directive('preview', function(){
 	return {
 		restrict: 'E',
 		template: '<div class="row content-line"><div class="row fixed-block height-four">' +
@@ -521,7 +521,7 @@ module.directive('preview', function($compile){
 		}
 });
 
-module.directive('portal', function($compile){
+module.directive('portal', function(){
 	return {
 		restrict: 'E',
 		transclude: true,
@@ -536,7 +536,7 @@ module.directive('portal', function($compile){
 	}
 });
 
-module.directive('adminPortal', function($compile){
+module.directive('adminPortal', function(){
 	skin.skin = 'admin';
 	skin.theme = '/public/admin/default/';
 	return {
@@ -560,7 +560,7 @@ module.directive('adminPortal', function($compile){
 	}
 });
 
-module.directive('portalStyles', function($compile){
+module.directive('portalStyles', function(){
 	return {
 		restrict: 'E',
 		compile: function(element, attributes){
@@ -570,7 +570,7 @@ module.directive('portalStyles', function($compile){
 	}
 });
 
-module.directive('defaultStyles', function($compile){
+module.directive('defaultStyles', function(){
 	return {
 		restrict: 'E',
 		link: function(scope, element, attributes){
@@ -579,7 +579,7 @@ module.directive('defaultStyles', function($compile){
 	}
 });
 
-module.directive('skinSrc', function($compile){
+module.directive('skinSrc', function(){
 	return {
 		restrict: 'A',
 		scope: '&',
@@ -601,7 +601,7 @@ module.directive('skinSrc', function($compile){
 	}
 });
 
-module.directive('localizedClass', function($compile){
+module.directive('localizedClass', function(){
 	return {
 		restrict: 'A',
 		link: function($scope, $attributes, $element){
@@ -610,7 +610,7 @@ module.directive('localizedClass', function($compile){
 	}
 });
 
-module.directive('pullDownMenu', function($compile, $timeout){
+module.directive('pullDownMenu', function(){
 	return {
 		restrict: 'E',
 		transclude: true,
@@ -620,7 +620,7 @@ module.directive('pullDownMenu', function($compile, $timeout){
 	}
 });
 
-module.directive('pullDownOpener', function($compile, $timeout){
+module.directive('pullDownOpener', function(){
 	return {
 		restrict: 'E',
 		require: '^pullDownMenu',
@@ -648,7 +648,7 @@ module.directive('pullDownOpener', function($compile, $timeout){
 	}
 });
 
-module.directive('pullDownContent', function($compile, $timeout){
+module.directive('pullDownContent', function(){
 	return {
 		restrict: 'E',
 		require: '^pullDownMenu',
@@ -708,7 +708,7 @@ module.directive('topNotification', function(){
 	}
 });
 
-module.directive('dropDown', function($compile, $timeout){
+module.directive('dropDown', ['$compile', '$timeout', function($compile, $timeout){
 	return {
 		restrict: 'E',
 		scope: {
@@ -804,7 +804,7 @@ module.directive('dropDown', function($compile, $timeout){
 			});
 		}
 	}
-});
+}]);
 
 module.directive('dropDownButton', function(){
 	return {
@@ -840,7 +840,7 @@ module.directive('opts', function(){
 	}
 });
 
-module.directive('loadingIcon', function($compile){
+module.directive('loadingIcon', function(){
 	return {
 		restrict: 'E',
 		link: function($scope, $element, $attributes){
@@ -879,7 +879,7 @@ module.directive('loadingIcon', function($compile){
 	}
 })
 
-module.directive('loadingPanel', function($compile){
+module.directive('loadingPanel', function(){
 	return {
 		restrict: 'A',
 		link: function($scope, $element, $attributes){
@@ -902,7 +902,7 @@ module.directive('loadingPanel', function($compile){
 	}
 });
 
-module.directive('userRole', function($compile){
+module.directive('userRole', function(){
 	return {
 		restrict: 'A',
 		link: function($scope, $element, $attributes){
@@ -917,7 +917,7 @@ module.directive('userRole', function($compile){
 	}
 });
 
-module.directive('behaviour', function($compile){
+module.directive('behaviour', function(){
 	return {
 		restrict: 'E',
 		template: '<div ng-transclude></div>',
@@ -948,7 +948,7 @@ module.directive('behaviour', function($compile){
 	}
 });
 
-module.directive('authorize', function($compile){
+module.directive('authorize', function(){
 	return {
 		restrict: 'EA',
 		link: function(scope, element, attributes){
@@ -1001,7 +1001,7 @@ module.directive('resizable', function(){
 	}
 });
 
-module.directive('draggable', function($compile){
+module.directive('draggable', function(){
 	return {
 		restrict: 'A',
 		link: function(scope, element, attributes){
@@ -1019,7 +1019,7 @@ module.directive('draggable', function($compile){
 	}
 });
 
-module.directive('sharePanel', function($compile){
+module.directive('sharePanel', function(){
 	return {
 		scope: {
 			resources: '=',
@@ -1033,7 +1033,7 @@ module.directive('sharePanel', function($compile){
 	}
 });
 
-module.directive('widgets', function($compile){
+module.directive('widgets', function(){
 	return {
 		scope: {
 			list: '='
@@ -1085,7 +1085,7 @@ module.directive('widgets', function($compile){
 	}
 });
 
-module.directive('progressBar', function($compile){
+module.directive('progressBar', function(){
 	return {
 		restrict: 'E',
 		scope: {
@@ -1119,7 +1119,7 @@ module.directive('progressBar', function($compile){
 	}
 });
 
-module.directive('datePicker', function($compile){
+module.directive('datePicker', function(){
 	return {
 		scope: {
 			minDate: '=',
@@ -1209,7 +1209,7 @@ module.directive('datePicker', function($compile){
 	}
 });
 
-module.directive('datePickerIcon', function($compile){
+module.directive('datePickerIcon', function(){
 	return {
 		scope: {
 			ngModel: '=',
@@ -1266,7 +1266,7 @@ module.directive('filters', function(){
 	}
 });
 
-module.directive('alphabetical', function($compile, $parse){
+module.directive('alphabetical', ['$compile', '$parse', function($compile, $parse){
 	return {
 		restrict: 'E',
 		controller: function($scope){
@@ -1321,9 +1321,9 @@ module.directive('alphabetical', function($compile, $parse){
 			}
 		}
 	}
-});
+}]);
 
-module.directive('completeClick', function($parse){
+module.directive('completeClick', ['$parse', function($parse){
 	return {
 		compile: function(selement, attributes){
 			var fn = $parse(attributes.completeClick);
@@ -1336,9 +1336,9 @@ module.directive('completeClick', function($parse){
 			};
 		}
 	}
-});
+}]);
 
-module.directive('dragstart', function($parse){
+module.directive('dragstart', ['$parse', function($parse){
     return {
         restrict: 'A',
         link: function(scope, element, attributes){
@@ -1372,9 +1372,9 @@ module.directive('dragstart', function($parse){
             })
         }
     }
-})
+}])
 
-module.directive('dragdrop', function($parse){
+module.directive('dragdrop', ['$parse', function($parse){
     return {
         restrict: 'A',
         link: function(scope, element, attributes){
@@ -1412,9 +1412,9 @@ module.directive('dragdrop', function($parse){
             });
         }
     }
-});
+}]);
 
-module.directive('dropFiles', function($parse){
+module.directive('dropFiles', ['$parse', function($parse){
 	return {
 		link: function(scope, element, attributes){
 			var ngModel = $parse(attributes.dropFiles);
@@ -1439,9 +1439,9 @@ module.directive('dropFiles', function($parse){
 			});
 		}
 	}
-});
+}]);
 
-module.directive('attachments', function($parse){
+module.directive('attachments', ['$parse', function($parse){
 	return {
 		scope: true,
 		restrict: 'E',
@@ -1567,7 +1567,7 @@ module.directive('attachments', function($parse){
 			};
 		}
 	}
-});
+}]);
 
 module.directive('pdfViewer', function(){
 	return {
@@ -1781,7 +1781,7 @@ module.directive('sidePanel', function(){
 	};
 });
 
-module.directive('plus', function($compile){
+module.directive('plus', function(){
 	return {
 		restrict: 'E',
 		transclude: true,
@@ -2196,7 +2196,7 @@ module.directive('sideNav', function(){
 	}
 });
 
-module.directive('appTitle', function($compile){
+module.directive('appTitle', ['$compile', function($compile){
 	return {
 		restrict: 'E',
 		link: function(scope, element, attributes){
@@ -2222,9 +2222,9 @@ module.directive('appTitle', function($compile){
 			});
 		}
 	}
-});
+}]);
 
-module.directive('microbox', function($compile){
+module.directive('microbox', ['$compile', function($compile){
 	return {
 		restrict: 'E',
 		compile: function(element, attributes, transclude){
@@ -2282,7 +2282,7 @@ module.directive('microbox', function($compile){
 			}
 		}
 	}
-});
+}]);
 
 module.directive('subtitle', function () {
 	return {

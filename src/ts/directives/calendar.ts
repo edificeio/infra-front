@@ -7,7 +7,7 @@ import { calendar } from '../calendar';
 import { template } from '../template';
 import { $ } from '../libs/jquery/jquery';
 
-export let calendarComponent = ng.directive('calendar', function ($compile) {
+export let calendarComponent = ng.directive('calendar', function () {
     return {
         restrict: 'E',
         scope: true,
@@ -121,7 +121,7 @@ export let calendarComponent = ng.directive('calendar', function ($compile) {
     }
 });
 
-export let scheduleItem = ng.directive('scheduleItem', function ($compile) {
+export let scheduleItem = ng.directive('scheduleItem', function () {
     return {
         restrict: 'E',
         require: '^calendar',

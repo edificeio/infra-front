@@ -1,7 +1,7 @@
 import { ng } from '../ng-start';
 import { workspace } from '../workspace';
 
-export let imageSelect = ng.directive('imageSelect', function($compile){
+export let imageSelect = ng.directive('imageSelect', function(){
 	return {
 		restrict: 'E',
 		transclude: true,
@@ -11,7 +11,7 @@ export let imageSelect = ng.directive('imageSelect', function($compile){
 			ngChange: '&',
 			default: '@'
 		},
-		template: '<div><img ng-src="[[ngModel]]?[[getThumbnails()]]" class="pick-file" draggable="false" ng-if="ngModel" style="cursor: pointer" />' +
+		template: '<div><img src="[[ngModel + \'?\' + getThumbnails()]]" class="pick-file" draggable="false" ng-if="ngModel" style="cursor: pointer" />' +
 			'<img skin-src="[[default]]" class="pick-file" draggable="false" ng-if="!ngModel" style="cursor: pointer" />' +
 			'<lightbox show="userSelecting" on-close="userSelecting = false;">' +
 			'<media-library ' +
@@ -81,7 +81,6 @@ export let imageSelect = ng.directive('imageSelect', function($compile){
 					path = '/workspace/pub/document/'
 				}
 				scope.ngModel = path + scope.selectedFile.file._id;
-				scope.$apply();
 				scope.ngChange();
 			};
 			element.on('click', '.pick-file', () => {
