@@ -1026,7 +1026,7 @@ export let RTE = {
                                 val = val.split(' ')[0];
                             }
                             if(prop === 'text-decoration-style' || prop === 'text-decoration-color'){
-                                return;
+                                continue;
                             }
                             $(item).css(prop, $(item.childNodes[0]).css(prop));
                         }
