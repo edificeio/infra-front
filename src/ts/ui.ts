@@ -359,6 +359,23 @@ let touchEvents = {
     }
 };
 
+interface ResizeParams{
+    lock?: {
+        right?: boolean,
+        left?: boolean,
+        top?: boolean,
+        bottom?: boolean,
+        horizontal?: boolean,
+        vertical?: boolean
+    },
+    moveWithResize?: boolean,
+    mouseUp?: (e: any) => void,
+    extendParent?: {
+        right?: boolean,
+        bottom?: boolean
+    }
+}
+
 export let ui = {
     extendElement: {
         touchEvents: function (element, params?) {
@@ -397,7 +414,7 @@ export let ui = {
                 }
             }
         },
-        resizable: function (element, params) {
+        resizable: function (element, params: ResizeParams) {
             if (!params) {
                 params = {};
             }
@@ -426,37 +443,90 @@ export let ui = {
                         horizontalLeft: element.offset().left + 15 > mouse.x && mouse.x > element.offset().left - 15
                         && params.lock.horizontal === undefined && params.lock.left === undefined,
 
-                        verticalTop: element.offset().top + 5 > mouse.y && mouse.y > element.offset().top - 15
+                        verticalTop: element.offset().top + 15 > mouse.y && mouse.y > element.offset().top - 15
                         && params.lock.vertical === undefined && params.lock.top === undefined,
 
-                        verticalBottom: element.offset().top + element.height() + 5 > mouse.y && mouse.y > element.offset().top + element.height() - 5
+                        verticalBottom: element.offset().top + element.height() + 15 > mouse.y && mouse.y > element.offset().top + element.height() - 15
                         && params.lock.vertical === undefined && params.lock.bottom === undefined
                     };
 
-                    var orientations = {
+                    if($(e.target).hasClass('corner')){
+                        if($(e.target).hasClass('ne')){
+                            resizeLimits.verticalTop = true;
+                            resizeLimits.horizontalRight = true;
+                        }
+                        if($(e.target).hasClass('nw')){
+                            resizeLimits.verticalTop = true;
+                            resizeLimits.horizontalLeft = true;
+                        }
+                        if($(e.target).hasClass('se')){
+                            resizeLimits.verticalBottom = true;
+                            resizeLimits.horizontalRight = true;
+                        }
+                        if($(e.target).hasClass('sw')){
+                            resizeLimits.verticalBottom = true;
+                            resizeLimits.horizontalLeft = true;
+                        }
+                    }
+
+                    const orientations = {
                         'ns': resizeLimits.verticalTop || resizeLimits.verticalBottom,
                         'ew': resizeLimits.horizontalLeft || resizeLimits.horizontalRight,
                         'nwse': (resizeLimits.verticalBottom && resizeLimits.horizontalRight) || (resizeLimits.verticalTop && resizeLimits.horizontalLeft),
                         'nesw': (resizeLimits.verticalBottom && resizeLimits.horizontalLeft) || (resizeLimits.verticalTop && resizeLimits.horizontalRight)
-
                     };
 
-                    var cursor = '';
+                    const resizeClasses = {
+                        'top': resizeLimits.verticalTop,
+                        'left': resizeLimits.horizontalLeft,
+                        'bottom': resizeLimits.verticalBottom,
+                        'right': resizeLimits.horizontalRight,
+                        'top-left': resizeLimits.verticalTop && resizeLimits.horizontalLeft,
+                        'bottom-left': resizeLimits.verticalBottom && resizeLimits.horizontalLeft,
+                        'bottom-right': resizeLimits.verticalBottom && resizeLimits.horizontalRight,
+                        'top-right': resizeLimits.verticalTop && resizeLimits.horizontalRight
+                    };
+
+                    let cursor = '';
                     for (var orientation in orientations) {
                         if (orientations[orientation]) {
                             cursor = orientation;
                         }
                     }
 
+                    let cssClass = '';
+                    for (var cssCls in resizeClasses) {
+                        if (resizeClasses[cssCls]) {
+                            element.addClass(cssCls);
+                        }
+                        else{
+                            element.removeClass(cssCls);
+                        }
+                    }
 
                     if (cursor) {
                         cursor = cursor + '-resize';
                     }
                     element.css({ cursor: cursor });
-                    element.find('[contenteditable]').css({ cursor: cursor });
+                    element.find('[contenteditable]').each((index, item) => {
+                        if(!$(item).hasClass('image-container')){
+                            $(item).css({ cursor: cursor });
+                        }
+                    });
                 });
                 element.on('mouseout', function (e) {
                     element.unbind('mousemove');
+                    let cssClass = '';
+                    if(!element.data('resizing')){
+                        element.removeClass('top');
+                        element.removeClass('left');
+                        element.removeClass('bottom');
+                        element.removeClass('right');
+                        element.removeClass('top-left');
+                        element.removeClass('bottom-left');
+                        element.removeClass('bottom-right');
+                        element.removeClass('top-right');
+                    }
                 });
             });
 
@@ -466,6 +536,8 @@ export let ui = {
                     return;
                 }
 
+                const borderWidth:number = parseInt(element.css('border-width'));
+                
                 $('body').css({
                     '-webkit-user-select': 'none',
                     '-moz-user-select': 'none',
@@ -477,19 +549,38 @@ export let ui = {
                     y: e.pageY || e.originalEvent.touches[0].pageY,
                     x: e.pageX || e.originalEvent.touches[0].pageX
                 };
-                var resizeLimits = {
+                const resizeLimits = {
                     horizontalRight: element.offset().left + element.width() + 15 > mouse.x && mouse.x > element.offset().left + element.width() - 15
                     && params.lock.horizontal === undefined && params.lock.right === undefined,
 
                     horizontalLeft: element.offset().left + 15 > mouse.x && mouse.x > element.offset().left - 15
                     && params.lock.horizontal === undefined && params.lock.left === undefined,
 
-                    verticalTop: element.offset().top + 5 > mouse.y && mouse.y > element.offset().top - 15
+                    verticalTop: element.offset().top + 15 > mouse.y && mouse.y > element.offset().top - 15
                     && params.lock.vertical === undefined && params.lock.top === undefined,
 
-                    verticalBottom: element.offset().top + element.height() + 5 > mouse.y && mouse.y > element.offset().top + element.height() - 5
+                    verticalBottom: element.offset().top + element.height() + 15 > mouse.y && mouse.y > element.offset().top + element.height() - 15
                     && params.lock.vertical === undefined && params.lock.bottom === undefined
                 };
+
+                if($(e.target).hasClass('corner')){
+                    if($(e.target).hasClass('ne')){
+                        resizeLimits.verticalTop = true;
+                        resizeLimits.horizontalRight = true;
+                    }
+                    if($(e.target).hasClass('nw')){
+                        resizeLimits.verticalTop = true;
+                        resizeLimits.horizontalLeft = true;
+                    }
+                    if($(e.target).hasClass('se')){
+                        resizeLimits.verticalBottom = true;
+                        resizeLimits.horizontalRight = true;
+                    }
+                    if($(e.target).hasClass('sw')){
+                        resizeLimits.verticalBottom = true;
+                        resizeLimits.horizontalLeft = true;
+                    }
+                }
 
                 var initial = {
                     pos: element.offset(),
@@ -534,7 +625,7 @@ export let ui = {
                             var p = element.offset();
                             if (resizeLimits.horizontalLeft) {
                                 var distance = initial.pos.left - mouse.x;
-                                if (initial.pos.left - distance < parentData.pos.left) {
+                                if (initial.pos.left - distance < parentData.pos.left && !params.moveWithResize) {
                                     distance = initial.pos.left - parentData.pos.left;
                                 }
                                 if (params.moveWithResize !== false) {
@@ -575,8 +666,8 @@ export let ui = {
                             }
                             else {
                                 var distance = mouse.y - p.top;
-                                if (element.offset().top + distance > parentData.pos.top + parent.height()) {
-                                    distance = (parentData.pos.top + parentData.size.height) - element.offset().top - 2;
+                                if (element.offset().top + distance > parentData.pos.top + parent.height() && !(params.extendParent && params.extendParent.bottom)) {
+                                    distance = (parentData.pos.top + parentData.size.height) - element.offset().top - borderWidth * 2;
                                 }
                                 newHeight = distance;
                             }
@@ -593,6 +684,7 @@ export let ui = {
 
                     $(window).on('mouseup.resize touchleave.resize touchend.resize', function (e) {
                         interrupt = true;
+                        element.removeClass(element.css('cursor'));
                         setTimeout(function () {
                             $('body').css({ overflow: 'auto' });
                             element.data('resizing', false);
@@ -605,7 +697,15 @@ export let ui = {
                         $(window).unbind('mousemove.resize touchmove.resize mouseup.resize touchleave.resize touchend.resize');
                         $('body').unbind('mouseup.resize touchleave.resize touchend.resize');
 
-                        $('.main').css({ 'cursor': '' })
+                        $('.main').css({ 'cursor': '' });
+                        element.removeClass('top');
+                        element.removeClass('left');
+                        element.removeClass('bottom');
+                        element.removeClass('right');
+                        element.removeClass('top-left');
+                        element.removeClass('bottom-left');
+                        element.removeClass('bottom-right');
+                        element.removeClass('top-right');
                     });
                 }
             });

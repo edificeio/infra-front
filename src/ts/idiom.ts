@@ -1,4 +1,7 @@
 import { _ } from './libs/underscore/underscore';
+import { ui } from './ui';
+import { $ } from "./libs/jquery/jquery";
+import { table } from './editor/options/table';
 
 var bundle = {};
 var xsrfCookie;
@@ -103,6 +106,9 @@ export var idiom = {
     translate: function(key){
         if(key === undefined){
             key = '';
+        }
+        if(bundle[key + '.mobile'] && $(window).width() <= ui.breakpoints.tablette){
+            return bundle[key + '.mobile'];
         }
         return bundle[key] === undefined ? key : bundle[key];
     },

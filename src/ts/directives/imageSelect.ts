@@ -1,5 +1,5 @@
 import { ng } from '../ng-start';
-import { workspace } from '../workspace';
+import { MediaLibrary, Document } from '../workspace';
 
 export let imageSelect = ng.directive('imageSelect', function(){
 	return {
@@ -48,16 +48,16 @@ export let imageSelect = ng.directive('imageSelect', function(){
 				element.removeClass('droptarget');
 			});
 
-			element.on('drop', (e) => {
+			element.on('drop', async (e) => {
 				element.removeClass('droptarget');
 				element.addClass('loading-panel');
 				e.preventDefault();
 				var file = e.originalEvent.dataTransfer.files[0];
-				workspace.Document.prototype.upload(file, 'file-upload-' + file.name + '-0', function(doc){
-					scope.selectedFile.file = doc;
-					scope.updateDocument();
-					element.removeClass('loading-panel');
-				}, scope.selectedFile.visibility);
+				const doc = new Document();
+				await doc.upload(file, scope.selectedFile.visibility);
+				scope.selectedFile.file = doc;
+				scope.updateDocument();
+				element.removeClass('loading-panel');
 			});
 
 			scope.$watch('thumbnails', (thumbs) => {

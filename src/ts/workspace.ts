@@ -1,21 +1,22 @@
-import { http } from './http';
 import { Behaviours } from './behaviours';
 import { moment } from './libs/moment/moment';
-import { model, Model, Collection } from './modelDefinitions';
 import { _ } from './libs/underscore/underscore';
 import { notify } from './notify';
 import { idiom as lang } from './idiom';
+import http from 'axios';
+import { Eventer, Mix, Selection, Selectable } from 'entcore-toolkit';
+import { model } from './modelDefinitions';
+import { Rights, Shareable } from './rights';
 
-class Quota extends Model {
+class Quota {
     max: number;
     used: number;
     unit: string;
 
     constructor() {
-        super();
         this.max = 1;
         this.used = 0;
-        this.unit = 'Mo';
+        this.unit = 'Mo'
     }
 
     appropriateDataUnit(bytes: number) {
@@ -38,58 +39,100 @@ class Quota extends Model {
         }
     }
 
-    refresh () {
-        http().get('/workspace/quota/user/' + model.me.userId).done((data) => {
-            //to mo
-            data.quota = data.quota / (1024 * 1024);
-            data.storage = data.storage / (1024 * 1024);
+    async refresh (): Promise<void> {
+        const response = await http.get('/workspace/quota/user/' + model.me.userId);
+        const data = response.data;
+        //to mo
+        data.quota = data.quota / (1024 * 1024);
+        data.storage = data.storage / (1024 * 1024);
 
-            if (data.quota > 2000) {
-                data.quota = Math.round((data.quota / 1024) * 10) / 10;
-                data.storage = Math.round((data.storage / 1024) * 10) / 10;
-                this.unit = 'Go';
-            }
-            else {
-                data.quota = Math.round(data.quota);
-                data.storage = Math.round(data.storage);
-            }
+        if (data.quota > 2000) {
+            data.quota = Math.round((data.quota / 1024) * 10) / 10;
+            data.storage = Math.round((data.storage / 1024) * 10) / 10;
+            this.unit = 'Go';
+        }
+        else {
+            data.quota = Math.round(data.quota);
+            data.storage = Math.round(data.storage);
+        }
 
-            this.max = data.quota;
-            this.used = data.storage;
-            this.trigger('change');
-        });
+        this.max = data.quota;
+        this.used = data.storage;
     }
 };
 
 export let quota = new Quota();
 
-export class Revision extends Model{
-	constructor(data){
-		super(data);
-	}
+export class Revision{
 }
 
-export class Document extends Model {
+export enum DocumentStatus{
+    initial = 'initial', loaded = 'loaded', failed = 'failed', loading = 'loading'
+}
+
+export class Document implements Selectable, Shareable {
     title: string;
     _id: string;
     created: any;
     metadata: {
         'content-type': string,
-		role: string,
-		extension: string
+		role?: string,
+        extension?: string,
+        filename?: string,
+        size: number
     };
 	version: number;
 	link: string;
 	icon: string;
 	owner: {
-		userId: string
-	};
-	revisions: Collection<Revision>;
+        userId: string,
+        displayName: string
+    };
+    eventer = new Eventer();
+    revisions: Revision[];
+    status: DocumentStatus;
+    selected: boolean;
+    currentQuality: number;
+    hiddenBlob: Blob;
+    rights: Rights<Document> = new Rights(this);
+    private xhr: XMLHttpRequest;
+    shared: any;
 
+    get myRights(){
+        return this.rights.myRights;
+    }
 
-    constructor(data) {
-		super(data);
+    async delete(){
+        await http.delete('/workspace/document/' + this._id);
+    }
 
+    async abort(){
+        if(this.xhr){
+            this.xhr.abort();
+        }
+    }
+
+    get size(): string{
+        const koSize = this.metadata.size / 1024;
+        if(koSize > 1024){
+            return (parseInt(koSize / 1024 * 10) / 10)  + ' Mo';
+        }
+        return Math.ceil(koSize) + ' Ko';
+    }
+
+    applyBlob(){
+        if(this.hiddenBlob){
+            this.update(this.hiddenBlob);
+        }
+    }
+
+    fromJSON(data) {
+        if(!data){
+            this.status = DocumentStatus.initial;
+            return;
+        }
+
+        this.status = DocumentStatus.loaded;
         if (data.metadata) {
             var dotSplit = data.metadata.filename.split('.');
             if (dotSplit.length > 1) {
@@ -109,38 +152,67 @@ export class Document extends Model {
             this.created = moment();
         }
 
-		this.owner = { userId: data.owner };
+		this.owner = { userId: data.owner, displayName: data.ownerName };
 
 		this.version = parseInt(Math.random() * 100);
 		this.link = '/workspace/document/' + this._id;
-		if(this.metadata.role === 'img'){
+		if(this.metadata && this.metadata.role === 'img'){
 			this.icon = this.link;
 		}
-		this.collection(Revision);
+		this.revisions = [];
     }
 
-	refreshHistory(hook?: () => void){
-		http().get("document/" + this._id + "/revisions").done((revisions) => {
-			this.revisions.load(revisions);
-			if(typeof hook === 'function'){
-				hook()
-			}
-		})
-	}
+	async refreshHistory(){
+        const response = await http.get("document/" + this._id + "/revisions");
+        const revisions = response.data;
+        this.revisions = Mix.castArrayAs(Revision, revisions);
+    }
 
-    upload(file: File | Blob, requestName: string, callback: (data: any) => void, visibility?: 'public' | 'protected') {
+    get isEditableImage(){
+        const editables = ['jpg', 'jpeg', 'bmp'];
+        const ext = this.metadata.extension.toLowerCase();
+        return editables.indexOf(ext) !== -1;
+    }
+
+    upload(file: File | Blob, visibility?: 'public' | 'protected'): Promise<any> {
         if (!visibility) {
             visibility = 'protected';
         }
+        if(!this.metadata){
+            const nameSplit = file.name.split('.');
+            this.metadata = { 
+                'content-type': file.type,
+                'filename': file.name,
+                size: file.size,
+                extension: nameSplit[nameSplit.length - 1]
+            };
+            this.metadata.role = this.role();
+        }
+        this.status = DocumentStatus.loading;
         var formData = new FormData();
         formData.append('file', file, file.name);
-        http().postFile('/workspace/document?' + visibility + '=true&application=media-library&quality=0.7&' + workspace.thumbnails, formData, { requestName: requestName }).done(function (data) {
-            if (typeof callback === 'function') {
-                callback(data);
+        this.title = file.name;
+        this.xhr = new XMLHttpRequest();
+        this.xhr.open('POST', '/workspace/document?' + visibility + '=true&application=media-library&quality=1&' + MediaLibrary.thumbnails);
+        this.xhr.send(formData);
+        this.xhr.onprogress = (e) => {
+            this.eventer.trigger('progress', e);
+        }
+
+        return new Promise((resolve, reject) => {
+            this.xhr.onload = () => {
+                this.eventer.trigger('loaded');
+                resolve();
+                this.status = DocumentStatus.loaded;
+                const result = JSON.parse(this.xhr.responseText);
+                this._id = result._id;
             }
-        }).e400(function (e) {
-            var error = JSON.parse(e.responseText);
-            notify.error(error.error);
+            this.xhr.onerror = () => {
+                this.eventer.trigger('error');
+                var error = JSON.parse(this.xhr.responseText);
+                notify.error(error.error);
+                this.status = DocumentStatus.failed;
+            }
         });
     }
 
@@ -148,20 +220,29 @@ export class Document extends Model {
         return Document.role(this.metadata['content-type']);
     }
 
-    protectedDuplicate(callback?: (document: Document) => void) {
-        Behaviours.applicationsBehaviours.workspace.protectedDuplicate(this, function (data) {
-            if (typeof callback === 'function') {
-                callback(new workspace.Document(data))
-            }
+    protectedDuplicate(callback?: (document: Document) => void): Promise<Document> {
+        return new Promise((resolve, reject) => {
+            Behaviours.applicationsBehaviours.workspace.protectedDuplicate(this, function (data) {
+                resolve(Mix.castAs(Document, data));
+            });
         });
     }
 
     publicDuplicate(callback?: (document: Document) => void) {
-        Behaviours.applicationsBehaviours.workspace.publicDuplicate(this, function (data) {
-            if (typeof callback === 'function') {
-                callback(new workspace.Document(data))
-            }
+        return new Promise((resolve, reject) => {
+            Behaviours.applicationsBehaviours.workspace.publicDuplicate(this, function (data) {
+                resolve(Mix.castAs(Document, data));
+            });
         });
+    }
+
+    async update(blob: Blob){
+        const formData = new FormData();
+        formData.append('file', blob, this._id);
+        await http.put('/workspace/document/' + this._id + '?' + MediaLibrary.thumbnails, formData);
+        this.currentQuality = 1;
+        this.version = Math.floor(Math.random() * 100);
+        this.eventer.trigger('save');
     }
 
     static role(fileType) {
@@ -207,19 +288,81 @@ export class Document extends Model {
         return 'unknown';
     }
 
-    trash(): Promise<any> {
-        return new Promise((resolve, reject) => {
-            http().put('/workspace/document/trash/' + this._id).done(() => {
-                resolve();
-            });
-        });
+    async trash(): Promise<any> {
+        const response = await http.put('/workspace/document/trash/' + this._id);
     }
 }
 
-export let workspace = {
-	thumbnails: "thumbnail=120x120&thumbnail=150x150&thumbnail=100x100&thumbnail=290x290&thumbnail=48x48&thumbnail=82x82&thumbnail=381x381&thumbnail=1600x0",
-	Document: Document,
-    upload: function(file: File | Blob, visibility?: 'public' | 'protected'): Promise<Document>{
+export class Folder implements Selectable{
+
+    selected: boolean;
+    folders = new Selection<Folder>([]);
+    documents = new Selection<Document>([]);
+    folder: string;
+
+    closeFolder(){
+        this.folders.all = [];
+    };
+    
+    async sync(){
+        this.folders.all.splice(0, this.folders.all.length);
+        this.folders.addRange(MediaLibrary.myDocuments.folders.filter((folder) => folder.folder.indexOf(this.folder + '_') !== -1));
+        const response = await http.get('/workspace/documents/' + this.folder + '?filter=owner&hierarchical=true');
+        this.documents.all.splice(0, this.documents.all.length);
+        this.documents.addRange(Mix.castArrayAs(Document, response.data.filter(doc => doc.folder !== 'Trash')));
+        MediaLibrary.eventer.trigger('sync');
+    }
+}
+
+export class MyDocuments extends Folder{
+    async sync(){
+        this.folders.all.splice(0, this.folders.all.length);
+        const response = await http.get('/workspace/folders/list?filter=owner');
+        this.folders.addRange(response.data.filter((folder) => folder.folder.indexOf('_') === -1 ));
+        this.documents.all.splice(0, this.documents.all.length);
+        const docResponse = await http.get('/workspace/documents?filter=owner&hierarchical=true');
+        this.documents.addRange(Mix.castArrayAs(Document, docResponse.data.filter(doc => doc.folder !== 'Trash')));
+        MediaLibrary.eventer.trigger('sync');
+    }
+}
+
+class SharedDocuments extends Folder{
+    async sync(){
+        this.documents.all.splice(0, this.documents.all.length);
+        const docResponse = await http.get('/workspace/documents?filter=shared');
+        this.documents.addRange(Mix.castArrayAs(Document, docResponse.data.filter(doc => doc.folder !== 'Trash')));
+        MediaLibrary.eventer.trigger('sync');
+    }
+}
+
+class AppDocuments extends Folder{
+    async sync(){
+        this.documents.all.splice(0, this.documents.all.length);
+        const docResponse = await http.get('/workspace/documents?filter=protected');
+        this.documents.addRange(Mix.castArrayAs(Document, docResponse.data.filter(doc => doc.folder !== 'Trash')));
+        MediaLibrary.eventer.trigger('sync');
+    }
+}
+
+class PublicDocuments extends Folder{
+    async sync(){
+        this.documents.all.splice(0, this.documents.all.length);
+        const docResponse = await http.get('/workspace/documents?filter=public');
+        this.documents.addRange(Mix.castArrayAs(Document, docResponse.data.filter(doc => doc.folder !== 'Trash')));
+        MediaLibrary.eventer.trigger('sync');
+    }
+}
+
+export class MediaLibrary{
+    static myDocuments = new MyDocuments();
+    static sharedDocuments = new SharedDocuments();
+    static appDocuments = new AppDocuments();
+    static publicDocuments = new PublicDocuments();
+    static eventer = new Eventer();
+
+    static thumbnails = "thumbnail=120x120&thumbnail=150x150&thumbnail=100x100&thumbnail=290x290&thumbnail=48x48&thumbnail=82x82&thumbnail=381x381&thumbnail=1600x0";
+
+    static async upload (file: File | Blob, visibility?: 'public' | 'protected'): Promise<Document>{
         if(!visibility){
             visibility = 'protected';
         }
@@ -328,9 +471,16 @@ export let workspace = {
 	}
 };
 
-if (!(window as any).entcore) {
-    (window as any).entcore = {};
+        const doc = new Document();
+        await doc.upload(file, visibility);
+        return doc;
+    }
 }
-(window as any).entcore.workspace = workspace;
-(window as any).entcore.quota = quota;
-(window as any).workspace = workspace;
+
+if (!window.entcore) {
+    window.entcore = {};
+}
+window.entcore.Folder = Folder;
+window.entcore.quota = quota;
+window.entcore.Document = Document;
+window.entcore.MediaLibrary = MediaLibrary;

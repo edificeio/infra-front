@@ -55,6 +55,31 @@ export let bindHtml = ng.directive('bindHtml', ['$compile', function($compile){
 						.appendTo(parent);
 				});
 
+				let legend;
+				element.on('mouseover', 'img', (e) => {
+					const src: string = $(e.target).attr('src');
+					if(src.startsWith('/workspace/document')){
+						legend = $(`<legend class="user-image"><div class="text">Contenu temporaire de test</div></legend>`).appendTo('body');
+						legend.height($(e.target).height());
+						legend.width($(e.target).width());
+						legend.offset({
+							top: $(e.target).offset().top,
+							left: $(e.target).offset().left
+						});
+					
+						setTimeout(() => {
+							const out = (e) => {
+								legend.find('.text').addClass('hidden');
+								setTimeout(() => legend.remove(), 250);
+								element.off('mouseout');
+							};
+
+							element.on('mouseout', 'img', out);
+							element.on('mouseout', out);
+						}, 10)
+					}
+				});
+
 				if(window.MathJax && window.MathJax.Hub){
 					window.MathJax.Hub.Queue(["Typeset", window.MathJax.Hub]);
 				}

@@ -10,7 +10,10 @@ if(appFolder === 'userbook'){
 export var template = {
 	viewPath: '/' + appFolder + '/public/template/',
 	containers: {},
-	open: function(name, view){
+	open: function(name, view?){
+		if(!view){
+			view = name;
+		}
 		const split = $('#context').attr('src').split('-');
 		const hash = split[split.length - 1].split('.')[0];
 		var path = this.viewPath + view + '.html?hash=' + hash;
