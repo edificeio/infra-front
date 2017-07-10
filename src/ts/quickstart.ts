@@ -1,6 +1,7 @@
 import { model } from './modelDefinitions';
 import { skin } from './skin';
 import { http } from './http';
+import { moment } from './libs/moment/moment';
 
 export let quickstart = {
 	steps: {},
@@ -28,6 +29,10 @@ export let quickstart = {
 
 		this.save();
 	},
+	seeAssistantLater(){
+ 		this.state.assistantTimer = moment().format('MM/DD/YYYY HH:mm');
+ 		this.save();
+ 	},
 	nextAppStep: function(){
 		this.state[skin.skin][this.app]++;
 		this.save();
@@ -122,7 +127,14 @@ export let quickstart = {
 
 			this.state = preferences;
 
-			if(preferences.assistant !== -1){
+			if(
+ 				preferences.assistant !== -1 && !(
+ 					preferences.assistantTimer 
+ 					&& moment(preferences.assistantTimer).year() === moment().year() 
+ 					&& moment(preferences.assistantTimer).dayOfYear() === moment().dayOfYear() 
+ 					&& moment(preferences.assistantTimer).hour() === moment().hour()
+ 				)
+ 			){
 				http().get(skin.basePath + 'template/assistant/steps.json').done(function(steps){
 					this.steps = steps;
 					let nbSteps = this.steps[this.types[model.me.type]];

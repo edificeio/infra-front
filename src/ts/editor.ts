@@ -1666,7 +1666,8 @@ export let RTE = {
             $('input[type=color]').css({
                 position: 'absolute',
                 opacity: 0,
-                'pointer-events': 'none'
+                'pointer-events': 'none',
+                height: '35px'
             });
             $('.sp-replacer').on('mouseover', function(e){ 
                 $(e.target).parent().find('input[type=color]').trigger('mouseover', [e]);
