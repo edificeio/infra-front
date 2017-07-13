@@ -3213,7 +3213,7 @@ export let RTE = {
 
                     var previousScroll = 0;
                     var sticky = function() {
-                        if(element.parents('.editor-media').length > 0){
+                        if(element.parents('.editor-media').length > 0 || element.parents('body').length === 0){
                             return;
                         }
                         
