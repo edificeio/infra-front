@@ -63,6 +63,7 @@ export var currentLanguage = '';
             request.onload = function(){
                 if(request.status === 200){
                     currentLanguage = JSON.parse(request.responseText).locale;
+                    (window as any).currentLanguage = currentLanguage;
                     if((window as any).moment){
                         if (currentLanguage === 'fr') {
                             moment.updateLocale(currentLanguage, {
@@ -87,7 +88,8 @@ export var currentLanguage = '';
 
         if(preferencesRequest.status === 200){
             try{
-    			currentLanguage = JSON.parse(JSON.parse(preferencesRequest.responseText).preference)['default-domain'];
+                currentLanguage = JSON.parse(JSON.parse(preferencesRequest.responseText).preference)['default-domain'];
+                (window as any).currentLanguage = currentLanguage;
     		} catch(e) {
     			fallBack();
     		}
