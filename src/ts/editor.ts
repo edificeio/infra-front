@@ -3270,6 +3270,7 @@ export let RTE = {
                             cancelAnimationFrame(placeEditorToolbar);
                         }
                         placeToolbar();
+                        editorInstance.trigger('contentupdated');
                     });
 
                     element.children('popover').find('li:first-child').on('click', function(){
