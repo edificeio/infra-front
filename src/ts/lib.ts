@@ -604,24 +604,7 @@ Model.prototype.sync = function(){
 }());
 
 export function bootstrap(func) {
-    if (currentLanguage === 'fr') {
-		moment.locale(currentLanguage);
-        moment.updateLocale(currentLanguage, {
-            calendar: {
-                lastDay: '[Hier à] HH[h]mm',
-                sameDay: '[Aujourd\'hui à] HH[h]mm',
-                nextDay: '[Demain à] HH[h]mm',
-                lastWeek: 'dddd [dernier à] HH[h]mm',
-                nextWeek: 'dddd [prochain à] HH[h]mm',
-                sameElse: 'dddd LL'
-            }
-        });
-    }
-    else {
-        moment.locale(currentLanguage);
-    }
-
-	if((window as any).notLoggedIn){
+   if((window as any).notLoggedIn){
 		Behaviours.loadBehaviours(appPrefix, function(){
 			skin.loadDisconnected();
 			func();

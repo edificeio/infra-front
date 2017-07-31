@@ -2822,6 +2822,22 @@ $(document).ready(function(){
 			function start(){
 				lang.addBundle('/i18n', function(){
 					lang.addBundle('/' + appPrefix + '/i18n', function(){
+						 if (currentLanguage === 'fr') {
+							moment.locale(currentLanguage);
+							moment.updateLocale(currentLanguage, {
+								calendar: {
+									lastDay: '[Hier à] HH[h]mm',
+									sameDay: '[Aujourd\'hui à] HH[h]mm',
+									nextDay: '[Demain à] HH[h]mm',
+									lastWeek: 'dddd [dernier à] HH[h]mm',
+									nextWeek: 'dddd [prochain à] HH[h]mm',
+									sameElse: 'dddd LL'
+								}
+							});
+						}
+						else {
+							moment.locale(currentLanguage);
+						}
                         angular.bootstrap($('html'), ['app']);
                         model.trigger('bootstrap');
 						model.bootstrapped = true;
