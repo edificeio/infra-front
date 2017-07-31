@@ -164,7 +164,7 @@ export var recorder = (function(){
                     closeWs();
                     notify.info(event.error);
 				}
-                ws.onmessage = function (event) {
+                ws.onmessage = (event) => {
                 	if (event.data && event.data.indexOf("error") !== -1) {
                 		console.log(event.data);
 						closeWs();
