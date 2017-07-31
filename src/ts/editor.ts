@@ -3212,6 +3212,7 @@ export let RTE = {
                     );
 
                     var previousScroll = 0;
+                    var placeEditorToolbar = 0;
                     var sticky = function() {
                         if(element.parents('.editor-media').length > 0 || element.parents('body').length === 0){
                             return;
@@ -3251,11 +3252,11 @@ export let RTE = {
 
                         previousScroll = (window.scrollY || window.pageYOffset);
 
-                        var placeEditorToolbar = requestAnimationFrame(sticky);
+                        placeEditorToolbar = requestAnimationFrame(sticky);
                     }
 
                     if(ui.breakpoints.tablette <= $(window).width()){
-                        var placeEditorToolbar = requestAnimationFrame(sticky);
+                        placeEditorToolbar = requestAnimationFrame(sticky);
                     }
 
                     $(window).on('resize', function () {
