@@ -173,6 +173,7 @@ export var recorder = (function(){
                 		closeWs();
                 		notify.info("recorder.saved");
 						notifyFollowers('saved');
+						this.elapsedTime = 0;
                 	}
 
                 }
