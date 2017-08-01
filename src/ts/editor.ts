@@ -748,6 +748,7 @@ export let RTE = {
                         if (el.text()) {
                             sibling.parentNode.insertBefore(el[0], sibling);
                             sibling.textContent = sibling.textContent.substring(range.endOffset);
+                            range.endOffset = 0;
                             that.moveRanges(range, sibling, -(el.text().length + range.startOffset));
                             let r = that.nextRanges[that.nextRanges.length - 1];
                             r.setEnd(el[0], 1);
@@ -781,7 +782,7 @@ export let RTE = {
                         
                     }
                 }
-                if(sibling === nodeEnd){
+                if(sibling === nodeEnd || (sibling.parentNode === range.endContainer && sibling === range.endContainer.childNodes[range.endOffset])){
                     break;
                 }
 
@@ -790,10 +791,7 @@ export let RTE = {
                 }
                 
                 i++;
-            } while (
-                sibling
-                && !(sibling.parentNode === range.endContainer && sibling === range.endContainer.childNodes[range.endOffset])
-            );
+            } while (sibling);
         }
 
         function applyCSSText(css, range){
@@ -1033,6 +1031,9 @@ export let RTE = {
                             }
                             if(prop === 'text-decoration-style' || prop === 'text-decoration-color'){
                                 continue;
+                            }
+                            if(prop === 'text-decoration-line'){
+                                prop = 'text-decoration';
                             }
                             $(item).css(prop, $(item.childNodes[0]).css(prop));
                         }
