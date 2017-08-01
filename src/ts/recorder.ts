@@ -169,7 +169,7 @@ export var recorder = (function(){
                 		console.log(event.data);
 						closeWs();
 						notify.info(event.data);
-                	} else if (event.data && event.data === "ok") {
+                	} else if (event.data && event.data === "ok" && this.status === "encoding") {
                 		closeWs();
                 		notify.info("recorder.saved");
 						notifyFollowers('saved');
