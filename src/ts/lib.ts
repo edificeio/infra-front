@@ -604,7 +604,7 @@ Model.prototype.sync = function(){
 }());
 
 export function bootstrap(func) {
-   if((window as any).notLoggedIn){
+   if(window.notLoggedIn){
 		Behaviours.loadBehaviours(appPrefix, function(){
 			skin.loadDisconnected();
 			func();

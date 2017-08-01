@@ -38,11 +38,47 @@ if((window as any).infraPrefix === undefined){
 	(window as any).infraPrefix = 'infra';
 }
 
-export var infraPrefix: string = (window as any).infraPrefix;
+export let infraPrefix: string = (window as any).infraPrefix;
+export let currentLanguage = '';
 
-export var currentLanguage = '';
+const defaultLanguage = () => {
+    const request = new XMLHttpRequest();
+    request.open('GET', '/locale');
+    if(xsrfCookie){
+        request.setRequestHeader('X-XSRF-TOKEN', xsrfCookie.val);
+    }
+    (request as any).async = false;
+    request.onload = function(){
+        if(request.status === 200){
+            currentLanguage = JSON.parse(request.responseText).locale;
+            (window as any).currentLanguage = currentLanguage;
+            if((window as any).moment){
+                if (currentLanguage === 'fr') {
+                    moment.updateLocale(currentLanguage, {
+                        calendar: {
+                            lastDay: '[Hier à] HH[h]mm',
+                            sameDay: '[Aujourd\'hui à] HH[h]mm',
+                            nextDay: '[Demain à] HH[h]mm',
+                            lastWeek: 'dddd [dernier à] HH[h]mm',
+                            nextWeek: 'dddd [prochain à] HH[h]mm',
+                            sameElse: 'dddd LL'
+                        }
+                    });
+                }
+                else {
+                    moment.lang(currentLanguage);
+                }
+            }
+        }
+    };
+    request.send(null);
+}
+
 (function(){
-
+    if(window.notLoggedIn){
+        defaultLanguage();
+        return;
+    }
     // User preferences language
     var preferencesRequest = new XMLHttpRequest();
 	preferencesRequest.open('GET', '/userbook/preference/language');
@@ -52,54 +88,20 @@ export var currentLanguage = '';
 	(preferencesRequest as any).async = false;
 
 	preferencesRequest.onload = function(){
-        var fallBack = function(){
-            // Fallback : navigator language
-            var request = new XMLHttpRequest();
-            request.open('GET', '/locale');
-            if(xsrfCookie){
-                request.setRequestHeader('X-XSRF-TOKEN', xsrfCookie.val);
-            }
-            (request as any).async = false;
-            request.onload = function(){
-                if(request.status === 200){
-                    currentLanguage = JSON.parse(request.responseText).locale;
-                    (window as any).currentLanguage = currentLanguage;
-                    if((window as any).moment){
-                        if (currentLanguage === 'fr') {
-                            moment.updateLocale(currentLanguage, {
-                                calendar: {
-                                    lastDay: '[Hier à] HH[h]mm',
-                                    sameDay: '[Aujourd\'hui à] HH[h]mm',
-                                    nextDay: '[Demain à] HH[h]mm',
-                                    lastWeek: 'dddd [dernier à] HH[h]mm',
-                                    nextWeek: 'dddd [prochain à] HH[h]mm',
-                                    sameElse: 'dddd LL'
-                                }
-                            });
-                        }
-                        else {
-                            moment.lang(currentLanguage);
-                        }
-                    }
-                }
-            };
-            request.send(null);
-        }
-
         if(preferencesRequest.status === 200){
             try{
                 currentLanguage = JSON.parse(JSON.parse(preferencesRequest.responseText).preference)['default-domain'];
                 (window as any).currentLanguage = currentLanguage;
     		} catch(e) {
-    			fallBack();
+    			defaultLanguage();
     		}
         }
 
-        if(!currentLanguage)
-            fallBack();
+        if(!currentLanguage){
+            defaultLanguage();
+        }
     };
     preferencesRequest.send(null);
-
 }());
 
 if(document.addEventListener){

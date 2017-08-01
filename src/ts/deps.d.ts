@@ -30,6 +30,7 @@ declare interface Window{
     entcore: any;
     html_beautify: any;
     jQuery: any;
+    notLoggedIn: boolean;
 }
 
 declare interface Node{
