@@ -52,3 +52,8 @@ export class Me{
         });
     }
 }
+
+if(!(window as any).entcore){
+	(window as any).entcore = {};
+}
+(window as any).entcore.Me = Me;

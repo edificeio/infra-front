@@ -1,8 +1,13 @@
 import { appPrefix } from './globals';
 import { skin } from './skin';
 
+let appFolder = appPrefix;
+if(appFolder === 'userbook'){
+	appFolder = 'directory';
+}
+
 export var template = {
-	viewPath: '/' + appPrefix + '/public/template/',
+	viewPath: '/' + appFolder + '/public/template/',
 	containers: {},
 	open: function(name, view){
 		var path = this.viewPath + view + '.html';
