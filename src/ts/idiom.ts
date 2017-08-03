@@ -112,9 +112,9 @@ export var idiom = {
         if(xsrfCookie){
             request.setRequestHeader('X-XSRF-TOKEN', xsrfCookie.val);
         }
-        request.onreadystatechange = function(){
-            if(this.readyState === 4 && this.status === 200){
-                var newBundle = JSON.parse(this.response);
+        request.onload = function(){
+            try{
+                var newBundle = JSON.parse(request.response);
 
                 for(var property in newBundle){
                     bundle[property] = newBundle[property];
@@ -124,7 +124,13 @@ export var idiom = {
                     callback();
                 }
             }
+            catch(e){
+                if(typeof callback === "function"){
+                    callback();
+                }
+            } 
         };
+
         request.send();
     },
     addTranslations: function(folder, callback?){
