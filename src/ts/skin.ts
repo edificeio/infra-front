@@ -36,7 +36,7 @@ export var skin = {
 	},
 	setTheme: function(theme){
 		ui.setStyle(theme.path);
-		http().get('/userbook/api/edit-userbook-info?prop=theme&value=' + theme._id);
+		http().get('/userbook/api/edit-userbook-info?prop=theme-' + skin + '&value=' + theme._id);
 	},
 	loadBookmarks: async function(){
 		return new Promise<any>((resolve, reject) => {
