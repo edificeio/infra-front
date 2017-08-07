@@ -38,6 +38,33 @@ export var skin = {
 		ui.setStyle(theme.path);
 		http().get('/userbook/api/edit-userbook-info?prop=theme-' + skin + '&value=' + theme._id);
 	},
+	
+	skins: [],
+	pickSkin: false,
+	themeConf: undefined,
+	listSkins: function(): Promise<any>{
+		let conf = { overriding:[] };
+		return new Promise<any>((resolve, reject) => {
+			const xhr = new XMLHttpRequest();
+			xhr.open('get', '/assets/theme-conf.js');
+			xhr.onload = async () => {
+				eval(xhr.responseText.split('exports.')[1]);
+				this.conf = conf;
+				const currentTheme = this.conf.overriding.find(t => t.child === skin.skin);
+				if(currentTheme.group){
+					this.skins = this.conf.overriding.filter(t => t.group === currentTheme.group);
+				}
+				else{
+					this.skins = this.conf.overriding;
+				}
+				if(this.skins.length > 1){
+					this.pickSkin = true;
+				}
+				resolve();
+			};
+			xhr.send();
+		});
+	},
 	loadBookmarks: async function(){
 		return new Promise<any>((resolve, reject) => {
 			http().get('/userbook/preference/apps').done(function(data){

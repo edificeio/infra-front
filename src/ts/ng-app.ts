@@ -1201,7 +1201,9 @@ module.directive('datePicker', function($compile){
 			element.on('change', setNewDate);
 
 			element.on('$destroy', function(){
-				element.datepicker('hide');
+				if(element.datepicker){
+					element.datepicker('hide');
+				}
 			});
 		}
 	}
