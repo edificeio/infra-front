@@ -605,12 +605,12 @@ Model.prototype.sync = function(){
 
 export function bootstrap(func) {
    if(window.notLoggedIn){
-		Behaviours.loadBehaviours(appPrefix, function(){
-			skin.loadDisconnected();
+		Behaviours.loadBehaviours(appPrefix, async function(){
+			await skin.loadDisconnected();
 			func();
 		})
-		.error(function(){
-			skin.loadDisconnected();
+		.error(async function(){
+			await skin.loadDisconnected();
 			func();
 		});
 		return;
