@@ -7,17 +7,17 @@ var _ = require('underscore');
 
 declare let moment: any;
 
-if(!(window as any).entcore){
-	(window as any).entcore = {};
+if(!window.entcore){
+	window.entcore = {};
 }
 
 if((window as any).appPrefix === undefined){
-    if(!(window as any).entcore){
-        (window as any).entcore = {};
+    if(!window.entcore){
+        window.entcore = {};
     }
 	if(window.location.pathname.split('/').length > 0){
 		(window as any).appPrefix = window.location.pathname.split('/')[1];
-        (window as any).entcore.appPrefix = (window as any).appPrefix;
+        window.entcore.appPrefix = (window as any).appPrefix;
 	}
 }
 
@@ -52,6 +52,7 @@ const defaultLanguage = () => {
         if(request.status === 200){
             currentLanguage = JSON.parse(request.responseText).locale;
             (window as any).currentLanguage = currentLanguage;
+            window.entcore.currentLanguage = currentLanguage;
             if((window as any).moment){
                 if (currentLanguage === 'fr') {
                     moment.updateLocale(currentLanguage, {
@@ -92,6 +93,7 @@ const defaultLanguage = () => {
             try{
                 currentLanguage = JSON.parse(JSON.parse(preferencesRequest.responseText).preference)['default-domain'];
                 (window as any).currentLanguage = currentLanguage;
+                window.entcore.currentLanguage = currentLanguage;
     		} catch(e) {
     			defaultLanguage();
     		}
