@@ -3261,6 +3261,9 @@ export let RTE = {
                     }
 
                     $(window).on('resize', function () {
+                        if(element.parents('.editor-media').length > 0){
+                            return;
+                        }
                         highlightZone.css({ top: (element.find('editor-toolbar').height() + 1) + 'px' });
                         if($(window).width() > ui.breakpoints.tablette){
                             toolbarElement.css({ 'position': 'relative' });
@@ -3432,6 +3435,9 @@ export let RTE = {
                     });
 
                     var placeToolbar = function () {
+                        if(element.parents('.editor-media').length > 0){
+                            return;
+                        }
                         if (attributes.inline !== undefined && $(window).width() > ui.breakpoints.tablette) {
                             element.children('editor-toolbar').css({
                                 left: 0
