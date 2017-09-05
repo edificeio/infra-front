@@ -64,7 +64,7 @@ export let wizard = ng.directive('wizard', () => {
 
 				scope.nextCondition = function(){
 					var stepScope = angular.element(currentStepContent[0]).scope();
-					if(typeof stepScope.nextCondition() === 'undefined')
+					if(!currentStepContent[0].getAttribute('next-condition'))
 						return true;
 					return stepScope.nextCondition();
 				};
