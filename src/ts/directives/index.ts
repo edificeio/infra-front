@@ -12,6 +12,7 @@ export * from './embedder';
 export * from './explorer';
 export * from './imageSelect';
 export * from './infotip';
+export * from './searchUser';
 export * from './lightbox';
 export * from './placedBlock';
 export * from './pulsar';
