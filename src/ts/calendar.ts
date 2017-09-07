@@ -1,4 +1,5 @@
 import { model } from './entcore';
+import { Eventer } from 'entcore-toolkit';
 
 var moment = require('moment');
 var _ = require('underscore');
@@ -62,6 +63,7 @@ export var calendar = {
 		}
 	},
 	Calendar: function(data){
+	    this.eventer = new Eventer();
 		if(!data.year){
 			data.year = moment().year();
 		}
