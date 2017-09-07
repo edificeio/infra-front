@@ -40,6 +40,7 @@ export let calendarComponent = ng.directive('calendar', function () {
                     $scope.newItem.beginning = moment().utc().year(year).dayOfYear(day.index).hour(timeslot.start);
                     $scope.newItem.end = moment().utc().year(year).dayOfYear(day.index).hour(timeslot.end);
                     model.calendar.newItem = $scope.newItem;
+                    model.calendar.eventer.trigger('calendar.create-item');
                     $scope.onCreateOpen();
                 };
 
@@ -96,6 +97,9 @@ export let calendarComponent = ng.directive('calendar', function () {
                     template.open('schedule-create-template', attributes.createTemplate);
                     allowCreate = true;
                 }
+            });
+
+            attributes.$observe('displayTemplate', () => {
                 if (attributes.displayTemplate) {
                     template.open('schedule-display-template', attributes.displayTemplate);
                 }
@@ -187,6 +191,7 @@ export let scheduleItem = ng.directive('scheduleItem', function () {
                 var newTime = getTimeFromBoundaries();
                 scope.item.beginning = newTime.startTime;
                 scope.item.end = newTime.endTime;
+                model.calendar.eventer.trigger('calendar.resize-item', scope.item);
                 if (typeof scope.item.calendarUpdate === 'function') {
                     scope.item.calendarUpdate();
                     model.calendar.clearScheduleItems();
@@ -199,6 +204,7 @@ export let scheduleItem = ng.directive('scheduleItem', function () {
                 var newTime = getTimeFromBoundaries();
                 scope.item.beginning = newTime.startTime;
                 scope.item.end = newTime.endTime;
+                model.calendar.eventer.trigger('calendar.drop-item', scope.item);
                 if (typeof scope.item.calendarUpdate === 'function') {
                     scope.item.calendarUpdate();
                     model.calendar.clearScheduleItems();
