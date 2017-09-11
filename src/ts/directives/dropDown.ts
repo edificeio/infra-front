@@ -98,4 +98,8 @@ export const dropDown = ng.directive('dropDown', ['$compile', '$timeout', ($comp
 			});
 		}
 	}
+<<<<<<< HEAD
 }]);
+=======
+});
+>>>>>>> 65ee894... added search-user component

@@ -5,7 +5,7 @@ export let searchUser = ng.directive('searchUser', () => {
         restrict: 'E',
         template: `
         <form class="input-help" ng-submit="update(true)">
-            <label ng-if="ngModel.length < 3">
+            <label ng-class="{ hide: ngModel.length >= 3 }">
                 <i18n>share.search.help1</i18n>[[3 - ngModel.length]]<i18n>share.search.help2</i18n>
             </label>
             <input type="text" ng-model="ngModel" ng-change="update()" autocomplete="off" ng-class="{ move: ngModel.length > 0 }" />
@@ -28,10 +28,12 @@ export let searchUser = ng.directive('searchUser', () => {
             });
 
             element.find('input').on('blur', () => {
-                element.removeClass('focus');
-                if(!scope.ngModel){
-                    element.find('label').removeClass('move');
-                }
+                setTimeout(() => {
+                    element.removeClass('focus');
+                    if(!scope.ngModel){
+                        element.find('label').removeClass('move');
+                    }
+                }, 200);
             });
 
             scope.update = (force?: boolean) => {
