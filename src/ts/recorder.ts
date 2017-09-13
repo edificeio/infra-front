@@ -15,6 +15,7 @@ export var recorder = (function(){
 		intervalId,
 		gainNode,
 		recorder,
+		compress = true,
 		player = new Audio();
 	var leftChannel = [],
 		rightChannel = [];
@@ -38,8 +39,18 @@ export var recorder = (function(){
 		if (!(index > lastIndex)) return;
 		encoder.postMessage(['chunk', leftChannel.slice(lastIndex, index), rightChannel.slice(lastIndex, index), (index - lastIndex) * bufferSize]);
 		encoder.onmessage = function(e) {
+			if(!compress){
+				ws.send(e.data);
+				return;
+			}
+			const initialTime = parseInt(performance.now());
 			var deflate = new Zlib.Deflate(e.data);
 			ws.send(deflate.compress());
+			const endTime = parseInt(performance.now());
+			if(endTime - initialTime > 250){
+				compress = false;
+				ws.send('rawdata');
+			}
 		};
 		lastIndex = index;
 	}
