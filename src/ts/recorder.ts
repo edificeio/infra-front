@@ -162,6 +162,9 @@ export var recorder = (function(){
 
 					that.status = 'recording';
 					notifyFollowers(that.status);
+					if(!compress){
+						ws.send('rawdata');
+					}
 					if(!loaded){
 						http().get('/infra/public/js/zlib.min.js').done(function(){
 							that.loadComponents();
