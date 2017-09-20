@@ -20,7 +20,7 @@ export var recorder = (function(){
 	var leftChannel = [],
 		rightChannel = [];
 
-	var bufferSize = 16384,
+	var bufferSize = 4096,
 		loaded = false,
 		recordingLength = 0,
 		lastIndex = 0,
