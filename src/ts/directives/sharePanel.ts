@@ -13,17 +13,19 @@ export const sharePanel = ng.directive('sharePanel', ['$rootScope', ($rootScope)
 		restrict: 'E',
 		templateUrl: '/' + appPrefix + '/public/template/entcore/share-panel.html',
 		link: function($scope, $element, $attributes){
-
+            var currentApp = appPrefix;
             var usersCache = {};
-
-            $scope.shareTable = '/' + appPrefix + '/public/template/entcore/share-panel-table.html';
-            
-            if(!$scope.appPrefix){
-                $scope.appPrefix = appPrefix;
+            if($scope.appPrefix){
+                currentApp = $scope.appPrefix;
             }
+
+            $scope.shareTable = '/' + currentApp + '/public/template/entcore/share-panel-table.html';
 
             if(!($scope.resources instanceof Array) && !$scope.resources.myRights){
                 throw new TypeError('Resources in share panel must be instance of Array or implement Rights interface');
+            }
+            if(!($scope.resources instanceof Array)){
+                $scope.resources = [$scope.resources];
             }
         
             $scope.sharing = {};
@@ -93,7 +95,7 @@ export const sharePanel = ng.directive('sharePanel', ['$rootScope', ($rootScope)
                 function drop(resource, type){
                     var done = 0;
                     for(var element in resource[type].checked){
-                        var path = '/' + $scope.appPrefix + '/share/remove/' + resource._id;
+                        var path = '/' + currentApp + '/share/remove/' + resource._id;
                         var data:any = {};
                         if(type === 'users'){
                             data.userId = element;
@@ -130,12 +132,17 @@ export const sharePanel = ng.directive('sharePanel', ['$rootScope', ($rootScope)
         
                 return different('users') || different('groups');
             }
-        
+            
+            var feeding = false;
             var feedData = function(){
+                if(feeding){
+                    return;
+                }
+                feeding = true;
                 var initModel = true;
                 $scope.resources.forEach(function(resource){
                     var id = resource._id;
-                    http().get('/' + $scope.appPrefix + '/share/json/' + id).done(function(data){
+                    http().get('/' + currentApp + '/share/json/' + id + '?search=').done(function(data){
                         if(initModel){
                             $scope.sharingModel = data;
                             $scope.sharingModel.edited = [];
@@ -179,6 +186,7 @@ export const sharePanel = ng.directive('sharePanel', ['$rootScope', ($rootScope)
                         initModel = false;
         
                         $scope.$apply('sharingModel.edited');
+                        feeding = false;
                     });
                 })
             };
@@ -226,28 +234,43 @@ export const sharePanel = ng.directive('sharePanel', ['$rootScope', ($rootScope)
                 loopAction()
         
             };
+
+            $scope.clearSearch = function(){
+                $scope.sharingModel.groups = [];
+                $scope.sharingModel.users = [];
+                $scope.found = [];
+            }
         
             $scope.findUserOrGroup = function(){
                 var searchTerm = idiom.removeAccents($scope.search).toLowerCase();
                 var startSearch = searchTerm.substr(0, 3);
-                if(!usersCache[startSearch] && !usersCache[startSearch].loading){
+                if(!usersCache[startSearch] && !(usersCache[startSearch] && usersCache[startSearch].loading)){
                     usersCache[startSearch] = { loading: true };
-                    http().get('').done(function(data){
-                        usersCache[startSearch] = data;
+                    var id = $scope.resources[0]._id;
+                    var path = '/' + currentApp + '/share/json/' + id + '?search=' + startSearch;
+                    if(!startSearch){
+                        path = '/' + currentApp + '/share/json/' + id;
+                    }
+                    http().get(path).done(function(data){
+                        usersCache[startSearch] = { groups: data.groups, users: data.users };
+                        $scope.sharingModel.groups = usersCache[startSearch].groups;
+                        $scope.sharingModel.users = usersCache[startSearch].users;
                         $scope.findUserOrGroup();
                         $scope.$apply();
-                    })
+                    });
                     return;
                 }
+                $scope.sharingModel.groups = usersCache[startSearch].groups;
+                $scope.sharingModel.users = usersCache[startSearch].users;
                 $scope.found = _.union(
                     _.filter($scope.sharingModel.groups.visibles, function(group){
                         var testName = idiom.removeAccents(group.name).toLowerCase();
-                        return testName.indexOf(searchTerm) !== -1;
+                        return testName.indexOf(searchTerm) !== -1 && $scope.sharingModel.edited.find(i => i.id === group.id) === undefined;
                     }),
                     _.filter($scope.sharingModel.users.visibles, function(user){
                         var testName = idiom.removeAccents(user.lastName + ' ' + user.firstName).toLowerCase();
                         var testNameReversed = idiom.removeAccents(user.firstName + ' ' + user.lastName).toLowerCase();
-                        return testName.indexOf(searchTerm) !== -1 || testNameReversed.indexOf(searchTerm) !== -1;
+                        return (testName.indexOf(searchTerm) !== -1 || testNameReversed.indexOf(searchTerm) !== -1) && $scope.sharingModel.edited.find(i => i.id === user.id) === undefined;
                     })
                 );
                 $scope.found = _.filter($scope.found, function(element){
@@ -273,7 +296,7 @@ export const sharePanel = ng.directive('sharePanel', ['$rootScope', ($rootScope)
                 });
         
                 $scope.resources.forEach(function(resource){
-                    var path = '/' + $scope.appPrefix + '/share/remove/' + resource._id;
+                    var path = '/' + currentApp + '/share/remove/' + resource._id;
                     http().put(path, http().serialize(data)).done(function(){
                         $rootScope.$broadcast('share-updated', data);
                     });
@@ -332,7 +355,7 @@ export const sharePanel = ng.directive('sharePanel', ['$rootScope', ($rootScope)
                 }
         
                 $scope.resources.forEach(function(resource){
-                    http().put('/' + $scope.appPrefix + '/share/' + setPath + '/' + resource._id, http().serialize(data)).done(function(){
+                    http().put('/' + currentApp + '/share/' + setPath + '/' + resource._id, http().serialize(data)).done(function(){
                         if(setPath === 'remove'){
                             $rootScope.$broadcast('share-updated', { removed: { groupId: data.groupId, userId: data.userId, actions: rightsToActions(data.actions) } });
                         }

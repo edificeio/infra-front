@@ -37,6 +37,7 @@ export let searchUser = ng.directive('searchUser', () => {
             });
 
             scope.update = (force?: boolean) => {
+                scope.$apply();
                 if(scope.ngModel.length < 3){
                     scope.clearList();
                 }
