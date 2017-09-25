@@ -3388,6 +3388,7 @@ export let RTE = {
                                 editorInstance.addState(editorInstance.editZone.html());
                             }
                         });
+                        editZone.find('[ng-repeat]').removeAttr('ng-repeat');
                         htmlZone.css({ 'min-height': '250px', height: 0 });
                         var newHeight = htmlZone[0].scrollHeight + 2;
                         if(newHeight > htmlZone.height()){
