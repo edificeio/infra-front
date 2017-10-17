@@ -25,8 +25,7 @@ module.exports = {
     },
     plugins: [
         new UglifyJSPlugin({
-            sourceMap: true,
-            mangle: false
+            sourceMap: true
         })
     ]
 }

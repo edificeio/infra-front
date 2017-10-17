@@ -18,6 +18,19 @@
 import { skin } from './skin';
 
 var $ = require('jquery');
+let cancelDefault = false;
+
+// Ugly hack for sucky Safari behaviour
+$('body').on('touchmove', (e) => {
+    if(cancelDefault){
+        e.preventDefault();
+    }
+});
+$(document).on('touchmove', (e) => {
+    if(cancelDefault){
+        e.preventDefault();
+    }
+});
 
 var mainLightbox = {
 	show: function(){
@@ -456,7 +469,8 @@ export let ui = {
                 $('body').css({
                     '-webkit-user-select': 'none',
                     '-moz-user-select': 'none',
-                    'user-select': 'none'
+                    'user-select': 'none',
+                    'overflow': 'hidden'
                 });
 
                 var interrupt = false;
@@ -498,6 +512,7 @@ export let ui = {
                     element.trigger('startResize');
                     e.preventDefault();
                     e.stopPropagation();
+                    cancelDefault = true;
                     element.data('resizing', true);
                     $('.main').css({
                         'cursor': element.css('cursor')
@@ -581,6 +596,7 @@ export let ui = {
                         setTimeout(function () {
                             element.data('resizing', false);
                             element.trigger('stopResize');
+                            cancelDefault = false;
                             if (params && typeof params.mouseUp === 'function') {
                                 params.mouseUp(e);
                             }
@@ -774,6 +790,8 @@ export let ui = {
                         moved = true;
                         if (!params.allowDefault) {
                             f.preventDefault();
+                            e.preventDefault();
+                            cancelDefault = true;
                         }
                         if (params.mouseMove && typeof params.mouseMove === 'function') {
                             params.mouseMove(f, {
@@ -807,7 +825,8 @@ export let ui = {
                             $('body').css({
                                 '-webkit-user-select': 'none',
                                 '-moz-user-select': 'none',
-                                'user-select': 'none'
+                                'user-select': 'none',
+                                'overflow': 'hidden'
                             });
                             if (element.css('position') === 'relative') {
                                 element.css({ top: element.position().top, left: element.position().left });
@@ -831,7 +850,8 @@ export let ui = {
                         $('body').css({
                             '-webkit-user-select': 'initial',
                             '-moz-user-select': 'initial',
-                            'user-select': 'initial'
+                            'user-select': 'initial',
+                            'overflow': 'auto'
                         });
                         element.css('transition', '');
                         interrupt = true;
@@ -839,6 +859,7 @@ export let ui = {
                         $(window).unbind('mousemove.drag touchmove.drag');
 
                         setTimeout(function () {
+                            cancelDefault = false;
                             if (element.data('dragging')) {
                                 element.trigger('stopDrag');
                                 element.data('dragging', false);
