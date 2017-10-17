@@ -910,7 +910,7 @@ export let ui = {
     setStyle: function (stylePath) {
         if ($('#theme').length === 0) {
             let version = $('#context').attr('src').split('-');
-            version = version[version.length - 1].split('.')[0];
+            version = '1';
 
             var style = $('<link>', {
                 rel: 'stylesheet',
