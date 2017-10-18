@@ -930,8 +930,11 @@ export let ui = {
     },
     setStyle: function (stylePath) {
         if ($('#theme').length === 0) {
-            let version = $('#context').attr('src').split('-');
-            version = '1';
+            let version = 'dev';
+            if((window as any).springboardBuildDate){
+                version = (window as any).springboardBuildDate;
+                console.log('Springboard built on ' + version);
+            }
 
             var style = $('<link>', {
                 rel: 'stylesheet',
