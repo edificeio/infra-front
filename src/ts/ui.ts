@@ -469,8 +469,7 @@ export let ui = {
                 $('body').css({
                     '-webkit-user-select': 'none',
                     '-moz-user-select': 'none',
-                    'user-select': 'none',
-                    'overflow': 'hidden'
+                    'user-select': 'none'
                 });
 
                 var interrupt = false;
@@ -517,6 +516,7 @@ export let ui = {
                     $('.main').css({
                         'cursor': element.css('cursor')
                     });
+                    $('body').css({ overflow: 'hidden' });
 
                     $(window).unbind('mousemove.drag touchmove.start');
                     $(window).on('mousemove.resize touchmove.resize', function (e) {
@@ -594,6 +594,7 @@ export let ui = {
                     $(window).on('mouseup.resize touchleave.resize touchend.resize', function (e) {
                         interrupt = true;
                         setTimeout(function () {
+                            $('body').css({ overflow: 'auto' });
                             element.data('resizing', false);
                             element.trigger('stopResize');
                             cancelDefault = false;
