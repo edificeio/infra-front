@@ -55,12 +55,11 @@ export class Resize implements Tool{
                     } as PIXI.Point;
             
                     this.imageView.render();
-                    this.setup();
     
                     requestAnimationFrame(async () => {
                         await this.imageView.backup(false);
                         resolve();
-                        
+                        this.setup();
                     });
                 });
             });
@@ -154,6 +153,8 @@ export class Resize implements Tool{
         });
         editingElement.on('stopResize', '.handle', () => {
             this.isResizing = false;
+            this.imageView.pendingChanges = true;
+            angular.element(editingElement).scope().$apply();
             cancelAnimationFrame(token);
         });
         setTimeout(() => this.setup(), 150);

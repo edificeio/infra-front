@@ -11,6 +11,8 @@ export class ImageView{
     eventer = new Eventer();
     originalImage: Blob;
     appliedIndex: number;
+    pendingChanges: boolean;
+    format: string;
 
     private paint(image: string): Promise<any>{
         return new Promise((resolve, reject) => {
@@ -89,7 +91,8 @@ export class ImageView{
         this.editingElement.find('.overlay').height($(this.editingElement.find('.output')).height());
     }
 
-    load(image: string, renderer: PIXI.CanvasRenderer | PIXI.WebGLRenderer, editingElement: any): Promise<any>{
+    load(image: string, renderer: PIXI.CanvasRenderer | PIXI.WebGLRenderer, editingElement: any, format: string): Promise<any>{
+        this.format = format;
         return new Promise((resolve, reject) => {
             this.renderer = renderer;
             this.editingElement = editingElement;
@@ -155,7 +158,7 @@ export class ImageView{
                 this.loadBlob(blob, repaint).then(() => {
                     resolve();
                 })
-            }, 'image/jpeg', 1);
+            }, 'image/' + this.format);
         });
     }
 }

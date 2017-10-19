@@ -7,16 +7,17 @@ export let slider = ng.directive('slider', ['$compile', '$parse', function ($com
     return {
         restrict: 'E',
         scope: true,
-        template: '<div class="bar"></div><div class="filled"></div><div class="cursor"></div><legend class="min"></legend><legend class="max"></legend>',
+        template: '<div class="label"></div><div class="bar"></div><div class="filled"></div><div class="cursor"></div><legend class="min"></legend><legend class="max"></legend>',
         link: function (scope, element, attributes) {
             element.addClass('drawing-zone');
             var cursor = element.children('.cursor');
-            var max = parseInt(attributes.max);
-            var min = parseInt(attributes.min);
+            var max = parseFloat(attributes.max);
+            var min = parseFloat(attributes.min);
 
             var ngModel = $parse(attributes.ngModel);
 
             var applyValue = function (newVal) {
+                element.find('.label').text(attributes.label);
                 var pos = parseInt((newVal - min) * element.children('.bar').width() / (max - min));
                 cursor.css({
                     left: pos + 'px',
@@ -59,8 +60,9 @@ export let slider = ng.directive('slider', ['$compile', '$parse', function ($com
                     scope.$apply();
                 },
                 tick: function () {
-                    var cursorPosition = cursor.position().left;
+                    var cursorPosition = parseInt(cursor.position().left);
                     element.children('.filled').width(cursorPosition);
+                    element.children('.label').css({ left: cursorPosition + 'px'});
                 }
             });
         }

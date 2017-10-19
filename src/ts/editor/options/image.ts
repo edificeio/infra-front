@@ -208,7 +208,7 @@ export const image = {
                     }
                     var html = '<span contenteditable="false" class="image-container" style="width: 290px; height: 290px">&#8203;';
                     scope.imageOption.display.files.forEach(function (file) {
-                        html += '<img src="' + path + file._id + '?thumbnail=290x290" class="latest-image" /></span>';
+                        html += '<img src="' + path + file._id + '?thumbnail=290x290" alt="' + file.alt + '" class="latest-image" /></span>';
                     });
                     instance.selection.replaceHTMLInline(html);
                     let image = instance.editZone

@@ -1,5 +1,5 @@
 import { ng } from '../ng-start';
-import { http } from '../http';
+import http from 'axios';
 import { $ } from '../libs/jquery/jquery';
 
 export let bindHtml = ng.directive('bindHtml', ['$compile', function($compile){
@@ -56,10 +56,21 @@ export let bindHtml = ng.directive('bindHtml', ['$compile', function($compile){
 				});
 
 				let legend;
-				element.on('mouseover', 'img', (e) => {
+				element.on('mouseover', 'img', async (e) => {
 					const src: string = $(e.target).attr('src');
 					if(src.startsWith('/workspace/document')){
-						legend = $(`<legend class="user-image"><div class="text">Contenu temporaire de test</div></legend>`).appendTo('body');
+						let legendText;
+						if($(e.target).data('legend')){
+							legendText = $(e.target).data('legend');
+						}
+						else{
+							const fileId = src.split('/workspace/document/')[1].split('?')[0];
+							const response = await http.get('/workspace/document/properties/' + fileId);
+							legendText = response.data.legend;
+						}
+						
+						$(e.target).data('legend', legendText);
+						legend = $(`<legend class="user-image"><div class="text">${legendText}</div></legend>`).appendTo('body');
 						legend.height($(e.target).height());
 						legend.width($(e.target).width());
 						legend.offset({

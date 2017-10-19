@@ -54,10 +54,14 @@ export class ImageEditor{
     async applyChanges(options?){
         await this.tool.apply(options);
         this.imageView.appliedIndex = this.imageView.historyIndex;
+        this.imageView.pendingChanges = false;
     }
 
     async saveChanges(){
-        await this.document.update(this.imageView.history[this.imageView.history.length - 1]);
+        if(this.imageView.appliedIndex > 0){
+            this.document.hiddenBlob = this.imageView.history[this.imageView.appliedIndex];
+        }
+        await this.document.saveChanges();
     }
 
     get hasHistory(){
@@ -69,7 +73,7 @@ export class ImageEditor{
     }
 
     get canApply(){
-        return this.imageView.historyIndex > this.imageView.appliedIndex;
+        return this.imageView.historyIndex > this.imageView.appliedIndex || this.imageView.pendingChanges;
     }
 
     static async init(){
@@ -107,10 +111,10 @@ export class ImageEditor{
     async drawDocument(document: Document){
         if(document.hiddenBlob){
             const path = URL.createObjectURL(document.hiddenBlob);
-            await this.imageView.load(path, this.renderer, this.editingElement);
+            await this.imageView.load(path, this.renderer, this.editingElement, document.metadata.extension);
         }
         else{
-            await this.imageView.load('/workspace/document/' + document._id + '?v=' + parseInt(Math.random() * 100), this.renderer, this.editingElement);
+            await this.imageView.load('/workspace/document/' + document._id + '?v=' + parseInt(Math.random() * 100), this.renderer, this.editingElement, document.metadata.extension);
         }
         
         this.document = document;

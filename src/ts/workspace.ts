@@ -81,6 +81,11 @@ export class Document implements Selectable, Shareable {
         filename?: string,
         size: number
     };
+    newProperties: {
+        name?: string;
+        legend?: string;
+        alt?: string
+    } = {};
 	version: number;
 	link: string;
 	icon: string;
@@ -97,6 +102,8 @@ export class Document implements Selectable, Shareable {
     rights: Rights<Document> = new Rights(this);
     private xhr: XMLHttpRequest;
     shared: any;
+    alt: string;
+    legend: string;
 
     get myRights(){
         return this.rights.myRights;
@@ -120,9 +127,17 @@ export class Document implements Selectable, Shareable {
         return Math.ceil(koSize) + ' Ko';
     }
 
-    applyBlob(){
+    async saveChanges(){
+        this.title = this.newProperties.name;
+        this.alt = this.newProperties.alt;
+        this.legend = this.newProperties.legend;
+        await http.put('/workspace/rename/document/' + this._id, this.newProperties);
+        await this.applyBlob();
+    }
+
+    async applyBlob(){
         if(this.hiddenBlob){
-            this.update(this.hiddenBlob);
+            await this.update(this.hiddenBlob);
         }
     }
 
@@ -133,12 +148,17 @@ export class Document implements Selectable, Shareable {
         }
 
         this.status = DocumentStatus.loaded;
+        this.newProperties.alt = this.alt;
+        this.newProperties.legend = this.legend;
         if (data.metadata) {
             var dotSplit = data.metadata.filename.split('.');
+            this.metadata.extension = dotSplit[dotSplit.length - 1];
             if (dotSplit.length > 1) {
                 dotSplit.length = dotSplit.length - 1;
             }
+            
             this.title = dotSplit.join('.');
+            this.newProperties.name = this.title;
 			this.metadata.role = this.role();
         }
 
@@ -169,7 +189,7 @@ export class Document implements Selectable, Shareable {
     }
 
     get isEditableImage(){
-        const editables = ['jpg', 'jpeg', 'bmp'];
+        const editables = ['jpg', 'jpeg', 'bmp', 'png'];
         const ext = this.metadata.extension.toLowerCase();
         return editables.indexOf(ext) !== -1;
     }
@@ -192,6 +212,7 @@ export class Document implements Selectable, Shareable {
         var formData = new FormData();
         formData.append('file', file, file.name);
         this.title = file.name;
+        this.newProperties.name = this.title;
         this.xhr = new XMLHttpRequest();
         this.xhr.open('POST', '/workspace/document?' + visibility + '=true&application=media-library&quality=1&' + MediaLibrary.thumbnails);
         this.xhr.send(formData);
@@ -238,7 +259,7 @@ export class Document implements Selectable, Shareable {
 
     async update(blob: Blob){
         const formData = new FormData();
-        formData.append('file', blob, this._id);
+        formData.append('file', blob, this.title + '.' + this.metadata.extension);
         await http.put('/workspace/document/' + this._id + '?' + MediaLibrary.thumbnails, formData);
         this.currentQuality = 1;
         this.version = Math.floor(Math.random() * 100);

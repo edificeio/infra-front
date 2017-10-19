@@ -19,7 +19,7 @@ export const imageEditor = ng.directive('imageEditor', () => {
                 <container template="entcore/image-editor/main"></container>
             </div>
             <div ng-if="show && !inline && ready">
-                <lightbox show="show">
+                <lightbox show="show" on-close="hide()">
                     <container template="entcore/image-editor/main"></container>
                 </lightbox>
             </div>
@@ -30,11 +30,11 @@ export const imageEditor = ng.directive('imageEditor', () => {
             }
             scope.template = template;
             template.open('entcore/image-editor/main');
-            scope.ready = true;
 
             const imageEditor = new ImageEditor();
 
             const start = async () => {
+                scope.ready = true;
                 await ImageEditor.init();
                 imageEditor.draw(element.find('section').last());
                 await imageEditor.drawDocument(scope.document);
@@ -80,7 +80,18 @@ export const imageEditor = ng.directive('imageEditor', () => {
                 scope.$apply();
             };
 
-            scope.$watch('show', () => start());
+            scope.hide = () => {
+                scope.show = false;
+                if(!scope.$$phase){
+					scope.$parent.$apply();
+				}
+            }
+
+            scope.$watch(() => scope.show, () => {
+                if(scope.show){
+                    start();
+                }
+            });
         }
     }
 })

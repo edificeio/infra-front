@@ -1,17 +1,22 @@
 <canvas></canvas>
 
-<slider class="cell" ng-model="document.currentQuality" max="0.7" min="0" default="0.5" label="[[blobSize()]] [[blobUnit()]]" min-legend="media.library.compression.min"  max-legend="media.library.compression.max"></slider>
-<div class="tipbox cell left">
-    <div>
-        <i class="help sticker square-medium"></i>
+<div ng-if="document.metadata.extension.toLowerCase() === 'jpg' || document.metadata.extension.toLowerCase() === 'jpeg'">
+    <slider class="cell" ng-model="document.currentQuality" max="0.7" min="0" default="0.5" label="[[blobSize()]] [[blobUnit()]]" min-legend="media.library.compression.min"  max-legend="media.library.compression.max"></slider>
+    <div class="tipbox cell left">
+        <div>
+            <i class="help sticker square-medium"></i>
+        </div>
+        <div class="tipbox-content">
+            <span class="small-text"><i18n>medialibrary.compression.info</i18n></span>
+        </div>
     </div>
-    <div class="tipbox-content">
-        <span class="small-text"><i18n>medialibrary.compression.info</i18n></span>
+    
+    <hr class="row" />
+
+    <div class="warning" ng-if="blobUnit() === 'Mo' || blobSize() > 500 && blobUnit() === 'Mo'">
+        <i18n>medialibrary.compression.warning</i18n>
     </div>
 </div>
-
-<hr class="row" />
-
-<div class="warning" ng-if="blobUnit() === 'Mo' || blobSize() > 500 && blobUnit() === 'Mo'">
-    <i18n>medialibrary.compression.warning</i18n>
+<div ng-if="document.metadata.extension.toLowerCase() !== 'jpg' || document.metadata.extension.toLowerCase() !== 'jpeg'" class="warning">
+    La compression de cette image n'est pas réglable. Seules les images jpg ou jpeg peuvent être réglées.
 </div>
