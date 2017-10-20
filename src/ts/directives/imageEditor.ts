@@ -4,6 +4,7 @@ import { ImageEditor } from '../image-editor/ImageEditor';
 import { template } from '../template';
 import { Mix } from "entcore-toolkit";
 import { Document } from '../workspace';
+import { Resize } from '../image-editor/image-tools/Resize';
 
 export const imageEditor = ng.directive('imageEditor', () => {
     return {
@@ -42,6 +43,20 @@ export const imageEditor = ng.directive('imageEditor', () => {
                 scope.openTool('Rotate');
                 scope.$apply();
             };
+
+            scope.scale = () => Math.ceil(1 / (imageEditor.tool as Resize).scale * 10) / 10;
+
+            scope.setWidth = () => {
+                if(imageEditor.tool instanceof Resize){
+                    imageEditor.tool.setWidth(scope.document.width);
+                }
+            }
+
+            scope.setHeight = () => {
+                if(imageEditor.tool instanceof Resize){
+                    imageEditor.tool.setHeight(scope.document.height);
+                }
+            }
 
             scope.openTool = async (name: string) => {
                 template.open('entcore/image-editor/tool', 'entcore/image-editor/' + name.toLowerCase());

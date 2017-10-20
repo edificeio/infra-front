@@ -4,6 +4,7 @@ import { ImageView } from './ImageView';
 import * as imageTools from './image-tools';
 import { Tool } from './Tool';
 import { Document } from '../workspace';
+import { $ } from "../libs/jquery/jquery";
 
 const eventer = new Eventer();
 const editorWidth = 680;
@@ -23,6 +24,7 @@ export class ImageEditor{
     }
 
     async cancel(keepHistory = false){
+        $(this.imageView.renderer.view).css({ opacity: 0 });
         if(typeof this.imageView.appliedIndex === 'number'){
             await this.imageView.loadBlob(this.imageView.history[this.imageView.appliedIndex]);
             this.imageView.history.splice(this.imageView.appliedIndex);
@@ -40,6 +42,7 @@ export class ImageEditor{
         else{
             this.imageView.historyIndex = this.imageView.appliedIndex;
         }
+        $(this.imageView.renderer.view).css({ opacity: 1 });
     }
 
     async useTool(name: string, options?){

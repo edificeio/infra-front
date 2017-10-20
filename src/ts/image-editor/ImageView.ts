@@ -131,13 +131,20 @@ export class ImageView{
         });
     }
 
-    async undo(){
-        this.historyIndex --;
-        if(this.appliedIndex > this.historyIndex){
-            this.appliedIndex = this.historyIndex;
-        }
-        
-        await this.loadBlob(this.history[this.historyIndex]);
+    undo(): Promise<any>{
+        $(this.renderer.view).css({ opacity: 0 });
+        return new Promise((resolve, reject) => {
+            setTimeout(async () => {
+                this.historyIndex --;
+                if(this.appliedIndex > this.historyIndex){
+                    this.appliedIndex = this.historyIndex;
+                }
+                
+                await this.loadBlob(this.history[this.historyIndex]);
+                $(this.renderer.view).css({ opacity: 1 });
+                resolve();
+            }, 200);
+        });
     }
 
     async redo(){

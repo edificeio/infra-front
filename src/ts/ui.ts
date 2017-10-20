@@ -608,6 +608,7 @@ export let ui = {
                         'cursor': element.css('cursor')
                     });
                     $('body').css({ overflow: 'hidden' });
+                    element.css({ 'transition': 'none' });
 
                     $(window).unbind('mousemove.drag touchmove.start');
                     $(window).on('mousemove.resize touchmove.resize', function (e) {
@@ -687,6 +688,7 @@ export let ui = {
                         element.removeClass(element.css('cursor'));
                         setTimeout(function () {
                             $('body').css({ overflow: 'auto' });
+                            element.css({ 'transition': '' });
                             element.data('resizing', false);
                             element.trigger('stopResize');
                             cancelDefault = false;

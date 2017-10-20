@@ -15,6 +15,7 @@ export * from './imageCompression';
 export * from './imageEditor';
 export * from './imageSelect';
 export * from './infotip';
+export * from './inputPassword';
 export * from './mediaLibrary';
 export * from './searchUser';
 export * from './lightbox';

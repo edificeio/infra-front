@@ -1,11 +1,14 @@
 <div class="split-screen" ng-class="{ split: display.editedDocument !== undefined }">
-    <div class="loading-list">
+    <div class="loading-list drop-zone">
         <ul>
             <li ng-repeat="doc in upload.documents" 
                 ng-click="openCompression(doc)" 
                 ng-class="{ 'image-file': doc.isEditableImage && doc.status === 'loaded', 'loading': doc.status === 'loading' }"
             >
-                <i class="[[doc.role()]] cell"></i>
+                <div class="cell icon">
+                    <i class="[[doc.role()]]"></i>
+                    <i class="edit"></i>
+                </div>
                 <div class="title">[[doc.title]]</div>
                 <div class="right-magnet size">
                     [[doc.size]]

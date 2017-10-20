@@ -64,7 +64,6 @@ export const mediaLibrary = ng.directive('mediaLibrary', function(){
 
 			element.on('drop', '.drop-zone', async (e) => {
 				element.find('.drop-zone').removeClass('dragover');
-				element.find('.drop-zone').addClass('loading-panel');
 				e.preventDefault();
 				const files = e.originalEvent.dataTransfer.files;
 				scope.importFiles(e.originalEvent.dataTransfer.files);

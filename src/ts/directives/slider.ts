@@ -17,7 +17,6 @@ export let slider = ng.directive('slider', ['$compile', '$parse', function ($com
             var ngModel = $parse(attributes.ngModel);
 
             var applyValue = function (newVal) {
-                element.find('.label').text(attributes.label);
                 var pos = parseInt((newVal - min) * element.children('.bar').width() / (max - min));
                 cursor.css({
                     left: pos + 'px',
@@ -33,6 +32,8 @@ export let slider = ng.directive('slider', ['$compile', '$parse', function ($com
             scope.$watch(function () {
                 return ngModel(scope);
             }, applyValue);
+
+            attributes.$observe('label', () => element.find('.label').text(attributes.label))
 
             if (typeof ngModel(scope) !== 'number') {
                 ngModel.assign(scope, parseInt(attributes.default));

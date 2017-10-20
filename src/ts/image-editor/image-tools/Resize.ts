@@ -11,16 +11,29 @@ export class Resize implements Tool{
         width: number,
         height: number
     };
+    _scale: number;
+
+    get ratio(){
+        return this.initialSize.width / this.initialSize.height;
+    }
 
     get scale(): number{
+        if(this._scale){
+            return this._scale;
+        }
+        if(!this.imageView){
+            return 1;
+        }
         if(this.imageView.sprite.width > this.imageView.sprite.height){
             let scale = this.outputWidth / this.imageView.sprite.width;
+            this._scale = scale;
             if(scale > 1){
                 return 1;
             }
             return scale;
         }
         let scale = this.outputHeight / this.imageView.sprite.height;
+        this._scale = scale;
         if(scale > 1){
             return 1;
         }
@@ -35,40 +48,59 @@ export class Resize implements Tool{
         return this.editingElement.find('.output').height();
     }
 
+    setWidth(width: number){
+        const height = (width / this.ratio) * this.scale;
+        this.handle.width(width * this.scale);
+        this.handle.height(height);
+        this.resize();
+    }
+
+    setHeight(height: number){
+        const width = (height * this.ratio) * this.scale;
+        this.handle.height(height * this.scale);
+        this.handle.width(width * this.scale);
+        this.resize();
+    }
+
     apply(options?: any): Promise<any>{
         $(this.imageView.renderer.view).css({ opacity: 0 });
-        this.imageView.sprite.scale = new PIXI.Point(1, 1);
-        this.imageView.render();
         return new Promise((resolve, reject) => {
-            requestAnimationFrame(() => {
-                this.imageView.renderer.resize(
-                    this.handle.width() * (this.imageView.sprite.width / this.outputWidth), 
-                    this.handle.height() * (this.imageView.sprite.height / this.outputHeight)
-                );
-                requestAnimationFrame(() => {
-                    this.imageView.sprite.width = this.handle.width() * (this.imageView.sprite.width / this.outputWidth);
-                    this.imageView.sprite.height = this.handle.height() * (this.imageView.sprite.height / this.outputHeight);
-    
-                    this.imageView.sprite.position = {
-                        x: this.imageView.sprite.width / 2,
-                        y: this.imageView.sprite.height / 2
-                    } as PIXI.Point;
+            setTimeout(() => {
+                this.imageView.sprite.scale = new PIXI.Point(1, 1);
+                this.imageView.render();
+                
+                    requestAnimationFrame(() => {
+                        this.imageView.renderer.resize(
+                            this.handle.width() * this.scale, 
+                            this.handle.height() * this.scale
+                        );
+                        requestAnimationFrame(() => {
+                            this.imageView.sprite.width = this.handle.width() * this.scale;
+                            this.imageView.sprite.height = this.handle.height() * this.scale;
             
-                    this.imageView.render();
-    
-                    requestAnimationFrame(async () => {
-                        await this.imageView.backup(false);
-                        resolve();
-                        this.setup();
+                            this.imageView.sprite.position = {
+                                x: this.imageView.sprite.width / 2,
+                                y: this.imageView.sprite.height / 2
+                            } as PIXI.Point;
+                    
+                            this.imageView.render();
+            
+                            requestAnimationFrame(async () => {
+                                await this.imageView.backup(false);
+                                resolve();
+                                this.setup();
+                            });
+                        });
                     });
-                });
-            });
+            }, 200);
         });
     }
 
     resize(){
-        this.imageView.sprite.width = this.handle.width();
-        this.imageView.sprite.height = this.handle.height();
+        this.imageView.sprite.width = parseInt(this.handle.width());
+        this.imageView.sprite.height = parseInt(this.handle.height());
+        this.editingElement.find('input[type=text]').first().val(parseInt(this.handle.width() / this.scale));
+        this.editingElement.find('input[type=text]').last().val(parseInt(this.handle.height() / this.scale));
         this.imageView.sprite.position.x = (this.handle.position().left + 2) + this.imageView.sprite.width / 2;
         this.imageView.sprite.position.y = (this.handle.position().top + 2) + this.imageView.sprite.height / 2;
         this.imageView.render();
@@ -90,6 +122,7 @@ export class Resize implements Tool{
     }
 
     setup(){
+        this._scale = 0;
         $(this.imageView.renderer).attr('data-locked-size', true);
         requestAnimationFrame(() => {
             this.imageView.setOverlay();
@@ -110,7 +143,9 @@ export class Resize implements Tool{
             requestAnimationFrame(() => {
                 this.lockOutput();
                 this.setHandle();
-                $(this.imageView.renderer.view).css({ opacity: 1 });
+                setTimeout(() => $(this.imageView.renderer.view).css({ opacity: 1 }), 100);
+                this.editingElement.find('input[type=text]').first().val(parseInt(this.imageView.sprite.width / this.scale));
+                this.editingElement.find('input[type=text]').last().val(parseInt(this.imageView.sprite.height / this.scale));
             });
         });
     }
@@ -147,16 +182,31 @@ export class Resize implements Tool{
             this.resize();
             token = requestAnimationFrame(animate);
         }
+
         editingElement.on('startResize', '.handle', () => {
             this.isResizing = true;
             animate();
         });
+
         editingElement.on('stopResize', '.handle', () => {
             this.isResizing = false;
             this.imageView.pendingChanges = true;
             angular.element(editingElement).scope().$apply();
             cancelAnimationFrame(token);
         });
+
+        editingElement.on('startDrag', '.handle', () => {
+            this.isResizing = true;
+            animate();
+        });
+        
+        editingElement.on('stopDrag', '.handle', () => {
+            this.isResizing = false;
+            this.imageView.pendingChanges = true;
+            angular.element(editingElement).scope().$apply();
+            cancelAnimationFrame(token);
+        });
+
         setTimeout(() => this.setup(), 150);
     }
 }
