@@ -28,6 +28,7 @@ export class Resize implements Tool{
             let scale = this.outputWidth / this.imageView.sprite.width;
             this._scale = scale;
             if(scale > 1){
+                this._scale = 1;
                 return 1;
             }
             return scale;
@@ -71,12 +72,12 @@ export class Resize implements Tool{
                 
                     requestAnimationFrame(() => {
                         this.imageView.renderer.resize(
-                            this.handle.width() * this.scale, 
-                            this.handle.height() * this.scale
+                            this.handle.width() / this.scale, 
+                            this.handle.height() / this.scale
                         );
                         requestAnimationFrame(() => {
-                            this.imageView.sprite.width = this.handle.width() * this.scale;
-                            this.imageView.sprite.height = this.handle.height() * this.scale;
+                            this.imageView.sprite.width = this.handle.width() / this.scale;
+                            this.imageView.sprite.height = this.handle.height() / this.scale;
             
                             this.imageView.sprite.position = {
                                 x: this.imageView.sprite.width / 2,
@@ -92,7 +93,7 @@ export class Resize implements Tool{
                             });
                         });
                     });
-            }, 200);
+            }, 180);
         });
     }
 

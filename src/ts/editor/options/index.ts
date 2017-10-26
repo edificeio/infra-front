@@ -9,3 +9,4 @@ export * from './format';
 export * from './image';
 export * from './justify';
 export * from './table';
+export * from './subscript';

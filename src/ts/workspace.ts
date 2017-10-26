@@ -8,6 +8,8 @@ import { Eventer, Mix, Selection, Selectable } from 'entcore-toolkit';
 import { model } from './modelDefinitions';
 import { Rights, Shareable } from './rights';
 
+const maxFileSize = parseInt(lang.translate('max.file.size'));
+
 class Quota {
     max: number;
     used: number;
@@ -74,6 +76,7 @@ export class Document implements Selectable, Shareable {
     title: string;
     _id: string;
     created: any;
+    path: string;
     metadata: {
         'content-type': string,
 		role?: string,
@@ -113,7 +116,7 @@ export class Document implements Selectable, Shareable {
         await http.delete('/workspace/document/' + this._id);
     }
 
-    async abort(){
+    abort(){
         if(this.xhr){
             this.xhr.abort();
         }
@@ -194,9 +197,13 @@ export class Document implements Selectable, Shareable {
         return editables.indexOf(ext) !== -1;
     }
 
-    upload(file: File | Blob, visibility?: 'public' | 'protected'): Promise<any> {
+    upload(file: File | Blob, visibility?: 'public' | 'protected' | 'owner'): Promise<any> {
+        var visibilityPath = '';
         if (!visibility) {
             visibility = 'protected';
+        }
+        if(visibility === 'public' || visibility === 'protected'){
+            visibilityPath = visibility + '=true&application=media-library&';
         }
         if(!this.metadata){
             const nameSplit = file.name.split('.');
@@ -214,7 +221,7 @@ export class Document implements Selectable, Shareable {
         this.title = file.name;
         this.newProperties.name = this.title;
         this.xhr = new XMLHttpRequest();
-        this.xhr.open('POST', '/workspace/document?' + visibility + '=true&application=media-library&quality=1&' + MediaLibrary.thumbnails);
+        this.xhr.open('POST', '/workspace/document?' + visibilityPath + 'quality=1&' + MediaLibrary.thumbnails);
         this.xhr.send(formData);
         this.xhr.onprogress = (e) => {
             this.eventer.trigger('progress', e);
@@ -222,17 +229,32 @@ export class Document implements Selectable, Shareable {
 
         return new Promise((resolve, reject) => {
             this.xhr.onload = () => {
-                this.eventer.trigger('loaded');
-                resolve();
-                this.status = DocumentStatus.loaded;
-                const result = JSON.parse(this.xhr.responseText);
-                this._id = result._id;
-            }
-            this.xhr.onerror = () => {
-                this.eventer.trigger('error');
-                var error = JSON.parse(this.xhr.responseText);
-                notify.error(error.error);
-                this.status = DocumentStatus.failed;
+                if(this.xhr.status >= 200 && this.xhr.status < 400){
+                    this.eventer.trigger('loaded');
+                    this.status = DocumentStatus.loaded;
+                    const result = JSON.parse(this.xhr.responseText);
+                    this._id = result._id;
+                    if(this.path){
+                        http.put("documents/move/" + this._id + '/' + encodeURIComponent(this.path)).then(() => {
+                            resolve();
+                        });
+                    }
+                    else{
+                        resolve();
+                    }
+                }
+                else{
+                    if(this.xhr.status === 413){
+                        notify.error(lang.translate('file.too.large.limit') + (maxFileSize / 1024 / 1024) + lang.translate('mb'));
+                    }
+                    else{
+                        
+                        var error = JSON.parse(this.xhr.responseText);
+                        notify.error(error.error);
+                    }
+                    this.eventer.trigger('error');
+                    this.status = DocumentStatus.failed;
+                }
             }
         });
     }
@@ -505,3 +527,4 @@ window.entcore.Folder = Folder;
 window.entcore.quota = quota;
 window.entcore.Document = Document;
 window.entcore.MediaLibrary = MediaLibrary;
+window.entcore.DocumentStatus = DocumentStatus;

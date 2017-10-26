@@ -926,41 +926,16 @@ export const Selection = function(data){
             that.instance.trigger('contentupdated');
         }
         else {
-            if (!this.selectedElements.length) {
-                if (!this.range) {
-                    return;
-                }
-                var node = this.range.startContainer;
-                if (node.nodeType === 1) {
-                    return $(node).css(params);
-                }
-                else {
-                    return $(node.parentNode).css(params);
-                }
+            if (!this.range) {
+                return;
             }
-            var different = false;
-            var val = undefined;
-            this.selectedElements.forEach(function (item) {
-                if(!item){
-                    return;
-                }
-                var itemVal;
-                if (item.nodeType === 1) {
-                    itemVal = $(item).css(params);
-                }
-                else{
-                    itemVal = $(item.parentNode).css(params);
-                }
-
-                if (itemVal !== val && val !== undefined) {
-                    different = true;
-                }
-                val = itemVal;
-            });
-            if (different) {
-                val = undefined;
+            var node = this.range.commonAncestorContainer;
+            if (node.nodeType === 1) {
+                return $(node).css(params);
             }
-            return val;
+            else {
+                return $(node.parentNode).css(params);
+            }
         }
     };
 

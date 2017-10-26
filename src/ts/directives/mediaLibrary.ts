@@ -316,9 +316,7 @@ export const mediaLibrary = ng.directive('mediaLibrary', function(){
 				scope.documents = filteredDocuments(scope.openedFolder);
 			};
 
-			scope.editImage = () => {
-				scope.display.editDocument = true;
-			};
+			scope.editImage = () => scope.display.editDocument = true;
 			
 			scope.$on("$destroy", function() {
 				cancelAll();

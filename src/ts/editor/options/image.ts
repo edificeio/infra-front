@@ -57,20 +57,27 @@ const showImageContextualMenu = (refElement, scope, instance) => {
         }
     }
     
-    const refreshPositon = (size: string) => {
+    const refreshPositon = (size?: string) => {
         imageMenu.find('.selected').removeClass('selected');
         imageMenu.find('.' + size).addClass('selected');
         image.on('load', () => {
             imageMenu.offset({
-                top: refElement.offset().top + refElement.height() + 10,
+                top: refElement.offset().top + refElement.height() + 20,
                 left: refElement.offset().left + 5
             });
         });
     };
 
+    refElement.on('resizing.imageMenu', (e) => {
+        imageMenu.offset({
+            top: refElement.offset().top + refElement.height() + 20,
+            left: refElement.offset().left + 5
+        });
+    });
+
     imageMenu.offset({
-        top: refElement.offset().top + refElement.height() + 10,
-        left: refElement.offset().left + 5
+        top: parseInt(refElement.offset().top + refElement.height() + 20),
+        left: parseInt(refElement.offset().left + 5)
     })
     .on('click', '.edit-image', () => {
         const urlParts = image.attr('src').split('/');
@@ -131,26 +138,29 @@ const showImageContextualMenu = (refElement, scope, instance) => {
         image.parent().css({ float: 'right', margin: 'auto' });
     });
     
+    const unbind = () => {
+        imageMenu.remove();
+        refElement.removeClass('has-menu');
+        refElement.off('resizing.imageMenu');
+    }
+
     setTimeout(() => {
         $(document).one('selectionchange', (e) => {
             if(imageMenu.find(e.target).length === 0){
-                imageMenu.remove();
-                refElement.removeClass('has-menu');
+                unbind();
             }
         });
 
         $(document).one('keyup', (e) => {
             setTimeout(() => {
                 if(!$('body').find(image).length){
-                    imageMenu.remove();
-                    refElement.removeClass('has-menu');
+                    unbind();
                 }
             }, 50);
         });
 
         $(document).on('click', '.close-focus', () => {
-            imageMenu.remove();
-            refElement.removeClass('has-menu');
+            unbind();
         });
     }, 0);
 }
@@ -221,7 +231,7 @@ export const image = {
                     instance.focus();
                 };
 
-                instance.on('model-updated', () => refreshResize(instance))
+                instance.on('model-updated', () => refreshResize(instance));
 
                 instance.element.on('drop', function (e) {
                     var image;

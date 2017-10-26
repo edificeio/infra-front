@@ -143,7 +143,7 @@ export class ImageView{
                 await this.loadBlob(this.history[this.historyIndex]);
                 $(this.renderer.view).css({ opacity: 1 });
                 resolve();
-            }, 200);
+            }, 150);
         });
     }
 

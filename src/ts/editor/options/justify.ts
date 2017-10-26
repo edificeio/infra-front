@@ -1,6 +1,53 @@
 import { $ } from '../../libs/jquery/jquery';
+import { textNodes } from '../selection';
+
+function findBlockParent(node: Node){
+    if(node.nodeType === 1 && textNodes.indexOf(node.nodeName) === -1){
+        return node;
+    }
+    if(node.attributes && node.attributes['contenteditable'] && node.nodeName === 'DIV'){
+        const newNode = document.createElement('div');
+        node.appendChild(newNode);
+        for(let i = 0; i < node.childNodes.length; i++){
+            newNode.appendChild(node.childNodes[i]);
+        }
+        return node;
+        
+    }
+    if(node.nodeType !== 1 || textNodes.indexOf(node.nodeName) !== -1){
+        return findBlockParent(node.parentElement);
+    }
+}
+
+function selectBlockParent(){
+    const sel = document.getSelection();
+    const range = sel.getRangeAt(0);
+    let ancestor = range.commonAncestorContainer;
+    let started = false;
+    const newRange = document.createRange();
+    ancestor = findBlockParent(ancestor);
+    for(let i = 0; i < ancestor.childNodes.length; i++){
+        const blockParent = findBlockParent(ancestor.childNodes[i]);
+        if(ancestor.childNodes[i] === range.startContainer || ancestor.childNodes[i].contains(range.startContainer) || range.startContainer.contains(ancestor.childNodes[i])){
+            started = true;
+            newRange.setStart(blockParent, 0);
+        }
+
+        if(!started){
+            continue;
+        }
+
+        if(ancestor.childNodes[i] === range.endContainer || ancestor.childNodes[i].contains(range.endContainer) || range.endContainer.contains(ancestor.childNodes[i])){
+            newRange.setEnd(blockParent, blockParent.childNodes.length);
+        }
+    }
+    
+    sel.removeAllRanges();
+    sel.addRange(newRange);
+}
 
 function beforeJustify(instance){
+    selectBlockParent();
     instance.editZone.find('mathjax').html('');
     instance.editZone.find('mathjax').removeAttr('contenteditable');
 }
@@ -27,9 +74,10 @@ export const justifyLeft = {
                         instance.focus();
                     }
                     beforeJustify(instance)
-                    instance.execCommand('justifyLeft');
+                    instance.selection.css({ 'text-align': 'left' });
                     if(document.queryCommandState('justifyLeft')){
-                        element.addClass('toggled');							}
+                        element.addClass('toggled');							
+                    }
                     else{
                         element.removeClass('toggled');
                     }
@@ -72,11 +120,11 @@ export const justifyCenter = {
 
                     beforeJustify(instance);
                     if(!document.queryCommandState('justifyCenter')){
-                        instance.execCommand('justifyCenter');
+                        instance.selection.css({ 'text-align': 'center' });
                         element.addClass('toggled');
                     }
                     else{
-                        instance.execCommand('justifyLeft');
+                        instance.selection.css({ 'text-align': 'left' });
                         element.removeClass('toggled');
                     }
 
@@ -122,11 +170,11 @@ export const justifyRight = {
 
                     beforeJustify(instance);
                     if(!document.queryCommandState('justifyRight')){
-                        instance.execCommand('justifyRight');
+                        instance.selection.css({ 'text-align': 'right' });
                         element.addClass('toggled');
                     }
                     else{
-                        instance.execCommand('justifyLeft');
+                        instance.selection.css({ 'text-align': 'left' });
                         element.removeClass('toggled');
                     }
 
@@ -170,10 +218,10 @@ export const justifyFull = {
                     beforeJustify(instance);
                     if(!document.queryCommandState('justifyFull')){
                         element.addClass('toggled');
-                        instance.execCommand('justifyFull');
+                        instance.selection.css({ 'text-align': 'justify' });
                     }
                     else{
-                        instance.execCommand('justifyLeft');
+                        instance.selection.css({ 'text-align': 'left' });
                         element.removeClass('toggled');
                     }
 
