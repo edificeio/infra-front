@@ -22,7 +22,7 @@ export class ImageView{
             );
             this.stage.addChild(this.sprite);
             this.renderer.render(this.stage);
-            setTimeout(() => {
+            setTimeout(async () => {
                 this.sprite.pivot.set(this.sprite.width / 2, this.sprite.height / 2);
                 this.renderer.resize(this.sprite.width, this.sprite.height);
                 this.sprite.position = {
@@ -31,7 +31,8 @@ export class ImageView{
                 } as PIXI.Point;
                 
                 this.render();
-                this.backup();
+                await this.backup();
+                this.historyIndex = 0;
                 requestAnimationFrame(() => 
                     this.editingElement.find('.tools-background').height(this.editingElement.find('.output').height())
                 );
@@ -93,6 +94,9 @@ export class ImageView{
 
     load(image: string, renderer: PIXI.CanvasRenderer | PIXI.WebGLRenderer, editingElement: any, format: string): Promise<any>{
         this.format = format;
+        if(this.format === 'jpg'){
+            this.format = 'jpeg';
+        }
         return new Promise((resolve, reject) => {
             this.renderer = renderer;
             this.editingElement = editingElement;

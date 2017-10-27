@@ -23,6 +23,7 @@ export let slider = ng.directive('slider', ['$compile', '$parse', function ($com
                     position: 'absolute'
                 });
                 element.children('.filled').width(cursor.position().left);
+                element.children('.label').css({ left: pos + 'px'});
             };
 
             $(window).on('resize', function () {

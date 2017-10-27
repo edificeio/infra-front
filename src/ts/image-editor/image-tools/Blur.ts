@@ -55,7 +55,7 @@ export class Blur implements Tool{
 
         const toBlur = new PIXI.Texture(texture.baseTexture, rect);
         const newSprite = new PIXI.Sprite(toBlur);
-        newSprite.filters = [new PIXI.filters.BlurFilter(3)];
+        newSprite.filters = [new PIXI.filters.BlurFilter(3 * this.widthRatio)];
         newSprite.width = (brushSize * this.widthRatio) * 2;
         newSprite.height = (brushSize * this.heightRatio) * 2;
         newSprite.position = {

@@ -78,12 +78,12 @@ export class Document implements Selectable, Shareable {
     created: any;
     path: string;
     metadata: {
-        'content-type': string,
+        'content-type'?: string,
 		role?: string,
         extension?: string,
         filename?: string,
-        size: number
-    };
+        size?: number
+    } = {};
     newProperties: {
         name?: string;
         legend?: string;
@@ -128,6 +128,19 @@ export class Document implements Selectable, Shareable {
             return (parseInt(koSize / 1024 * 10) / 10)  + ' Mo';
         }
         return Math.ceil(koSize) + ' Ko';
+    }
+
+    async loadProperties(){
+        const response = await http.get(`/workspace/document/properties/${ this._id }`);
+        var dotSplit = response.data.name.split('.');
+        this.metadata.extension = dotSplit[dotSplit.length - 1];
+        if (dotSplit.length > 1) {
+            dotSplit.length = dotSplit.length - 1;
+        }
+        
+        this.title = dotSplit.join('.');
+        this.newProperties.name = this.title;
+        this.metadata.role = this.role();
     }
 
     async saveChanges(){
@@ -205,7 +218,7 @@ export class Document implements Selectable, Shareable {
         if(visibility === 'public' || visibility === 'protected'){
             visibilityPath = visibility + '=true&application=media-library&';
         }
-        if(!this.metadata){
+        if(!this.metadata || !this.metadata.extension){
             const nameSplit = file.name.split('.');
             this.metadata = { 
                 'content-type': file.type,
@@ -282,7 +295,7 @@ export class Document implements Selectable, Shareable {
     async update(blob: Blob){
         const formData = new FormData();
         formData.append('file', blob, this.title + '.' + this.metadata.extension);
-        await http.put('/workspace/document/' + this._id + '?' + MediaLibrary.thumbnails, formData);
+        await http.put(`/workspace/document/${this._id}?${MediaLibrary.thumbnails}&quality=1`, formData);
         this.currentQuality = 1;
         this.version = Math.floor(Math.random() * 100);
         this.eventer.trigger('save');

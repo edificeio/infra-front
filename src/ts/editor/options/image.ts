@@ -79,14 +79,15 @@ const showImageContextualMenu = (refElement, scope, instance) => {
         top: parseInt(refElement.offset().top + refElement.height() + 20),
         left: parseInt(refElement.offset().left + 5)
     })
-    .on('click', '.edit-image', () => {
+    .on('click', '.edit-image', async () => {
         const urlParts = image.attr('src').split('/');
-        if(urlParts[1] === 'assets'){
+        if(urlParts[1] !== 'workspace'){
             scope.imageOption.display.pickFile = true;
             scope.$apply();
             return;
         }
         scope.imageOption.display.file = Mix.castAs(Document, { _id: urlParts[urlParts.length - 1].split('?')[0] });
+        await scope.imageOption.display.file.loadProperties();
         scope.imageOption.display.editFile = true;
         scope.updateImage = () => {
             let src = image.attr('src');

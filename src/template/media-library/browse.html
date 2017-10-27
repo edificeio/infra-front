@@ -27,10 +27,14 @@
 </script>
 
 <div class="row reduce-block-four search">
-	<h2 translate content="library.browse.title"></h2>
 	<input type="search" ng-model="display.search" i18n-placeholder="search" ng-change="updateSearch()" class="six cell" />
-	<hr />
+	<div class="cell six">
+		<button class="right-magnet" ng-disabled="display.loading || selectedDocuments().length === 0" ng-click="selectDocuments()">
+			<i18n>library.browse.add</i18n>
+		</button>
+	</div>
 </div>
+
 <div class="row browse">
 	<nav class="four cell vertical zero-mobile">
 		<ul>
@@ -52,7 +56,9 @@
 			</li>
 		</ul>
 	</nav>
+	
 	<div class="cell eight height-five twelve-mobile browse-list">
+		
 		<div class="absolute reduce-block-eight" ng-if="!documents.length && !folders.length" style="text-align: center"><i18n>library.browse.notfound</i18n></div>
 		<div class="absolute icons-view" style="overflow: auto" bottom-scroll="display.limit = display.limit + 6">
 			<div class="element reduce-block-six" ng-repeat="folder in folders | limitTo:display.limit">
@@ -63,28 +69,26 @@
 					<a class="medium-text">[[folder.name]]</a>
 				</legend>
 			</div>
-			<div class="element reduce-block-six" ng-repeat="document in documents | orderBy:'created':true | limitTo:display.limit - folders.length" ng-class="{ selected: document.selected }">
-				<div class="img container" ng-click="selectDocument(document)" ng-if="document.role() === 'img'">
-					<div class="clip">
-						<img ng-src="/workspace/document/[[document._id]]?thumbnail=120x120" />
-						<div class="absolute" ng-if="display.loading && display.loading.indexOf(document) !== -1">
-							<img skin-src="/img/illustrations/loading.gif" />
+			<div class="element reduce-block-six" ng-repeat="document in documents | orderBy:'created':true | limitTo:display.limit - folders.length">
+				<explorer ng-model="document.selected" ng-click="updateSelection(document)" on-open="selectDocument(document)">
+					<div class="img container" ng-if="document.role() === 'img'">
+						<div class="clip">
+							<img ng-src="/workspace/document/[[document._id]]?thumbnail=120x120" />
+							<div class="absolute" ng-if="display.loading && display.loading.indexOf(document) !== -1">
+								<img skin-src="/img/illustrations/loading.gif" />
+							</div>
 						</div>
 					</div>
-				</div>
-				<div class="container" ng-click="selectDocument(document)" ng-if="document.role() !== 'img'">
-					<i class="[[document.role()]]-large"></i>
-				</div>
-				<input type="checkbox" ng-if="multiple" ng-model="document.selected" />
-				<legend>
-					<a class="medium-text">[[document.name]]</a>
-					<a><strong class="small-text">[[document.ownerName]]</strong></a>
-				</legend>
+					<div class="container" ng-if="document.role() !== 'img'">
+						<i class="[[document.role()]]-large"></i>
+					</div>
+					<legend>
+						<a class="medium-text">[[document.name]]</a>
+						<a><strong class="small-text">[[document.ownerName]]</strong></a>
+					</legend>
+				</explorer>
 			</div>
 		</div>
-	</div>
-	<div class="row" ng-if="multiple">
-		<input type="button" class="right-magnet vertical-spacing-twice" ng-click="selectDocuments()" ng-disabled="display.loading" i18n-value="library.browse.add" />
 	</div>
 </div>
 <div class="row"></div>

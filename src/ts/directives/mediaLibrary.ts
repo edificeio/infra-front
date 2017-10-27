@@ -46,7 +46,8 @@ export const mediaLibrary = ng.directive('mediaLibrary', function(){
 			}
 
 			scope.upload = {
-				documents: []
+				documents: [],
+				highlights: []
 			};
 
 			element.on('dragenter', '.drop-zone', (e) => {
@@ -117,6 +118,29 @@ export const mediaLibrary = ng.directive('mediaLibrary', function(){
 				template.open('entcore/media-library/main', 'entcore/media-library/' + tab);
 				cancelAll();
 				scope.upload.loading = [];
+				setTimeout(() => {
+					scope.upload.highlights.forEach((doc: Document) => {
+						element.find('img').each((index, item) => {
+							if($(item).attr('src').indexOf(doc._id) !== -1){
+								let highlight = $('<div class="highlight"></div>');
+								const explorer = $(item).parents('.explorer');
+								explorer.append(highlight);
+								explorer.scope().ngModel = true;
+								explorer.scope().$apply();
+							}
+						});
+					});
+					setTimeout(() => {
+						$('.highlight').addClass('show');
+						setTimeout(() => {
+							$('.highlight').removeClass('show');
+							setTimeout(() => {
+								$('.highlight').remove();
+								scope.upload.highlights = [];
+							}, 720);
+						}, 720);
+					}, 30);
+				}, 100);
 			};
 
 			scope.listFrom = async (listName): Promise<any> => {
@@ -183,7 +207,7 @@ export const mediaLibrary = ng.directive('mediaLibrary', function(){
 						MediaLibrary[scope.display.listFrom].sync();
 					}
 					else {
-						MediaLibrary[scope.display.listFrom].trigger('sync');
+						MediaLibrary.eventer.trigger('sync');
 					}
 				});
 			});
@@ -201,45 +225,21 @@ export const mediaLibrary = ng.directive('mediaLibrary', function(){
 				scope.listFrom('appDocuments');
 			};
 
-			scope.selectDocument = async (document) => {
-				if((scope.folder === MediaLibrary.appDocuments && scope.visibility === 'protected') ||
-					(scope.folder === MediaLibrary.publicDocuments && scope.visibility === 'public')){
-					if(scope.multiple){
-						scope.ngModel = [document];
-					}
-					else{
-						scope.ngModel = document;
-					}
-				}
-				else{
-					let newFile;
-					scope.display.loading = [document];
-					if(scope.visibility === 'public'){
-						newFile = await document.publicDuplicate();
-					}
-					else{
-						newFile = await document.protectedDuplicate();
-					}
-					scope.display.loading = [];
-					if(scope.multiple){
-						scope.ngModel = [newFile];
-					}
-					else{
-						scope.ngModel = newFile;
-					}
-					scope.$apply();
-				}
-			};
+			scope.selectedDocuments = () => scope.documents ? scope.documents.filter(d => d.selected) : [];
 
 			scope.selectDocuments = async () => {
-				var selectedDocuments = scope.documents.filter(d => d.selected);
+				const selectedDocuments = scope.selectedDocuments();
 				if((scope.folder === MediaLibrary.appDocuments && scope.visibility === 'protected') ||
 					(scope.folder === MediaLibrary.publicDocuments && scope.visibility === 'public')){
-					scope.ngModel = selectedDocuments;
+					if(scope.multiple){
+						scope.ngModel = selectedDocuments;
+					}
+					else{
+						scope.ngModel = selectedDocuments[0];
+					}
 				}
 				else{
-					var duplicateDocuments = [];
-					var documentsCount = 0;
+					const duplicateDocuments = [];
 					scope.display.loading = selectedDocuments;
 					for(let i = 0; i < selectedDocuments.length; i++){
 						let newFile;
@@ -253,10 +253,22 @@ export const mediaLibrary = ng.directive('mediaLibrary', function(){
 					}
 
 					scope.display.loading = [];
-					scope.ngModel = duplicateDocuments;
+					if(scope.multiple){
+						scope.ngModel = duplicateDocuments;
+					}
+					else{
+						scope.ngModel = duplicateDocuments[0];
+					}
 					scope.$apply();
 				}
 			};
+
+			scope.updateSelection = (doc) => {
+				if(!scope.multiple){
+					scope.documents.forEach(d => d.selected = false);
+					doc.selected = true;
+				}
+			}
 
 			const cancelAll = () => {
 				scope.display.editedDocument = undefined;
@@ -287,7 +299,10 @@ export const mediaLibrary = ng.directive('mediaLibrary', function(){
 			};
 
 			scope.confirmImport = async () => {
-				scope.upload.documents.forEach(doc => doc.applyBlob())
+				scope.upload.documents.forEach(doc => {
+					doc.applyBlob();
+					scope.upload.highlights.push(doc);
+				});
 				scope.upload.documents = [];
 				await scope.listFrom('appDocuments');
 				scope.show('browse');

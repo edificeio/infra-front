@@ -165,7 +165,7 @@ export class Resize implements Tool{
             y: this.initialSize.height / 2
         } as PIXI.Point;
         this.imageView.render();
-        this.editingElement.off('startResize stopResize');
+        this.editingElement.off('startResize stopResize startDrag stopDrag');
     }
 
     start(imageView: ImageView, editingElement: any){

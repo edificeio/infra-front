@@ -50,7 +50,14 @@ export class ImageEditor{
         const tool = new imageTools[name]();
         
         this.tool = tool;
-        await this.cancel();
+        if(this.imageView.historyIndex){
+            await this.cancel();
+        }
+        else{
+            this.imageView.historyIndex = 0;
+            this.imageView.appliedIndex = 0;
+        }
+        
         tool.start(this.imageView, this.editingElement);
     }
 

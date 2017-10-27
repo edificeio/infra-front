@@ -17,9 +17,6 @@ export let imageCompression = ng.directive('imageCompression', () => {
             const canvas = element.find('canvas')[0];
             canvas.height = canvasHeight;
             canvas.width = canvasWidth;
-            scope.result = {
-                quality: 1
-            };
             let blob;
             const ctx:CanvasRenderingContext2D = element.find('canvas')[0].getContext("2d");
             const hiddenCtx:CanvasRenderingContext2D = hiddenCanvas.getContext("2d");
@@ -63,7 +60,7 @@ export let imageCompression = ng.directive('imageCompression', () => {
                 hiddenCtx.drawImage(sourceImage, 0, 0);
                 hiddenCanvas.toBlob((b) => {
                     //ignore original case with no changes
-                    if(!(!scope.document.hiddenBlob && scope.document.currentQuality === 0.7)){
+                    if(!(!scope.document.hiddenBlob && scope.document.currentQuality === 0.9)){
                         scope.document.hiddenBlob = b;
                     }
                     
@@ -73,7 +70,7 @@ export let imageCompression = ng.directive('imageCompression', () => {
 
             const updateImage = () => {
                 if(!scope.document.currentQuality){
-                    scope.document.currentQuality = 0.7;
+                    scope.document.currentQuality = 0.9;
                 }
                 sourceImage.src = '/workspace/document/' + scope.document._id + '?v=' + parseInt(Math.random() * 100);
                 sourceImage.onload = () => {
@@ -88,8 +85,10 @@ export let imageCompression = ng.directive('imageCompression', () => {
 
             let unit = 'Ko';
             scope.blobSize = () => {
+                let size;
                 if(!scope.document.hiddenBlob){
-                    return 0;
+                    unit = scope.document.size.split(' ')[1];
+                    return parseInt(scope.document.size);
                 }
                 unit = 'Ko';
                 const ko = scope.document.hiddenBlob.size / 1000;
