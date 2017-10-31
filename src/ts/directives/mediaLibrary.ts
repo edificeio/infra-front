@@ -226,7 +226,11 @@ export const mediaLibrary = ng.directive('mediaLibrary', function(){
 			};
 
 			scope.selectedDocuments = () => scope.documents ? scope.documents.filter(d => d.selected) : [];
-
+			scope.selectDocument = (document: Document) => {
+				scope.documents.forEach(d => d.selected = false);
+				document.selected = true;
+				scope.selectDocuments();
+			}
 			scope.selectDocuments = async () => {
 				const selectedDocuments = scope.selectedDocuments();
 				if((scope.folder === MediaLibrary.appDocuments && scope.visibility === 'protected') ||
