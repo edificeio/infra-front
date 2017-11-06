@@ -2,7 +2,7 @@ import { ng } from '../ng-start';
 import { idiom } from '../idiom';
 import { $ } from "../libs/index";
 
-export const dropDown = ng.directive('dropDown', function($compile, $timeout){
+export const dropDown = ng.directive('dropDown', ['$compile', '$timeout', ($compile, $timeout) => {
 	return {
 		restrict: 'E',
 		scope: {
@@ -98,4 +98,4 @@ export const dropDown = ng.directive('dropDown', function($compile, $timeout){
 			});
 		}
 	}
-});
+}]);
