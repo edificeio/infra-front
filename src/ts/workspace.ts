@@ -10,6 +10,17 @@ import { Rights, Shareable } from './rights';
 
 const maxFileSize = parseInt(lang.translate('max.file.size'));
 
+let xsrfCookie;
+if(document.cookie){
+    let cookies = _.map(document.cookie.split(';'), function(c){
+        return {
+            name: c.split('=')[0].trim(), 
+            val: c.split('=')[1].trim()
+        };
+    });
+    xsrfCookie = _.findWhere(cookies, { name: 'XSRF-TOKEN' });
+}
+
 class Quota {
     max: number;
     used: number;
@@ -235,6 +246,7 @@ export class Document implements Selectable, Shareable {
         this.newProperties.name = this.title;
         this.xhr = new XMLHttpRequest();
         this.xhr.open('POST', '/workspace/document?' + visibilityPath + 'quality=1&' + MediaLibrary.thumbnails);
+        this.xhr.setRequestHeader('X-XSRF-TOKEN', xsrfCookie.val);
         this.xhr.send(formData);
         this.xhr.onprogress = (e) => {
             this.eventer.trigger('progress', e);
