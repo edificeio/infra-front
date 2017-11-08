@@ -2,6 +2,7 @@ import { ui } from '../../ui';
 import { $ } from '../../libs/jquery/jquery';
 import { Document } from '../../workspace';
 import { Mix } from 'entcore-toolkit';
+import { idiom } from "../../idiom";
 
 const refreshResize = (instance) => {
     ui.extendElement.resizable(instance.editZone.find('.image-container'), {
@@ -20,7 +21,7 @@ const showImageContextualMenu = (refElement, scope, instance) => {
     if($(window).width() >= ui.breakpoints.tablette){
         imageMenu = $(`
             <div class="image-contextual-menu">
-                <button class="edit-image"><i18n>edit.image</i18n></button>
+                <button class="edit-image">${ idiom.translate('edit.image') }</button>
 
                 <i class="resize-image small"></i>
                 <i class="resize-image medium"></i>
@@ -32,7 +33,7 @@ const showImageContextualMenu = (refElement, scope, instance) => {
     else{
         imageMenu = $(`
             <div class="image-contextual-menu">
-                <button class="open-media-library"><i18n>edit.image</i18n></button>
+                <button class="open-media-library"><${ idiom.translate('edit.image') }</button>
 
                 <i class="justify-left"></i>
                 <i class="justify-center"></i>
