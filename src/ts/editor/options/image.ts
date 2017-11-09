@@ -7,6 +7,7 @@ import { idiom } from "../../idiom";
 const refreshResize = (instance) => {
     ui.extendElement.resizable(instance.editZone.find('.image-container'), {
         moveWithResize: false,
+        preserveRatio: true,
         mouseUp: function() {
             instance.trigger('contentupdated');
             instance.addState(instance.editZone.html());
@@ -200,6 +201,18 @@ export const image = {
                     newRange.selectNode(parentSpan[0]);
                     sel.addRange(newRange);
                     showImageContextualMenu(parentSpan, scope, instance);
+                });
+
+                instance.on('contentupdated', () => {
+                    ui.extendElement.resizable(instance.editZone.find('.image-container'), {
+                        moveWithResize: false,
+                        preserveRatio: true,
+                        mouseUp: function() {
+                            instance.trigger('contentupdated');
+                            instance.addState(instance.editZone.html());
+                        },
+                        extendParent: { bottom: true }
+                    });
                 });
 
                 scope.imageOption = {

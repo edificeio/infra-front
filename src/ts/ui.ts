@@ -368,6 +368,7 @@ interface ResizeParams{
         horizontal?: boolean,
         vertical?: boolean
     },
+    preserveRatio?: boolean,
     moveWithResize?: boolean,
     mouseUp?: (e: any) => void,
     extendParent?: {
@@ -537,6 +538,7 @@ export let ui = {
                 }
 
                 const borderWidth:number = parseInt(element.css('border-width'));
+                const ratio = element.height() / element.width();
                 
                 $('body').css({
                     '-webkit-user-select': 'none',
@@ -626,10 +628,15 @@ export let ui = {
                             var p = element.offset();
                             if (resizeLimits.horizontalLeft) {
                                 var distance = initial.pos.left - mouse.x;
-                                if (initial.pos.left - distance < parentData.pos.left && !params.moveWithResize) {
-                                    distance = initial.pos.left - parentData.pos.left;
+                                if(params.moveWithResize === false){
+                                    if(initial.pos.left + distance + initial.size.width > parentData.pos.left + parentData.size.width){
+                                        distance = 0;
+                                    }
                                 }
-                                if (params.moveWithResize !== false) {
+                                else{
+                                    if(initial.pos.left - distance < parentData.pos.left){
+                                        distance = 0;
+                                    }
                                     element.offset({
                                         left: parseInt(initial.pos.left - distance),
                                         top: parseInt(p.top)
@@ -647,16 +654,25 @@ export let ui = {
                             }
                             if (newWidth > 0) {
                                 element.width(newWidth);
+                                if(params.preserveRatio){
+                                    element.height(newWidth * ratio);
+                                }
                             }
                         }
-                        if (resizeLimits.verticalTop || resizeLimits.verticalBottom) {
+                        if ((resizeLimits.verticalTop || resizeLimits.verticalBottom) && !((resizeLimits.horizontalLeft || resizeLimits.horizontalRight) && params.preserveRatio)) {
                             var p = element.offset();
                             if (resizeLimits.verticalTop) {
                                 var distance = initial.pos.top - mouse.y;
-                                if (initial.pos.top - distance < parentData.pos.top) {
-                                    distance = initial.pos.top - parentData.pos.top;
+
+                                if(params.moveWithResize === false){
+                                    if(initial.pos.top + distance + initial.size.height > parentData.pos.top + parentData.size.height && !(params.extendParent && params.extendParent.bottom)){
+                                        distance = 0;
+                                    }
                                 }
-                                if (params.moveWithResize !== false) {
+                                else{
+                                    if(initial.pos.top - distance < parentData.pos.top){
+                                        distance = 0;
+                                    }
                                     element.offset({
                                         left: parseInt(p.left),
                                         top: parseInt(initial.pos.top - distance)
@@ -674,6 +690,9 @@ export let ui = {
                             }
                             if (newHeight > 0) {
                                 element.height(newHeight);
+                                if(params.preserveRatio){
+                                    element.width(newHeight / ratio);
+                                }
                             }
                         }
                         element.trigger('resizing');

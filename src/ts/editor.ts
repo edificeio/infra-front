@@ -1473,7 +1473,7 @@ export let RTE = {
                         if(parseInt(htmlZone.css('min-height')) < editZone.height()){
                             htmlZone.css('min-height', editZone.height() + 'px');
                         }
-                        ui.extendElement.resizable(element.find('[contenteditable]').find('.image-container, table, .column'), {
+                        ui.extendElement.resizable(element.find('[contenteditable]').find('table, .column'), {
                             moveWithResize: false,
                             mouseUp: function() {
                                 editorInstance.trigger('contentupdated');
