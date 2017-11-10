@@ -12,6 +12,7 @@ export class Resize implements Tool{
         height: number
     };
     _scale: number;
+    token: number;
 
     get ratio(){
         return this.initialSize.width / this.initialSize.height;
@@ -49,18 +50,26 @@ export class Resize implements Tool{
         return this.editingElement.find('.output').height();
     }
 
+    stopResizing(){
+        this.isResizing = false;
+        cancelAnimationFrame(this.token);
+    }
+
     setWidth(width: number){
         const height = (width / this.ratio) * this.scale;
         this.handle.width(width * this.scale);
         this.handle.height(height);
-        this.resize();
+        this.isResizing = true;
+        this.animate();
+        setTimeout(() => this.stopResizing(), 400);
     }
 
     setHeight(height: number){
         const width = (height * this.ratio) * this.scale;
         this.handle.height(height * this.scale);
         this.handle.width(width * this.scale);
-        this.resize();
+        this.animate();
+        setTimeout(() => this.stopResizing(), 400);
     }
 
     apply(options?: any): Promise<any>{
@@ -168,6 +177,14 @@ export class Resize implements Tool{
         this.editingElement.off('startResize stopResize startDrag stopDrag');
     }
 
+    animate(){
+        if(!this.isResizing){
+            return;
+        }
+        this.resize();
+        this.token = requestAnimationFrame(() => this.animate());
+    }
+
     start(imageView: ImageView, editingElement: any){
         this.imageView = imageView;
         this.editingElement = editingElement;
@@ -175,37 +192,27 @@ export class Resize implements Tool{
             height: this.imageView.sprite.height,
             width: this.imageView.sprite.width
         };
-        let token;
-        const animate = () => {
-            if(!this.isResizing){
-                return;
-            }
-            this.resize();
-            token = requestAnimationFrame(animate);
-        }
 
         editingElement.on('startResize', '.handle', () => {
             this.isResizing = true;
-            animate();
+            this.animate();
         });
 
         editingElement.on('stopResize', '.handle', () => {
-            this.isResizing = false;
+            this.stopResizing();
             this.imageView.pendingChanges = true;
             angular.element(editingElement).scope().$apply();
-            cancelAnimationFrame(token);
         });
 
         editingElement.on('startDrag', '.handle', () => {
             this.isResizing = true;
-            animate();
+            this.animate();
         });
         
         editingElement.on('stopDrag', '.handle', () => {
-            this.isResizing = false;
+            this.stopResizing();
             this.imageView.pendingChanges = true;
             angular.element(editingElement).scope().$apply();
-            cancelAnimationFrame(token);
         });
 
         setTimeout(() => this.setup(), 150);
