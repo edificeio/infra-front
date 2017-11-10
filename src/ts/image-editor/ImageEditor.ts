@@ -121,10 +121,10 @@ export class ImageEditor{
     async drawDocument(document: Document){
         if(document.hiddenBlob){
             const path = URL.createObjectURL(document.hiddenBlob);
-            await this.imageView.load(path, this.renderer, this.editingElement, document.metadata.extension);
+            await this.imageView.load(path, this.renderer, this.editingElement, document.metadata['content-type']);
         }
         else{
-            await this.imageView.load('/workspace/document/' + document._id + '?v=' + parseInt(Math.random() * 100), this.renderer, this.editingElement, document.metadata.extension);
+            await this.imageView.load('/workspace/document/' + document._id + '?v=' + parseInt(Math.random() * 100), this.renderer, this.editingElement, document.metadata['content-type']);
         }
         
         this.document = document;

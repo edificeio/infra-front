@@ -94,9 +94,6 @@ export class ImageView{
 
     load(image: string, renderer: PIXI.CanvasRenderer | PIXI.WebGLRenderer, editingElement: any, format: string): Promise<any>{
         this.format = format;
-        if(this.format === 'jpg'){
-            this.format = 'jpeg';
-        }
         return new Promise((resolve, reject) => {
             this.renderer = renderer;
             this.editingElement = editingElement;
@@ -169,7 +166,7 @@ export class ImageView{
                 this.loadBlob(blob, repaint).then(() => {
                     resolve();
                 })
-            }, 'image/' + this.format);
+            }, this.format);
         });
     }
 }

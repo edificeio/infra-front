@@ -217,7 +217,7 @@ export class Document implements Selectable, Shareable {
 
     get isEditableImage(){
         const editables = ['jpg', 'jpeg', 'bmp', 'png'];
-        const ext = this.metadata.extension.toLowerCase();
+        const ext = this.metadata['content-type'].split('/')[1].toLowerCase();
         return editables.indexOf(ext) !== -1;
     }
 
@@ -229,10 +229,10 @@ export class Document implements Selectable, Shareable {
         if(visibility === 'public' || visibility === 'protected'){
             visibilityPath = visibility + '=true&application=media-library';
         }
-        if(!this.metadata || !this.metadata.extension){
+        if(!this.metadata || !this.metadata['content-type']){
             const nameSplit = file.name.split('.');
             this.metadata = { 
-                'content-type': file.type,
+                'content-type': file.type || 'application/octet-stream',
                 'filename': file.name,
                 size: file.size,
                 extension: nameSplit[nameSplit.length - 1]
