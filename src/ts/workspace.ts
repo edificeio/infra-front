@@ -227,7 +227,7 @@ export class Document implements Selectable, Shareable {
             visibility = 'protected';
         }
         if(visibility === 'public' || visibility === 'protected'){
-            visibilityPath = visibility + '=true&application=media-library&';
+            visibilityPath = visibility + '=true&application=media-library';
         }
         if(!this.metadata || !this.metadata.extension){
             const nameSplit = file.name.split('.');
@@ -245,7 +245,11 @@ export class Document implements Selectable, Shareable {
         this.title = file.name;
         this.newProperties.name = this.title;
         this.xhr = new XMLHttpRequest();
-        this.xhr.open('POST', '/workspace/document?' + visibilityPath + 'quality=1&' + MediaLibrary.thumbnails);
+        var path = '/workspace/document?' + visibilityPath;
+        if(this.role() === 'img'){
+            path += '&quality=1&' + MediaLibrary.thumbnails;
+        }
+        this.xhr.open('POST', path);
         this.xhr.setRequestHeader('X-XSRF-TOKEN', xsrfCookie.val);
         this.xhr.send(formData);
         this.xhr.onprogress = (e) => {
