@@ -54,8 +54,8 @@ export let bindHtml = ng.directive('bindHtml', ['$compile', function($compile){
 						.detach()
 						.appendTo(parent);
 				});
+				element.find('img').css({ cursor: '' });
 
-				let legend;
 				element.on('mouseover', 'img', async (e) => {
 					const src: string = $(e.target).attr('src');
 					if(src.startsWith('/workspace/document')){
@@ -69,8 +69,12 @@ export let bindHtml = ng.directive('bindHtml', ['$compile', function($compile){
 							legendText = response.data.legend;
 						}
 						
+						if(!legendText){
+							return;
+						}
+
 						$(e.target).data('legend', legendText);
-						legend = $(`<legend class="user-image"><div class="text">${legendText}</div></legend>`).appendTo('body');
+						let legend = $(`<legend class="user-image"><div class="text">${legendText}</div></legend>`).appendTo('body');
 						legend.height($(e.target).height());
 						legend.width($(e.target).width());
 						legend.offset({
@@ -82,11 +86,10 @@ export let bindHtml = ng.directive('bindHtml', ['$compile', function($compile){
 							const out = (e) => {
 								legend.find('.text').addClass('hidden');
 								setTimeout(() => legend.remove(), 250);
-								element.off('mouseout');
+								$(e.target).off('mouseout');
 							};
 
-							element.on('mouseout', 'img', out);
-							element.on('mouseout', out);
+							$(e.target).on('mouseout', out);
 						}, 10)
 					}
 				});
