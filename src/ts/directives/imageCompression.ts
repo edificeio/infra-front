@@ -60,7 +60,7 @@ export let imageCompression = ng.directive('imageCompression', () => {
                 hiddenCtx.drawImage(sourceImage, 0, 0);
                 hiddenCanvas.toBlob((b) => {
                     //ignore original case with no changes
-                    if(!(!scope.document.hiddenBlob && scope.document.currentQuality === 0.9)){
+                    if(!(!scope.document.hiddenBlob && scope.document.currentQuality === 1)){
                         scope.document.hiddenBlob = b;
                     }
                     
@@ -70,7 +70,7 @@ export let imageCompression = ng.directive('imageCompression', () => {
 
             const updateImage = () => {
                 if(!scope.document.currentQuality){
-                    scope.document.currentQuality = 0.9;
+                    scope.document.currentQuality = 1;
                 }
                 sourceImage.src = '/workspace/document/' + scope.document._id + '?v=' + parseInt(Math.random() * 100);
                 sourceImage.onload = () => {
@@ -91,8 +91,8 @@ export let imageCompression = ng.directive('imageCompression', () => {
                     return parseInt(scope.document.size);
                 }
                 unit = 'Ko';
-                const ko = scope.document.hiddenBlob.size / 1000;
-                const mo = ko / 1000;
+                const ko = scope.document.hiddenBlob.size / 1024;
+                const mo = ko / 1024;
                 if(mo >= 1){
                     unit = 'Mo';
                     return Math.round(mo * 10) / 10;
