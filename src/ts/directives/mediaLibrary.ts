@@ -149,18 +149,16 @@ export const mediaLibrary = ng.directive('mediaLibrary', function(){
 				await MediaLibrary[scope.display.listFrom].sync();
 			};
 
-			scope.openFolder = function(folder){
-				if(scope.openedFolder.closeFolder && folder.folder.indexOf(scope.openedFolder.folder + '_') === -1){
+			scope.openFolder = async (folder) => {
+				if(scope.openedFolder.folder && folder.folder.indexOf(scope.openedFolder.folder + '_') === -1){
 					scope.openedFolder.closeFolder();
 				}
 
 				scope.openedFolder = folder;
-				folder.sync();
-				folder.on('sync', function(){
-					scope.documents = filteredDocuments(folder);
-					scope.folders = folder.folders.all;
-					scope.$apply();
-				});
+				await folder.sync();
+				scope.documents = filteredDocuments(folder);
+				scope.folders = folder.folders.all;
+				scope.$apply();
 			};
 
 			scope.$watch('visibility', function(newVal){

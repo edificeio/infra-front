@@ -20,8 +20,10 @@
 
 <script type="text/ng-template" id="list-folders">
 	<li ng-repeat="folder in folder.folders.all">
-		<a ng-click="openFolder(folder)" ng-class="{ selected: folder === openedFolder }">[[folder.name]]</a>
-		<ul ng-include="'list-folders'">
+		<a ng-click="openFolder(folder)" ng-class="{ selected: folder === openedFolder, opened: folder.isOpened(openedFolder) }">
+			<i class="arrow" ng-if="folder.folders.all.length"></i> [[folder.name]]
+		</a>
+		<ul ng-include="'list-folders'" ng-show="folder.isOpened(openedFolder)">
 		</ul>
 	</li>
 </script>
@@ -39,9 +41,12 @@
 	<nav class="four cell vertical zero-mobile">
 		<ul>
 			<li workflow="workspace.create">
-				<a ng-click="listFrom('myDocuments')" ng-class="{ selected: display.listFrom === 'myDocuments' }"><i18n>workspace.myDocuments</i18n></a>
+				<a ng-click="listFrom('myDocuments')" ng-class="{ selected: display.listFrom === 'myDocuments', opened: folder.isOpened(openedFolder) }">
+					<i class="arrow" ng-if="folder.folders.all.length"></i>
+					<i18n>workspace.myDocuments</i18n>
+				</a>
 				<div>
-					<ul ng-include="'list-folders'">
+					<ul ng-include="'list-folders'" ng-show="folder.isOpened(openedFolder)">
 					</ul>
 				</div>
 			</li>

@@ -380,23 +380,35 @@ export class Document implements Selectable, Shareable {
 }
 
 export class Folder implements Selectable{
-
     selected: boolean;
     folders = new Selection<Folder>([]);
     documents = new Selection<Document>([]);
     folder: string;
+    owner: string;
 
     closeFolder(){
         this.folders.all = [];
     };
+
+    addFolders(){
+        this.folders.addRange(Mix.castArrayAs(Folder, MediaLibrary.foldersStore.filter(
+            (folder) => folder.folder.indexOf(this.folder + '_' + folder.name) !== -1)
+        ));
+    }
+
+    isOpened(currentFolder: Folder){
+        return (currentFolder.folder && currentFolder.folder.indexOf(this.folder) !== -1) || 
+        (this instanceof MyDocuments && currentFolder.owner === model.me.userId) || currentFolder === this;
+    }
     
     async sync(){
         this.folders.all.splice(0, this.folders.all.length);
-        this.folders.addRange(MediaLibrary.myDocuments.folders.filter((folder) => folder.folder.indexOf(this.folder + '_') !== -1));
+        this.addFolders();
+        this.folders.all.forEach(f => f.addFolders());
         const response = await http.get('/workspace/documents/' + this.folder + '?filter=owner&hierarchical=true');
         this.documents.all.splice(0, this.documents.all.length);
         this.documents.addRange(Mix.castArrayAs(Document, response.data.filter(doc => doc.folder !== 'Trash')));
-        MediaLibrary.eventer.trigger('sync');
+
     }
 }
 
@@ -404,7 +416,9 @@ export class MyDocuments extends Folder{
     async sync(){
         this.folders.all.splice(0, this.folders.all.length);
         const response = await http.get('/workspace/folders/list?filter=owner');
-        this.folders.addRange(response.data.filter((folder) => folder.folder.indexOf('_') === -1 ));
+        MediaLibrary.foldersStore = response.data;
+        this.folders.addRange(Mix.castArrayAs(Folder, response.data.filter((folder) => folder.folder.indexOf('_') === -1 )));
+        this.folders.all.forEach(f => f.addFolders());
         this.documents.all.splice(0, this.documents.all.length);
         const docResponse = await http.get('/workspace/documents?filter=owner&hierarchical=true');
         this.documents.addRange(Mix.castArrayAs(Document, docResponse.data.filter(doc => doc.folder !== 'Trash')));
@@ -445,6 +459,7 @@ export class MediaLibrary{
     static appDocuments = new AppDocuments();
     static publicDocuments = new PublicDocuments();
     static eventer = new Eventer();
+    static foldersStore = [];
 
     static thumbnails = "thumbnail=120x120&thumbnail=150x150&thumbnail=100x100&thumbnail=290x290&thumbnail=48x48&thumbnail=82x82&thumbnail=381x381&thumbnail=1600x0";
 
