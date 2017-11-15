@@ -75,13 +75,17 @@ export class Crop implements Tool{
                 await this.imageView.backup();
                 this.imageView.render();
                 requestAnimationFrame(() => {
-                    this.editingElement.find('.tools-background').height(this.editingElement.find('.output').height());
-                    this.imageView.setOverlay();
-                    this.setHandle();
+                    this.placeTools();
                     resolve();
                 });
             });
         });
+    }
+
+    placeTools(){
+        this.editingElement.find('.tools-background').height(this.editingElement.find('.output').height());
+        this.imageView.setOverlay();
+        this.setHandle();
     }
 
     setHandle(){

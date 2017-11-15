@@ -68,6 +68,10 @@ export class Blur implements Tool{
         this.imageView.render();
     }
 
+    placeTools(){
+        
+    }
+
     stop(){
         this.editingElement.off('mousedown.blur touchstart.blur');
         this.editingElement.find('canvas').css({ cursor: '' })

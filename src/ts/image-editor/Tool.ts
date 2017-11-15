@@ -5,4 +5,5 @@ export interface Tool{
     start(imageView: ImageView, editingElement: any);
     stop();
     setup?();
+    placeTools();
 }

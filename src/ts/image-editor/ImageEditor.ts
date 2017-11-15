@@ -138,8 +138,6 @@ export class ImageEditor{
 
     async undo(){
         await this.imageView.undo();
-        if(this.tool.setup){
-            this.tool.setup();
-        }
+        this.tool.placeTools();
     }
 }

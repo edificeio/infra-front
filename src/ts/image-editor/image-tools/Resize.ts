@@ -106,6 +106,10 @@ export class Resize implements Tool{
         });
     }
 
+    placeTools(){
+        this.setup();
+    }
+
     resize(){
         this.imageView.sprite.width = parseInt(this.handle.width());
         this.imageView.sprite.height = parseInt(this.handle.height());

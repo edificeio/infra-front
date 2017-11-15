@@ -119,6 +119,20 @@ export class Document implements Selectable, Shareable {
     alt: string;
     legend: string;
 
+    toJSON(){
+        return {
+            title: this.title,
+            _id: this._id,
+            created: this.created,
+            path: this.path,
+            metadata: this.metadata,
+            version: this.version,
+            link: this.link,
+            icon: this.icon,
+            owner: this.owner
+        };
+    }
+
     get myRights(){
         return this.rights.myRights;
     }

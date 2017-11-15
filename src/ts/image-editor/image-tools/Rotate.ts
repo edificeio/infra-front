@@ -14,9 +14,7 @@ export class Rotate implements Tool{
             y: this.imageView.sprite.width / 2
         } as PIXI.Point;
         this.imageView.render();
-        this.imageView.editingElement.find('.tools-background').height(
-            this.editingElement.find('.output').height()
-        );
+        this.placeTools();
         
         return new Promise((resolve, reject) => {
             requestAnimationFrame(async () => {
@@ -25,6 +23,12 @@ export class Rotate implements Tool{
                 resolve();
             });
         });
+    }
+
+    placeTools(){
+        this.imageView.editingElement.find('.tools-background').height(
+            this.editingElement.find('.output').height()
+        );
     }
 
     stop(){}
