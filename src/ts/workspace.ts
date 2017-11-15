@@ -397,8 +397,8 @@ export class Folder implements Selectable{
     }
 
     isOpened(currentFolder: Folder){
-        return (currentFolder.folder && currentFolder.folder.indexOf(this.folder) !== -1) || 
-        (this instanceof MyDocuments && currentFolder.owner === model.me.userId) || currentFolder === this;
+        return currentFolder && ((currentFolder.folder && currentFolder.folder.indexOf(this.folder) !== -1) || 
+        (this instanceof MyDocuments && currentFolder.owner === model.me.userId) || currentFolder === this);
     }
     
     async sync(){

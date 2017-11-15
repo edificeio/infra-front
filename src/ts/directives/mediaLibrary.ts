@@ -190,7 +190,7 @@ export const mediaLibrary = ng.directive('mediaLibrary', function(){
 					scope.$apply('documents');
 				});
 
-				scope.$watch('fileFormat', function(newVal){
+				scope.$watch('fileFormat', async (newVal) => {
 					if(!newVal){
 						return;
 					}
@@ -201,7 +201,9 @@ export const mediaLibrary = ng.directive('mediaLibrary', function(){
 					else{
 						template.open('entcore/media-library/main', 'entcore/media-library/browse');
 					}
-
+					if(MediaLibrary.foldersStore.length === 0){
+						await MediaLibrary.myDocuments.sync();
+					}
 					if (MediaLibrary[scope.display.listFrom].documents.length === 0) {
 						MediaLibrary[scope.display.listFrom].sync();
 					}

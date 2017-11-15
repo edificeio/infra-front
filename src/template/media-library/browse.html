@@ -41,8 +41,8 @@
 	<nav class="four cell vertical zero-mobile">
 		<ul>
 			<li workflow="workspace.create">
-				<a ng-click="listFrom('myDocuments')" ng-class="{ selected: display.listFrom === 'myDocuments', opened: folder.isOpened(openedFolder) }">
-					<i class="arrow" ng-if="folder.folders.all.length"></i>
+				<a ng-click="listFrom('myDocuments')" ng-class="{ selected: myDocuments === openedFolder, opened: myDocuments.isOpened(openedFolder) }">
+					<i class="arrow" ng-if="myDocuments.folders.all.length"></i>
 					<i18n>workspace.myDocuments</i18n>
 				</a>
 				<div>

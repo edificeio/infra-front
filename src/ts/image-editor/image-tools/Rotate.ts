@@ -45,5 +45,6 @@ export class Rotate implements Tool{
         } as PIXI.Point;
 
         this.imageView.render();
+        this.placeTools();
     }
 }
