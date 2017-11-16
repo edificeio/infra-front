@@ -232,7 +232,7 @@ export class Document implements Selectable, Shareable {
     get isEditableImage(){
         const editables = ['jpg', 'jpeg', 'bmp', 'png'];
         const ext = this.metadata['content-type'].split('/')[1].toLowerCase();
-        return editables.indexOf(ext) !== -1;
+        return editables.indexOf(ext) !== -1 && this.status !== DocumentStatus.loading && this.status !== DocumentStatus.failed;
     }
 
     upload(file: File | Blob, visibility?: 'public' | 'protected' | 'owner'): Promise<any> {
