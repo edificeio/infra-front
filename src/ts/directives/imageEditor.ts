@@ -44,7 +44,7 @@ export const imageEditor = ng.directive('imageEditor', () => {
                 scope.$apply();
             };
 
-            scope.scale = () => Math.ceil(1 / (imageEditor.tool as Resize).scale * 10) / 10;
+            scope.scale = () => imageEditor.tool ? Math.ceil(1 / (imageEditor.tool as Resize).scale * 10) / 10 : 1;
 
             scope.setWidth = () => {
                 if(imageEditor.tool instanceof Resize){
@@ -87,7 +87,10 @@ export const imageEditor = ng.directive('imageEditor', () => {
             }
             scope.save = async () => {
                 scope.loading = true;
-                await imageEditor.applyChanges();
+                if(imageEditor.canApply){
+                    await imageEditor.applyChanges();
+                }
+                
                 await imageEditor.saveChanges();
                 if(typeof scope.onSave === 'function'){
                     scope.onSave();

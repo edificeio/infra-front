@@ -7,6 +7,8 @@ export class Crop implements Tool{
     editingElement: any;
     handle: any;
 
+    canApply = true;
+
     get outputWidth(): number{
         return parseInt($(this.imageView.renderer.view).width());
     }

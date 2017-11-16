@@ -6,4 +6,5 @@ export interface Tool{
     stop();
     setup?();
     placeTools();
+    canApply?: boolean;
 }
