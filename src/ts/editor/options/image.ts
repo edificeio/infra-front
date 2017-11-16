@@ -18,6 +18,8 @@ const refreshResize = (instance) => {
 
 const showImageContextualMenu = (refElement, scope, instance) => {
     let imageMenu;
+    const image = refElement.find('img');
+    refElement.addClass('has-menu');
 
     if($(window).width() >= ui.breakpoints.tablette){
         imageMenu = $(`
@@ -44,8 +46,13 @@ const showImageContextualMenu = (refElement, scope, instance) => {
         .appendTo('body');
     }
 
-    const image = refElement.find('img');
-    refElement.addClass('has-menu');
+    if(image[0].naturalWidth < 290 || image[0].naturalHeight < 290){
+        imageMenu.find('.resize-image.medium').remove();
+    }
+
+    if(image[0].naturalWidth < 150 || image[0].naturalHeight < 150){
+        imageMenu.find('.resize-image').remove();
+    }
 
     if(image.attr('src').indexOf('thumbnail') !== -1){
         const width = parseInt(image.attr('src').split('thumbnail=')[1].split('x')[0]);
@@ -203,6 +210,16 @@ export const image = {
                     showImageContextualMenu(parentSpan, scope, instance);
                 });
 
+                instance.editZone.on('dragstart', 'img', (e) => {
+                    $('body').one('drop.dragimage', () => {
+                        instance.editZone.off('drop.dragimage');
+                    })
+                    instance.editZone.one('drop.dragimage', () => {
+                        $('body').off('drop.dragimage');
+                        setTimeout(() => $(e.target).parent('span').remove(), 50);
+                    });
+                });
+
                 instance.on('contentupdated', () => {
                     ui.extendElement.resizable(instance.editZone.find('.image-container'), {
                         moveWithResize: false,
@@ -231,19 +248,21 @@ export const image = {
                     if (scope.imageOption.visibility === 'public') {
                         path = '/workspace/pub/document/';
                     }
-                    var html = '<span contenteditable="false" class="image-container" style="width: 290px; height: 290px">&#8203;';
+                    var html = '';
                     scope.imageOption.display.files.forEach(function (file) {
-                        html += '<img src="' + path + file._id + '?thumbnail=290x290" alt="' + file.alt + '" class="latest-image" /></span>';
+                        html += `<span contenteditable="false" class="image-container">
+                            &#8203;<img src="${ path }${ file._id }?thumbnail=2600x0" alt="${ file.alt }" class="latest-image" />
+                        </span>&nbsp;&nbsp;`;
                     });
                     instance.selection.replaceHTMLInline(html);
                     let image = instance.editZone
                         .find('.latest-image')
                         .removeClass('latest-image');
-                    image.on('load', () => image.trigger('click'));
                     instance.addState(instance.editZone.html());
                     scope.imageOption.display.pickFile = false;
                     scope.imageOption.display.files = [];
                     instance.focus();
+                    window.getSelection().removeAllRanges();
                 };
 
                 instance.on('model-updated', () => refreshResize(instance));
