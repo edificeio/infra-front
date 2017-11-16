@@ -340,6 +340,7 @@ export const mediaLibrary = ng.directive('mediaLibrary', function(){
 			
 			scope.$on("$destroy", function() {
 				cancelAll();
+				MediaLibrary.deselectAll();
 			});
 		}
 	}

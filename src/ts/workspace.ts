@@ -386,6 +386,11 @@ export class Folder implements Selectable{
     folder: string;
     owner: string;
 
+    deselectAll(){
+        this.documents.forEach(d => d.selected = false);
+        this.folders.all.forEach(f => f.deselectAll());
+    }
+
     closeFolder(){
         this.folders.all = [];
     };
@@ -462,6 +467,12 @@ export class MediaLibrary{
     static foldersStore = [];
 
     static thumbnails = "thumbnail=120x120&thumbnail=150x150&thumbnail=100x100&thumbnail=290x290&thumbnail=48x48&thumbnail=82x82&thumbnail=381x381&thumbnail=1600x0";
+
+    static deselectAll(){
+        MediaLibrary.appDocuments.deselectAll();
+        MediaLibrary.sharedDocuments.deselectAll();
+        MediaLibrary.myDocuments.deselectAll();
+    }
 
     static async upload (file: File | Blob, visibility?: 'public' | 'protected'): Promise<Document>{
         if(!visibility){
