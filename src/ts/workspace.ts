@@ -169,11 +169,25 @@ export class Document implements Selectable, Shareable {
         this.metadata.role = this.role();
     }
 
+    get differentProperties(){
+        if(!this.name){
+            this.name = this.title.replace('.' + this.metadata.extension, '');
+        }
+        let diff = false;
+        for(let prop in this.newProperties){
+            diff = diff || this.newProperties[prop] !== this[prop];
+        }
+        return diff;
+    }
+
     async saveChanges(){
-        this.name = this.newProperties.name;
-        this.alt = this.newProperties.alt;
-        this.legend = this.newProperties.legend;
-        await http.put('/workspace/rename/document/' + this._id, this.newProperties);
+        if(this.differentProperties){
+            this.name = this.newProperties.name;
+            this.alt = this.newProperties.alt;
+            this.legend = this.newProperties.legend;
+            await http.put('/workspace/rename/document/' + this._id, this.newProperties);
+        }
+        
         await this.applyBlob();
     }
 
@@ -263,7 +277,7 @@ export class Document implements Selectable, Shareable {
         var formData = new FormData();
         formData.append('file', file, file.name);
         this.title = file.name;
-        this.newProperties.name = this.title;
+        this.newProperties.name = this.title.replace('.' + this.metadata.extension, '');
         this.xhr = new XMLHttpRequest();
         var path = '/workspace/document?' + visibilityPath;
         if(this.role() === 'img'){
@@ -330,7 +344,10 @@ export class Document implements Selectable, Shareable {
 
     async update(blob: Blob){
         const formData = new FormData();
-        formData.append('file', blob, this.title + '.' + this.metadata.extension);
+        if(this.title.indexOf(this.metadata.extension) === -1){
+            this.title += this.metadata.extension;
+        }
+        formData.append('file', blob, this.title);
         await http.put(`/workspace/document/${this._id}?${MediaLibrary.thumbnails}&quality=1`, formData);
         this.currentQuality = 1;
         this.version = Math.floor(Math.random() * 100);
