@@ -190,9 +190,20 @@ export const image = {
             '</div>',
             link: function (scope, element, attributes) {
                 instance.editZone.on('click', 'img', (e) => {
-                    if(!$(e.target).attr('src').startsWith('/workspace') && !$(e.target).attr('src').startsWith('/assets')){
+                    if($(e.target).attr('src').startsWith('/assets')){
+                        scope.imageOption.display.pickFile = true;
+                        const sel = window.getSelection();
+                        sel.removeAllRanges();
+                        const newRange = new Range();
+                        newRange.selectNode(e.target);
+                        sel.addRange(newRange);
+                        instance.selection.range = newRange;
+                        scope.$apply();
+                    }
+                    if(!$(e.target).attr('src').startsWith('/workspace')){
                         return;
                     }
+                
                     let parentSpan = $('<span contenteditable="false" class="image-container">&#8203;</span>');
                     if($(e.target).parent().hasClass('image-container')){
                         parentSpan = $(e.target.parentNode);

@@ -10,3 +10,4 @@ export * from './image';
 export * from './justify';
 export * from './table';
 export * from './subscript';
+export * from './templates';
