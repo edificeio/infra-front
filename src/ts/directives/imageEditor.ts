@@ -100,6 +100,7 @@ export const imageEditor = ng.directive('imageEditor', () => {
             };
 
             scope.hide = () => {
+                scope.document.resetNewProperties();
                 scope.show = false;
                 if(!scope.$$phase){
 					scope.$parent.$apply();

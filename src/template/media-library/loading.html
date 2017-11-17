@@ -9,7 +9,7 @@
                     <i class="[[doc.role()]]"></i>
                     <i class="edit" ng-if="doc.isEditableImage && doc.status === 'loaded'"></i>
                 </div>
-                <div class="title">[[doc.title]]</div>
+                <div class="title">[[doc.name || doc.title]]</div>
                 <div class="right-magnet size">
                     [[doc.size]]
                 </div>

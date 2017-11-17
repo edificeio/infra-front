@@ -118,6 +118,7 @@ export class Document implements Selectable, Shareable {
     shared: any;
     alt: string;
     legend: string;
+    name: string;
 
     toJSON(){
         return {
@@ -164,12 +165,12 @@ export class Document implements Selectable, Shareable {
         }
         
         this.title = dotSplit.join('.');
-        this.newProperties.name = this.title;
+        this.newProperties.name = this.name;
         this.metadata.role = this.role();
     }
 
     async saveChanges(){
-        this.title = this.newProperties.name;
+        this.name = this.newProperties.name;
         this.alt = this.newProperties.alt;
         this.legend = this.newProperties.legend;
         await http.put('/workspace/rename/document/' + this._id, this.newProperties);
@@ -182,6 +183,12 @@ export class Document implements Selectable, Shareable {
         }
     }
 
+    resetNewProperties(){
+        this.newProperties.alt = this.alt;
+        this.newProperties.legend = this.legend;
+        this.newProperties.name = this.name;
+    }
+
     fromJSON(data) {
         if(!data){
             this.status = DocumentStatus.initial;
@@ -189,8 +196,7 @@ export class Document implements Selectable, Shareable {
         }
 
         this.status = DocumentStatus.loaded;
-        this.newProperties.alt = this.alt;
-        this.newProperties.legend = this.legend;
+        
         if (data.metadata) {
             var dotSplit = data.metadata.filename.split('.');
             this.metadata.extension = dotSplit[dotSplit.length - 1];
@@ -199,9 +205,9 @@ export class Document implements Selectable, Shareable {
             }
             
             this.title = dotSplit.join('.');
-            this.newProperties.name = this.title;
 			this.metadata.role = this.role();
         }
+        this.resetNewProperties();
 
         if (data.created) {
             this.created = moment(data.created.split('.')[0]);
