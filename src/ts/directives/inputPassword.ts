@@ -22,7 +22,7 @@ export const inputPassword = ng.directive('inputPassword', function(){
 			}
 			return function(scope){
 				scope.show = function(bool){
-					passwordInput[0].type = bool ? "text" : "password"
+					passwordInput[0].type = bool ? "text" : "password";
 				}
 			};
 		}

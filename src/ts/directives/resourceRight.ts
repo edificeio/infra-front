@@ -41,7 +41,7 @@ export let resourceRight = ng.directive('resourceRight', ['$parse', ($parse) => 
                             )
                             || 
                             (
-                                resource(scope).myRights !== undefined  && resource(scope).myRights[attributes.name] === undefined
+                                resource(scope).myRights !== undefined && resource(scope).myRights[attributes.name] === undefined
                             )
                         );
                     }
