@@ -46,6 +46,10 @@ export let imageCompression = ng.directive('imageCompression', () => {
                 if(!sourceImage.naturalWidth){
                     return;
                 }
+                if(quality < 0){
+                    quality = 0.001;
+                    scope.document.currentQuality = 0.001;
+                }
                 updateCanvas(sourceImage);
                 canvas.toBlob((b) => {
                     console.log(canvas.width)
@@ -60,8 +64,11 @@ export let imageCompression = ng.directive('imageCompression', () => {
                 hiddenCtx.drawImage(sourceImage, 0, 0);
                 hiddenCanvas.toBlob((b) => {
                     //ignore original case with no changes
-                    if(!(!scope.document.hiddenBlob && scope.document.currentQuality === 1)){
+                    if(!(!scope.document.hiddenBlob && scope.document.currentQuality === 1) && b.size <= scope.document.metadata.size){
                         scope.document.hiddenBlob = b;
+                    }
+                    else{
+                        scope.document.hiddenBlob = undefined;
                     }
                     
                     scope.$apply();
