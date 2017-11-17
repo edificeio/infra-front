@@ -194,6 +194,7 @@ export class Document implements Selectable, Shareable {
     async applyBlob(){
         if(this.hiddenBlob){
             await this.update(this.hiddenBlob);
+            this.hiddenBlob = undefined;
         }
     }
 
