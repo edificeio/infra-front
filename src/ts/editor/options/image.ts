@@ -293,7 +293,11 @@ export const image = {
                             if($(item).attr('src').split(location.protocol + '//' + location.host).length > 1){
                                 $(item).attr('src', $(item).attr('src').split(location.protocol + '//' + location.host)[1]);
                                 let parentSpan = $('<span contenteditable="false" class="image-container">&#8203;</span>');
-                                item.parentNode.insertBefore(parentSpan[0], item);
+                                let parentNode = item.parentNode;
+                                if($(parentNode).hasClass('image-container')){
+                                    parentNode = parentNode.parentNode;
+                                }
+                                parentNode.insertBefore(parentSpan[0], item);
                                 parentSpan.append(item);
                             }
                         });
