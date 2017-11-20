@@ -301,6 +301,9 @@ export const mediaLibrary = ng.directive('mediaLibrary', function(){
 				if(!scope.upload.documents.length){
 					template.open('entcore/media-library/main', 'entcore/media-library/upload');
 				}
+				if(doc === scope.display.editedDocument){
+					scope.display.editedDocument = undefined;
+				}
 			};
 
 			scope.confirmImport = async () => {
