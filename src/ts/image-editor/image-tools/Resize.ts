@@ -53,6 +53,8 @@ export class Resize implements Tool{
     stopResizing(){
         this.isResizing = false;
         cancelAnimationFrame(this.token);
+        this.imageView.pendingChanges = true;
+        angular.element(this.editingElement).scope().$apply();
     }
 
     setWidth(width: number){
@@ -67,7 +69,8 @@ export class Resize implements Tool{
     setHeight(height: number){
         const width = (height * this.ratio) * this.scale;
         this.handle.height(height * this.scale);
-        this.handle.width(width * this.scale);
+        this.handle.width(width);
+        this.isResizing = true;
         this.animate();
         setTimeout(() => this.stopResizing(), 400);
     }
@@ -202,22 +205,14 @@ export class Resize implements Tool{
             this.animate();
         });
 
-        editingElement.on('stopResize', '.handle', () => {
-            this.stopResizing();
-            this.imageView.pendingChanges = true;
-            angular.element(editingElement).scope().$apply();
-        });
+        editingElement.on('stopResize', '.handle', () => this.stopResizing());
 
         editingElement.on('startDrag', '.handle', () => {
             this.isResizing = true;
             this.animate();
         });
         
-        editingElement.on('stopDrag', '.handle', () => {
-            this.stopResizing();
-            this.imageView.pendingChanges = true;
-            angular.element(editingElement).scope().$apply();
-        });
+        editingElement.on('stopDrag', '.handle', () => this.stopResizing());
 
         setTimeout(() => this.setup(), 150);
     }
