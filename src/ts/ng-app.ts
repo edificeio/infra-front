@@ -877,7 +877,7 @@ module.directive('draggable', function(){
 	}
 });
 
-module.directive('widgets', function($compile){
+module.directive('widgets', function(){
 	return {
 		scope: {
 			list: '='
