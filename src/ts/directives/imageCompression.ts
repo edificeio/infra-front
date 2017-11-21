@@ -3,7 +3,7 @@ import { appPrefix } from '../globals';
 import { Document } from '../workspace';
 
 const canvasWidth = 468;
-const canvasHeight = 350;
+const canvasHeight = 280;
 
 export let imageCompression = ng.directive('imageCompression', () => {
     return {
