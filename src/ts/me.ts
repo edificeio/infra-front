@@ -1,6 +1,8 @@
 import { model } from './modelDefinitions';
 import http from 'axios';
 import { Eventer } from 'entcore-toolkit';
+import { idiom } from './idiom';
+import { $ } from "./entcore";
 
 export class Me{
     static preferences: any;
@@ -57,3 +59,26 @@ if(!(window as any).entcore){
 	(window as any).entcore = {};
 }
 (window as any).entcore.Me = Me;
+
+if(!(XMLHttpRequest.prototype as any).baseSend){
+    (XMLHttpRequest.prototype as any).baseSend = XMLHttpRequest.prototype.send;
+    XMLHttpRequest.prototype.send = function(data){
+        if(document.cookie.indexOf('authenticated=true') === -1 && window.location.href.indexOf('/auth') === -1){
+            const lightbox = $(`<lightbox>
+                    <section class="lightbox">
+                        <div class="content">
+                            <h2>${ idiom.translate('disconnected.title') }</h2>
+                            <div class="warning">${ idiom.translate('disconnected.warning') }</div>
+                            <a class="button right-magnet" href="/auth/login">${ idiom.translate('disconnected.redirect') }</a>
+                        </div>
+                        <div class="background"></div>
+                    </section>
+                </lightbox>
+            `);
+            $('body').append(lightbox).addClass('lightbox-opened');
+            lightbox.find('.lightbox').fadeIn();
+            return;
+        }
+        (this as any).baseSend(data);
+    }
+}
