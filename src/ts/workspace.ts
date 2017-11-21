@@ -165,7 +165,7 @@ export class Document implements Selectable, Shareable {
         }
         
         this.title = dotSplit.join('.');
-        this.newProperties.name = this.name;
+        this.newProperties.name = response.data.name;
         this.metadata.role = this.role();
     }
 
@@ -201,7 +201,7 @@ export class Document implements Selectable, Shareable {
     resetNewProperties(){
         this.newProperties.alt = this.alt;
         this.newProperties.legend = this.legend;
-        this.newProperties.name = this.name;
+        this.newProperties.name = this.name.replace('.' + this.metadata.extension, '');
     }
 
     fromJSON(data) {
