@@ -16,6 +16,11 @@ export class Directive {
     constructor(name: string, contents: any) {
         this.name = name;
         this.contents = contents;
+        if(this.contents.templateUrl){
+            const split = document.getElementById('context').getAttribute('src').split('-');
+            const hash = split[split.length - 1].split('.')[0];
+            this.contents.templateUrl += '?hash=' + hash;
+        }
     }
 }
 
