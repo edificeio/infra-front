@@ -105,15 +105,15 @@ export class Blur implements Tool{
             this.isBlurring = true;
             animate();
             
-            $(window).on('mousemove.blur', (e) => {
+            $(window).on('mousemove.blur touchmove.blur', (e) => {
                 this.mouse = {
-                    x: (e.pageX - this.outputLeft)  * this.widthRatio,
-                    y: (e.pageY - this.outputTop) * this.heightRatio
+                    x: ((e.pageX || e.originalEvent.touches[0].clientX) - this.outputLeft)  * this.widthRatio,
+                    y: ((e.pageY || e.originalEvent.touches[0].clientY) - this.outputTop) * this.heightRatio
                 }
             });
             
             $(window).on('mouseup.blur touchend.blur', () => {
-                $(window).off('mousemove.blur mouseup.blur touchend.blur')
+                $(window).off('mousemove.blur mouseup.blur touchend.blur touchmove.blur')
                 cancelAnimationFrame(token);
                 this.imageView.backup(true);
                 this.isBlurring = false;
