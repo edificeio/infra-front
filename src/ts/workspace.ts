@@ -165,7 +165,7 @@ export class Document implements Selectable, Shareable {
         }
         
         this.title = dotSplit.join('.');
-        this.newProperties.name = response.data.name.replace(this.metadata.extension + '.', '');
+        this.newProperties.name = response.data.name.replace('.' + this.metadata.extension, '');
         this.metadata.role = this.role();
     }
 

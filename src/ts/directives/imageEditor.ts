@@ -66,6 +66,7 @@ export const imageEditor = ng.directive('imageEditor', () => {
             };
 
             scope.openProperties = async () => {
+                imageEditor.tool = undefined;
                 template.open('entcore/image-editor/tool', 'entcore/image-editor/properties');
                 element.find('.output, .tools-background').hide();
                 scope.$apply();
