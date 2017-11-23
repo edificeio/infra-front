@@ -165,7 +165,7 @@ export class Document implements Selectable, Shareable {
         }
         
         this.title = dotSplit.join('.');
-        this.newProperties.name = response.data.name;
+        this.newProperties.name = response.data.name.replace(this.metadata.extension + '.', '');
         this.metadata.role = this.role();
     }
 
@@ -201,6 +201,9 @@ export class Document implements Selectable, Shareable {
     resetNewProperties(){
         this.newProperties.alt = this.alt;
         this.newProperties.legend = this.legend;
+        if(!this.name){
+            this.name = this.title;
+        }
         this.newProperties.name = this.name.replace('.' + this.metadata.extension, '');
     }
 
@@ -220,9 +223,9 @@ export class Document implements Selectable, Shareable {
             }
             
             this.title = dotSplit.join('.');
-			this.metadata.role = this.role();
+            this.metadata.role = this.role();
+            this.resetNewProperties();
         }
-        this.resetNewProperties();
 
         if (data.created) {
             this.created = moment(data.created.split('.')[0]);
