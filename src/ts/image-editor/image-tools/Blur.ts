@@ -99,16 +99,16 @@ export class Blur implements Tool{
             this.heightRatio = this.imageView.renderer.height / editingElement.find('canvas').height();
             this.drawBrush();
             this.mouse = {
-                x: (e.pageX - this.outputLeft)  * this.widthRatio,
-                y: (e.pageY - this.outputTop) * this.heightRatio
+                x: ((e.pageX || e.originalEvent.touches[0].pageX) - this.outputLeft)  * this.widthRatio,
+                y: ((e.pageY || e.originalEvent.touches[0].pageY) - this.outputTop) * this.heightRatio
             }
             this.isBlurring = true;
             animate();
             
             $(window).on('mousemove.blur touchmove.blur', (e) => {
                 this.mouse = {
-                    x: ((e.pageX || e.originalEvent.touches[0].clientX) - this.outputLeft)  * this.widthRatio,
-                    y: ((e.pageY || e.originalEvent.touches[0].clientY) - this.outputTop) * this.heightRatio
+                    x: ((e.pageX || e.originalEvent.touches[0].pageX) - this.outputLeft)  * this.widthRatio,
+                    y: ((e.pageY || e.originalEvent.touches[0].pageY) - this.outputTop) * this.heightRatio
                 }
             });
             

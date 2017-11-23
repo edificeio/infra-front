@@ -1,8 +1,8 @@
 <div class="tools two">
     <div class="row zero-mobile">
-        <input type="text" ng-model="document.width" complete-change="setWidth()" class="five cell" />
+        <input type="text" ng-model="document.width" ng-change="setWidth()" class="five cell" />
         <strong class="two cell"> x </strong>
-        <input type="text" ng-model="document.height" complete-change="setHeight()" class="five cell" />
+        <input type="text" ng-model="document.height" ng-change="setHeight()" class="five cell" />
     </div>
     <button ng-disabled="!canApply()" ng-click="apply()"><i18n>apply</i18n></button>
     <button ng-disabled="!hasHistory()" ng-click="undo()" class="cancel"><i18n>cancel</i18n></button>
