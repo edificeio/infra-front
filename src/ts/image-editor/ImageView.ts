@@ -19,7 +19,7 @@ export class ImageView{
             this.stage = new PIXI.Container();
             this.sprite = new PIXI.Sprite(
                 PIXI.loader.resources[image].texture
-            );
+            )
             this.stage.addChild(this.sprite);
             this.renderer.render(this.stage);
             setTimeout(async () => {

@@ -1,5 +1,5 @@
 <div class="tools two">
-    <div class="row">
+    <div class="row zero-mobile">
         <input type="text" ng-model="document.width" complete-change="setWidth()" class="five cell" />
         <strong class="two cell"> x </strong>
         <input type="text" ng-model="document.height" complete-change="setHeight()" class="five cell" />
@@ -17,6 +17,6 @@
     </div>
 </div>
 
-<div class="zoom-info" ng-if="scale() > 1">
+<div class="zoom-info" ng-if="scale() > 1"></div>
     <i18n>imageeditor.scale</i18n>
 </div>
