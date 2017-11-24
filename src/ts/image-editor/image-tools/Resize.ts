@@ -163,6 +163,7 @@ export class Resize implements Tool{
                 setTimeout(() => $(this.imageView.renderer.view).css({ opacity: 1 }), 100);
                 this.editingElement.find('input[type=text]').first().val(parseInt(this.imageView.sprite.width / this.scale));
                 this.editingElement.find('input[type=text]').last().val(parseInt(this.imageView.sprite.height / this.scale));
+                angular.element(this.editingElement).scope().$apply();
             });
         });
     }
