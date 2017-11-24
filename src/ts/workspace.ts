@@ -164,6 +164,10 @@ export class Document implements Selectable, Shareable {
             dotSplit.length = dotSplit.length - 1;
         }
         
+        this.alt = response.data.alt;
+        this.newProperties.alt = response.data.alt;
+        this.legend = response.data.legend;
+        this.newProperties.legend = response.data.legend;
         this.title = dotSplit.join('.');
         this.newProperties.name = response.data.name.replace('.' + this.metadata.extension, '');
         this.metadata.role = this.role();

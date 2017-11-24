@@ -74,13 +74,14 @@ export let bindHtml = ng.directive('bindHtml', ['$compile', function($compile){
 						}
 
 						$(e.target).data('legend', legendText);
-						let legend = $(`<legend class="user-image"><div class="text">${legendText}</div></legend>`).appendTo('body');
+						let legend = $(`<legend class="user-image"><div class="text">${legendText}</div></legend>`);
 						legend.height($(e.target).height());
 						legend.width($(e.target).width());
 						legend.offset({
 							top: $(e.target).offset().top,
 							left: $(e.target).offset().left
 						});
+						legend.appendTo('body');
 					
 						setTimeout(() => {
 							const out = (e) => {
