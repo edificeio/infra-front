@@ -93,7 +93,7 @@ export const templates = {
                         image: skinPath + 'templates-preview-illustration.svg',
                         html:
                         '<div class="row">' +
-                            '<div class="three cell column">' +
+                            '<div class="three cell image-template column">' +
                                 '<article>' +
                                     '<img src="' + skinPath + 'image-default.svg" style="cursor: pointer" />' +
                                 '</article>' +
@@ -118,7 +118,7 @@ export const templates = {
                         '<div class="dominos">' +
                             '<div class="item">' +
                                 '<section class="domino pink">' +
-                                '<div class="top">' +
+                                '<div class="top image-template">' +
                                     '<img src="' + skinPath + 'image-default.svg" style="cursor: pointer" class="fixed twelve cell" />' +
                                 '</div>' +
                                 '<div class="bottom">' +
@@ -130,7 +130,7 @@ export const templates = {
                             '</div>' +
                             '<div class="item">' +
                                 '<section class="domino blue">' +
-                                    '<div class="top">' +
+                                    '<div class="top image-template">' +
                                         '<img src="' + skinPath + 'image-default.svg" style="cursor: pointer" class="fixed twelve cell" />' +
                                     '</div>' +
                                     '<div class="bottom">' +
@@ -142,7 +142,7 @@ export const templates = {
                             '</div>' +
                             '<div class="item">' +
                                 '<section class="domino orange">' +
-                                    '<div class="top">' +
+                                    '<div class="top image-template">' +
                                         '<img src="' + skinPath + 'image-default.svg" style="cursor: pointer" class="fixed twelve cell" />' +
                                     '</div>' +
                                         '<div class="bottom">' +
@@ -154,7 +154,7 @@ export const templates = {
                             '</div>' +
                             '<div class="item">' +
                                 '<section class="domino purple">' +
-                                    '<div class="top">' +
+                                    '<div class="top image-template">' +
                                         '<img src="' + skinPath + 'image-default.svg" style="cursor: pointer" class="fixed twelve cell" />' +
                                     '</div>' +
                                     '<div class="bottom">' +
@@ -166,7 +166,7 @@ export const templates = {
                             '</div>' +
                             '<div class="item">' +
                                 '<section class="domino green">' +
-                                    '<div class="top">' +
+                                    '<div class="top image-template">' +
                                         '<img src="' + skinPath + 'image-default.svg" style="cursor: pointer" class="fixed twelve cell" />' +
                                     '</div>' +
                                     '<div class="bottom">' +
@@ -178,7 +178,7 @@ export const templates = {
                             '</div>' +
                             '<div class="item">' +
                                 '<section class="domino white">' +
-                                    '<div class="top">' +
+                                    '<div class="top image-template">' +
                                         '<img src="' + skinPath + 'image-default.svg" style="cursor: pointer" class="fixed twelve cell" />' +
                                     '</div>' +
                                         '<div class="bottom">' +

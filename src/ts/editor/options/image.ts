@@ -5,7 +5,7 @@ import { Mix } from 'entcore-toolkit';
 import { idiom } from "../../idiom";
 
 const refreshResize = (instance) => {
-    ui.extendElement.resizable(instance.editZone.find('.image-container'), {
+    ui.extendElement.resizable(instance.editZone.find('.image-container').not('.image-template .image-container'), {
         moveWithResize: false,
         preserveRatio: true,
         mouseUp: function() {
@@ -50,7 +50,7 @@ const showImageContextualMenu = (refElement, scope, instance) => {
         imageMenu.find('.resize-image.medium').remove();
     }
 
-    if(image[0].naturalWidth < 150 || image[0].naturalHeight < 150){
+    if(image[0].naturalWidth < 150 || image[0].naturalHeight < 150 || image.parents('.image-template').length > 0){
         imageMenu.find('.resize-image').remove();
     }
 
@@ -232,7 +232,7 @@ export const image = {
                 });
 
                 instance.on('contentupdated', () => {
-                    ui.extendElement.resizable(instance.editZone.find('.image-container'), {
+                    ui.extendElement.resizable(instance.editZone.find('.image-container').not('.image-template .image-container'), {
                         moveWithResize: false,
                         preserveRatio: true,
                         mouseUp: function() {
