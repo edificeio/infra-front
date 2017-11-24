@@ -1,6 +1,7 @@
 import { ng } from '../ng-start';
 import { MediaLibrary, Document } from '../workspace';
 import { $ } from "../libs/jquery/jquery";
+import { notify } from '../notify';
 
 export let imageSelect = ng.directive('imageSelect', function(){
 	return {
@@ -62,10 +63,17 @@ export let imageSelect = ng.directive('imageSelect', function(){
 				if(element.find($(e.target).parents('lightbox').first()).length > 0){
 					return;
 				}
+				e.preventDefault();
+
+				const file = e.originalEvent.dataTransfer.files[0];
+				if(file.type.indexOf('image') === -1 || e.originalEvent.dataTransfer.files.length > 1){
+					notify.error('medialibrary.unsupported');
+					return;
+				}
+
 				element.removeClass('droptarget');
 				element.addClass('loading-panel');
-				e.preventDefault();
-				var file = e.originalEvent.dataTransfer.files[0];
+				
 				const doc = new Document();
 				await doc.upload(file, scope.selectedFile.visibility);
 				scope.selectedFile.file = doc;
