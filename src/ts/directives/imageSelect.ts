@@ -1,5 +1,6 @@
 import { ng } from '../ng-start';
 import { MediaLibrary, Document } from '../workspace';
+import { $ } from "../libs/jquery/jquery";
 
 export let imageSelect = ng.directive('imageSelect', function(){
 	return {
@@ -58,6 +59,9 @@ export let imageSelect = ng.directive('imageSelect', function(){
 			});
 
 			element.on('drop', async (e) => {
+				if(element.find($(e.target).parents('lightbox').first()).length > 0){
+					return;
+				}
 				element.removeClass('droptarget');
 				element.addClass('loading-panel');
 				e.preventDefault();
