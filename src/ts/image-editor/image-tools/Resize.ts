@@ -141,8 +141,23 @@ export class Resize implements Tool{
     setup(){
         this._scale = 0;
         $(this.imageView.renderer).attr('data-locked-size', true);
+        if(this.outputHeight > this.imageView.sprite.height){
+            this.editingElement.find('.output').height(this.imageView.sprite.height);
+            setTimeout(() => this.editingElement.find('.tools-background').height(this.editingElement.find('.output').height()), 50);
+        }
+        else{
+            if(this.imageView.sprite.height < 600){
+                this.editingElement.find('.output').height(this.imageView.sprite.height);
+                setTimeout(() => this.editingElement.find('.tools-background').height(this.editingElement.find('.output').height()), 50);
+            }
+            else{
+                this.editingElement.find('.output').height(600);
+                setTimeout(() => this.editingElement.find('.tools-background').height(this.editingElement.find('.output').height()), 50);
+            }
+        }
         requestAnimationFrame(() => {
             this.imageView.setOverlay();
+            
             this.imageView.renderer.resize(this.outputWidth, this.outputHeight);
             this.imageView.sprite.pivot.set(this.imageView.sprite.width / 2, this.imageView.sprite.height / 2);
             requestAnimationFrame(() => {
