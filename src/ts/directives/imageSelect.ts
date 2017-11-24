@@ -67,6 +67,7 @@ export let imageSelect = ng.directive('imageSelect', function(){
 				scope.selectedFile.file = doc;
 				scope.updateDocument();
 				element.removeClass('loading-panel');
+				MediaLibrary.appDocuments.sync();
 			});
 
 			scope.$watch('thumbnails', (thumbs) => {
