@@ -34,6 +34,9 @@ export class Resize implements Tool{
             }
             return scale;
         }
+        if(this.imageView.sprite.height < 200){
+            return 1;
+        }
         let scale = this.outputHeight / this.imageView.sprite.height;
         this._scale = scale;
         if(scale > 1){
