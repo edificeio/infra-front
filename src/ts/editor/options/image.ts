@@ -279,7 +279,7 @@ export const image = {
 
                 instance.on('model-updated', () => refreshResize(instance));
 
-                instance.element.on('drop', function (e) {
+                instance.editZone.on('drop', function (e) {
                     var image;
                     if (e.originalEvent.dataTransfer.mozSourceNode) {
                         image = e.originalEvent.dataTransfer.mozSourceNode;
@@ -287,6 +287,7 @@ export const image = {
 
                     //delay to account for image destruction and recreation
                     setTimeout(function(){
+                        console.log(image)
                         if(image && image.tagName && image.tagName === 'IMG'){
                             image.remove();
                         }
@@ -304,7 +305,7 @@ export const image = {
                         });
                         instance.addState(instance.editZone.html());
                         refreshResize(instance);
-                    }, 30)
+                    }, 100)
                 });
             }
         }

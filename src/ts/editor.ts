@@ -1769,8 +1769,8 @@ export let RTE = {
                                 el.attr('src', path + doc._id)
                             }
                             else if (name.toLowerCase().indexOf('.png') !== -1 || name.toLowerCase().indexOf('.jpg') !== -1 || name.toLowerCase().indexOf('.jpeg') !== -1 || name.toLowerCase().indexOf('.svg') !== -1) {
-                                el = $('<img />');
-                                el.attr('src', path + doc._id + '?thumbnail=150x150')
+                                el = $('<span contenteditable="false" class="image-container"><img /></span>');
+                                el.children('img').attr('src', path + doc._id + '?thumbnail=150x150')
                             }
                             else {
                                 el = $('<div class="download-attachments">' +
