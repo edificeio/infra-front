@@ -7,8 +7,6 @@ export class Crop implements Tool{
     editingElement: any;
     handle: any;
 
-    canApply = true;
-
     get outputWidth(): number{
         return parseInt($(this.imageView.renderer.view).width());
     }
@@ -109,6 +107,10 @@ export class Crop implements Tool{
         setTimeout(() => {
             this.imageView.setOverlay();
             this.setHandle();
+            this.handle.on('stopResize stopDrag', () => {
+                this.imageView.pendingChanges = true;
+                angular.element(this.editingElement).scope().$apply();
+            });
         }, 200);
     }
 }
