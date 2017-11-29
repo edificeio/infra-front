@@ -67,12 +67,15 @@
 		<div class="absolute reduce-block-eight" ng-if="!documents.length && !folders.length" style="text-align: center"><i18n>library.browse.notfound</i18n></div>
 		<div class="absolute icons-view" style="overflow: auto" bottom-scroll="display.limit = display.limit + 6">
 			<div class="element reduce-block-six" ng-repeat="folder in folders | limitTo:display.limit">
-				<div class="container" ng-click="openFolder(folder)">
-					<i class="folder-large"></i>
-				</div>
-				<legend>
-					<a class="medium-text">[[folder.name]]</a>
-				</legend>
+				<explorer ng-model="folder.selected" on-open="openFolder(folder)">
+					<div class="container" >
+						<i class="folder-large"></i>
+					</div>
+					<legend>
+						<a class="medium-text">[[folder.name]]</a>
+					</legend>
+				</explorer>
+				
 			</div>
 			<div class="element reduce-block-six" ng-repeat="document in documents | orderBy:'created':true | limitTo:display.limit - folders.length">
 				<explorer ng-model="document.selected" ng-click="updateSelection(document)" on-open="selectDocument(document)">
