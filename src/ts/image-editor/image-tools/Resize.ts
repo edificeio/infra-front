@@ -34,7 +34,7 @@ export class Resize implements Tool{
             }
             return scale;
         }
-        if(this.imageView.sprite.height < 200){
+        if(this.imageView.sprite.height < parseInt(this.editingElement.find('.output').css('min-height'))){
             return 1;
         }
         let scale = this.outputHeight / this.imageView.sprite.height;
