@@ -1718,14 +1718,6 @@ export let RTE = {
                         editorInstance.trigger('change');
                     });
 
-                    element.on('dragover', function(e){
-                        element.addClass('droptarget');
-                    });
-
-                    element.on('dragleave', function(){
-                        element.removeClass('droptarget');
-                    });
-
                     element.find('[contenteditable]').on('drop', function (e) {
                         if(!e.originalEvent.dataTransfer){
                             return;
