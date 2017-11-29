@@ -46,16 +46,17 @@ const showImageContextualMenu = (refElement, scope, instance) => {
         .appendTo('body');
     }
 
-    if(image[0].naturalWidth < 290 || image[0].naturalHeight < 290){
-        imageMenu.find('.resize-image.medium').remove();
-    }
-
-    if(image[0].naturalWidth < 150 || image[0].naturalHeight < 150 || image.parents('.image-template').length > 0){
-        imageMenu.find('.resize-image').remove();
-    }
-
     if(image.attr('src').indexOf('thumbnail') !== -1){
         const width = parseInt(image.attr('src').split('thumbnail=')[1].split('x')[0]);
+
+        if((image[0].naturalWidth < 290 || image[0].naturalHeight < 290) && width > 290){
+            imageMenu.find('.resize-image.medium').remove();
+        }
+    
+        if(((image[0].naturalWidth < 150 || image[0].naturalHeight < 150) && width > 290) || image.parents('.image-template').length > 0){
+            imageMenu.find('.resize-image').remove();
+        }
+
         if(width === 150){
             imageMenu.find('.selected').removeClass('selected');
             imageMenu.find('.small').addClass('selected');
