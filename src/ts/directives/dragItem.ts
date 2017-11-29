@@ -109,7 +109,7 @@ export let dragItem = ng.directive('dragItem', function(){
 	}
 });
 
-export let dropItem = ng.directive('dropItem', function($parse) {
+export let dropItem = ng.directive('dropItem', ['$parse', function($parse) {
     return {
         restrict: 'A',
         link: function (scope, element, attributes) {
@@ -135,4 +135,4 @@ export let dropItem = ng.directive('dropItem', function($parse) {
             })
         }
     }
-});
+}]);
