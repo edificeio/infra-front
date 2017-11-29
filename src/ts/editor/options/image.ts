@@ -157,9 +157,12 @@ const showImageContextualMenu = (refElement, scope, instance) => {
 
     setTimeout(() => {
         $(document).one('selectionchange', (e) => {
-            if(imageMenu.find(e.target).length === 0){
-                unbind();
-            }
+            setTimeout(() => {
+                if(imageMenu.find(e.target).length === 0){
+                    unbind();
+                }
+            }, 200);
+            
         });
 
         $(document).one('keyup', (e) => {
