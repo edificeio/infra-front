@@ -5,6 +5,7 @@ import { MediaLibrary, Document, DocumentStatus } from '../workspace';
 import { template } from '../template';
 import { model } from '../modelDefinitions';
 import { idiom } from '../idiom';
+import http from 'axios';
 
 export const mediaLibrary = ng.directive('mediaLibrary', function(){
 	return {
@@ -18,6 +19,13 @@ export const mediaLibrary = ng.directive('mediaLibrary', function(){
 		templateUrl: '/' + appPrefix + '/public/template/entcore/media-library/main.html',
 		link: function(scope, element, attributes){
 			scope.template = template;
+
+			if(!(window as any).toBlobPolyfillLoaded){
+                http.get('/infra/public/js/toBlob-polyfill.js').then((response) => {
+                    eval(response.data);
+                    (window as any).toBlobPolyfillLoaded = true;
+                });
+            }
 
 			scope.$watch(function(){
 				return scope.$parent.$eval(attributes.visibility);

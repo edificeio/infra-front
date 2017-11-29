@@ -97,6 +97,13 @@ export class ImageEditor{
                 return;
             }
             ImageEditor.loading = true;
+            if(!(window as any).toBlobPolyfillLoaded){
+                http.get('/infra/public/js/toBlob-polyfill.js').then((response) => {
+                    eval(response.data);
+                    (window as any).toBlobPolyfillLoaded = true;
+                });
+            }
+            
             http.get('/infra/public/js/pixi.min.js').then((response) => {
                 eval(response.data);
                 ImageEditor.loaded = true;

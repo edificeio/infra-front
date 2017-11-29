@@ -3,6 +3,12 @@ import { Tool } from '../Tool';
 import { $ } from "../../index";
 
 const brushSize = 20;
+let deltaX = 25;
+let deltaY = 25;
+
+if(navigator.userAgent.indexOf('Trident') !== -1){
+    deltaY = 0;
+}
 
 export class Blur implements Tool{
     widthRatio: number;
@@ -36,8 +42,8 @@ export class Blur implements Tool{
     blurAt(){
         const texture = PIXI.Texture.fromImage(this.imageView.sprite.texture.baseTexture.imageUrl);
         const rect = new PIXI.Rectangle(
-            this.mouse.x - (brushSize * this.widthRatio),
-            this.mouse.y - (brushSize * this.heightRatio),
+            (this.mouse.x + deltaX) - (brushSize * this.widthRatio),
+            (this.mouse.y + deltaY) - (brushSize * this.heightRatio),
             (brushSize * this.widthRatio) * 2, (brushSize * this.heightRatio) * 2
         );
         if(rect.x < 0){
@@ -59,8 +65,8 @@ export class Blur implements Tool{
         newSprite.width = (brushSize * this.widthRatio) * 2;
         newSprite.height = (brushSize * this.heightRatio) * 2;
         newSprite.position = {
-            x: this.mouse.x - (brushSize * this.widthRatio),
-            y: this.mouse.y - (brushSize * this.heightRatio)
+            x: (this.mouse.x + deltaX) - (brushSize * this.widthRatio),
+            y: (this.mouse.y + deltaY) - (brushSize * this.heightRatio)
         } as PIXI.Point;
         newSprite.mask = this.drawBrush();
         this.imageView.stage.addChild(newSprite);
@@ -90,7 +96,8 @@ export class Blur implements Tool{
             token = requestAnimationFrame(animate);
         }
 
-        editingElement.find('canvas').css({ cursor: 'url(/assets/themes/entcore-css-lib/images/blur.png) 25 25, auto'})
+        //DO NOT change cursor position as setting a position isn't compatible with ie11
+        editingElement.find('.output').css({ cursor: 'url(/assets/themes/entcore-css-lib/images/blur.cur), pointer'})
         editingElement.on('mousedown.blur touchstart.blur', (e) => {
             if(e.target.tagName !== 'CANVAS'){
                 return;
