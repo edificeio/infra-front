@@ -450,8 +450,8 @@ export class Folder implements Selectable{
 
 export class MyDocuments extends Folder{
     async sync(){
-        this.folders.all.splice(0, this.folders.all.length);
         const response = await http.get('/workspace/folders/list?filter=owner');
+        this.folders.all.splice(0, this.folders.all.length);
         MediaLibrary.foldersStore = response.data;
         this.folders.addRange(Mix.castArrayAs(Folder, response.data.filter((folder) => folder.folder.indexOf('_') === -1 )));
         this.folders.all.forEach(f => f.addFolders());
@@ -464,8 +464,8 @@ export class MyDocuments extends Folder{
 
 class SharedDocuments extends Folder{
     async sync(){
-        this.documents.all.splice(0, this.documents.all.length);
         const docResponse = await http.get('/workspace/documents?filter=shared');
+        this.documents.all.splice(0, this.documents.all.length);
         this.documents.addRange(Mix.castArrayAs(Document, docResponse.data.filter(doc => doc.folder !== 'Trash')));
         MediaLibrary.eventer.trigger('sync');
     }
@@ -473,8 +473,8 @@ class SharedDocuments extends Folder{
 
 class AppDocuments extends Folder{
     async sync(){
-        this.documents.all.splice(0, this.documents.all.length);
         const docResponse = await http.get('/workspace/documents?filter=protected');
+        this.documents.all.splice(0, this.documents.all.length);
         this.documents.addRange(Mix.castArrayAs(Document, docResponse.data.filter(doc => doc.folder !== 'Trash')));
         MediaLibrary.eventer.trigger('sync');
     }
@@ -482,8 +482,8 @@ class AppDocuments extends Folder{
 
 class PublicDocuments extends Folder{
     async sync(){
-        this.documents.all.splice(0, this.documents.all.length);
         const docResponse = await http.get('/workspace/documents?filter=public');
+        this.documents.all.splice(0, this.documents.all.length);
         this.documents.addRange(Mix.castArrayAs(Document, docResponse.data.filter(doc => doc.folder !== 'Trash')));
         MediaLibrary.eventer.trigger('sync');
     }
