@@ -41,6 +41,10 @@ if((window as any).infraPrefix === undefined){
 export let infraPrefix: string = (window as any).infraPrefix;
 export let currentLanguage = '';
 
+export const devices = {
+    isIE: () => navigator.userAgent.indexOf('Trident') !== -1
+};
+
 const defaultLanguage = () => {
     const request = new XMLHttpRequest();
     request.open('GET', '/locale');

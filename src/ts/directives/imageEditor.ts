@@ -1,5 +1,5 @@
 import { ng } from '../ng-start';
-import { appPrefix } from '../globals';
+import { appPrefix, devices } from '../globals';
 import { ImageEditor } from '../image-editor/ImageEditor';
 import { template } from '../template';
 import { Mix } from "entcore-toolkit";
@@ -28,6 +28,9 @@ export const imageEditor = ng.directive('imageEditor', () => {
         link: (scope, element, attributes) => {
             if(attributes.inline !== undefined){
                 attributes.inline = true;
+            }
+            if(devices.isIE() && element.find('style').length === 0){
+                element.append('<style>image-editor .output { display: block }</style>');
             }
             scope.template = template;
             template.open('entcore/image-editor/main');
