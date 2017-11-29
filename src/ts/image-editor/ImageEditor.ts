@@ -131,9 +131,10 @@ export class ImageEditor{
     }
 
     async restoreOriginal(){
-        await this.imageView.loadBlob(this.imageView.originalImage);
-        this.tool.start(this.imageView, this.editingElement);
         this.imageView.resetHistory();
+        await this.imageView.loadBlob(this.imageView.originalImage);
+        this.imageView.history.push(this.imageView.originalImage);
+        this.tool.placeTools();
     }
 
     async undo(){

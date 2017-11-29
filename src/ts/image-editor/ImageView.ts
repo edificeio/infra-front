@@ -49,6 +49,7 @@ export class ImageView{
         this.appliedIndex = 0;
         this.historyIndex = 0;
         this.history = [];
+        this.pendingChanges = false;
     }
 
     get hasHistory(): boolean{

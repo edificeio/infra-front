@@ -76,7 +76,11 @@ export const imageEditor = ng.directive('imageEditor', () => {
                 await imageEditor.applyChanges();
                 scope.$apply();
             };
-            scope.restoreOriginal = () => imageEditor.restoreOriginal();
+            scope.restoreOriginal = async () => {
+                await imageEditor.restoreOriginal();
+                scope.$apply();
+            };
+
             scope.hasHistory = () => imageEditor.hasHistory;
             scope.canApply = () => imageEditor.canApply;
             scope.hasFuture = () => imageEditor.hasFuture;
