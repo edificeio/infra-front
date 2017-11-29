@@ -353,7 +353,7 @@ export class Document implements Selectable, Shareable {
     async update(blob: Blob){
         const formData = new FormData();
         if(this.title.indexOf(this.metadata.extension) === -1){
-            this.title += this.metadata.extension;
+            this.title += '.' + this.metadata.extension;
         }
         formData.append('file', blob, this.title);
         await http.put(`/workspace/document/${this._id}?${MediaLibrary.thumbnails}&quality=1`, formData);
