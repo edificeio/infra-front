@@ -53,11 +53,11 @@ const showImageContextualMenu = (refElement, scope, instance) => {
             imageMenu.find('.resize-image.medium').remove();
         }
     
-        if(((image[0].naturalWidth < 150 || image[0].naturalHeight < 150) && width > 290) || image.parents('.image-template').length > 0){
+        if(((image[0].naturalWidth < 120 || image[0].naturalHeight < 120) && width > 290) || image.parents('.image-template').length > 0){
             imageMenu.find('.resize-image').remove();
         }
 
-        if(width === 150){
+        if(width === 120){
             imageMenu.find('.selected').removeClass('selected');
             imageMenu.find('.small').addClass('selected');
         }
@@ -121,8 +121,8 @@ const showImageContextualMenu = (refElement, scope, instance) => {
         scope.$apply();
     })
     .on('click', 'i.small', () => {
-        image.attr('src', image.attr('src').split('?')[0] + '?thumbnail=150x150&v=' + Math.floor(Math.random() * 100));
-        image.parent('.image-container').css({ width: '150px', height: '150px'});
+        image.attr('src', image.attr('src').split('?')[0] + '?thumbnail=120x120&v=' + Math.floor(Math.random() * 100));
+        image.parent('.image-container').css({ width: '120px', height: '120px'});
         refreshPositon('small');
     })
     .on('click', 'i.medium', () => {
@@ -195,7 +195,7 @@ export const image = {
                         scope.imageOption.display.pickFile = true;
                         const sel = window.getSelection();
                         sel.removeAllRanges();
-                        const newRange = new Range();
+                        const newRange = document.createRange();
                         newRange.selectNode(e.target);
                         sel.addRange(newRange);
                         instance.selection.range = newRange;
@@ -216,7 +216,7 @@ export const image = {
                     
                     const sel = window.getSelection();
                     sel.removeAllRanges();
-                    const newRange = new Range();
+                    const newRange = document.createRange();
                     newRange.selectNode(parentSpan[0]);
                     sel.addRange(newRange);
                     showImageContextualMenu(parentSpan, scope, instance);
