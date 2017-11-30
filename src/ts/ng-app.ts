@@ -1128,6 +1128,7 @@ module.directive('dragdrop', ['$parse', function($parse){
                 if(attributes.dropcondition === undefined || dropConditionFn(scope, { $originalEvent: event.originalEvent })){
                    event.preventDefault();
                    event.stopPropagation();
+				   scope.$eval(attributes.onDragover);
                    element.addClass("droptarget")
                 }
             });
