@@ -72,7 +72,10 @@ export let lightbox = ng.directive('lightbox', () => {
                     })
 
 					setTimeout(() => {
-						$('body').addClass('lightbox-opened');
+						if(element.parents('header.main').length === 0){
+							$('body').addClass('lightbox-opened');
+						}
+						
 						lightboxWindow.fadeIn();
 					}, 100);
 
