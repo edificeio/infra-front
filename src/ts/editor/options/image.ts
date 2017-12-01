@@ -121,7 +121,11 @@ const showImageContextualMenu = (refElement, scope, instance) => {
             else{
                 src += '?v=1';
             }
-
+            image.on('load', () => {
+                refElement.width(image.width());
+                refElement.height(image.height());
+            });
+            
             image.attr('src', src);
         }
         scope.$apply();
