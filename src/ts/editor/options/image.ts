@@ -98,6 +98,12 @@ const showImageContextualMenu = (refElement, scope, instance) => {
         }
         scope.imageOption.display.file = Mix.castAs(Document, { _id: urlParts[urlParts.length - 1].split('?')[0] });
         await scope.imageOption.display.file.loadProperties();
+        if(scope.imageOption.display.file.metadata.extension === 'jpg'){
+            scope.imageOption.display.file.metadata['content-type'] = 'image/jpeg';
+        }
+        else{
+            scope.imageOption.display.file.metadata['content-type'] = 'image/' + scope.imageOption.display.file.metadata.extension;
+        }
         scope.imageOption.display.editFile = true;
         scope.updateImage = () => {
             let src = image.attr('src');

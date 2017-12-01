@@ -26,6 +26,7 @@ export class ImageEditor{
     async cancel(keepHistory = false){
         $(this.imageView.renderer.view).css({ opacity: 0 });
         if(typeof this.imageView.appliedIndex === 'number'){
+            this.document.hiddenBlob = this.imageView.history[this.imageView.appliedIndex];
             await this.imageView.loadBlob(this.imageView.history[this.imageView.appliedIndex]);
             this.imageView.history.splice(this.imageView.appliedIndex);
         }
