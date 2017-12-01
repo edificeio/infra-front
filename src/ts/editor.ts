@@ -12,6 +12,8 @@ import { skin } from './skin';
 import { Selection, textNodes, formatNodes } from './editor/selection';
 import * as editorOptions from './editor/options';
 import { workflow } from './directives/workflow';
+import { onPressEnter } from './editor/onPressEnter';
+import { onDropFromDesktop } from './editor/onDropFromDesktop';
 
 declare let Prism: any;
 
@@ -1487,118 +1489,7 @@ export let RTE = {
                         }
 
                         if (e.keyCode === 13) {
-                            editorInstance.addState(editZone.html());
-                            
-                            var parentContainer = range.startContainer;
-
-                            if (
-                                    (parentContainer.nodeType === 1 && parentContainer.nodeName === 'LI') ||
-                                    (parentContainer.parentNode.nodeType === 1 && parentContainer.parentNode.nodeName === 'LI') ||
-                                    (parentContainer.nodeType === 1 && parentContainer.nodeName === 'TD') ||
-                                    (parentContainer.parentNode.nodeType === 1 && parentContainer.parentNode.nodeName === 'TD')
-                                ) {
-                                return;
-                            }
-
-                            var blockContainer = parentContainer;
-                            while (blockContainer.nodeType !== 1 || textNodes.indexOf(blockContainer.nodeName) !== -1) {
-                                blockContainer = blockContainer.parentNode;
-                            }
-                            if (parentContainer === editZone[0]) {
-                                var wrapper = $('<div></div>');
-                                $(editZone[0]).append(wrapper);
-                                wrapper.html('&#8203;');
-                                blockContainer = wrapper[0];
-                                parentContainer = wrapper[0];
-                            }
-                            if (blockContainer === editZone[0]) {
-                                var startOffset = range.startOffset;
-                                var wrapper = $('<div></div>');
-                                
-                                while (editZone[0].childNodes.length) {
-                                    $(wrapper).append(editZone[0].childNodes[0]);
-                                }
-                                $(blockContainer).append(wrapper);
-                                blockContainer = wrapper[0];
-                                var sel = document.getSelection();
-                                var r = document.createRange();
-                                r.setStart(parentContainer, startOffset);
-                                sel.removeAllRanges();
-                                sel.addRange(r);
-                                range = r;
-                            }
-                            var newNodeName = 'div';
-                            if ((parentContainer.nodeType === 1 && range.startOffset < parentContainer.childNodes.length)
-                                || (parentContainer.nodeType === 3 && range.startOffset < parentContainer.textContent.length)) {
-                                newNodeName = blockContainer.nodeName.toLowerCase();
-                            }
-                            var newLine = $('<' + newNodeName + '>&#8203;</' + newNodeName + '>');
-
-                            blockContainer.parentNode.insertBefore(newLine[0], blockContainer.nextSibling);
-
-                            newLine.attr('style', $(blockContainer).attr('style'));
-                            newLine.attr('class', $(blockContainer).attr('class'));
-                            
-                            e.preventDefault();
-                            var rangeStart = 1;
-                            if(parentContainer.nodeType === 3){
-                                var content = parentContainer.textContent.substring(range.startOffset, parentContainer.textContent.length);
-                                if(!content){
-                                    content = '&#8203;';
-                                }
-                                else {
-                                    rangeStart = 0;
-                                }
-                                newLine.html(content);
-                                parentContainer.textContent = parentContainer.textContent.substring(0, range.startOffset);
-                            }
-                            else{
-                                while(parentContainer.childNodes.length > range.startOffset){
-                                    newLine.append(parentContainer.childNodes[range.startOffset]);
-                                }
-                            }
-
-                            var nodeCursor = parentContainer;
-                            while (nodeCursor !== blockContainer) {
-                                var cursorClone;
-                                if (nodeCursor.nodeType === 1) {
-                                    let nodeName = nodeCursor.nodeName.toLowerCase();
-                                    if(nodeName === 'a'){
-                                        nodeName = 'span';
-                                    }
-                                    cursorClone = document.createElement(nodeName);
-                                    $(cursorClone).attr('style', $(nodeCursor).attr('style'));
-                                    $(cursorClone).attr('class', $(nodeCursor).attr('class'));
-                                    $(cursorClone).append(newLine[0].firstChild);
-                                    newLine.prepend(cursorClone);
-                                }
-                                        
-                                var sibling = nodeCursor.nextSibling;
-                                while (sibling !== null) {
-                                    //order matters here. appending sibling before getting nextsibling breaks the loop
-                                    var currentSibling = sibling;
-                                    sibling = sibling.nextSibling;
-                                    newLine.append(currentSibling);
-                                }
-
-                                nodeCursor = nodeCursor.parentNode;
-                            }
-
-                            if (!(parentContainer as any).wholeText && parentContainer.nodeType === 3) {
-                                // FF forces encode on textContent, this is a hack to get the actual entities codes,
-                                // since innerHTML doesn't exist on text nodes
-                                parentContainer.textContent = $('<div>&#8203;</div>')[0].textContent;
-                            }
-
-                            var range = document.createRange();
-                            var newStartContainer = newLine[0];
-                            while(newStartContainer.firstChild){
-                                newStartContainer = newStartContainer.firstChild;
-                            }
-                            range.setStart(newStartContainer, rangeStart);
-
-                            sel.removeAllRanges();
-                            sel.addRange(range);
+                            onPressEnter(e, editorInstance, editZone, textNodes);
                         }
 
                         if (e.keyCode === 8 || e.keyCode === 46) {
@@ -1717,78 +1608,7 @@ export let RTE = {
                     });
 
                     element.find('[contenteditable]').on('drop', function (e) {
-                        if(!e.originalEvent.dataTransfer){
-                            return;
-                        }
-                        var visibility: 'protected' | 'public' = 'protected';
-                        if (editorInstance.visibility === 'public') {
-                            visibility = 'public';
-                        }
-
-                        element.removeClass('droptarget');
-                        var el = {} as any;
-                        var files = e.originalEvent.dataTransfer.files;
-                        if(!files.length){
-                            return;
-                        }
-                        e.preventDefault();
-                        var range;
-                        var sel = window.getSelection();
-                        if (document.caretRangeFromPoint) {
-                            range = document.caretRangeFromPoint(e.originalEvent.clientX, e.originalEvent.clientY);
-                        }
-                        else if (document.caretPositionFromPoint) {
-                            var caretPosition = document.caretPositionFromPoint(e.originalEvent.clientX, e.originalEvent.clientY);
-                            range = document.createRange();
-                            range.setStart(caretPosition.offsetNode, caretPosition.offset);
-                        }
-                        if (range) {
-                            sel.removeAllRanges();
-                            sel.addRange(range);
-                            editorInstance.selection.range = range;
-                            editorInstance.selection.rangeCount = 1;
-                        }
-
-                        let html = '';
-                        let all = files.length;
-
-                        const uploadFile = async (file: File) => {
-                            var name = files[i].name;
-                            const doc = new Document();
-                            await doc.upload(files[i], visibility)
-                            all --;
-                            var path = '/workspace/document/';
-                            if (visibility === 'public') {
-                                path = '/workspace/pub/document/';
-                            }
-
-                            if (name.indexOf('.mp3') !== -1 || name.indexOf('.wav') !== -1 || name.indexOf('.ogg') !== -1) {
-                                el = $('<audio controls preload="none"></audio>');
-                                el.attr('src', path + doc._id)
-                            }
-                            else if (name.toLowerCase().indexOf('.png') !== -1 || name.toLowerCase().indexOf('.jpg') !== -1 || name.toLowerCase().indexOf('.jpeg') !== -1 || name.toLowerCase().indexOf('.svg') !== -1) {
-                                el = $('<span contenteditable="false" class="image-container"><img /></span>');
-                                el.children('img').attr('src', path + doc._id + '?thumbnail=150x150')
-                            }
-                            else {
-                                el = $('<div class="download-attachments">' +
-                                    '<h2>' + lang.translate('editor.attachment.title') + '</h2>' +
-                                    '<div class="attachments">' +
-                                        '<a href="'+ path + doc._id + '"><div class="download"></div>' + name + '</a>' +
-                                '</div></div><div><br /><div><br /></div></div>');
-                            }
-
-                            html += '<div>' + el[0].outerHTML + '<div><br></div><div><br></div></div>';
-                            if(all === 0){
-                                editorInstance.selection.replaceHTML(html);
-                            }
-                        }
-
-                        for(var i = 0; i < files.length; i++){
-                            (function(){
-                                uploadFile(files[i])
-                            }())
-                        }
+                        onDropFromDesktop(e, editorInstance, element);
                     });
 
                     scope.$on('$destroy', function () {
@@ -1800,83 +1620,6 @@ export let RTE = {
 
 
         //Style directives
-        module.directive('selectList', function(){
-            return {
-                restrict: 'E',
-                transclude: true,
-                scope: {
-                    displayAs: '@',
-                    placeholder: '@',
-                    display: '='
-                },
-                template: '' +
-                    '<div class="selected-value">[[showValue()]]</div>' +
-                    '<div class="options hidden" ng-transclude></div>',
-                link: function(scope, element, attributes){
-                    scope.showValue = function(){
-                        if(!scope.display){
-                            return lang.translate(scope.placeholder);
-                        }
-                        if(!scope.displayAs){
-                            return lang.translate(scope.display);
-                        }
-                        return lang.translate(scope.display[scope.displayAs]);
-                    };
-
-                    element.children('.options').on('mouseover', function (e){
-                        e.stopPropagation()
-                    });
-
-                    element.children('.selected-value').on('click', function(){
-                        if (element.children('.options').hasClass('hidden')) {
-                            setTimeout(function () {
-                                element.parent().css({ 'z-index': 9999 });
-                                element.parents('editor-toolbar').each(function(index, item) {
-                                    $(item).css({
-                                        'margin-top': '-' + item.scrollTop + 'px',
-                                        'min-height': '0',
-                                        'height': 'auto'
-                                    })
-                                });
-                                element.parents().css({
-                                        overflow: 'visible'
-                                });
-                            }, 0);
-                            
-                            element.children('.options').removeClass('hidden');
-                            element.children('.options').height(element.children('.options')[0].scrollHeight);
-                        }
-                        else {
-                            element.parent().css({ 'z-index': '' });
-                            element.parents().css({ overflow: '' });
-                            element.parents('editor-toolbar').each(function (index, item) {
-                                $(item).css({ 'margin-top': '', 'min-height': '', height: '' })
-                            });
-                            element.children('.options').addClass('hidden');
-                        }
-                    });
-
-                    $('body').click(function(e){
-                        if (e.target === element.find('.selected-value')[0] ||
-                            element.children('.options').hasClass('hidden')) {
-                            return;
-                        }
-
-                        if (element.parents('lightbox').length === 0) {
-                            element.parent().css({ 'z-index': '' });
-                            element.parents().css({ overflow: '' });
-                        }
-
-                        element.parents('editor-toolbar').each(function (index, item) {
-                            $(item).css({ 'margin-top': '', 'min-height': '', height: '' })
-                        });
-
-                        element.children('.options').addClass('hidden');
-                    });
-                }
-            }
-        });
-
         module.directive('popover', function(){
             return {
                 controller: function(){},

@@ -438,16 +438,16 @@ export let ui = {
                     }
                     var mouse = { x: e.pageX, y: e.pageY };
                     var resizeLimits = {
-                        horizontalRight: element.offset().left + element.width() + 15 > mouse.x && mouse.x > element.offset().left + element.width() - 15
+                        horizontalRight: element.offset().left + element.outerWidth() + 20 > mouse.x && mouse.x > element.offset().left + element.outerWidth() - 20
                         && params.lock.horizontal === undefined && params.lock.right === undefined,
 
-                        horizontalLeft: element.offset().left + 15 > mouse.x && mouse.x > element.offset().left - 15
+                        horizontalLeft: element.offset().left + 20 > mouse.x && mouse.x > element.offset().left - 20
                         && params.lock.horizontal === undefined && params.lock.left === undefined,
 
-                        verticalTop: element.offset().top + 15 > mouse.y && mouse.y > element.offset().top - 15
+                        verticalTop: element.offset().top + 20 > mouse.y && mouse.y > element.offset().top - 20
                         && params.lock.vertical === undefined && params.lock.top === undefined,
 
-                        verticalBottom: element.offset().top + element.height() + 15 > mouse.y && mouse.y > element.offset().top + element.height() - 15
+                        verticalBottom: element.offset().top + element.outerHeight() + 20 > mouse.y && mouse.y > element.offset().top + element.outerHeight() - 20
                         && params.lock.vertical === undefined && params.lock.bottom === undefined
                     };
 
@@ -552,16 +552,16 @@ export let ui = {
                     x: e.pageX || e.originalEvent.touches[0].pageX
                 };
                 const resizeLimits = {
-                    horizontalRight: element.offset().left + element.width() + 15 > mouse.x && mouse.x > element.offset().left + element.width() - 15
+                    horizontalRight: element.offset().left + element.outerWidth() + 20 > mouse.x && mouse.x > element.offset().left + element.outerWidth() - 20
                     && params.lock.horizontal === undefined && params.lock.right === undefined,
 
-                    horizontalLeft: element.offset().left + 15 > mouse.x && mouse.x > element.offset().left - 15
+                    horizontalLeft: element.offset().left + 20 > mouse.x && mouse.x > element.offset().left - 20
                     && params.lock.horizontal === undefined && params.lock.left === undefined,
 
-                    verticalTop: element.offset().top + 15 > mouse.y && mouse.y > element.offset().top - 15
+                    verticalTop: element.offset().top + 20 > mouse.y && mouse.y > element.offset().top - 20
                     && params.lock.vertical === undefined && params.lock.top === undefined,
 
-                    verticalBottom: element.offset().top + element.height() + 15 > mouse.y && mouse.y > element.offset().top + element.height() - 15
+                    verticalBottom: element.offset().top + element.outerHeight() + 20 > mouse.y && mouse.y > element.offset().top + element.outerHeight() - 20
                     && params.lock.vertical === undefined && params.lock.bottom === undefined
                 };
 

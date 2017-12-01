@@ -22,6 +22,7 @@ export * from './placedBlock';
 export * from './pulsar';
 export * from './recorder';
 export * from './resourceRight';
+export * from './selectList';
 export * from './sharePanel';
 export * from './slider';
 export * from './sniplet';
