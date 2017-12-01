@@ -36,7 +36,7 @@ const showImageContextualMenu = (refElement, scope, instance) => {
     else{
         imageMenu = $(`
             <div class="image-contextual-menu">
-                <button class="open-media-library"><${ idiom.translate('edit.image') }</button>
+                <button class="open-media-library">${ idiom.translate('edit.image') }</button>
 
                 <i class="justify-left"></i>
                 <i class="justify-center"></i>

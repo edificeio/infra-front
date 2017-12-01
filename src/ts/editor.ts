@@ -994,7 +994,6 @@ export let RTE = {
                         element.parents('grid-cell').data('lock', false);
                         element.trigger('editor-blur');
                         $('body').css({ overflow: 'auto' });
-                        $('header.main').show();
                     });
 
                     element.find('.editor-toolbar-opener').on('click', function(e){
@@ -1361,7 +1360,6 @@ export let RTE = {
                         element.parents('grid-cell').data('lock', true);
                         if ($(window).width() < ui.breakpoints.tablette) {
                             $('body').css({ overflow: 'hidden' });
-                            $('header.main').hide();
                             window.scrollTo(0,0);
                             setTimeout(function(){
                                 var sel = document.getSelection();
