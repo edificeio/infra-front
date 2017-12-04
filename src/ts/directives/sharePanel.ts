@@ -3,6 +3,7 @@ import { appPrefix, infraPrefix } from '../globals';
 import { http } from '../http';
 import { idiom } from '../idiom';
 import { _ } from '../libs/underscore/underscore';
+import { Model } from '../modelDefinitions';
 
 export const sharePanel = ng.directive('sharePanel', ['$rootScope', ($rootScope) => {
 	return {
@@ -21,7 +22,7 @@ export const sharePanel = ng.directive('sharePanel', ['$rootScope', ($rootScope)
 
             $scope.shareTable = '/' + currentApp + '/public/template/entcore/share-panel-table.html';
 
-            if(!($scope.resources instanceof Array) && !$scope.resources.myRights){
+            if(!($scope.resources instanceof Array) && !$scope.resources.myRights && !($scope.resources instanceof Model)){
                 throw new TypeError('Resources in share panel must be instance of Array or implement Rights interface');
             }
             if(!($scope.resources instanceof Array)){
