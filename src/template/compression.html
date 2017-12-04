@@ -1,4 +1,4 @@
-<canvas></canvas>
+<canvas tooltip="[[document.name || document.title]]"></canvas>
 
 <div ng-if="document.metadata['content-type'].indexOf('jpg') !== -1 || document.metadata['content-type'].indexOf('jpeg') !== -1">
     <slider class="cell" ng-model="document.currentQuality" max="1" min="0" default="1" label="[[blobSize()]] [[blobUnit()]]" min-legend="media.library.compression.min"  max-legend="media.library.compression.max"></slider>
