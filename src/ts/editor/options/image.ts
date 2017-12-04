@@ -134,8 +134,17 @@ const showImageContextualMenu = (refElement, scope, instance) => {
             });
             
             image.attr('src', src);
+            if(scope.imageOption.display.file.alt){
+                image.attr('alt', scope.imageOption.display.file.alt);
+            }
+            else{
+                image.removeAttr('alt');
+            }
+
+            instance.trigger('contentupdated');
+            scope.$apply();
         }
-        scope.$apply();
+        
     })
     .on('click', 'i.small', () => {
         image.attr('src', image.attr('src').split('?')[0] + '?thumbnail=120x120&v=' + Math.floor(Math.random() * 100));
@@ -283,7 +292,11 @@ export const image = {
                     var html = '';
                     scope.imageOption.display.files.forEach(function (file) {
                         html += `<span contenteditable="false" class="image-container">
-                            &#8203;<img src="${ path }${ file._id }?thumbnail=2600x0" alt="${ file.alt }" class="latest-image" />
+                            &#8203;<img src="${ path }${ file._id }?thumbnail=2600x0"`;
+                            if(file.alt){
+                                html += `alt="${ file.alt }"`;
+                            }
+                            html += ` class="latest-image" />
                         </span>&nbsp;&nbsp;`;
                     });
                     instance.selection.replaceHTMLInline(html);
