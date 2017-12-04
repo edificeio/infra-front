@@ -1,4 +1,6 @@
 export var moment = require('moment');
+require('moment/min/locales');
+
 if (!window.entcore) {
     window.entcore = {};
 }
@@ -7,7 +9,7 @@ window.entcore.moment = moment;
 
 if((window as any).currentLanguage){
     if ((window as any).currentLanguage === 'fr') {
-        moment.lang((window as any).currentLanguage, {
+        moment.locale((window as any).currentLanguage, {
             calendar: {
                 lastDay: '[Hier à] HH[h]mm',
                 sameDay: '[Aujourd\'hui à] HH[h]mm',
@@ -19,6 +21,6 @@ if((window as any).currentLanguage){
         });
     }
     else {
-        moment.lang((window as any).currentLanguage);
+        moment.locale((window as any).currentLanguage);
     }
 }

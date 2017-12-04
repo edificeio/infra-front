@@ -2,6 +2,13 @@ var gulp = require('gulp');
 var webpack = require('webpack-stream');
 var glob = require("glob");
 var rename = require('gulp-rename');
+var argv = require('yargs').argv;
+
+let springboardPath = '../springboard-open-ent';
+if(argv.springboard){
+    springboardPath = argv.springboard;
+    console.log('Using springboard at ' + springboardPath);
+}
 
 gulp.task("build", function () {
     return gulp.src('./')
@@ -23,7 +30,7 @@ gulp.task("build-dev", function () {
 });
 
 gulp.task('update', ['build-dev'], () => {
-    glob('../springboard-open-ent/mods/**/public/dist/entcore/*.js', (err, f) => {
+    glob(springboardPath + '/mods/**/public/dist/entcore/*.js', (err, f) => {
         f.forEach((file) => {
             const split = file.split('/');
             const fileName = split[split.length - 1];
@@ -33,7 +40,7 @@ gulp.task('update', ['build-dev'], () => {
         });
     });
 
-    glob('../springboard-open-ent/mods/**/public/dist/entcore/*.js.map', (err, f) => {
+    glob(springboardPath + '/mods/**/public/dist/entcore/*.js.map', (err, f) => {
         f.forEach((file) => {
             const split = file.split('/');
             const fileName = split[split.length - 1];
@@ -48,7 +55,8 @@ gulp.task('watch', () => {
     gulp.watch('**/*.ts', () => gulp.start('update'));
     gulp.watch('**/*.html', () => {
         const apps = [];
-        glob('../springboard-open-ent/mods/**/public/template/entcore/*.html', (err, f) => {
+        
+        glob(springboardPath + '/mods/**/public/template/entcore/*.html', (err, f) => {
             f.forEach((file) => {
                 const app = file.split('/public/template/entcore')[0];
                 if(apps.indexOf(app) === -1){
