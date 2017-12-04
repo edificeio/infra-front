@@ -1,8 +1,9 @@
 import { ui } from '../../ui';
 import { $ } from '../../libs/jquery/jquery';
-import { Document } from '../../workspace';
+import { Document, MediaLibrary } from '../../workspace';
 import { Mix } from 'entcore-toolkit';
 import { idiom } from "../../idiom";
+import { Me } from '../../me';
 
 const refreshResize = (instance) => {
     ui.extendElement.resizable(instance.editZone.find('.image-container').not('.image-template .image-container'), {
@@ -97,6 +98,12 @@ const showImageContextualMenu = (refElement, scope, instance) => {
             return;
         }
         scope.imageOption.display.file = Mix.castAs(Document, { _id: urlParts[urlParts.length - 1].split('?')[0] });
+        const isMine = MediaLibrary.appDocuments.documents.all.find(d => d._id === scope.imageOption.display.file._id) !== undefined ||
+        MediaLibrary.publicDocuments.documents.all.find(d => d._id === scope.imageOption.display.file._id) !== undefined;
+        if(isMine){
+            scope.imageOption.display.file.owner = { userId : Me.session.userId };
+            await scope.imageOption.display.file.rights.fromBehaviours('workspace');
+        }
         await scope.imageOption.display.file.loadProperties();
         if(scope.imageOption.display.file.metadata.extension === 'jpg'){
             scope.imageOption.display.file.metadata['content-type'] = 'image/jpeg';

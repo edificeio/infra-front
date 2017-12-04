@@ -77,6 +77,7 @@ export let bindHtml = ng.directive('bindHtml', ['$compile', function($compile){
 						let legend = $(`<legend class="user-image"><div class="text">${legendText}</div></legend>`);
 						legend.height($(e.target).height());
 						legend.width($(e.target).width());
+						legend.css('position', 'absolute');
 						legend.offset({
 							top: $(e.target).offset().top,
 							left: $(e.target).offset().left
