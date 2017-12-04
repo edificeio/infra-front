@@ -1,6 +1,7 @@
 import { ImageView } from '../ImageView';
 import { Tool } from '../Tool';
 import { $ } from "../../index";
+import { ui } from '../../ui';
 
 export class Resize implements Tool{
     imageView: ImageView;
@@ -135,6 +136,7 @@ export class Resize implements Tool{
             top: (this.imageView.sprite.position.y - this.imageView.sprite.height / 2) + 'px', 
             left: (this.imageView.sprite.position.x - this.imageView.sprite.width / 2) + 'px'
         });
+        ui.extendElement.resizable(this.handle, { preserveRatio: true });
     }
 
     lockOutput(){
