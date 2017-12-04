@@ -66,7 +66,7 @@ export let wizard = ng.directive('wizard', () => {
 					var stepScope = angular.element(currentStepContent[0]).scope();
 					if(!currentStepContent[0].getAttribute('next-condition'))
 						return true;
-					return stepScope.nextCondition();
+					return stepScope.$eval(currentStepContent[0].getAttribute('next-condition'));
 				};
 
 				scope.nextStep = function(){
@@ -74,14 +74,14 @@ export let wizard = ng.directive('wizard', () => {
 						return
 
 					var stepScope = angular.element(currentStepContent[0]).scope();
-					stepScope.onNext();
+					stepScope.$eval(currentStepContent[0].getAttribute('on-next'));
 					scope.currentStep++;
 					displayCurrentStep();
 				};
 
 				scope.previousStep = function(){
 					var stepScope = angular.element(currentStepContent[0]).scope();
-					stepScope.onPrevious();
+					stepScope.$eval(currentStepContent[0].getAttribute('on-previous'));
 					scope.currentStep--;
 					displayCurrentStep();
 				};
