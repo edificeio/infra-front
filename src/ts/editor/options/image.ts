@@ -240,10 +240,12 @@ export const image = {
                 instance.editZone.on('dragstart', 'img', (e) => {
                     $('body').one('drop.dragimage', () => {
                         instance.editZone.off('drop.dragimage');
-                    })
+                    });
+
+                    
                     instance.editZone.one('drop.dragimage', () => {
                         $('body').off('drop.dragimage');
-                        setTimeout(() => $(e.target).parent('span').remove(), 50);
+                        setTimeout(() => $(e.target).parent('span').remove(), 200);
                     });
                 });
 
@@ -298,18 +300,21 @@ export const image = {
 
                 instance.on('model-updated', () => refreshResize(instance));
 
-                instance.editZone.on('drop', function (e) {
-                    var image;
-                    if (e.originalEvent.dataTransfer.mozSourceNode) {
-                        image = e.originalEvent.dataTransfer.mozSourceNode;
-                    }
+                instance.editZone.on('drop', 'img', (e) => {
+                    console.log('found ?');
+                    e.stopPropagation();
+                    e.preventDefault();
+                })
 
+                instance.editZone.on('drop', 'span.image-container', (e) => {
+                    console.log('found ?');
+                    e.stopPropagation();
+                    e.preventDefault();
+                })
+
+                instance.editZone.on('drop', function (e) {
                     //delay to account for image destruction and recreation
                     setTimeout(function(){
-                        console.log(image)
-                        if(image && image.tagName && image.tagName === 'IMG'){
-                            image.remove();
-                        }
                         instance.editZone.find('img').each((index, item) => {
                             if($(item).attr('src').split(location.protocol + '//' + location.host).length > 1){
                                 $(item).attr('src', $(item).attr('src').split(location.protocol + '//' + location.host)[1]);
