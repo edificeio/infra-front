@@ -22,30 +22,16 @@ const showImageContextualMenu = (refElement, scope, instance) => {
     const image = refElement.find('img');
     refElement.addClass('has-menu');
 
-    if($(window).width() >= ui.breakpoints.tablette){
-        imageMenu = $(`
-            <div class="image-contextual-menu">
-                <button class="edit-image">${ idiom.translate('edit.image') }</button>
+    imageMenu = $(`
+        <div class="image-contextual-menu">
+            <button class="edit-image">${ idiom.translate('edit.image') }</button>
 
-                <i class="resize-image small"></i>
-                <i class="resize-image medium"></i>
-                <i class="resize-image large selected"></i>
-            </div>
-        `)
-        .appendTo('body');
-    }
-    else{
-        imageMenu = $(`
-            <div class="image-contextual-menu">
-                <button class="open-media-library">${ idiom.translate('edit.image') }</button>
-
-                <i class="justify-left"></i>
-                <i class="justify-center"></i>
-                <i class="justify-right"></i>
-            </div>
-        `)
-        .appendTo('body');
-    }
+            <i class="resize-image small"></i>
+            <i class="resize-image medium"></i>
+            <i class="resize-image large selected"></i>
+        </div>
+    `)
+    .appendTo('body');
 
     if(image.attr('src').indexOf('thumbnail') !== -1){
         const width = parseInt(image.attr('src').split('thumbnail=')[1].split('x')[0]);
