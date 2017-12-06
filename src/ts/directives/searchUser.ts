@@ -1,6 +1,6 @@
 import { ng } from '../ng-start';
 
-export let searchUser = ng.directive('searchUser', () => {
+export let searchUser = ng.directive('searchUser', ['$timeout', ($timeout) => {
     return {
         restrict: 'E',
         template: `
@@ -37,14 +37,15 @@ export let searchUser = ng.directive('searchUser', () => {
             });
 
             scope.update = (force?: boolean) => {
-                scope.$apply();
-                if(scope.ngModel.length < 3){
-                    scope.clearList();
-                }
-                if(force || scope.ngModel.length >= 3){
-                    scope.onSend();
-                }
+                $timeout(() => {
+                    if(scope.ngModel.length < 3){
+                        scope.clearList();
+                    }
+                    if(force || scope.ngModel.length >= 3){
+                        scope.onSend();
+                    }
+                });
             };
         }
     }
-});
+}]);
