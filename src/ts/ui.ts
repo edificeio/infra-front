@@ -589,7 +589,8 @@ export let ui = {
                     size: {
                         width: element.width(),
                         height: element.height()
-                    }
+                    },
+                    bodyScroll: $('body').css('overflow')
                 };
                 var parent = element.parents('.drawing-zone');
                 var parentData = {
@@ -629,13 +630,13 @@ export let ui = {
                             if (resizeLimits.horizontalLeft) {
                                 var distance = initial.pos.left - mouse.x;
                                 if(params.moveWithResize === false){
-                                    if(initial.pos.left + distance + initial.size.width > parentData.pos.left + parentData.size.width){
-                                        distance = 0;
+                                    if(initial.pos.left + distance + initial.size.width > parent.offset().left + parentData.size.width){
+                                        distance = (parent.offset().left + parentData.size.width) - initial.pos.left - 1;
                                     }
                                 }
                                 else{
-                                    if(initial.pos.left - distance < parentData.pos.left){
-                                        distance = 0;
+                                    if(initial.pos.left - distance < parent.offset().left){
+                                        distance = -(parent.offset().left - initial.pos.left) + 1;
                                     }
                                     element.offset({
                                         left: parseInt(initial.pos.left - distance),
@@ -647,8 +648,8 @@ export let ui = {
                             }
                             else {
                                 var distance = mouse.x - p.left;
-                                if (element.offset().left + distance > parentData.pos.left + parentData.size.width) {
-                                    distance = (parentData.pos.left + parentData.size.width) - element.offset().left - 2;
+                                if (element.offset().left + distance > parent.offset().left + parentData.size.width) {
+                                    distance = (parent.offset().left + parentData.size.width) - element.offset().left - 2;
                                 }
                                 newWidth = distance;
                             }
@@ -666,12 +667,12 @@ export let ui = {
 
                                 if(params.moveWithResize === false){
                                     if(initial.pos.top + distance + initial.size.height > parentData.pos.top + parentData.size.height && !(params.extendParent && params.extendParent.bottom)){
-                                        distance = 0;
+                                        distance = (parent.offset().top + parentData.size.height) - initial.pos.top - 1;
                                     }
                                 }
                                 else{
                                     if(initial.pos.top - distance < parentData.pos.top){
-                                        distance = 0;
+                                        distance = -(parent.offset().top - initial.pos.top) + 1;
                                     }
                                     element.offset({
                                         left: parseInt(p.left),
@@ -706,7 +707,7 @@ export let ui = {
                         interrupt = true;
                         element.removeClass(element.css('cursor'));
                         setTimeout(function () {
-                            $('body').css({ overflow: 'auto' });
+                            $('body').css({ overflow: initial.bodyScroll });
                             element.css({ 'transition': '' });
                             element.data('resizing', false);
                             element.trigger('stopResize');
