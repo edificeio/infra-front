@@ -116,8 +116,6 @@ export class ImageView{
                 loadType: PIXI.loaders.Resource.LOAD_TYPE.IMAGE,
                 xhrType: PIXI.loaders.Resource.XHR_RESPONSE_TYPE.BLOB
             };
-            console.log('loading image');
-            console.log(PIXI.loader);
             PIXI.loader
                 .add(image, image, loaderOptions)
                 .load(onload);

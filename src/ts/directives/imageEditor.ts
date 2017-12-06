@@ -17,15 +17,20 @@ export const imageEditor = ng.directive('imageEditor', () => {
         },
         template: `
             <div ng-if="show && inline && ready">
+                <i ng-if="display.isImageLoading" class="loading image-loading"></i>
                 <container template="entcore/image-editor/main"></container>
             </div>
             <div ng-if="show && !inline && ready">
                 <lightbox show="show" on-close="hide()">
+                    <i ng-if="display.isImageLoading" class="loading image-loading"></i>
                     <container template="entcore/image-editor/main"></container>
                 </lightbox>
             </div>
         `,
         link: (scope, element, attributes) => {
+            if(!scope.display){
+                scope.display = {};
+            }
             if(attributes.inline !== undefined){
                 attributes.inline = true;
             }
@@ -39,12 +44,18 @@ export const imageEditor = ng.directive('imageEditor', () => {
 
             const start = async () => {
                 scope.ready = true;
-                await ImageEditor.init();
-                imageEditor.draw(element.find('section').last());
-                await imageEditor.drawDocument(scope.document);
-                imageEditor.imageView.eventer.on('image-loaded', () => scope.$apply());
-                scope.openTool('Rotate');
+                scope.display.isImageLoading = true;
                 scope.$apply();
+                setTimeout(async () => {
+                    imageEditor.imageView.eventer.on('image-loaded', () => {
+                        scope.openTool('Rotate');
+                        scope.display.isImageLoading = false;
+                        scope.$apply()
+                    });
+                    await ImageEditor.init();
+                    imageEditor.draw(element.find('section').last());
+                    await imageEditor.drawDocument(scope.document);
+                }, 300);
             };
 
             scope.scale = () => imageEditor.tool ? Math.ceil(1 / (imageEditor.tool as Resize).scale * 10) / 10 : 1;
