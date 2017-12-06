@@ -122,8 +122,10 @@ export class ImageEditor{
             preserveDrawingBuffer: true,
             transparent: true 
         });
-        await ImageEditor.init();
+        console.log('appending');
+        console.log(el.find('.output'));
         el.find('.output').append(this.renderer.view);
+        console.log(el.find('.output'));
     }
 
     async drawDocument(document: Document){

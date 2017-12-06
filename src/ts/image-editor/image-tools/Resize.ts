@@ -14,6 +14,7 @@ export class Resize implements Tool{
     };
     _scale: number;
     token: number;
+    isInSetup: boolean;
 
     get ratio(){
         return this.initialSize.width / this.initialSize.height;
@@ -23,7 +24,7 @@ export class Resize implements Tool{
         if(this._scale){
             return this._scale;
         }
-        if(!this.imageView){
+        if(!this.imageView || this.isInSetup){
             return 1;
         }
         if(this.imageView.sprite.width > this.imageView.sprite.height){
@@ -144,7 +145,11 @@ export class Resize implements Tool{
     }
 
     setup(){
+        this.isInSetup = true;
         this._scale = 0;
+        this.imageView.sprite.scale = new PIXI.Point(1, 1);
+        this.imageView.render();
+
         $(this.imageView.renderer).attr('data-locked-size', true);
         if(this.outputHeight > this.imageView.sprite.height){
             this.editingElement.find('.output').height(this.imageView.sprite.height);
@@ -166,25 +171,28 @@ export class Resize implements Tool{
             this.imageView.renderer.resize(this.outputWidth, this.outputHeight);
             this.imageView.sprite.pivot.set(this.imageView.sprite.width / 2, this.imageView.sprite.height / 2);
             requestAnimationFrame(() => {
+                this.isInSetup = false;
                 this.imageView.sprite.scale = new PIXI.Point(this.scale, this.scale);
                 this.imageView.sprite.position = {
                     x: this.imageView.renderer.width / 2,
                     y: this.imageView.renderer.height / 2
                 } as PIXI.Point;
+                requestAnimationFrame(() => {
+                    console.log('finish setup')
+                    this.lockOutput();
+                    this.setHandle();
+                    setTimeout(() => $(this.imageView.renderer.view).css({ opacity: 1 }), 100);
+                    this.editingElement.find('input[type=text]').first().val(parseInt(this.imageView.sprite.width / this.scale));
+                    this.editingElement.find('input[type=text]').last().val(parseInt(this.imageView.sprite.height / this.scale));
+                    angular.element(this.editingElement).scope().$apply();
+                });
                 
                 this.imageView.render();
             });
             
             this.imageView.render();
             
-            requestAnimationFrame(() => {
-                this.lockOutput();
-                this.setHandle();
-                setTimeout(() => $(this.imageView.renderer.view).css({ opacity: 1 }), 100);
-                this.editingElement.find('input[type=text]').first().val(parseInt(this.imageView.sprite.width / this.scale));
-                this.editingElement.find('input[type=text]').last().val(parseInt(this.imageView.sprite.height / this.scale));
-                angular.element(this.editingElement).scope().$apply();
-            });
+            
         });
     }
 

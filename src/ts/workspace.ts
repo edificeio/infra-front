@@ -7,6 +7,7 @@ import http from 'axios';
 import { Eventer, Mix, Selection, Selectable } from 'entcore-toolkit';
 import { model } from './modelDefinitions';
 import { Rights, Shareable } from './rights';
+import { Me } from './me';
 
 const maxFileSize = parseInt(lang.translate('max.file.size'));
 
@@ -282,12 +283,12 @@ export class Document implements Selectable, Shareable {
             this.metadata.role = this.role();
         }
         this.status = DocumentStatus.loading;
-        var formData = new FormData();
+        let formData = new FormData();
         formData.append('file', file, file.name);
         this.title = file.name;
         this.newProperties.name = this.title.replace('.' + this.metadata.extension, '');
         this.xhr = new XMLHttpRequest();
-        var path = '/workspace/document?' + visibilityPath;
+        let path = '/workspace/document?' + visibilityPath;
         if(this.role() === 'img'){
             path += '&quality=1&' + MediaLibrary.thumbnails;
         }
@@ -299,12 +300,14 @@ export class Document implements Selectable, Shareable {
         }
 
         return new Promise((resolve, reject) => {
-            this.xhr.onload = () => {
+            this.xhr.onload = async () => {
                 if(this.xhr.status >= 200 && this.xhr.status < 400){
                     this.eventer.trigger('loaded');
                     this.status = DocumentStatus.loaded;
                     const result = JSON.parse(this.xhr.responseText);
                     this._id = result._id;
+                    this.owner = { userId : Me.session.userId, displayName: Me.session.username };
+                    await this.rights.fromBehaviours('workspace');
                     if(this.path){
                         http.put("documents/move/" + this._id + '/' + encodeURIComponent(this.path)).then(() => {
                             resolve();
