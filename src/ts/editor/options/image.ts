@@ -57,11 +57,16 @@ const showImageContextualMenu = (refElement, scope, instance) => {
     const refreshPositon = (size?: string) => {
         imageMenu.find('.selected').removeClass('selected');
         imageMenu.find('.' + size).addClass('selected');
+        const offset = {
+            top: refElement.offset().top + refElement.height() + 20,
+            left: refElement.offset().left + 5
+        };
+
+        if(offset.left + imageMenu.width() > $(window).width()){
+            offset.left = $(window).width() - imageMenu.width();
+        }
         image.on('load', () => {
-            imageMenu.offset({
-                top: refElement.offset().top + refElement.height() + 20,
-                left: refElement.offset().left + 5
-            });
+            imageMenu.offset(offset);
         });
     };
 
@@ -72,10 +77,17 @@ const showImageContextualMenu = (refElement, scope, instance) => {
         });
     });
 
-    imageMenu.offset({
-        top: parseInt(refElement.offset().top + refElement.height() + 20),
-        left: parseInt(refElement.offset().left + 5)
-    })
+    const offset = {
+        top: refElement.offset().top + refElement.height() + 20,
+        left: refElement.offset().left + 5
+    };
+
+    if(offset.left + imageMenu.width() > $(window).width()){
+        offset.left = $(window).width() - imageMenu.width();
+    }
+
+    imageMenu
+    .offset(offset)
     .on('click', '.edit-image', async () => {
         const urlParts = image.attr('src').split('/');
         if(urlParts[1] !== 'workspace'){
@@ -161,6 +173,8 @@ const showImageContextualMenu = (refElement, scope, instance) => {
         image.parent().css({ float: 'right', margin: 'auto' });
     });
     
+    refreshPositon();
+
     const unbind = () => {
         imageMenu.remove();
         refElement.removeClass('has-menu');

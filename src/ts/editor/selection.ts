@@ -955,17 +955,29 @@ export const Selection = function(data){
     };
 
     this.replaceHTMLInline = function (htmlContent) {
+        if(this.range && this.range.startContainer === this.editZone[0] && this.range.endContainer === this.editZone[0]){
+            const newDiv = $('<div>&#8203;</div>');
+            newDiv.html(this.editZone.html());
+            this.editZone.html('');
+            this.editZone.append(newDiv);
+            let sel = window.getSelection();
+            let range = document.createRange();
+            range.setStart(newDiv[0], 0);
+            sel.removeAllRanges();
+            sel.addRange(range);
+            this.range = range;
+        }
         that.instance.addState(that.editZone.html());
-        var wrapper = $('<span></span>');
+        let wrapper = $('<span></span>');
         wrapper.html(htmlContent);
         if (this.range) {
             this.range.deleteContents();
             this.range.insertNode(wrapper[0]);
         }
         else {
-            this.editZone.append(wrapper);
-            var sel = window.getSelection();
-            var range = document.createRange();
+            this.editZone.append($('<div>' + htmlContent + '</div>'));
+            let sel = window.getSelection();
+            let range = document.createRange();
             range.setStart(wrapper[0], wrapper[0].childNodes.length);
             sel.removeAllRanges();
             sel.addRange(range);
