@@ -4,6 +4,7 @@ export * from './bindHtml';
 export * from './bottomScroll';
 export * from './calendar';
 export * from './carousel';
+export * from './completeChange';
 export * from './dotsMenu';
 export * from './dragItem';
 export * from './dropDown';
