@@ -47,10 +47,10 @@ export const imageEditor = ng.directive('imageEditor', () => {
                 scope.display.isImageLoading = true;
                 scope.$apply();
                 setTimeout(async () => {
-                    imageEditor.imageView.eventer.on('image-loaded', () => {
+                    imageEditor.imageView.eventer.once('image-loaded', () => {
                         scope.openTool('Rotate');
                         scope.display.isImageLoading = false;
-                        scope.$apply()
+                        scope.$apply();
                     });
                     await ImageEditor.init();
                     imageEditor.draw(element.find('section').last());
@@ -97,7 +97,10 @@ export const imageEditor = ng.directive('imageEditor', () => {
             scope.hasHistory = () => imageEditor.hasHistory;
             scope.canApply = () => imageEditor.canApply;
             scope.hasFuture = () => imageEditor.hasFuture;
-            scope.undo = () => imageEditor.undo();
+            scope.undo = async () => {
+                await imageEditor.undo();
+                scope.$apply();
+            }
             scope.redo = () => imageEditor.imageView.redo();
             scope.cancel = async () => {
                 await imageEditor.cancel(true);

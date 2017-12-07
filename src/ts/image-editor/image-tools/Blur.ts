@@ -124,6 +124,8 @@ export class Blur implements Tool{
                 cancelAnimationFrame(token);
                 this.imageView.backup(true);
                 this.isBlurring = false;
+                this.imageView.pendingChanges = true;
+                angular.element(editingElement).scope().$apply();
             });
         });
     }
