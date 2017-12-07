@@ -252,13 +252,11 @@ export const image = {
                 });
 
                 instance.editZone.on('dragstart', 'img', (e) => {
-                    $('body').one('drop.dragimage', () => {
+                    $('body').one('dragend.dragimage', () => {
                         instance.editZone.off('drop.dragimage');
                     });
-
                     
                     instance.editZone.one('drop.dragimage', () => {
-                        $('body').off('drop.dragimage');
                         setTimeout(() => $(e.target).parent('span').remove(), 200);
                     });
                 });
