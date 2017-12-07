@@ -1489,7 +1489,7 @@ export let RTE = {
                         }
 
                         if (e.keyCode === 13) {
-                            onPressEnter(e, editorInstance, editZone, textNodes);
+                            onPressEnter(e, range, editorInstance, editZone, textNodes);
                         }
 
                         if (e.keyCode === 8 || e.keyCode === 46) {

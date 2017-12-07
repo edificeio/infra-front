@@ -1,6 +1,6 @@
 import { $ } from "../libs/jquery/jquery";
 
-export function onPressEnter(e, editorInstance, editZone, textNodes){
+export function onPressEnter(e, range, editorInstance, editZone, textNodes){
     editorInstance.addState(editZone.html());
     
     var parentContainer = range.startContainer;
@@ -26,16 +26,16 @@ export function onPressEnter(e, editorInstance, editZone, textNodes){
         parentContainer = wrapper[0];
     }
     if (blockContainer === editZone[0]) {
-        var startOffset = range.startOffset;
-        var wrapper = $('<div></div>');
+        let startOffset = range.startOffset;
+        let wrapper = $('<div></div>');
         
         while (editZone[0].childNodes.length) {
             $(wrapper).append(editZone[0].childNodes[0]);
         }
         $(blockContainer).append(wrapper);
         blockContainer = wrapper[0];
-        var sel = document.getSelection();
-        var r = document.createRange();
+        let sel = document.getSelection();
+        let r = document.createRange();
         r.setStart(parentContainer, startOffset);
         sel.removeAllRanges();
         sel.addRange(r);
@@ -120,13 +120,14 @@ export function onPressEnter(e, editorInstance, editZone, textNodes){
         parentContainer.textContent = $('<div>&#8203;</div>')[0].textContent;
     }
 
-    var range = document.createRange();
-    var newStartContainer = newLine[0];
+    let newRange = document.createRange();
+    let newStartContainer = newLine[0];
     while(newStartContainer.firstChild){
         newStartContainer = newStartContainer.firstChild;
     }
-    range.setStart(newStartContainer, rangeStart);
+    newRange.setStart(newStartContainer, rangeStart);
 
+    let sel = document.getSelection();
     sel.removeAllRanges();
-    sel.addRange(range);
+    sel.addRange(newRange);
 }

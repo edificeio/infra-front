@@ -17,6 +17,25 @@ const refreshResize = (instance) => {
     });
 };
 
+const setOffset = (refElement, imageMenu) => {
+    const offset = {
+        top: refElement.offset().top + refElement.height() + 20,
+        left: refElement.offset().left + 5
+    };
+
+    if(offset.left + imageMenu.width() > $(window).width()){
+        offset.left = $(window).width() - imageMenu.width();
+    }
+    if(offset.top + imageMenu.height() > $(window).height() + window.scrollY){
+        offset.top = ($(window).height() + window.scrollY) - imageMenu.height();
+    }
+    if(offset.top < refElement.offset().top){
+        offset.top = refElement.offset().top;
+    }
+
+    return offset;
+}
+
 const showImageContextualMenu = (refElement, scope, instance) => {
     let imageMenu;
     const image = refElement.find('img');
@@ -70,24 +89,18 @@ const showImageContextualMenu = (refElement, scope, instance) => {
         });
     };
 
+    $(window).on('scroll.imagemenu', () => {
+        imageMenu.offset(setOffset(refElement, imageMenu));
+    })
+
     refElement.on('resizing.imageMenu', (e) => {
-        imageMenu.offset({
-            top: refElement.offset().top + refElement.height() + 20,
-            left: refElement.offset().left + 5
-        });
+        imageMenu.offset(setOffset(refElement, imageMenu));
     });
 
-    const offset = {
-        top: refElement.offset().top + refElement.height() + 20,
-        left: refElement.offset().left + 5
-    };
-
-    if(offset.left + imageMenu.width() > $(window).width()){
-        offset.left = $(window).width() - imageMenu.width();
-    }
+    
 
     imageMenu
-    .offset(offset)
+    .offset(setOffset(refElement, imageMenu))
     .on('click', '.edit-image', async () => {
         const urlParts = image.attr('src').split('/');
         if(urlParts[1] !== 'workspace'){
@@ -179,6 +192,7 @@ const showImageContextualMenu = (refElement, scope, instance) => {
         imageMenu.remove();
         refElement.removeClass('has-menu');
         refElement.off('resizing.imageMenu');
+        $(window).off('scroll.imagemenu');
     }
 
     setTimeout(() => {
