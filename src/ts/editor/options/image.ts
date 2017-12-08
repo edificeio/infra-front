@@ -233,7 +233,7 @@ export const image = {
                 '</lightbox>' +
             '</div>',
             link: function (scope, element, attributes) {
-                instance.editZone.on('click', 'img', (e) => {
+                instance.editZone.on('click touchstart', 'img', (e) => {
                     if($(e.target).attr('src').startsWith('/assets')){
                         scope.imageOption.display.pickFile = true;
                         const sel = window.getSelection();

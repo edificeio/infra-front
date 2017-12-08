@@ -111,6 +111,11 @@ export class Blur implements Tool{
             }
             this.isBlurring = true;
             animate();
+
+            $(window).on('touchstart', () => {
+                deltaX = 0;
+                deltaY = 0;
+            })
             
             $(window).on('mousemove.blur touchmove.blur', (e) => {
                 this.mouse = {

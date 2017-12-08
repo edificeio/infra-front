@@ -1,11 +1,15 @@
 import { ng } from '../ng-start';
 import { idiom } from '../idiom';
 import { $ } from '../libs/jquery/jquery';
+import { ui } from '../ui';
 
 export let tooltip = ng.directive('tooltip', ['$compile', function($compile){
 	return {
 		restrict: 'A',
 		link: function(scope, element, attributes){
+			if($(window).width() < ui.breakpoints.tablette){
+				return;
+			}
 			var tip;
 			element.on('mouseover', function(){
 				if(!attributes.tooltip || attributes.tooltip === 'undefined'){

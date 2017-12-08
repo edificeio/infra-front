@@ -606,6 +606,7 @@ export let ui = {
                     e.preventDefault();
                     e.stopPropagation();
                     cancelDefault = true;
+                    console.log('starting resizing');
                     element.data('resizing', true);
                     $('.main').css({
                         'cursor': element.css('cursor')
@@ -750,6 +751,12 @@ export let ui = {
                 params.lock = {};
             }
 
+            element.parents('.lightbox').on('touchmove', (e) => {
+                if(cancelDefault){
+                    e.preventDefault();
+                }
+            });
+
             if (element.length > 1) {
                 element.each(function (index, item) {
                     ui.extendElement.draggable($(item), params);
@@ -763,6 +770,7 @@ export let ui = {
             }
 
             catcher.on('touchstart mousedown', (e) => {
+                console.log(element.data('resizing'));
                 if (element.data('lock') === true || (e.target.tagName === 'INPUT' && $(e.target).attr('type') === 'text') || (e.target.tagName === 'TEXTAREA' && $(e.target).is(':focus'))) {
                     return;
                 }
@@ -858,7 +866,9 @@ export let ui = {
                         if (params.lock && params.lock.horizontal) {
                             newOffset.left = parseInt(element.offset().left);
                         }
-                        element.offset(newOffset);
+                        if(!element.data('resizing')){
+                            element.offset(newOffset);
+                        }
 
                         // hit test
                         let left = mouse.x;

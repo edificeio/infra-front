@@ -102,11 +102,17 @@ export class Resize implements Tool{
                             } as PIXI.Point;
                     
                             this.imageView.render();
-            
-                            requestAnimationFrame(async () => {
-                                await this.imageView.backup(false);
-                                resolve();
-                                this.setup();
+
+                            requestAnimationFrame(() => {
+                                //hack for super weird iPad rendering bug
+                                this.imageView.render();
+                                $(this.imageView.renderer.view).css({ opacity: 1 });
+
+                                requestAnimationFrame(async () => {
+                                    await this.imageView.backup(false);
+                                    resolve();
+                                    this.setup();
+                                });
                             });
                         });
                     });
