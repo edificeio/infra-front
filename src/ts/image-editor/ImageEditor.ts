@@ -141,6 +141,7 @@ export class ImageEditor{
         this.imageView.resetHistory();
         await this.imageView.loadBlob(this.imageView.originalImage);
         this.imageView.history.push(this.imageView.originalImage);
+        this.document.hiddenBlob = this.imageView.originalImage;
         this.tool.placeTools();
     }
 

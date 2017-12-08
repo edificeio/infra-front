@@ -121,6 +121,10 @@ export class Resize implements Tool{
     }
 
     placeTools(){
+        this.initialSize = {
+            height: this.imageView.sprite.height,
+            width: this.imageView.sprite.width
+        };
         this.setup();
     }
 
