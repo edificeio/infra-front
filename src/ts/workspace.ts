@@ -293,7 +293,10 @@ export class Document implements Selectable, Shareable {
             path += '&quality=1&' + MediaLibrary.thumbnails;
         }
         this.xhr.open('POST', path);
-        this.xhr.setRequestHeader('X-XSRF-TOKEN', xsrfCookie.val);
+        if(xsrfCookie){
+            this.xhr.setRequestHeader('X-XSRF-TOKEN', xsrfCookie.val);
+        }
+        
         this.xhr.send(formData);
         this.xhr.onprogress = (e) => {
             this.eventer.trigger('progress', e);
@@ -355,7 +358,7 @@ export class Document implements Selectable, Shareable {
 
     async update(blob: Blob){
         const formData = new FormData();
-        let newName = this.name;
+        let newName = this.name || this.title;
         if(newName.indexOf(this.metadata.extension) === -1){
             newName += '.' + this.metadata.extension;
         }

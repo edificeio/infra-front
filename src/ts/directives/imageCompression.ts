@@ -55,8 +55,8 @@ export let imageCompression = ng.directive('imageCompression', () => {
                     console.log(canvas.width)
                     blob = b;
                     const imageUrl = URL.createObjectURL(blob);
-                    image.src = imageUrl;
                     image.onload = () => updateCanvas(image);
+                    image.src = imageUrl;
                 }, 'image/jpeg', scope.document.currentQuality);
 
                 hiddenCanvas.width = sourceImage.width;
