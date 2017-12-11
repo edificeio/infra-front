@@ -25,23 +25,30 @@ export class Resize implements Tool{
             return this._scale;
         }
         if(!this.imageView || this.isInSetup){
+            console.log('still in setup, scale is 1')
             return 1;
         }
         if(this.imageView.sprite.width > this.imageView.sprite.height){
             let scale = this.outputWidth / this.imageView.sprite.width;
+            console.log(scale)
+            console.log(this.imageView.sprite.width)
             this._scale = scale;
             if(scale > 1){
+                console.log('scale is higher than 1')
                 this._scale = 1;
                 return 1;
             }
             return scale;
         }
         if(this.imageView.sprite.height < parseInt(this.editingElement.find('.output').css('min-height'))){
+            console.log('small sprite height')
             return 1;
         }
         let scale = this.outputHeight / this.imageView.sprite.height;
         this._scale = scale;
+        console.log('calc scale from height')
         if(scale > 1){
+            console.log('scale is higher than one')
             return 1;
         }
         return scale;
@@ -95,7 +102,6 @@ export class Resize implements Tool{
                         requestAnimationFrame(() => {
                             this.imageView.sprite.width = this.handle.width() / this.scale;
                             this.imageView.sprite.height = this.handle.height() / this.scale;
-            
                             this.imageView.sprite.position = {
                                 x: this.imageView.sprite.width / 2,
                                 y: this.imageView.sprite.height / 2
@@ -108,11 +114,11 @@ export class Resize implements Tool{
                                 this.imageView.render();
                                 $(this.imageView.renderer.view).css({ opacity: 1 });
 
-                                requestAnimationFrame(async () => {
+                                setTimeout(async () => {
                                     await this.imageView.backup(false);
                                     resolve();
                                     this.setup();
-                                });
+                                }, 100);
                             });
                         });
                     });
@@ -154,72 +160,79 @@ export class Resize implements Tool{
         this.editingElement.find('.output').height(this.editingElement.find('.output').height());
     }
 
-    setup(){
-        this.isInSetup = true;
-        this._scale = 0;
-        this.imageView.sprite.scale = new PIXI.Point(1, 1);
-        this.imageView.render();
+    reset(){
+        this.imageView.sprite.width = this.initialSize.width;
+        this.imageView.sprite.height = this.initialSize.height;
 
-        $(this.imageView.renderer).attr('data-locked-size', true);
-        if(this.outputHeight > this.imageView.sprite.height){
-            this.editingElement.find('.output').height(this.imageView.sprite.height);
-            setTimeout(() => this.editingElement.find('.tools-background').height(this.editingElement.find('.output').height()), 50);
-        }
-        else{
-            if(this.imageView.sprite.height < 600){
+        this.imageView.sprite.pivot.set(this.initialSize.width / 2, this.initialSize.height / 2);
+        this.imageView.renderer.resize(this.imageView.sprite.width, this.imageView.sprite.height);
+
+        this.imageView.render();
+        this._scale = undefined;
+    }
+
+    setup(){
+        $(this.imageView.renderer.view).css({ opacity: 0 });
+        this.reset();
+        
+        this.isInSetup = true;
+        setTimeout(() => {
+            this.imageView.sprite.scale = new PIXI.Point(1, 1);
+            
+            $(this.imageView.renderer).attr('data-locked-size', true);
+            if(this.outputHeight > this.imageView.sprite.height){
                 this.editingElement.find('.output').height(this.imageView.sprite.height);
                 setTimeout(() => this.editingElement.find('.tools-background').height(this.editingElement.find('.output').height()), 50);
             }
             else{
-                this.editingElement.find('.output').height(600);
-                setTimeout(() => this.editingElement.find('.tools-background').height(this.editingElement.find('.output').height()), 50);
+                if(this.imageView.sprite.height < 600){
+                    this.editingElement.find('.output').height(this.imageView.sprite.height);
+                    setTimeout(() => this.editingElement.find('.tools-background').height(this.editingElement.find('.output').height()), 50);
+                }
+                else{
+                    this.editingElement.find('.output').height(600);
+                    setTimeout(() => this.editingElement.find('.tools-background').height(this.editingElement.find('.output').height()), 50);
+                }
             }
-        }
-        requestAnimationFrame(() => {
-            this.imageView.setOverlay();
-            
-            this.imageView.renderer.resize(this.outputWidth, this.outputHeight);
-            this.imageView.sprite.pivot.set(this.imageView.sprite.width / 2, this.imageView.sprite.height / 2);
             requestAnimationFrame(() => {
-                this.isInSetup = false;
-                this.imageView.sprite.scale = new PIXI.Point(this.scale, this.scale);
-                this.imageView.sprite.position = {
-                    x: this.imageView.renderer.width / 2,
-                    y: this.imageView.renderer.height / 2
-                } as PIXI.Point;
-                requestAnimationFrame(() => {
-                    console.log('finish setup')
-                    this.lockOutput();
-                    this.setHandle();
-                    setTimeout(() => $(this.imageView.renderer.view).css({ opacity: 1 }), 100);
-                    this.editingElement.find('input[type=text]').first().val(parseInt(this.imageView.sprite.width / this.scale));
-                    this.editingElement.find('input[type=text]').last().val(parseInt(this.imageView.sprite.height / this.scale));
-                    angular.element(this.editingElement).scope().$apply();
-                });
+                this.imageView.setOverlay();
                 
+                this.imageView.renderer.resize(this.outputWidth, this.outputHeight);
+                setTimeout(() => {
+                    this.isInSetup = false;
+                    this.imageView.sprite.pivot.set(this.imageView.sprite.width / 2, this.imageView.sprite.height / 2);
+                    this.imageView.sprite.scale = new PIXI.Point(this.scale, this.scale);
+                    console.log('setting sprite scale ' + this.scale)
+                    this.imageView.sprite.position = {
+                        x: this.imageView.renderer.width / 2,
+                        y: this.imageView.renderer.height / 2
+                    } as PIXI.Point;
+                    setTimeout(() => {
+                        console.log('finish setup')
+                        this.lockOutput();
+                        this.setHandle();
+                        setTimeout(() => $(this.imageView.renderer.view).css({ opacity: 1 }), 100);
+                        this.editingElement.find('input[type=text]').first().val(parseInt(this.imageView.sprite.width / this.scale));
+                        this.editingElement.find('input[type=text]').last().val(parseInt(this.imageView.sprite.height / this.scale));
+                        angular.element(this.editingElement).scope().$apply();
+                    }, 50);
+                    this.imageView.render();
+                }, 200);
                 this.imageView.render();
             });
-            
-            this.imageView.render();
-            
-            
-        });
+        }, 180);
     }
 
     stop(){
         this.editingElement.find('.output').removeAttr('style');
         setTimeout(() => this.editingElement.find('.tools-background').height(this.editingElement.find('.output').height()), 200);
-        $(this.imageView.renderer).attr('data-locked-size', false);
-        this.imageView.renderer.resize(this.initialSize.width, this.initialSize.height);
-        this.imageView.sprite.width = this.initialSize.width;
-        this.imageView.sprite.height = this.initialSize.height;
-        this.imageView.sprite.pivot.set(this.initialSize.width / 2, this.initialSize.height / 2);
+        this.reset();
         
         this.imageView.sprite.position = {
             x: this.initialSize.width / 2,
             y: this.initialSize.height / 2
         } as PIXI.Point;
-        this.imageView.render();
+        
         this.editingElement.off('startResize stopResize startDrag stopDrag');
     }
 

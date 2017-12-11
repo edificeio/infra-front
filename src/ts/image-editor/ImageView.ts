@@ -21,17 +21,15 @@ export class ImageView{
                 PIXI.loader.resources[image].texture
             )
             this.stage.addChild(this.sprite);
-            this.renderer.render(this.stage);
+            
             setTimeout(async () => {
                 this.sprite.pivot.set(this.sprite.width / 2, this.sprite.height / 2);
-                this.renderer.resize(this.sprite.width, this.sprite.height);
+                
                 this.sprite.position = {
                     x: this.sprite.width / 2,
                     y: this.sprite.height / 2
                 } as PIXI.Point;
                 
-                this.render();
-                await this.backup();
                 this.historyIndex = 0;
                 requestAnimationFrame(() => 
                     this.editingElement.find('.tools-background').height(this.editingElement.find('.output').height())
@@ -70,6 +68,7 @@ export class ImageView{
                 resolve();
                 return;
             }
+            
             setTimeout(() => {
                 this.sprite.pivot.set(this.sprite.width / 2, this.sprite.height / 2);
                 if(!$(this.renderer).attr('data-locked-size')){
@@ -93,10 +92,9 @@ export class ImageView{
         this.editingElement.find('.overlay').height($(this.editingElement.find('.output')).height());
     }
 
-    load(image: string, renderer: PIXI.CanvasRenderer | PIXI.WebGLRenderer, editingElement: any, format: string): Promise<any>{
+    load(image: string, editingElement: any, format: string): Promise<any>{
         this.format = format;
         return new Promise((resolve, reject) => {
-            this.renderer = renderer;
             this.editingElement = editingElement;
             const onload = () => {
                 this.paint(image)
@@ -133,6 +131,12 @@ export class ImageView{
         });
     }
 
+    setStage(){
+        this.renderer.render(this.stage);
+        this.renderer.resize(this.sprite.width, this.sprite.height);
+        this.renderer.render(this.stage);
+    }
+
     undo(): Promise<any>{
         $(this.renderer.view).css({ opacity: 0 });
         return new Promise((resolve, reject) => {
@@ -157,16 +161,22 @@ export class ImageView{
 
     backup(repaint = true, updateHistory = true): Promise<any>{
         return new Promise((resolve, reject) => {
+            resolve();
+            console.log('start toBlob');
             this.renderer.view.toBlob((blob) => {
+                console.log('end toBlob')
+                this.render();
                 this.historyIndex ++;
                 this.history.splice(this.historyIndex);
                 this.history.push(blob);
                 if(!this.originalImage){
                     this.originalImage = blob;
                 }
+                
                 this.loadBlob(blob, repaint).then(() => {
+                    console.log('resolving')
                     resolve();
-                })
+                });
             }, this.format);
         });
     }

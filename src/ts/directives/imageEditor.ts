@@ -47,14 +47,13 @@ export const imageEditor = ng.directive('imageEditor', () => {
                 scope.display.isImageLoading = true;
                 scope.$apply();
                 setTimeout(async () => {
-                    imageEditor.imageView.eventer.once('image-loaded', () => {
-                        scope.openTool('Rotate');
-                        scope.display.isImageLoading = false;
-                        scope.$apply();
-                    });
                     await ImageEditor.init();
                     imageEditor.draw(element.find('section').last());
                     await imageEditor.drawDocument(scope.document);
+                    scope.openTool('Rotate');
+                    scope.display.isImageLoading = false;
+                    imageEditor.imageView.backup();
+                    scope.$apply();
                 }, 300);
             };
 
@@ -80,6 +79,7 @@ export const imageEditor = ng.directive('imageEditor', () => {
             };
 
             scope.openProperties = async () => {
+                imageEditor.tool.stop();
                 imageEditor.tool = undefined;
                 template.open('entcore/image-editor/tool', 'entcore/image-editor/properties');
                 element.find('.output, .tools-background').hide();

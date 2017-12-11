@@ -48,9 +48,6 @@ export class ImageEditor{
 
     async useTool(name: string, options?){
         this.tool && this.tool.stop();
-        const tool = new imageTools[name]();
-        
-        this.tool = tool;
         if(this.imageView.historyIndex){
             await this.cancel();
         }
@@ -58,7 +55,21 @@ export class ImageEditor{
             this.imageView.historyIndex = 0;
             this.imageView.appliedIndex = 0;
         }
+
+        if(this.renderer){
+            this.renderer.destroy();
+        }
         
+        if(name === 'Resize'){
+            this.drawCanvas();
+        }
+        else{
+            this.drawGl();
+        }
+        
+        const tool = new imageTools[name]();
+        this.imageView.setStage();
+        this.tool = tool;
         tool.start(this.imageView, this.editingElement);
     }
 
@@ -115,23 +126,40 @@ export class ImageEditor{
         })
     }
 
-    async draw(el: any){
-        el.find('canvas').remove();
-        this.editingElement = el;
-        this.renderer = PIXI.autoDetectRenderer(editorWidth, editorHeight, { 
+    drawGl(){
+        this.editingElement.find('canvas').remove();
+        this.renderer = PIXI.autoDetectRenderer (editorWidth, editorHeight, { 
             preserveDrawingBuffer: true,
-            transparent: true 
+            transparent: true
         });
-        el.find('.output').append(this.renderer.view);
+        this.imageView.renderer = this.renderer;
+        this.editingElement.find('.output').append(this.renderer.view);
+        this.imageView.setStage();
+    }
+
+    drawCanvas(){
+        this.editingElement.find('canvas').remove();
+        this.renderer = new PIXI.CanvasRenderer (editorWidth, editorHeight, { 
+            preserveDrawingBuffer: true,
+            transparent: true
+        });
+        this.imageView.renderer = this.renderer;
+        this.editingElement.find('.output').append(this.renderer.view);
+        this.imageView.setStage();
+    }
+
+
+    draw(el: any){
+        this.editingElement = el;
     }
 
     async drawDocument(document: Document){
         if(document.hiddenBlob){
             const path = URL.createObjectURL(document.hiddenBlob);
-            await this.imageView.load(path, this.renderer, this.editingElement, document.metadata['content-type']);
+            await this.imageView.load(path,  this.editingElement, document.metadata['content-type']);
         }
         else{
-            await this.imageView.load('/workspace/document/' + document._id + '?v=' + parseInt(Math.random() * 100), this.renderer, this.editingElement, document.metadata['content-type']);
+            await this.imageView.load('/workspace/document/' + document._id + '?v=' + parseInt(Math.random() * 100), this.editingElement, document.metadata['content-type']);
         }
         
         this.document = document;
