@@ -25,7 +25,7 @@ export let lightbox = ng.directive('lightbox', () => {
 			element.children('.lightbox').find('> .background, > .content > .close-lightbox > i.close-2x').on('click', function(e){
 				element.children('.lightbox').first().fadeOut();
                 $('body').css({ overflow: 'auto' });
-                $('body').removeClass('lightbox-opened');
+				$('body').removeClass('lightbox-opened');
 
 				scope.$eval(scope.onClose);
 				scope.$apply();
@@ -40,6 +40,7 @@ export let lightbox = ng.directive('lightbox', () => {
 
 			scope.$watch('show', function(newVal){
                 if (newVal) {
+					element.trigger('lightboxvisible');
                     var lightboxWindow = element.children('.lightbox');
 
                     //Backup overflow hidden elements + z-index of parents

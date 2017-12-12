@@ -205,9 +205,17 @@ export const mediaLibrary = ng.directive('mediaLibrary', function(){
 
 					if(newVal === 'audio'){
 						template.open('entcore/media-library/main', 'entcore/media-library/record');
+						element.parents('lightbox').on('lightboxvisible', () => {
+							template.open('entcore/media-library/main', 'entcore/media-library/record');
+							scope.$apply();
+						});
 					}
 					else{
 						template.open('entcore/media-library/main', 'entcore/media-library/browse');
+						element.parents('lightbox').on('lightboxvisible', () => {
+							template.open('entcore/media-library/main', 'entcore/media-library/browse');
+							scope.$apply();
+						});
 					}
 					if(MediaLibrary.foldersStore.length === 0){
 						await MediaLibrary.myDocuments.sync();
