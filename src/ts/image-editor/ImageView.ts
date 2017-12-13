@@ -143,7 +143,7 @@ export class ImageView{
             setTimeout(async () => {
                 this.historyIndex --;
                 if(this.appliedIndex > this.historyIndex){
-                    this.appliedIndex = this.historyIndex;
+                    this.appliedIndex = this.historyIndex - 1;
                 }
                 
                 await this.loadBlob(this.history[this.historyIndex]);

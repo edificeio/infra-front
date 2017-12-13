@@ -75,7 +75,7 @@ export class ImageEditor{
 
     async applyChanges(options?){
         await this.tool.apply(options);
-        this.imageView.appliedIndex = this.imageView.historyIndex;
+        this.imageView.appliedIndex = this.imageView.historyIndex - 1;
         this.imageView.pendingChanges = false;
     }
 
@@ -170,11 +170,9 @@ export class ImageEditor{
         await this.imageView.loadBlob(this.imageView.originalImage);
         this.imageView.history.push(this.imageView.originalImage);
         this.document.hiddenBlob = this.imageView.originalImage;
-        this.tool.placeTools();
     }
 
     async undo(){
         await this.imageView.undo();
-        this.tool.placeTools();
     }
 }
