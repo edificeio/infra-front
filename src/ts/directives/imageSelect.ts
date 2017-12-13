@@ -13,17 +13,19 @@ export let imageSelect = ng.directive('imageSelect', function(){
 			ngChange: '&',
 			default: '@'
 		},
-		template: '<div><img ng-src="[[ngModel + \'?\' + getThumbnails()]]" class="pick-file" draggable="false" ng-if="ngModel" style="cursor: pointer" />' +
-			'<img skin-src="[[default]]" class="pick-file" draggable="false" ng-if="!ngModel" style="cursor: pointer" />' +
-			'<lightbox show="userSelecting" on-close="userSelecting = false;">' +
-			'<media-library ' +
-				'visibility="selectedFile.visibility"' +
-				'ng-change="updateDocument()" ' +
-				'ng-model="selectedFile.file" ' +
-				'file-format="\'img\'">' +
-			'</media-library>' +
-			'</lightbox>' +
-			'</div>',
+		template: `<div><img ng-src="[[ngModel + '?' + getThumbnails()]]" class="pick-file" draggable="false" ng-if="ngModel" style="cursor: pointer" />
+			<i class="trash" ng-click="restoreDefault()"></i>
+			<i class="edit pick-file"></i>
+			<img skin-src="[[default]]" class="pick-file" draggable="false" ng-if="!ngModel" style="cursor: pointer" />
+			<lightbox show="userSelecting">
+			<media-library 
+				visibility="selectedFile.visibility"
+				ng-change="updateDocument()" 
+				ng-model="selectedFile.file"
+				file-format="'img'">
+			</media-library>
+			</lightbox>
+			</div>`,
 		link: function(scope, element, attributes){
 			scope.selectedFile = { file: {}, visibility: 'protected' };
 

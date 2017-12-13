@@ -533,6 +533,9 @@ export let ui = {
 
             //actual resize
             element.on('mousedown.resize touchstart.resize', function (e) {
+                if(e.target.tagName === 'I' || e.target.tagName === 'BUTTON'){
+                    return;
+                }
                 if (element.data('lock') === true || element.data('resizing') === true) {
                     return;
                 }
