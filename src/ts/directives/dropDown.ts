@@ -46,7 +46,7 @@ export const dropDown = ng.directive('dropDown', ['$compile', '$timeout', ($comp
 					return;
 				}
 				dropDown.removeClass('hidden');
-				var linkedInput = $('#' + attributes.for);
+				var linkedInput = (!attributes.for) ? element.parent() : $('#' + attributes.for);
 				var pos = linkedInput.offset();
 				var width = linkedInput.width() +
 					parseInt(linkedInput.css('padding-right')) +
