@@ -2507,9 +2507,12 @@ export let RTE = {
                             };
                         }
                         Behaviours.loadBehaviours(scope.linker.params.appPrefix, function (appBehaviour) {
-                            Behaviours.applicationsBehaviours[prefix].loadResources().then(() => {
-                                cb(Behaviours.applicationsBehaviours[prefix].resources);
-                            });
+                            const result = Behaviours.applicationsBehaviours[prefix].loadResources(() => cb(Behaviours.applicationsBehaviours[prefix].resources));
+                            if(result && result.then){
+                                result.then(() => {
+                                    cb(Behaviours.applicationsBehaviours[prefix].resources);
+                                });
+                            }
                             scope.linker.addResource = Behaviours.applicationsBehaviours[prefix].create;
                         });
                     };
