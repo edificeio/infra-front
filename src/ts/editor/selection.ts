@@ -702,7 +702,7 @@ export const Selection = function(data){
                         sibling.nodeType === 1 && $(sibling).find(range.startContainer).length
                     ) {
                         let currentNode = range.startContainer;
-                        while(currentNode.parentNode !== sibling){
+                        while(currentNode.parentNode !== sibling && currentNode.nextSibling){
                             applyCSSBetween(range, currentNode.nextSibling, range.endContainer, css);
                             currentNode = currentNode.parentNode;
                         }
