@@ -262,6 +262,7 @@ export const image = {
                     const newRange = document.createRange();
                     newRange.selectNode(parentSpan[0]);
                     sel.addRange(newRange);
+                    instance.selection.range = newRange;
                     showImageContextualMenu(parentSpan, scope, instance);
                 });
 
