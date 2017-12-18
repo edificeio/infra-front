@@ -3,8 +3,8 @@ import { Tool } from '../Tool';
 import { $ } from "../../index";
 
 const brushSize = 20;
-let deltaX = 25;
-let deltaY = 25;
+let deltaX = 35;
+let deltaY = 40;
 
 if(navigator.userAgent.indexOf('Trident') !== -1){
     deltaY = 0;
