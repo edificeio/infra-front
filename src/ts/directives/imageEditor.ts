@@ -133,6 +133,8 @@ export const imageEditor = ng.directive('imageEditor', () => {
                     start();
                 }
             });
+
+            scope.$on('destroy', () => imageEditor.destroy());
         }
     }
 })

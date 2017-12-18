@@ -23,6 +23,10 @@ export class ImageEditor{
 
     }
 
+    destroy(){
+        this.imageView.renderer.destroy();
+    }
+
     async cancel(keepHistory = false){
         $(this.imageView.renderer.view).css({ opacity: 0 });
         if(typeof this.imageView.appliedIndex === 'number'){
