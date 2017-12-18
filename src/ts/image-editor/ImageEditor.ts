@@ -30,8 +30,8 @@ export class ImageEditor{
     async cancel(keepHistory = false){
         $(this.imageView.renderer.view).css({ opacity: 0 });
         if(this.imageView.appliedIndex){
-            this.document.hiddenBlob = this.imageView.history[this.imageView.appliedIndex - 1];
-            await this.imageView.loadBlob(this.imageView.history[this.imageView.appliedIndex - 1]);
+            this.document.hiddenBlob = this.imageView.history[this.imageView.appliedIndex];
+            await this.imageView.loadBlob(this.imageView.history[this.imageView.appliedIndex]);
         }
         if(!keepHistory){
             this.imageView.resetHistory();
@@ -58,7 +58,6 @@ export class ImageEditor{
             this.imageView.historyIndex = 0;
             this.imageView.appliedIndex = 0;
         }
-        this.imageView.history = [];
 
         if(this.renderer){
             this.renderer.destroy();
@@ -88,7 +87,7 @@ export class ImageEditor{
 
     async saveChanges(){
         if(this.imageView.history.length){
-            this.document.hiddenBlob = this.imageView.history[this.imageView.appliedIndex - 1];
+            this.document.hiddenBlob = this.imageView.history[this.imageView.appliedIndex];
         }
         await this.document.saveChanges();
     }

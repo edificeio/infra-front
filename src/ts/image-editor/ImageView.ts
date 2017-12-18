@@ -51,7 +51,7 @@ export class ImageView{
     }
 
     get hasHistory(): boolean{
-        return this.appliedIndex > 1;
+        return this.appliedIndex > 0;
     }
 
     loadImage(image: HTMLImageElement, repaint = true): Promise<any>{
@@ -142,7 +142,7 @@ export class ImageView{
                     this.appliedIndex = this.historyIndex;
                 }
                 
-                await this.loadBlob(this.history[this.historyIndex - 1]);
+                await this.loadBlob(this.history[this.historyIndex]);
                 $(this.renderer.view).css({ opacity: 1 });
                 resolve();
             }, 150);

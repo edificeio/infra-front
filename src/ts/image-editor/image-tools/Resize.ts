@@ -102,6 +102,10 @@ export class Resize implements Tool{
                         requestAnimationFrame(() => {
                             this.imageView.sprite.width = this.handle.width() / this.scale;
                             this.imageView.sprite.height = this.handle.height() / this.scale;
+                            this.initialSize = {
+                                width: this.imageView.sprite.width,
+                                height: this.imageView.sprite.height
+                            };
                             this.imageView.sprite.position = {
                                 x: this.imageView.sprite.width / 2,
                                 y: this.imageView.sprite.height / 2
