@@ -186,7 +186,7 @@ export class Document implements Selectable, Shareable {
     }
 
     async saveChanges(){
-        if(this.differentProperties){
+        if(this.differentProperties && this.myRights.renameDocument){
             this.name = this.newProperties.name;
             this.alt = this.newProperties.alt;
             this.legend = this.newProperties.legend;

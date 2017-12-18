@@ -102,7 +102,7 @@ export class ImageEditor{
     }
 
     get canApply(){
-        return this.imageView.historyIndex > this.imageView.appliedIndex || this.imageView.pendingChanges;
+        return this.imageView.historyIndex > this.imageView.appliedIndex + 1 || this.imageView.pendingChanges;
     }
 
     static async init(){
