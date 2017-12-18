@@ -18,9 +18,10 @@ export class Rotate implements Tool{
         
         return new Promise((resolve, reject) => {
             requestAnimationFrame(async () => {
-                await this.imageView.backup();
-                this.editingElement.find('.tools button').attr('disabled', false);
-                resolve();
+                this.imageView.backup().then(() => {
+                    this.editingElement.find('.tools button').attr('disabled', false);
+                    resolve();
+                });
             });
         });
     }

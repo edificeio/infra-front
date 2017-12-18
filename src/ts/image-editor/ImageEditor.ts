@@ -29,10 +29,9 @@ export class ImageEditor{
 
     async cancel(keepHistory = false){
         $(this.imageView.renderer.view).css({ opacity: 0 });
-        if(typeof this.imageView.appliedIndex === 'number'){
-            this.document.hiddenBlob = this.imageView.history[this.imageView.appliedIndex];
-            await this.imageView.loadBlob(this.imageView.history[this.imageView.appliedIndex]);
-            this.imageView.history.splice(this.imageView.appliedIndex);
+        if(this.imageView.appliedIndex){
+            this.document.hiddenBlob = this.imageView.history[this.imageView.appliedIndex - 1];
+            await this.imageView.loadBlob(this.imageView.history[this.imageView.appliedIndex - 1]);
         }
         if(!keepHistory){
             this.imageView.resetHistory();
@@ -52,13 +51,14 @@ export class ImageEditor{
 
     async useTool(name: string, options?){
         this.tool && this.tool.stop();
-        if(this.imageView.historyIndex){
+        if(this.imageView.historyIndex > 0){
             await this.cancel();
         }
         else{
             this.imageView.historyIndex = 0;
             this.imageView.appliedIndex = 0;
         }
+        this.imageView.history = [];
 
         if(this.renderer){
             this.renderer.destroy();
@@ -82,13 +82,13 @@ export class ImageEditor{
             await this.tool.apply(options);
         }
         
-        this.imageView.appliedIndex = this.imageView.historyIndex - 1;
+        this.imageView.appliedIndex = this.imageView.historyIndex;
         this.imageView.pendingChanges = false;
     }
 
     async saveChanges(){
-        if(this.imageView.appliedIndex > 0){
-            this.document.hiddenBlob = this.imageView.history[this.imageView.appliedIndex];
+        if(this.imageView.history.length){
+            this.document.hiddenBlob = this.imageView.history[this.imageView.appliedIndex - 1];
         }
         await this.document.saveChanges();
     }
@@ -97,12 +97,8 @@ export class ImageEditor{
         return this.imageView.hasHistory;
     }
 
-    get hasFuture(){
-        return this.imageView.hasFuture;
-    }
-
     get canApply(){
-        return this.imageView.historyIndex > this.imageView.appliedIndex + 1 || this.imageView.pendingChanges;
+        return this.imageView.pendingChanges;
     }
 
     static async init(){
@@ -175,11 +171,12 @@ export class ImageEditor{
     async restoreOriginal(){
         this.imageView.resetHistory();
         await this.imageView.loadBlob(this.imageView.originalImage);
-        this.imageView.history.push(this.imageView.originalImage);
         this.document.hiddenBlob = this.imageView.originalImage;
+        this.tool.placeTools();
     }
 
     async undo(){
         await this.imageView.undo();
+        this.tool.placeTools();
     }
 }

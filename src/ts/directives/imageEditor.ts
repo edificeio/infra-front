@@ -96,12 +96,10 @@ export const imageEditor = ng.directive('imageEditor', () => {
 
             scope.hasHistory = () => imageEditor.hasHistory;
             scope.canApply = () => imageEditor.canApply;
-            scope.hasFuture = () => imageEditor.hasFuture;
             scope.undo = async () => {
                 await imageEditor.undo();
                 scope.$apply();
             }
-            scope.redo = () => imageEditor.imageView.redo();
             scope.cancel = async () => {
                 await imageEditor.cancel(true);
                 scope.$apply();

@@ -51,11 +51,7 @@ export class ImageView{
     }
 
     get hasHistory(): boolean{
-        return this.historyIndex > 0;
-    }
-
-    get hasFuture(): boolean{
-        return this.historyIndex < this.history.length - 1;
+        return this.appliedIndex > 1;
     }
 
     loadImage(image: HTMLImageElement, repaint = true): Promise<any>{
@@ -143,38 +139,31 @@ export class ImageView{
             setTimeout(async () => {
                 this.historyIndex --;
                 if(this.appliedIndex > this.historyIndex){
-                    this.appliedIndex = this.historyIndex - 1;
+                    this.appliedIndex = this.historyIndex;
                 }
                 
-                await this.loadBlob(this.history[this.historyIndex]);
+                await this.loadBlob(this.history[this.historyIndex - 1]);
                 $(this.renderer.view).css({ opacity: 1 });
                 resolve();
             }, 150);
         });
     }
 
-    async redo(){
-        this.historyIndex ++;
-        this.appliedIndex = this.historyIndex;
-        await this.loadBlob(this.history[this.historyIndex]);
-    }
-
     backup(repaint = true, updateHistory = true): Promise<any>{
         return new Promise((resolve, reject) => {
-            resolve();
-            console.log('start toBlob');
             this.renderer.view.toBlob((blob) => {
-                console.log('end toBlob')
                 this.render();
                 this.historyIndex ++;
                 this.history.splice(this.historyIndex);
                 this.history.push(blob);
+                if(this.historyIndex > this.history.length){
+                    this.historyIndex = this.history.length;
+                }
                 if(!this.originalImage){
                     this.originalImage = blob;
                 }
                 
                 this.loadBlob(blob, repaint).then(() => {
-                    console.log('resolving')
                     resolve();
                 });
             }, this.format);
