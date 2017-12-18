@@ -78,7 +78,10 @@ export class ImageEditor{
     }
 
     async applyChanges(options?){
-        await this.tool.apply(options);
+        if(this.tool){
+            await this.tool.apply(options);
+        }
+        
         this.imageView.appliedIndex = this.imageView.historyIndex - 1;
         this.imageView.pendingChanges = false;
     }
