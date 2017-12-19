@@ -123,6 +123,7 @@ const showImageContextualMenu = (refElement, scope, instance) => {
             scope.imageOption.display.file.metadata['content-type'] = 'image/' + scope.imageOption.display.file.metadata.extension;
         }
         scope.imageOption.display.editFile = true;
+        scope.$apply();
         scope.updateImage = () => {
             let src = image.attr('src');
             scope.imageOption.display.editFile = false;
