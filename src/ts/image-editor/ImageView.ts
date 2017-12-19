@@ -156,8 +156,8 @@ export class ImageView{
                 this.historyIndex ++;
                 this.history.splice(this.historyIndex);
                 this.history.push(blob);
-                if(this.historyIndex > this.history.length){
-                    this.historyIndex = this.history.length;
+                if(this.historyIndex > this.history.length - 1){
+                    this.historyIndex = this.history.length - 1;
                 }
                 if(!this.originalImage){
                     this.originalImage = blob;
