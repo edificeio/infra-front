@@ -234,6 +234,9 @@ export const image = {
             '</div>',
             link: function (scope, element, attributes) {
                 instance.editZone.on('click touchstart', 'img', (e) => {
+                    if(!e.target){
+                        return;
+                    }
                     if($(e.target).attr('src').startsWith('/assets')){
                         scope.imageOption.display.pickFile = true;
                         const sel = window.getSelection();
@@ -328,18 +331,26 @@ export const image = {
                 instance.on('model-updated', () => refreshResize(instance));
 
                 instance.editZone.on('drop', 'img', (e) => {
-                    console.log('found ?');
                     e.stopPropagation();
                     e.preventDefault();
-                })
+                    return false;
+                });
 
-                instance.editZone.on('drop', 'span.image-container', (e) => {
-                    console.log('found ?');
-                    e.stopPropagation();
-                    e.preventDefault();
-                })
+                instance.editZone.on('dragover drop', (e) => {
+                    if(document.caretPositionFromPoint){
+                        const rangeNode = document.caretPositionFromPoint(e.originalEvent.clientX, e.originalEvent.clientY).offsetNode;
+                        if(rangeNode.nodeType === 1 && rangeNode.tagName === 'SPAN'){
+                            console.log('preventing');
+                            instance.editZone.on('mouseup', () => console.log('mouseup'))
+                            e.preventDefault();
+                            return false;
+                        }
+                        instance.editZone.css({ 'pointer-events': 'all'})
+                    }
+                });
 
                 instance.editZone.on('drop', function (e) {
+                    console.log('drop image')
                     //delay to account for image destruction and recreation
                     setTimeout(function(){
                         instance.editZone.find('img').each((index, item) => {
