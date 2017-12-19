@@ -5,7 +5,7 @@ export let sniplet = ng.directive('sniplet', function(){
 	return {
 		restrict: 'E',
 		scope: true,
-		controller: function($scope, $timeout){
+		controller: ['$scope', '$timeout', function($scope, $timeout){
 			$timeout(function(){
 				Behaviours.loadBehaviours($scope.application, function(behaviours){
 					var snipletControllerExpansion = behaviours.sniplets[$scope.template].controller;
@@ -17,7 +17,7 @@ export let sniplet = ng.directive('sniplet', function(){
 					}
 				});
 			}, 1);
-		},
+		}],
 		template: "<div ng-include=\"'/' + application + '/public/template/behaviours/sniplet-' + template + '.html'\"></div>",
 		link: function(scope, element, attributes){
 			scope.application = attributes.application;
@@ -32,7 +32,7 @@ export let snipletSource = ng.directive('snipletSource', ['$parse', function($pa
 		restrict: 'E',
 		scope: true,
 		template: "<div ng-include=\"'/' + application + '/public/template/behaviours/sniplet-source-' + template + '.html'\"></div>",
-		controller: function($scope, $timeout){
+		controller: ['$scope', '$timeout', function($scope, $timeout){
 			$scope.setSnipletSource = function(source){
 				$scope.ngModel.assign($scope, source);
                 $scope.ngChange();
@@ -51,7 +51,7 @@ export let snipletSource = ng.directive('snipletSource', ['$parse', function($pa
 					}
 				});
 			}, 1);
-		},
+		}],
 		link: function(scope, element, attributes){
 			scope.application = attributes.application;
 			scope.template = attributes.template;
