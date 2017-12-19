@@ -921,7 +921,7 @@ module.directive('draggable', function(){
 	}
 });
 
-module.directive('sharePanel', function($compile){
+module.directive('sharePanel', function(){
 	return {
 		scope: {
 			resources: '=',
