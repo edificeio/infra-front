@@ -10,9 +10,24 @@ export let tooltip = ng.directive('tooltip', ['$compile', function($compile){
 			if($(window).width() < ui.breakpoints.tablette){
 				return;
 			}
+
+
+			var tooltipCheck = true;
+			//you can add a condition to display the tooltip
+			if(element[0].hasAttribute('tooltip-check')){
+				scope.$watch(() => scope.$eval(attributes.tooltipCheck), (newVal) => {
+					if(!newVal){
+						tooltipCheck = false;
+					}
+					else{
+						tooltipCheck = true
+					}
+				});
+			}
+
 			var tip;
 			element.on('mouseover', function(){
-				if(!attributes.tooltip || attributes.tooltip === 'undefined'){
+				if(!attributes.tooltip || !tooltipCheck || attributes.tooltip === 'undefined'){
 					return;
 				}
 				tip = $('<div />')
