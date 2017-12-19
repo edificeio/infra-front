@@ -268,17 +268,6 @@ export const image = {
                     instance.selection.range = newRange;
                     showImageContextualMenu(parentSpan, scope, instance);
                 });
-
-                instance.editZone.on('dragstart', 'img', (e) => {
-                    $('body').one('dragend.dragimage', () => {
-                        instance.editZone.off('drop.dragimage');
-                    });
-                    
-                    instance.editZone.one('drop.dragimage', () => {
-                        setTimeout(() => $(e.target).parent('span').remove(), 200);
-                    });
-                });
-
                 instance.on('contentupdated', () => {
                     ui.extendElement.resizable(instance.editZone.find('.image-container').not('.image-template .image-container'), {
                         moveWithResize: false,
@@ -336,16 +325,18 @@ export const image = {
                     return false;
                 });
 
+                let zombieImage;
+
                 instance.editZone.on('dragover drop', (e) => {
+                    zombieImage = undefined;
                     if(document.caretPositionFromPoint){
                         const rangeNode = document.caretPositionFromPoint(e.originalEvent.clientX, e.originalEvent.clientY).offsetNode;
                         if(rangeNode.nodeType === 1 && rangeNode.tagName === 'SPAN'){
-                            console.log('preventing');
-                            instance.editZone.on('mouseup', () => console.log('mouseup'))
-                            e.preventDefault();
-                            return false;
+                            if($(rangeNode).find('img').length){
+                                zombieImage = rangeNode.find('img')[0];
+                            }
+
                         }
-                        instance.editZone.css({ 'pointer-events': 'all'})
                     }
                 });
 
@@ -363,11 +354,30 @@ export const image = {
                                 }
                                 parentNode.insertBefore(parentSpan[0], item);
                                 parentSpan.append(item);
+                                
                             }
                         });
                         instance.addState(instance.editZone.html());
                         refreshResize(instance);
                     }, 100)
+                });
+
+                instance.editZone.on('dragstart', 'img', (e) => {
+                    $('body').one('dragend.dragimage', () => {
+                        instance.editZone.off('drop.dragimage');
+                    });
+                    
+                    instance.editZone.one('drop.dragimage', () => {
+                        setTimeout(() => {
+                            if(zombieImage && $('body').find(zombieImage).length === 0){
+                                console.log(zombieImage);
+                                console.log($('body').find(zombieImage).length)
+                                e.target.parentNode.insertBefore(zombieImage, e.target);
+                            }
+                        }, 250);
+                        
+                        setTimeout(() => $(e.target).parent('span').remove(), 200);
+                    });
                 });
             }
         }

@@ -49,7 +49,7 @@ export class Me{
                 this.eventer.once(app + '-loaded', () => resolve(this.preferences[app]));
             }
             else{
-                resolve(this.preferences[app])
+                resolve(this.preferences[app]);
             }
         });
     }
