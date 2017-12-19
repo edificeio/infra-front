@@ -8,6 +8,8 @@
                     'loading': doc.status === 'loading',
                     selected: doc === display.editedDocument
                 }"
+                tooltip-check="doc.isEditableImage && doc.status === 'loaded'"
+                tooltip="medialibrary.editImage.tooltip"
             >
                 <div class="icon">
                     <i class="[[doc.role()]]"></i>
