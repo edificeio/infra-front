@@ -31,7 +31,7 @@
 <div class="row reduce-block-four search-image">
 	<input type="search" ng-model="display.search" i18n-placeholder="search" ng-change="updateSearch()" class="six cell" />
 	<div class="cell six">
-		<button class="right-magnet" ng-disabled="display.loading || selectedDocuments().length === 0" ng-click="selectDocuments()">
+		<button type="button" class="right-magnet" ng-disabled="display.loading || selectedDocuments().length === 0" ng-click="selectDocuments()">
 			<i18n>library.browse.add</i18n>
 		</button>
 	</div>
