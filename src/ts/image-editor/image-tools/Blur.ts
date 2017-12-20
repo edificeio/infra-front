@@ -74,7 +74,7 @@ export class Blur implements Tool{
 
     stop(){
         this.editingElement.off('mousedown.blur touchstart.blur');
-        this.editingElement.find('canvas').css({ cursor: '' })
+        this.editingElement.find('.output').css({ cursor: '' })
     }
 
     start(imageView: ImageView, editingElement: any){
