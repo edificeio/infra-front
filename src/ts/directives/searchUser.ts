@@ -1,11 +1,12 @@
 import { ng } from '../ng-start';
+import { Me } from "../me";
 
 export let searchUser = ng.directive('searchUser', ['$timeout', ($timeout) => {
     return {
         restrict: 'E',
         template: `
         <form class="input-help" ng-submit="update(true)">
-            <label ng-class="{ hide: ngModel.length >= 3 }">
+            <label ng-class="{ hide: ngModel.length >= 3 }" user-role="ADMIN_LOCAL">
                 <i18n>share.search.help1</i18n>[[3 - ngModel.length]]<i18n>share.search.help2</i18n>
             </label>
             <input type="text" ng-model="ngModel" ng-change="update()" autocomplete="off" ng-class="{ move: ngModel.length > 0 }" />
@@ -37,9 +38,13 @@ export let searchUser = ng.directive('searchUser', ['$timeout', ($timeout) => {
             });
 
             scope.update = (force?: boolean) => {
+                if(!Me.session.functions.ADMIN_LOCAL){
+                    force = true;
+                }
                 $timeout(() => {
-                    if(scope.ngModel.length < 3){
+                    if((scope.ngModel.length < 3 && !force) || scope.ngModel.length < 1){
                         scope.clearList();
+                        return;
                     }
                     if(force || scope.ngModel.length >= 3){
                         scope.onSend();
