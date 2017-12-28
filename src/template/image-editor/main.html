@@ -1,13 +1,13 @@
 <div class="row">
-    <h2><i class="back" ng-if="inline" tooltip="back" ng-click="hide()"></i> <i18n>imageeditor.title</i18n></h2>
+    <h2 class="flex-row align-center"><i class="back" ng-if="inline" tooltip="back" ng-click="hide()"></i> <i18n>imageeditor.title</i18n></h2>
 </div>
 <section class="tabs">
-    <header 
+    <header
         ng-class="{ selected: template.contains('entcore/image-editor/tool', 'entcore/image-editor/rotate') }"
         ng-click="openTool('Rotate')">
         <i class="rotate"></i><i18n>rotate</i18n>
     </header>
-    <header 
+    <header
         ng-class="{ selected: template.contains('entcore/image-editor/tool', 'entcore/image-editor/crop') }"
         ng-click="openTool('Crop')">
         <i class="crop"></i><i18n>crop</i18n>
