@@ -36,7 +36,7 @@ export let tooltip = ng.directive('tooltip', ['$compile', function($compile){
 					.appendTo('body');
 				scope.$apply();
 
-				var top = parseInt(element.offset().top + element.height());
+				var top = parseInt(element.offset().top + element.outerHeight());				
 				var left = parseInt(element.offset().left + element.width() / 2 - tip.width() / 2);
 				if(top < 5){
 					top = 5;
