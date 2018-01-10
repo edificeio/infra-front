@@ -7,11 +7,6 @@ export let tooltip = ng.directive('tooltip', ['$compile', function($compile){
 	return {
 		restrict: 'A',
 		link: function(scope, element, attributes){
-			if($(window).width() < ui.breakpoints.tablette){
-				return;
-			}
-
-
 			var tooltipCheck = true;
 			//you can add a condition to display the tooltip
 			if(element[0].hasAttribute('tooltip-check')){
@@ -27,7 +22,7 @@ export let tooltip = ng.directive('tooltip', ['$compile', function($compile){
 
 			var tip;
 			element.on('mouseover', function(){
-				if(!attributes.tooltip || !tooltipCheck || attributes.tooltip === 'undefined'){
+				if($(window).width() < ui.breakpoints.tablette || !attributes.tooltip || !tooltipCheck || attributes.tooltip === 'undefined'){
 					return;
 				}
 				tip = $('<div />')
