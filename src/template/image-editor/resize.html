@@ -4,8 +4,8 @@
         <strong class="two cell"> x </strong>
         <input type="text" ng-model="document.height" complete-change="setHeight()" class="five cell" />
     </div>
-    <button ng-disabled="!canApply()" ng-click="apply()"><i18n>apply</i18n></button>
-    <button ng-disabled="!hasHistory()" ng-click="undo()" class="cancel"><i18n>cancel</i18n></button>
+    <button ng-disabled="!canApply()" ng-click="apply()" type="button"><i18n>apply</i18n></button>
+    <button ng-disabled="!hasHistory()" ng-click="undo()" class="cancel" type="button"><i18n>cancel</i18n></button>
 </div>
 
 <div class="overlay ten cell" drawing-zone>
