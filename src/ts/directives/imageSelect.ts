@@ -11,7 +11,7 @@ export let imageSelect = ng.directive('imageSelect', function(){
 			ngChange: '&',
 			default: '@'
 		},
-		template: '<div><img src="[[ngModel + \'?\' + getThumbnails()]]" class="pick-file" draggable="false" ng-if="ngModel" style="cursor: pointer" />' +
+		template: '<div><img ng-src="[[ngModel + \'?\' + getThumbnails()]]" class="pick-file" draggable="false" ng-if="ngModel" style="cursor: pointer" />' +
 			'<img skin-src="[[default]]" class="pick-file" draggable="false" ng-if="!ngModel" style="cursor: pointer" />' +
 			'<lightbox show="userSelecting" on-close="userSelecting = false;">' +
 			'<media-library ' +

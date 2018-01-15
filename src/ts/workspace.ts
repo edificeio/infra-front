@@ -247,7 +247,7 @@ export let workspace = {
 					this.load(documents);
 				}.bind(this));
 			}
-		});
+		}, 'documents');
 
 		this.closeFolder = function(){
 			this.folders.all = [];
@@ -278,7 +278,7 @@ export let workspace = {
 					this.load(documents);
 				}.bind(this))
 			}
-		});
+		}, 'documents');
 
 		this.on('folders.sync, documents.sync', function(){
 			this.trigger('sync');
@@ -293,7 +293,7 @@ export let workspace = {
 					}.bind(this));
 				}
 			}
-		});
+		}, 'documents');
 		this.on('documents.sync', function(){
 			this.trigger('sync');
 		}.bind(this));
@@ -307,7 +307,7 @@ export let workspace = {
 					}));
 				}.bind(this))
 			}
-		});
+		}, 'documents');
 		this.on('documents.sync', function(){
 			this.trigger('sync');
 		}.bind(this));
@@ -321,7 +321,7 @@ export let workspace = {
 					}));
 				}.bind(this))
 			}
-		});
+		}, 'documents');
 		this.on('documents.sync', function(){
 			this.trigger('sync');
 		}.bind(this));

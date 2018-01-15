@@ -417,10 +417,13 @@ Model.prototype.sync = function(){
 		}
 	};
 
-	Model.prototype.collection = function(obj, methods){
+	Model.prototype.collection = function(obj, methods, name?){
 		var col = new Collection(obj);
 		col.composer = this;
-		this[pluralizeName(obj)] = col;
+		if(!name){
+			name = pluralizeName(obj);
+		}
+		this[name] = col;
 
 		for(var method in methods){
 			if(method === 'sync' && typeof methods[method] === 'string'){
