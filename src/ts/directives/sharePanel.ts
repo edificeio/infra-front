@@ -141,6 +141,9 @@ export const sharePanel = ng.directive('sharePanel', ['$rootScope', ($rootScope)
                 }
                 feeding = true;
                 var initModel = true;
+                if(!$scope.resources.length){
+                    feeding = false;
+                }
                 $scope.resources.forEach(function(resource){
                     var id = resource._id;
                     http().get('/' + currentApp + '/share/json/' + id + '?search=').done(function(data){
