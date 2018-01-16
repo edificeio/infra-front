@@ -97,7 +97,7 @@ export const mediaLibrary = ng.directive('mediaLibrary', function(){
 
 			scope.display = {
 				search: '',
-				limit: 12
+				limit: 24
 			};
 
 			const previousImage = () => {
