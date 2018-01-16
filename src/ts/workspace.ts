@@ -343,6 +343,7 @@ export class Document implements Selectable, Shareable {
     protectedDuplicate(callback?: (document: Document) => void): Promise<Document> {
         return new Promise((resolve, reject) => {
             Behaviours.applicationsBehaviours.workspace.protectedDuplicate(this, function (data) {
+                MediaLibrary.appDocuments.sync();
                 resolve(Mix.castAs(Document, data));
             });
         });
@@ -351,6 +352,7 @@ export class Document implements Selectable, Shareable {
     publicDuplicate(callback?: (document: Document) => void) {
         return new Promise((resolve, reject) => {
             Behaviours.applicationsBehaviours.workspace.publicDuplicate(this, function (data) {
+                MediaLibrary.publicDocuments.sync();
                 resolve(Mix.castAs(Document, data));
             });
         });
