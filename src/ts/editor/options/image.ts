@@ -197,6 +197,10 @@ const showImageContextualMenu = (refElement, scope, instance) => {
     }
 
     setTimeout(() => {
+        scope.$on('$destroy', function () {
+            unbind();
+        });
+
         $(document).one('selectionchange', (e) => {
             setTimeout(() => {
                 if(imageMenu.find(e.target).length === 0){
