@@ -29,7 +29,7 @@ export class ImageEditor{
 
     async cancel(keepHistory = false){
         $(this.imageView.renderer.view).css({ opacity: 0 });
-        if(this.imageView.appliedIndex){
+        if(this.imageView.appliedIndex || this.imageView.pendingChanges){
             this.document.hiddenBlob = this.imageView.history[this.imageView.appliedIndex];
             await this.imageView.loadBlob(this.imageView.history[this.imageView.appliedIndex]);
         }

@@ -51,7 +51,7 @@ export class ImageView{
     }
 
     get hasHistory(): boolean{
-        return this.appliedIndex > 0;
+        return this.appliedIndex > 0 || this.pendingChanges;
     }
 
     loadImage(image: HTMLImageElement, repaint = true): Promise<any>{
