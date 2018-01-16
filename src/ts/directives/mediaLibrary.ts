@@ -129,10 +129,10 @@ export const mediaLibrary = ng.directive('mediaLibrary', function(){
 				scope.upload.loading = [];
 				setTimeout(() => {
 					scope.upload.highlights.forEach((doc: Document) => {
-						element.find('img').each((index, item) => {
-							if($(item).attr('src').indexOf(doc._id) !== -1){
+						element.find('explorer').each((index, item) => {
+							if($(item).attr('doc-id').indexOf(doc._id) !== -1){
 								let highlight = $('<div class="highlight"></div>');
-								const explorer = $(item).parents('.explorer');
+								const explorer = $(item).children('.explorer');
 								explorer.append(highlight);
 								explorer.scope().ngModel = true;
 								explorer.scope().$apply();

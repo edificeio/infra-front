@@ -78,7 +78,7 @@
 				
 			</div>
 			<div class="element reduce-block-six" ng-repeat="document in documents | orderBy:'created':true | limitTo:display.limit - folders.length">
-				<explorer ng-model="document.selected" ng-click="updateSelection(document)" on-open="selectDocument(document)">
+				<explorer ng-model="document.selected" ng-click="updateSelection(document)" on-open="selectDocument(document)" doc-id="[[document._id]]">
 					<div class="img container" ng-if="document.role() === 'img'">
 						<div class="clip">
 							<img ng-src="/workspace/document/[[document._id]]?thumbnail=120x120" />
