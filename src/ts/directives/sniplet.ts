@@ -20,8 +20,12 @@ export let sniplet = ng.directive('sniplet', function(){
 		}],
 		template: "<div ng-include=\"'/' + application + '/public/template/behaviours/sniplet-' + template + '.html'\"></div>",
 		link: function(scope, element, attributes){
-			scope.application = attributes.application;
-			scope.template = attributes.template;
+			attributes.$observe('application', () => {
+				scope.application = attributes.application;
+			});
+			attributes.$observe('template', () => {
+				scope.template = attributes.template;
+			});
 			scope.source = scope.$eval(attributes.source);
 		}
 	}
@@ -53,7 +57,13 @@ export let snipletSource = ng.directive('snipletSource', ['$parse', function($pa
 			}, 1);
 		}],
 		link: function(scope, element, attributes){
-			scope.application = attributes.application;
+			attributes.$observe('application', () => {
+				scope.application = attributes.application;
+			});
+			attributes.$observe('template', () => {
+				scope.template = attributes.template;
+			});
+
 			scope.template = attributes.template;
 			scope.ngModel = $parse(attributes.ngModel);
 			scope.ngChange = function(){
