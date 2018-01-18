@@ -12,7 +12,7 @@ export let calendarComponent = ng.directive('calendar', function () {
         restrict: 'E',
         scope: true,
         templateUrl: '/' + appPrefix + '/public/template/entcore/calendar.html',
-        controller: function ($scope, $timeout) {
+        controller: ['$scope', '$timeout', function ($scope, $timeout) {
             var refreshCalendar = function () {
                 model.calendar.clearScheduleItems();
                 $scope.items = _.where(_.map($scope.items, function (item) {
@@ -88,7 +88,7 @@ export let calendarComponent = ng.directive('calendar', function () {
                 $scope.$watchCollection('items', refreshCalendar);
             }, 0);
             $scope.refreshCalendar = refreshCalendar;
-        },
+        }],
         link: function (scope, element, attributes) {
             var allowCreate;
             scope.display = {};
@@ -132,9 +132,9 @@ export let scheduleItem = ng.directive('scheduleItem', function () {
         template: '<div class="schedule-item" resizable horizontal-resize-lock draggable>' +
         '<container template="schedule-display-template" class="absolute"></container>' +
         '</div>',
-        controller: function ($scope) {
+        controller: ['$scope', function ($scope) {
 
-        },
+        }],
         link: function (scope, element, attributes) {
             var parentSchedule = element.parents('.schedule');
             var scheduleItemEl = element.children('.schedule-item');
