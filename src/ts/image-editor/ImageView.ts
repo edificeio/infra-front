@@ -51,7 +51,7 @@ export class ImageView{
     }
 
     get hasHistory(): boolean{
-        return this.appliedIndex > 0 || this.pendingChanges;
+        return this.appliedIndex > 0 || (this.pendingChanges && this.historyIndex > 0);
     }
 
     loadImage(image: HTMLImageElement, repaint = true): Promise<any>{
@@ -154,6 +154,7 @@ export class ImageView{
             this.renderer.view.toBlob((blob) => {
                 this.render();
                 this.historyIndex ++;
+                angular.element(this.editingElement).scope().$apply();
                 this.history.splice(this.historyIndex);
                 this.history.push(blob);
                 if(this.historyIndex > this.history.length - 1){
