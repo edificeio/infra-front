@@ -63,7 +63,7 @@ export class ImageEditor{
             this.renderer.destroy();
         }
         
-        if(name === 'Resize'){
+        if(name !== 'Blur'){
             this.drawCanvas();
         }
         else{
