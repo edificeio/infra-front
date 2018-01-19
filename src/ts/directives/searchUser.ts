@@ -7,7 +7,7 @@ export let searchUser = ng.directive('searchUser', ['$timeout', ($timeout) => {
         template: `
         <form class="input-help" ng-submit="update(true)">
             <label ng-class="{ hide: ngModel.length >= 3 }" user-role="ADMIN_LOCAL">
-                <i18n>share.search.help1</i18n>[[3 - ngModel.length]]<i18n>share.search.help2</i18n>
+                <i18n>share.search.help</i18n>
             </label>
             <input type="text" ng-model="ngModel" ng-change="update()" autocomplete="off" ng-class="{ move: ngModel.length > 0 }" />
         </form>
