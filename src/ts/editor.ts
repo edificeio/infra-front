@@ -17,12 +17,6 @@ import { onDropFromDesktop } from './editor/onDropFromDesktop';
 
 declare let Prism: any;
 
-function rgb(r, g, b) {
-    return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
-}
-var rgba = rgb;
-var transparent = 'rgba(255, 255, 255, 0)';
-
 export let RTE = {
     baseToolbarConf: {} as any,
     Instance: function(data){
@@ -653,25 +647,28 @@ export let RTE = {
                         }
 
                         if (element.find(e.target).length === 0 && !$(e.target).hasClass('sp-choose') && element.hasClass('focus') && !$(e.target).parents('.image-contextual-menu').length) {
-                            element.children('editor-toolbar').removeClass('show');
-                            element.removeClass('focus');
-                            let content = editZone.html();
-                            ngModel.assign(scope, content);
-                            element.trigger('editor-blur');
-                            editorInstance.trigger('change');
-                            editorInstance.trigger('blur');
-                            $('body').css({ overflow: 'auto' });
-                            element.parent().data('lock', false);
-                            element.parents('grid-cell').data('lock', false);
-                            element.find('code').attr('style', '');
+                            setTimeout(() => {
+                                element.children('editor-toolbar').removeClass('show');
+                                element.removeClass('focus');
+                                let content = editZone.html();
+                                ngModel.assign(scope, content);
+                                element.trigger('editor-blur');
+                                editorInstance.trigger('change');
+                                editorInstance.trigger('blur');
+                                $('body').css({ overflow: 'auto' });
+                                element.parent().data('lock', false);
+                                element.parents('grid-cell').data('lock', false);
+                                element.find('code').attr('style', '');
 
-                            if(attributes.inline !== undefined){
-                                element.css({
-                                    'margin-top': 0,
-                                    'padding-top': 0
-                                });
-                                element.children('editor-toolbar').attr('style', '');
-                            }
+                                if(attributes.inline !== undefined){
+                                    element.css({
+                                        'margin-top': 0,
+                                        'padding-top': 0
+                                    });
+                                    element.children('editor-toolbar').attr('style', '');
+                                }
+                            }, 200);
+                            
                         }
                     });
 

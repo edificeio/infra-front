@@ -1,6 +1,12 @@
 import { $ } from '../../libs/jquery/jquery';
 import { http } from "../../http";
 
+function rgb(r, g, b) {
+    return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+}
+var rgba = rgb;
+var transparent = 'rgba(255, 255, 255, 0)';
+
 function setSpectrum(el){
     if($('.sp-replacer').length === 0){
         return;
