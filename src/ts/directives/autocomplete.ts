@@ -94,6 +94,12 @@ export let autocomplete = ng.directive('autocomplete', ['$timeout', function ($t
                 cancelAnimationFrame(token);
                 dropDownContainer.remove();
             });
+
+            scope.$on("$destroy", function() {
+                cancelAnimationFrame(token);
+                dropDownContainer.remove();
+            });
+
             element.find('input').on('blur', function () {
                 cancelAnimationFrame(token);
                 setTimeout(function () {
