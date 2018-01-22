@@ -1887,11 +1887,11 @@ module.directive('whereami', function () {
 		scope: false,
 		link: function (scope, element, attributes) {
 			element.addClass('whereami');
-			var current = $('nav.side-nav a.selected').text();
+			var current = $('nav.side-nav a.selected').html();
 			$('body').on('whereami.update', function(){
-				element.text($('nav.side-nav a.selected').text());
+				element.html($('nav.side-nav a.selected').html());
 			})
-			element.text(current);
+			element.html(current);			
 		}
 	}
 });
