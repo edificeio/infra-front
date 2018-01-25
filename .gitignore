@@ -3,4 +3,7 @@ node_modules/
 **/.DS_Store
 **/*.js
 !gulpfile.js
+!webpack-dev.config.js
+!webpack.config.js
 **/*.js.map
+**/*.d.ts

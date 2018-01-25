@@ -7,7 +7,7 @@ import { model } from '../modelDefinitions';
 import { idiom } from '../idiom';
 import http from 'axios';
 
-export const mediaLibrary = ng.directive('mediaLibrary', function(){
+export const mediaLibrary = ng.directive('mediaLibrary', ['$timeout', function($timeout){
 	return {
 		restrict: 'E',
 		scope: {
@@ -81,9 +81,6 @@ export const mediaLibrary = ng.directive('mediaLibrary', function(){
 			});
 
 			scope.$watch('ngModel', function(newVal){
-				if((newVal && newVal._id) || (newVal && scope.multiple && newVal.length)){
-					scope.ngChange();
-				}
 				scope.upload.documents = [];
 			});
 
@@ -280,7 +277,9 @@ export const mediaLibrary = ng.directive('mediaLibrary', function(){
 					else{
 						scope.ngModel = duplicateDocuments[0];
 					}
-					scope.$apply();
+				}
+				if((scope.ngModel && scope.ngModel._id) || (scope.ngModel && scope.multiple && scope.ngModel.length)){
+					$timeout(() => scope.ngChange());
 				}
 			};
 
@@ -363,4 +362,4 @@ export const mediaLibrary = ng.directive('mediaLibrary', function(){
 			});
 		}
 	}
-});
+}]);

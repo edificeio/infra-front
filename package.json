@@ -1,6 +1,10 @@
 {
   "name": "entcore",
+<<<<<<< HEAD
   "version": "2.1.0-dev.121",
+=======
+  "version": "2.1.0-dev.122",
+>>>>>>> fixed sniplets pages switch
   "description": "",
   "main": "gulpfile.js",
   "dependencies": {
