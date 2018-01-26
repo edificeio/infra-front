@@ -16,6 +16,7 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 import { skin } from './skin';
+import { devices } from './globals';
 
 var $ = require('jquery');
 let cancelDefault = false;
@@ -614,7 +615,10 @@ export let ui = {
                     $('.main').css({
                         'cursor': element.css('cursor')
                     });
-                    $('body').css({ overflow: 'hidden' });
+                    if(devices.isiOS()){
+                        $('body').css({ overflow: 'hidden' });
+                    }
+                    
                     element.css({ 'transition': 'none' });
 
                     $(window).unbind('mousemove.drag touchmove.start');
@@ -961,9 +965,11 @@ export let ui = {
                             $('body').css({
                                 '-webkit-user-select': 'none',
                                 '-moz-user-select': 'none',
-                                'user-select': 'none',
-                                'overflow': 'hidden'
+                                'user-select': 'none'
                             });
+                            if(devices.isiOS()){
+                                $('body').css({ overflow: 'hidden' });
+                            }
                             if (element.css('position') === 'relative') {
                                 element.css({ top: element.position().top, left: element.position().left });
                             }

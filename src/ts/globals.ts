@@ -42,7 +42,8 @@ export let infraPrefix: string = (window as any).infraPrefix;
 export let currentLanguage = '';
 
 export const devices = {
-    isIE: () => navigator.userAgent.indexOf('Trident') !== -1
+    isIE: () => navigator.userAgent.indexOf('Trident') !== -1,
+    isiOS: () => /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream
 };
 
 const defaultLanguage = () => {
