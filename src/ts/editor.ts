@@ -617,12 +617,10 @@ export let RTE = {
 
                     element.parents().on('resizing', placeToolbar)
                     element.on('click', function(e){
-                        placeToolbar();
-
                         if(e.target === element.find('.close-focus')[0] || element.hasClass('focus')){
                             return;
                         }
-
+                        placeToolbar();
                         element.trigger('editor-focus');
                         element.addClass('focus');
                         element.parent().data('lock', true);
