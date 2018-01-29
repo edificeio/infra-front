@@ -162,16 +162,19 @@ const showImageContextualMenu = (refElement, scope, instance) => {
         image.attr('src', image.attr('src').split('?')[0] + '?thumbnail=120x120&v=' + Math.floor(Math.random() * 100));
         image.parent('.image-container').css({ width: '120px', height: '120px'});
         refreshPositon('small');
+        instance.trigger('change');
     })
     .on('click', 'i.medium', () => {
         refElement.find('img').attr('src', refElement.find('img').attr('src').split('?')[0] + '?thumbnail=290x290&v=' + Math.floor(Math.random() * 100));
         image.parent('.image-container').css({ width: '290px', height: '290px'});
         refreshPositon('medium');
+        instance.trigger('change');
     })
     .on('click', 'i.large', () => {
         refElement.find('img').attr('src', refElement.find('img').attr('src').split('?')[0] + '?thumbnail=2600x0&v=' + Math.floor(Math.random() * 100));
         image.parent('.image-container').css({ width: 'auto', height: 'auto'});
         refreshPositon('large');
+        instance.trigger('change');
     })
     .on('click', '.open-media-library', () => {
         scope.imageOption.display.pickFile = true;
