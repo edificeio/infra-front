@@ -9,6 +9,9 @@ export let searchUser = ng.directive('searchUser', ['$timeout', ($timeout) => {
             <label ng-class="{ hide: ngModel.length >= 3 }" user-role="ADMIN_LOCAL">
                 <i18n>share.search.help</i18n>
             </label>
+            <label user-missing-role="ADMIN_LOCAL">
+                <i18n>share.search.placeholder</i18n>
+            </label>
             <input type="text" ng-model="ngModel" ng-change="update()" autocomplete="off" ng-class="{ move: ngModel.length > 0 }" />
         </form>
         `,

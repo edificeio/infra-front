@@ -30,6 +30,7 @@ export * from './sniplet';
 export * from './sortableList';
 export * from './stickyRow';
 export * from './tooltip';
+export * from './userRole';
 export * from './widgets';
 export * from './wizard';
 export * from './workflow';

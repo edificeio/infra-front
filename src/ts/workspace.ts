@@ -22,7 +22,7 @@ if(document.cookie){
     xsrfCookie = _.findWhere(cookies, { name: 'XSRF-TOKEN' });
 }
 
-class Quota {
+export class Quota {
     max: number;
     used: number;
     unit: string;
@@ -471,7 +471,7 @@ export class MyDocuments extends Folder{
     }
 }
 
-class SharedDocuments extends Folder{
+export class SharedDocuments extends Folder{
     async sync(){
         const docResponse = await http.get('/workspace/documents?filter=shared');
         this.documents.all.splice(0, this.documents.all.length);
@@ -480,7 +480,7 @@ class SharedDocuments extends Folder{
     }
 }
 
-class AppDocuments extends Folder{
+export class AppDocuments extends Folder{
     async sync(){
         const docResponse = await http.get('/workspace/documents?filter=protected');
         this.documents.all.splice(0, this.documents.all.length);
@@ -489,7 +489,7 @@ class AppDocuments extends Folder{
     }
 }
 
-class PublicDocuments extends Folder{
+export class PublicDocuments extends Folder{
     async sync(){
         const docResponse = await http.get('/workspace/documents?filter=public');
         this.documents.all.splice(0, this.documents.all.length);
