@@ -277,6 +277,7 @@ export const mediaLibrary = ng.directive('mediaLibrary', ['$timeout', function($
 					else{
 						scope.ngModel = duplicateDocuments[0];
 					}
+					scope.$apply();
 				}
 				if((scope.ngModel && scope.ngModel._id) || (scope.ngModel && scope.multiple && scope.ngModel.length)){
 					$timeout(() => scope.ngChange());
