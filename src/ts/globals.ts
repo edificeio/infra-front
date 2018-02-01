@@ -135,6 +135,11 @@ export let cleanJSON = (obj) => {
         dup = obj.toJSON();
         return dup;
     }
+
+    if (typeof obj === 'string') {
+        return obj;
+    }
+
     for (let prop in obj) {
         if (typeof obj[prop] === 'object' && !(obj[prop] instanceof Array)) {
             dup[prop] = cleanJSON(obj[prop])
