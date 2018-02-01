@@ -250,3 +250,4 @@ if(!(window as any).entcore){
 	(window as any).entcore = {};
 }
 (window as any).entcore.idiom = idiom;
+(window as any).lang = idiom;
