@@ -110,6 +110,9 @@ export let lightbox = ng.directive('lightbox', () => {
 			});
 
             scope.$on("$destroy", function () {
+				if(element.parents('lightbox').length){
+					return;
+				}
                 $('body').removeClass('lightbox-opened');
 			    $('body').css({ overflow: 'auto' });
 
