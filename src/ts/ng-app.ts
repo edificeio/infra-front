@@ -635,8 +635,8 @@ module.directive('dropDownButton', function(){
 	return {
 		restrict: 'E',
 		transclude: 'true',
-		controller: function($scope){
-		},
+		controller: ['$scope', function($scope){
+		}],
 		template: '<div class="drop-down-button hidden"><div ng-transclude></div></div>',
 		link: function(scope, element, attributes){
 			element.on('click', '.opener', function(){
