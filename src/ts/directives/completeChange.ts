@@ -10,6 +10,9 @@ export const completeChange = ng.directive('completeChange', function() {
 		},
 		link: function(scope, element, attributes) {
 			scope.$watch('field', function(newVal) {
+				if(element.is(':focus')){
+					return;
+				}
 				element.val(newVal);
 				if(element[0].type === 'textarea' && element.hasClass('inline-editing')){
 					setTimeout(function(){
@@ -23,7 +26,7 @@ export const completeChange = ng.directive('completeChange', function() {
             let event = "change";
             if(devices.isIE){
                 event = "blur";
-            }
+			}
 
 			element.on(event, function() {
 				scope.field = element.val();
