@@ -99,16 +99,6 @@ export let imageSelect = ng.directive('imageSelect', function(){
 			});
 
 			scope.updateDocument = () => {
-<<<<<<< HEAD
-				scope.userSelecting = false;
-				var path = '/workspace/document/';
-				if(scope.selectedFile.visibility === 'public'){
-					path = '/workspace/pub/document/'
-				}
-				scope.ngModel = path + scope.selectedFile.file._id;
-				scope.$apply();
-				scope.ngChange();
-=======
 				setTimeout(() => {
 					scope.userSelecting = false;
 					var path = '/workspace/document/';
@@ -119,7 +109,6 @@ export let imageSelect = ng.directive('imageSelect', function(){
 					scope.$apply();
 					scope.ngChange();
 				}, 10);
->>>>>>> show resize ratio
 			};
 			element.on('click', '.pick-file', () => {
 				scope.userSelecting = true;
