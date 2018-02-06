@@ -24,7 +24,7 @@ import { ui } from './ui';
 import { Behaviours } from './behaviours';
 import { currentLanguage, routes, appPrefix, infraPrefix } from './globals';
 import { template } from './template';
-import { moment } from './libs/moment/moment';
+import { moment, frLocales } from './libs/moment/moment';
 import { _ } from './libs/underscore/underscore';
 import { angular } from './libs/angular/angular';
 import { notify, skin, RTE } from './entcore';
@@ -2076,16 +2076,7 @@ $(document).ready(function(){
 					lang.addBundle('/' + appPrefix + '/i18n', function(){
 						 if (currentLanguage === 'fr') {
 							moment.locale(currentLanguage);
-							moment.updateLocale(currentLanguage, {
-								calendar: {
-									lastDay: '[Hier à] HH[h]mm',
-									sameDay: '[Aujourd\'hui à] HH[h]mm',
-									nextDay: '[Demain à] HH[h]mm',
-									lastWeek: 'dddd [dernier à] HH[h]mm',
-									nextWeek: 'dddd [prochain à] HH[h]mm',
-									sameElse: 'dddd LL'
-								}
-							});
+							moment.updateLocale(currentLanguage, frLocales);
 						}
 						else {
 							moment.locale(currentLanguage);
