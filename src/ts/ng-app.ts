@@ -838,13 +838,15 @@ module.directive('progressBar', function(){
 			unit: '@'
 		},
 		template: '<div class="progress-bar">' +
-			'<div class="filled">[[filled]] <span translate content="[[unit]]"></span></div>[[max]] <span translate content="[[unit]]"></span>' +
+			'<div class="filled" ng-style="{width: filledPercent + \'%\'}">[[filled]] <span translate content="[[unit]]"></span></div>[[max]] <span translate content="[[unit]]"></span>' +
 			'</div>',
 		link: function(scope, element, attributes){
+			scope.filledPercent = 0;
+
 			function updateBar(){
-				var filledPercent = scope.filled * 100 / scope.max;
-				element.find('.filled').width(filledPercent + '%');
-				if(filledPercent < 10){
+				scope.filledPercent = scope.filled * 100 / scope.max;
+
+				if(scope.filledPercent < 10){
 					element.find('.filled').addClass('small');
 				}
 				else{
