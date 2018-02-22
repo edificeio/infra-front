@@ -270,7 +270,7 @@ export const mediaLibrary = ng.directive('mediaLibrary', ['$timeout', function($
 						duplicateDocuments.push(newFile);
 					}
 
-					scope.display.loading = [];
+					scope.display.loading = undefined;
 					if(scope.multiple){
 						scope.ngModel = duplicateDocuments;
 					}
