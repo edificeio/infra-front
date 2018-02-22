@@ -64,13 +64,13 @@ export const color = {
                 });
 
                 scope.$watch('foreColor', function(){
-                    if(scope.foreColor !== eval(instance.selection.css('color')) && !(instance.selection.isEmpty() && scope.foreColor === '#000000')) {
+                    if(scope.foreColor !== eval(document.queryCommandValue('foreColor')) && !(instance.selection.isEmpty() && scope.foreColor === '#000000')) {
                         instance.selection.css({ 'color': scope.foreColor });
                     }
                 });
 
                 instance.on('selectionchange', function(e){
-                    scope.foreColor = eval(instance.selection.css('color'));
+                    scope.foreColor = eval(document.queryCommandValue('foreColor'));
                     element.children('input').val(scope.foreColor);
                 });
             }
