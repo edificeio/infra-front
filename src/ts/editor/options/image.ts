@@ -127,18 +127,17 @@ const showImageContextualMenu = (refElement, scope, instance) => {
         scope.updateImage = () => {
             let src = image.attr('src');
             scope.imageOption.display.editFile = false;
+            let v = Math.random() * 10;
             if(src.indexOf('?') !== -1){
                 if(src.indexOf('v=') !== -1){
-                    let v = parseInt(src.split('v=')[1].split('&')[0]);
-                    v++;
                     src = src.replace(/(v=).*?(&|$)/,'$1' + v + '$2');
                 }
                 else{
-                    src += '&v=1';
+                    src += '&v=' + v;
                 }
             }
             else{
-                src += '?v=1';
+                src += '?v=' + v;
             }
             image.on('load', () => {
                 refElement.width(image.width());
