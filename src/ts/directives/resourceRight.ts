@@ -19,6 +19,7 @@ export let resourceRight = ng.directive('resourceRight', ['$parse', ($parse) => 
 
                 var switchHide = function () {
                     let hide = true;
+                    
                     if (resource(scope) !== undefined) {
                         hide = attributes.name && 
                         (
@@ -39,7 +40,7 @@ export let resourceRight = ng.directive('resourceRight', ['$parse', ($parse) => 
                                     !resource(scope).myRights || resource(scope).myRights[attributes.name] === undefined
                                 )
                             )
-                            || 
+                                || 
                             (
                                 resource(scope).myRights !== undefined && resource(scope).myRights[attributes.name] === undefined
                             )
@@ -56,6 +57,7 @@ export let resourceRight = ng.directive('resourceRight', ['$parse', ($parse) => 
 
                 attributes.$observe('name', () => switchHide());
                 scope.$watch(() => resource(scope), () => switchHide());
+                scope.$watch(() => resource(scope) && resource(scope).myRights, () => switchHide());
             }
         }
     }
