@@ -274,7 +274,8 @@ export const sharePanel = ng.directive('sharePanel', ['$rootScope', ($rootScope)
                     _.filter($scope.sharingModel.users.visibles, function(user){
                         var testName = idiom.removeAccents(user.lastName + ' ' + user.firstName).toLowerCase();
                         var testNameReversed = idiom.removeAccents(user.firstName + ' ' + user.lastName).toLowerCase();
-                        return (testName.indexOf(searchTerm) !== -1 || testNameReversed.indexOf(searchTerm) !== -1) && $scope.sharingModel.edited.find(i => i.id === user.id) === undefined;
+                        var testUsername = idiom.removeAccents(user.username).toLowerCase();
+                        return (testName.indexOf(searchTerm) !== -1 || testNameReversed.indexOf(searchTerm) !== -1) || testUsername.indexOf(searchTerm) !== -1 && $scope.sharingModel.edited.find(i => i.id === user.id) === undefined;
                     })
                 );
                 $scope.found = _.filter($scope.found, function(element){
