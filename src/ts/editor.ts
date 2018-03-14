@@ -573,7 +573,7 @@ export let RTE = {
                             $(item).attr('src', 'http://loading');
                             const doc = new Document();
                             const file = await doc.upload(blob)
-                            $(item).attr('src', '/workspace/document/' + file._id);
+                            $(item).attr('src', '/workspace/document/' + doc._id);
                             notify.info('editor.b64.uploaded');
                             editorInstance.trigger('contentupdated');
                         };
