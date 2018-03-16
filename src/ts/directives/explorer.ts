@@ -28,7 +28,7 @@ export let explorer = ng.directive('explorer', () => {
                 scope.$apply();
             }
 
-            $('body').on('click', function (e) {
+            $('body').on('click.explorer', function (e) {
                 if ($(e.target).parents('explorer, .toggle, .lightbox').length === 0
                     && e.target.nodeName !== "EXPLORER"
                     && ($(e.target).parents('body').length || e.target.nodeName === 'BODY')
@@ -90,6 +90,10 @@ export let explorer = ng.directive('explorer', () => {
                 } else {
                     element.removeClass('selected')
                 }
+            });
+
+            scope.$on('$destroy', function () {
+                $('body').off('click.explorer');
             });
         }
     }

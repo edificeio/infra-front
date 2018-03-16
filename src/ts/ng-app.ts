@@ -226,12 +226,14 @@ module.directive('soundSelect', function(){
         template: '<div><audio ng-src="[[ngModel]]" controls ng-if="ngModel" style="cursor: pointer"></audio>' +
             '<button ng-click="display.userSelecting = true"><i18n>audio.pick</i18n></button>' +
 			'<lightbox show="display.userSelecting" on-close="userSelecting = false;">' +
+			'<div ng-if="display.userSelecting">' +
 			'<media-library ' +
 				'visibility="selectedFile.visibility"' +
 				'ng-change="updateDocument()" ' +
 				'ng-model="selectedFile.file" ' +
 				'file-format="\'audio\'">' +
 			'</media-library>' +
+			'</div>' +
 			'</lightbox>' +
 			'</div>',
         link: function (scope, element, attributes) {
@@ -279,7 +281,9 @@ module.directive('mediaSelect', function(){
 		},
 		template: '<div><input type="button" class="pick-file [[class]]" tooltip="[[mytooltip]]" />' +
 					'<lightbox show="userSelecting" on-close="userSelecting = false;">' +
-						'<media-library ng-change="updateDocument()" ng-model="selectedFile.file" multiple="multiple" file-format="fileFormat" visibility="selectedFile.visibility"></media-library>' +
+						'<div ng-if="userSelecting">' +
+							'<media-library ng-change="updateDocument()" ng-model="selectedFile.file" multiple="multiple" file-format="fileFormat" visibility="selectedFile.visibility"></media-library>' +
+						'</div>' +
 					'</lightbox>' +
 				'</div>',
 		compile: function(element, attributes){
