@@ -83,7 +83,7 @@ export let dragItem = ng.directive('dragItem', function(){
                     matchedElement = item;
                 },
                 dragOut: function(item){
-                    if(item[0] === matchedElement){
+                    if(matchedElement && item === matchedElement){
                         matchedElement = undefined;
                     }
                     item.removeClass('dragover');
