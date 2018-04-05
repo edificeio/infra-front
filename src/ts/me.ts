@@ -63,7 +63,7 @@ if(!(window as any).entcore){
 if(!(XMLHttpRequest.prototype as any).baseSend){
     (XMLHttpRequest.prototype as any).baseSend = XMLHttpRequest.prototype.send;
     XMLHttpRequest.prototype.send = function(data){
-        if(document.cookie.indexOf('authenticated=true') === -1 && window.location.href.indexOf('/auth') === -1){
+        if(document.cookie.indexOf('authenticated=true') === -1 && window.location.href.indexOf('/auth') === -1 && !window.notLoggedIn){
             const lightbox = $(`<lightbox>
                     <section class="lightbox">
                         <div class="content">
