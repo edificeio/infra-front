@@ -528,6 +528,26 @@ module.directive('skinSrc', function(){
 	}
 });
 
+module.directive('defaultSrc', function(){
+	return {
+		restrict: 'A',
+		scope: '&',
+		link: function($scope, $element, $attributes){
+			$element.bind('error', function(){
+				if($attributes.defaultSrc != undefined){
+					if($attributes.defaultSrc.indexOf('http://') === -1 && $attributes.defaultSrc.indexOf('https://') === -1 && $attributes.defaultSrc.indexOf('/workspace/') === -1){
+						$element.attr('src', skin.basePath + $attributes.defaultSrc);
+					}
+					else{
+						$element.attr('src', $attributes.defaultSrc);
+					}
+					$attributes.defaultSrc = undefined;
+				}
+			})
+		}
+	}
+});
+
 module.directive('localizedClass', function(){
 	return {
 		restrict: 'A',
