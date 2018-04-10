@@ -1016,10 +1016,10 @@ module.directive('filters', function(){
 	}
 });
 
-module.directive('alphabetical', ['$compile', '$parse', function($compile, $parse){
+module.directive('alphabetical', ['$parse', function($parse){
 	return {
 		restrict: 'E',
-		controller: function($scope){
+		controller: ['$scope', function($scope){
 			$scope.letters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '#'];
 			$scope.matchingElements = {};
 			$scope.matching = function(letter){
@@ -1040,7 +1040,7 @@ module.directive('alphabetical', ['$compile', '$parse', function($compile, $pars
 				$scope.display = {};
 			}
 			$scope.display.pickLetter;
-		},
+		}],
 		compile: function(element, attributes){
 			var iterator = attributes.list;
 			var iteratorContent = element.html();
