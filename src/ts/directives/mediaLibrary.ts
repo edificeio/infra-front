@@ -328,7 +328,13 @@ export const mediaLibrary = ng.directive('mediaLibrary', ['$timeout', function($
 					scope.upload.highlights.push(doc);
 				});
 				scope.upload.documents = [];
-				await scope.listFrom('appDocuments');
+				if (scope.visibility == 'public'){
+					await scope.listFrom('publicDocuments');
+					MediaLibrary['publicDocuments'].documents
+						.all[MediaLibrary['publicDocuments'].documents.all.length - 1].selected = true;
+				}
+				else
+					await scope.listFrom('appDocuments');
 				scope.show('browse');
 				scope.$apply();
 			}
