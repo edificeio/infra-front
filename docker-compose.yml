@@ -1,0 +1,15 @@
+gradle:
+  image: gradle:4.5-alpine
+  working_dir: /home/gradle/project
+  volumes:
+    - ./:/home/gradle/project
+    - ~/.m2:/home/gradle/.m2
+    - ~/.gradle:/home/gradle/.gradle
+
+node:
+  image: opendigitaleducation/node
+  working_dir: /home/node/app
+  volumes:
+    - ./:/home/node/app
+    - ~/.npm:/.npm
+    - ../recette:/home/node/recette # TODO : rendre générique pour appliquer à tous les springboards
