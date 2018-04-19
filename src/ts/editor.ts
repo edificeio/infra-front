@@ -645,14 +645,15 @@ export let RTE = {
                         }
 
                         if (element.find(e.target).length === 0 && !$(e.target).hasClass('sp-choose') && element.hasClass('focus') && !$(e.target).parents('.image-contextual-menu').length) {
+                            element.children('editor-toolbar').removeClass('show');
+                            element.removeClass('focus');
+                            let content = editZone.html();
+                            ngModel.assign(scope, content);
+                            element.trigger('editor-blur');
+                            editorInstance.trigger('change');
+                            editorInstance.trigger('blur');
+                            
                             setTimeout(() => {
-                                element.children('editor-toolbar').removeClass('show');
-                                element.removeClass('focus');
-                                let content = editZone.html();
-                                ngModel.assign(scope, content);
-                                element.trigger('editor-blur');
-                                editorInstance.trigger('change');
-                                editorInstance.trigger('blur');
                                 $('body').css({ overflow: 'auto' });
                                 element.parent().data('lock', false);
                                 element.parents('grid-cell').data('lock', false);
@@ -666,7 +667,6 @@ export let RTE = {
                                     element.children('editor-toolbar').attr('style', '');
                                 }
                             }, 200);
-                            
                         }
                     });
 
