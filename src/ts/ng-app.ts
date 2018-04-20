@@ -1451,11 +1451,14 @@ module.directive('help', function(){
 				});
 				helpContent.find('script').remove();
 				element.find('div.content').html(helpContent.html());
-				element.find('a').on('click', function(e){
+				element.find('li a').on('click', function(e){
 					element.find('.sect1').slideUp();
                     $('#' + $(e.target).attr('href').split('#')[1]).parent().slideDown();
 				});
-				element.find('a').first().click();
+				element.find('div.paragraph a').on('click', function(e){
+					window.open($(e.target).closest('a').attr('href'), "_newtab" ); 
+				});
+				element.find('li a').first().click();
 				scope.display.read = true;
 				scope.$apply('display');
 			};
