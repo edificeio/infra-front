@@ -652,21 +652,18 @@ export let RTE = {
                             element.trigger('editor-blur');
                             editorInstance.trigger('change');
                             editorInstance.trigger('blur');
-                            
-                            setTimeout(() => {
-                                $('body').css({ overflow: 'auto' });
-                                element.parent().data('lock', false);
-                                element.parents('grid-cell').data('lock', false);
-                                element.find('code').attr('style', '');
+                            $('body').css({ overflow: 'auto' });
+                            element.parent().data('lock', false);
+                            element.parents('grid-cell').data('lock', false);
+                            element.find('code').attr('style', '');
 
-                                if(attributes.inline !== undefined){
-                                    element.css({
-                                        'margin-top': 0,
-                                        'padding-top': 0
-                                    });
-                                    element.children('editor-toolbar').attr('style', '');
-                                }
-                            }, 200);
+                            if(attributes.inline !== undefined){
+                                element.css({
+                                    'margin-top': 0,
+                                    'padding-top': 0
+                                });
+                                element.children('editor-toolbar').attr('style', '');
+                            }
                         }
                     });
 
