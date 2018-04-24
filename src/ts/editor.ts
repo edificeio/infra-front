@@ -762,9 +762,39 @@ export let RTE = {
                             // for whatever reason, ff likes to create several ranges for table selection
                             // which messes up their deletion
                             for (var i = 0; i < sel.rangeCount; i++) {
-                                var startContainer = sel.getRangeAt(i).startContainer;
+                                var r = sel.getRangeAt(i);
+                                var startContainer = r.startContainer;
+                                var selfContent = startContainer.textContent.replace(/[\u200B-\u200D\uFEFF]/g, ''); // Delete empty white spaces
                                 if (startContainer.nodeType === 1 && startContainer.nodeName === 'TD' || startContainer.nodeName === 'TR') {
                                     (startContainer as any).remove();
+                                }
+                                // Also delete the empty div for return after backslash
+                                else if (startContainer.nodeName === '#text' && selfContent.length === 0) {
+                                    if (startContainer.parentNode.previousSibling) {
+                                        var node = startContainer.parentNode.previousSibling.lastChild;
+                                        // Needs to place the caret correctly for firefox
+                                        setTimeout(function () {
+                                            var range = document.createRange();
+                                            range.setStart(node, node.textContent.length);
+                                            sel.removeAllRanges();
+                                            sel.addRange(range);
+                                        }, 1);
+                                        e.preventDefault();
+                                        (startContainer.parentNode as any).remove();
+                                    }
+                                }
+                                // If the current line already contain text
+                                else if (r.startOffset === 1 && startContainer.parentNode.previousSibling) {
+                                    var previousContent = startContainer.parentNode.previousSibling.lastChild.textContent.replace(/[\u200B-\u200D\uFEFF]/g, '');
+                                    if (startContainer.parentNode.previousSibling.lastChild.nodeName === '#text' && previousContent.length === 0) {
+                                        (startContainer.parentNode.previousSibling as any).remove();
+                                    }
+                                    else {
+                                        var range = document.createRange();
+                                        range.setStart(startContainer.parentNode.lastChild, 0);
+                                        sel.removeAllRanges();
+                                        sel.addRange(range);
+                                    }
                                 }
                             }
                             editZone.find('table').each(function (index, item) {
