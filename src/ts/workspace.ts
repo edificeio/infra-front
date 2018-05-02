@@ -450,7 +450,7 @@ export class Folder implements Selectable{
         this.folders.all.splice(0, this.folders.all.length);
         this.addFolders();
         this.folders.all.forEach(f => f.addFolders());
-        const response = await http.get('/workspace/documents/' + this.folder + '?filter=owner&hierarchical=true');
+        const response = await http.get('/workspace/documents/' + encodeURIComponent(this.folder) + '?filter=owner&hierarchical=true');
         this.documents.all.splice(0, this.documents.all.length);
         this.documents.addRange(Mix.castArrayAs(Document, response.data.filter(doc => doc.folder !== 'Trash')));
 
