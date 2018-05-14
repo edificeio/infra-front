@@ -4,6 +4,7 @@ import { http } from '../http';
 import { idiom } from '../idiom';
 import { _ } from '../libs/underscore/underscore';
 import { Model } from '../modelDefinitions';
+import { Me } from '../me';
 
 export const sharePanel = ng.directive('sharePanel', ['$rootScope', ($rootScope) => {
 	return {
@@ -247,7 +248,7 @@ export const sharePanel = ng.directive('sharePanel', ['$rootScope', ($rootScope)
         
             $scope.findUserOrGroup = function(){
                 var searchTerm = idiom.removeAccents($scope.search).toLowerCase();
-                var startSearch = searchTerm.substr(0, 3);
+                var startSearch = Me.session.functions.ADMIN_LOCAL ? searchTerm.substr(0, 3) : '';
                 if(!usersCache[startSearch] && !(usersCache[startSearch] && usersCache[startSearch].loading)){
                     usersCache[startSearch] = { loading: true };
                     var id = $scope.resources[0]._id;
