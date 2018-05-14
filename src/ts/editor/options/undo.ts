@@ -7,7 +7,7 @@ export const undo = {
                 element.addClass('disabled');
                 element.on('click', function(){
                     instance.undo();
-                    if(instance.stateIndex === 0){
+                    if(instance.stateIndex === 1){
                         element.addClass('disabled');
                     }
                     else{
@@ -17,7 +17,7 @@ export const undo = {
                 });
 
                 instance.on('contentupdated', function(e){
-                    if(instance.stateIndex === 0){
+                    if(instance.stateIndex === 1){
                         element.addClass('disabled');
                     }
                     else{

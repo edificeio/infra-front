@@ -141,7 +141,7 @@ export let RTE = {
         };
 
         this.undo = function(){
-            if(this.stateIndex === 0){
+            if(this.stateIndex === 1){
                 return;
             }
             this.stateIndex --;
@@ -166,7 +166,7 @@ export let RTE = {
             }
             else{
                 this.states = this.states.slice(0, this.stateIndex);
-                this.addState({ html: state, range: this.selection.range });
+                this.addState(state);
             }
         };
 
@@ -329,7 +329,11 @@ export let RTE = {
                         editorInstance = instance;
                     }
 
-                    editorInstance.addState('');
+                    // Waiting to be sure to get a pre-filled message
+                    setTimeout(() => {
+                        editorInstance.addState(editorInstance.editZone.html());
+                    }, 500);
+                    
                     var ngModel = $parse(attributes.ngModel);
                     if(!ngModel(scope)){
                         ngModel.assign(scope, '');
@@ -544,8 +548,8 @@ export let RTE = {
                         ui.extendElement.resizable(element.find('[contenteditable]').find('table, .column'), {
                             moveWithResize: false,
                             mouseUp: function() {
-                                editorInstance.trigger('contentupdated');
                                 editorInstance.addState(editorInstance.editZone.html());
+                                editorInstance.trigger('contentupdated');
                             },
                             extendParent: { bottom: true }
                         });
@@ -684,6 +688,7 @@ export let RTE = {
 
                     function editingDone(){
                         editorInstance.addState(editZone.html());
+                        editorInstance.trigger('contentupdated');
                     }
 
                     var typingTimer;
@@ -747,7 +752,6 @@ export let RTE = {
                                 }
                             }
                         }
-                        
 
                         if (!e.ctrlKey) {
                             editingTimer = setTimeout(editingDone, 500);
