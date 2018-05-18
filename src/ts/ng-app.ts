@@ -1487,28 +1487,22 @@ module.directive('stickToTop', function() {
     return {
         restrict: 'EA',
         link: function(scope, element, attributes) {
-            var initialPosition;
-            setTimeout(function() {
-                initialPosition = element.offset().top;
-            }, 200);
-
+			var initialPosition = null;
             var scrollTop = $(window).scrollTop()
             var actualScrollTop = $(window).scrollTop()
 
             var animation = function() {
 				element.addClass('scrolling')
                    element.offset({
-                       top: element.offset().top + (
-                           actualScrollTop + $('.height-marker').height() - (
-                               element.offset().top
-                           )
-                       ) / 20
+                       top: element.offset().top + (actualScrollTop + $('.height-marker').height() - (element.offset().top)) / 20
                    });
                 requestAnimationFrame(animation)
             }
 
             var scrolls = false;
 				$(window).scroll(function() {
+					if (!initialPosition)
+						initialPosition = element.offset().top;
 	                actualScrollTop = $(window).scrollTop()
 					if(actualScrollTop <= initialPosition - $('.height-marker').height()){
 						actualScrollTop = initialPosition - $('.height-marker').height();
