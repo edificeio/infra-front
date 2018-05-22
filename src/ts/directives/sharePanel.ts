@@ -280,7 +280,7 @@ export const sharePanel = ng.directive('sharePanel', ['$rootScope', ($rootScope)
                     })
                 );
                 $scope.found = _.filter($scope.found, function(element){
-                    return $scope.sharingModel.edited.indexOf(element) === -1;
+                    return $scope.sharingModel.edited.findIndex(i => i.id === element.id) === -1;
                 })
             };
         
