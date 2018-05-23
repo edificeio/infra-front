@@ -41,6 +41,11 @@ export var template = {
 	isEmpty: function(name){
 		return this.containers[name] === 'empty' || !this.containers[name];
 	},
+	getPath: (view) => {
+        const split = $('#context').attr('src').split('-');
+        const hash = split[split.length - 1].split('.')[0];
+        return this.template.viewPath + view + '.html?hash=' + hash;
+	},
 	close: function(name){
 		this.containers[name] = 'empty';
 		if(this.callbacks && this.callbacks[name]){

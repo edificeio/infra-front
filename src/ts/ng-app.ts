@@ -889,7 +889,7 @@ module.directive('progressBar', function(){
 	}
 });
 
-module.directive('datePicker', function(){
+module.directive('datePicker', ['$compile','$timeout',function($compile, $timeout){
 	return {
 		scope: {
 			minDate: '=',
@@ -927,9 +927,11 @@ module.directive('datePicker', function(){
 					element.val(moment(minDate).format('DD/MM/YYYY'));
 				}
 
-				scope.$apply('ngModel');
-				scope.$parent.$eval(scope.ngChange);
-				scope.$parent.$apply();
+                $timeout(function() {
+                    scope.$apply('ngModel');
+                    scope.$parent.$eval(scope.ngChange);
+                    scope.$parent.$apply();
+                });
 			}
 
 			http().loadScript('/' + infraPrefix + '/public/js/bootstrap-datepicker.js').then(function(){
@@ -977,7 +979,7 @@ module.directive('datePicker', function(){
 			});
 		}
 	}
-});
+}]);
 
 module.directive('datePickerIcon', function(){
 	return {
@@ -1217,7 +1219,7 @@ module.directive('attachments', ['$parse', function($parse){
 		scope: true,
 		restrict: 'E',
 		templateUrl: '/' + appPrefix + '/public/template/entcore/attachments.html',
-		controller: function($scope){
+		controller: ['$scope', function($scope){
 			$scope.linker = {
 				resource: {}
 			}
@@ -1247,7 +1249,7 @@ module.directive('attachments', ['$parse', function($parse){
 					return $scope.list;
 				}
 			};
-		},
+		}],
 		link: function(scope, element, attributes){
 			scope.ngModel = $parse(attributes.ngModel);
 			scope.attachments.onChange = function(){

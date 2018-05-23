@@ -33,9 +33,15 @@ export let calendarComponent = ng.directive('calendar', function () {
 
                 $scope.createItem = function (day, timeslot) {
                     $scope.newItem = {};
-                    var year = model.calendar.year;
+                    let year = model.calendar.firstDay.year() || (day.date && day.date.year());
                     if (day.index < model.calendar.firstDay.dayOfYear()) {
                         year++;
+                    }
+                    if (!timeslot) {
+                        timeslot = {
+                            start: calendar.startOfDay,
+                            end: calendar.endOfDay
+                        }
                     }
                     $scope.newItem.beginning = moment().utc().year(year).dayOfYear(day.index).hour(timeslot.start);
                     $scope.newItem.end = moment().utc().year(year).dayOfYear(day.index).hour(timeslot.end);
@@ -49,33 +55,33 @@ export let calendarComponent = ng.directive('calendar', function () {
                     $scope.onCreateClose();
                 };
 
-                $scope.updateCalendarWeek = function () {
-                    //annoying new year workaround
-                    if (moment(model.calendar.dayForWeek).week() === 1 && moment(model.calendar.dayForWeek).dayOfYear() > 7) {
-                        model.calendar = new calendar.Calendar({ week: moment(model.calendar.dayForWeek).week(), year: moment(model.calendar.dayForWeek).year() + 1 });
-                    }
-                    else if (moment(model.calendar.dayForWeek).week() === 53 && moment(model.calendar.dayForWeek).dayOfYear() < 7) {
-                        model.calendar = new calendar.Calendar({ week: moment(model.calendar.dayForWeek).week(), year: moment(model.calendar.dayForWeek).year() - 1 });
-                    } else {
-                        model.calendar = new calendar.Calendar({ week: moment(model.calendar.dayForWeek).week(), year: moment(model.calendar.dayForWeek).year() });
-                    }
-                    model.trigger('calendar.date-change');
-                    refreshCalendar();
+                $scope.updateCalendarDate = function() {
+                    model.calendar.setDate(model.calendar.firstDay);
                 };
 
                 $scope.previousTimeslots = function () {
                     calendar.startOfDay--;
                     calendar.endOfDay--;
-                    model.calendar = new calendar.Calendar({ week: moment(model.calendar.dayForWeek).week(), year: moment(model.calendar.dayForWeek).year() });
+                    model.calendar.initTimeSlots();
+                    model.calendar.days.sync();
                     refreshCalendar();
                 };
 
                 $scope.nextTimeslots = function () {
                     calendar.startOfDay++;
                     calendar.endOfDay++;
-                    model.calendar = new calendar.Calendar({ week: moment(model.calendar.dayForWeek).week(), year: moment(model.calendar.dayForWeek).year() });
+                    model.calendar.initTimeSlots();
+                    model.calendar.days.sync();
                     refreshCalendar();
                 };
+
+                $scope.openMorePopup = function(items) {
+                    $scope.morePopupItems = items;
+                    $scope.display.moreItems = true;
+                };
+            };
+            $scope.getMonthDayOffset = function(day) {
+                return (day.date.day() || 7) - 1; // sunday is 0, so set it to 7
             };
 
             calendar.setCalendar = function (cal) {
@@ -88,10 +94,27 @@ export let calendarComponent = ng.directive('calendar', function () {
                 $scope.$watchCollection('items', refreshCalendar);
             }, 0);
             $scope.refreshCalendar = refreshCalendar;
+
+            $scope.$watch('display.mode', function() {
+                model.calendar.setIncrement($scope.display.mode);
+                refreshCalendar();
+            });
         }],
         link: function (scope, element, attributes) {
             var allowCreate;
-            scope.display = {};
+
+            if (attributes.itemTooltipTemplate) {
+                scope.itemTooltipTemplate = attributes.itemTooltipTemplate;
+            }
+
+            scope.display = {
+                readonly: false,
+                mode: 'week',
+                enableModes: attributes.enableDisplayModes === 'true',
+                showQuarterHours: false,
+                showQuarterHoursOption:  attributes.showQuarterHours === 'true',
+                showNextPreviousButton: attributes.showNextPreviousButton === 'true'
+            };
             attributes.$observe('createTemplate', function () {
                 if (attributes.createTemplate) {
                     template.open('schedule-create-template', attributes.createTemplate);
@@ -102,6 +125,15 @@ export let calendarComponent = ng.directive('calendar', function () {
             attributes.$observe('displayTemplate', () => {
                 if (attributes.displayTemplate) {
                     template.open('schedule-display-template', attributes.displayTemplate);
+                }
+            });
+
+            attributes.$observe('displayMonthTemplate', () => {
+                if (attributes.displayMonthTemplate) {
+                    template.open('schedule-display-month-template', attributes.displayMonthTemplate);
+                }
+                if (attributes.moreItemsTemplate) {
+                    template.open('schedule-more-items-template', attributes.moreItemsTemplate);
                 }
             });
 
@@ -121,6 +153,7 @@ export let calendarComponent = ng.directive('calendar', function () {
             }, function (newVal) {
                 scope.items = newVal;
             });
+
         }
     }
 });
@@ -138,13 +171,14 @@ export let scheduleItem = ng.directive('scheduleItem', function () {
         link: function (scope, element, attributes) {
             var parentSchedule = element.parents('.schedule');
             var scheduleItemEl = element.children('.schedule-item');
-            var dayWidth = parentSchedule.find('.day').width();
-            if (scope.item.beginning.dayOfYear() !== scope.item.end.dayOfYear() || scope.item.locked) {
+            if (scope.item.beginning.dayOfYear() !== scope.item.end.dayOfYear()
+                || moment().diff(moment(scope.item.end_date)) > 0
+                || scope.item.locked) {
                 scheduleItemEl.removeAttr('resizable');
                 scheduleItemEl.removeAttr('draggable');
                 scheduleItemEl.unbind('mouseover');
                 scheduleItemEl.unbind('click');
-                scheduleItemEl.data('lock', true)
+                scheduleItemEl.data('lock', true);
             }
 
             var getTimeFromBoundaries = function () {
@@ -158,8 +192,8 @@ export let scheduleItem = ng.directive('scheduleItem', function () {
                 endTime.hour(Math.floor((topPos + scheduleItemEl.height()) / calendar.dayHeight));
                 endTime.minute(((topPos + scheduleItemEl.height()) % calendar.dayHeight) * 60 / calendar.dayHeight);
 
-                startTime.year(model.calendar.year);
-                endTime.year(model.calendar.year);
+                startTime.year(model.calendar.firstDay.year());
+                endTime.year(model.calendar.firstDay.year());
 
                 var days = element.parents('.schedule').find('.day');
                 var center = scheduleItemEl.offset().left + scheduleItemEl.width() / 2;
@@ -167,17 +201,15 @@ export let scheduleItem = ng.directive('scheduleItem', function () {
                 days.each(function (index, item) {
                     var itemLeft = $(item).offset().left;
                     if (itemLeft < center && itemLeft + dayWidth > center) {
-                        var day = index + 1;
-                        var week = model.calendar.week;
-                        endTime.week(week);
-                        startTime.week(week);
-                        if (day === 7) {
-                            day = 0;
-                            endTime.week(week + 1);
-                            startTime.week(week + 1);
-                        }
-                        endTime.day(day);
-                        startTime.day(day);
+                        var dayDate = model.calendar.firstDay.clone().add(index, 'days');
+
+                        endTime.year(dayDate.year());
+                        endTime.month(dayDate.month());
+                        endTime.date(dayDate.date());
+
+                        startTime.year(dayDate.year());
+                        startTime.month(dayDate.month());
+                        startTime.date(dayDate.date());
                     }
                 });
 
@@ -218,6 +250,7 @@ export let scheduleItem = ng.directive('scheduleItem', function () {
             });
 
             var placeItem = function () {
+                var dayWidth = parentSchedule.find('.day').width();
                 var cellWidth = element.parent().width() / 12;
                 var startDay = scope.item.beginning.dayOfYear();
                 var endDay = scope.item.end.dayOfYear();
