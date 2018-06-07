@@ -20,7 +20,7 @@
 
 <div ng-controller="Widgets" sortable-list class="twelve cell" on-change="widgets.savePreferences()">
 	<div class="row widget-container" ng-repeat="widget in widgets.all | orderBy:'index' | filter:allowedWidget" sortable-element
-         ng-model="widget.index">
+         ng-model="widget.index" ng-if="widget.themeHide == false">
 		<div class="twelve cell" ng-include="widget.path"></div>
 	</div>
 </div>

@@ -1,7 +1,18 @@
 import { model } from './modelDefinitions';
+import { skin } from './entcore';
 import { ng } from './ng-start';
 import { http } from './http';
 import { idiom as lang } from './idiom';
+
+const firstLevelWidgets = ["birthday", "mood"];
+const secondLevelWidgets = [
+	"agenda-widget", 
+	"carnet-de-bord", 
+	"my-apps", 
+	"rss-widget", 
+	"bookmark-widget", 
+	"cursus-widget"
+];
 
 export let widgets = {
 	Widget: function(){}
@@ -33,7 +44,7 @@ function WidgetModel(){
 		},
 		sync: function(){
 			var that = this;
-            var data = model.me.widgets
+			var data = model.me.widgets;
 
 			http().get('/userbook/preference/widgets').done(function(pref){
 				if(!pref.preference){
@@ -42,29 +53,34 @@ function WidgetModel(){
 				else{
 					this.preferences = JSON.parse(pref.preference);
 				}
-
-				data = data.map(function(widget, i){
-					if(!that.preferences[widget.name]){
-						that.preferences[widget.name] = { index: i, show: true };
-					}
-					widget.index = that.preferences[widget.name].index;
-					widget.hide = widget.mandatory ? false : that.preferences[widget.name].hide;
-					return widget;
+				skin.listSkins().then(function(){
+					let widgetsToHide = skin.skins.find((s) => s.child == skin.skin).parent == "panda" ?
+						secondLevelWidgets :
+						firstLevelWidgets;
+					data = data.map(function(widget, i){
+						if(!that.preferences[widget.name]){
+							that.preferences[widget.name] = { index: i, show: true };
+						}
+						widget.index = that.preferences[widget.name].index;
+						widget.hide = widget.mandatory ? false : that.preferences[widget.name].hide;
+						widget.themeHide = widgetsToHide.find((w) => w == widget.name) ? true : false;
+						return widget;
+					})
 				});
 
                 for(var i = 0; i < data.length; i++){
-                    var widget = data[i];
-                    (function(widget){
-                        if (widget.i18n) {
-                            lang.addTranslations(widget.i18n, function(){
-                                that.push(widget)
-                                http().loadScript(widget.js)
-                            })
-                        } else {
-                            that.push(widget)
-                            http().loadScript(widget.js)
-                        }
-                    })(widget)
+					var widget = data[i];
+					(function(widget){
+						if (widget.i18n) {
+							lang.addTranslations(widget.i18n, function(){
+								that.push(widget)
+								http().loadScript(widget.js)
+							})
+						} else {
+							that.push(widget)
+							http().loadScript(widget.js)
+						}
+					})(widget)
                 }
 			}.bind(this))
 		},
