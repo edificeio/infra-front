@@ -1,20 +1,24 @@
 <canvas tooltip="[[document.name || document.title]]"></canvas>
 
 <div ng-if="document.metadata['content-type'].indexOf('jpg') !== -1 || document.metadata['content-type'].indexOf('jpeg') !== -1">
-    <slider class="cell" ng-model="document.currentQuality" max="1" min="0" default="1" label="[[blobSize()]] [[blobUnit()]]" min-legend="media.library.compression.min"  max-legend="media.library.compression.max"></slider>
-    <div class="tipbox cell left">
-        <div>
-            <i class="help sticker square-medium"></i>
+    <div class="row">
+        <slider class=" nine cell"
+                ng-model="document.currentQuality" 
+                max="1" 
+                min="0" 
+                default="1" 
+                label="[[blobSize()]] [[blobUnit()]]" 
+                min-legend="media.library.compression.min" 
+                max-legend="media.library.compression.max"
+        ></slider>
+        <div class="tipbox right-magnet">
+            <div>
+                <i class="help sticker square-medium"></i>
+            </div>
+            <div class="tipbox-content">
+                <span class="small-text"><i18n>medialibrary.compression.info</i18n></span>
+            </div>
         </div>
-        <div class="tipbox-content">
-            <span class="small-text"><i18n>medialibrary.compression.info</i18n></span>
-        </div>
-    </div>
-    
-    <hr class="row" />
-
-    <div class="warning" ng-if="blobUnit() === 'Mo' || blobSize() > 500 && blobUnit() === 'Ko'">
-        <i18n>medialibrary.compression.warning</i18n>
     </div>
 </div>
 <div ng-if="document.metadata['content-type'].indexOf('jpg') === -1 && document.metadata['content-type'].indexOf('jpeg') === -1" class="warning">

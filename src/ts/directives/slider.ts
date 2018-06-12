@@ -24,6 +24,8 @@ export let slider = ng.directive('slider', ['$compile', '$parse', function ($com
                 });
                 element.children('.filled').width(cursor.position().left);
                 element.children('.label').css({ left: pos + 'px'});
+                if (attributes.label.indexOf("Mo") > -1 || (attributes.label.indexOf("Ko") > -1 && parseInt(attributes.label.split(" ")[0], 10) > 500))
+                    element.children('.label').css({ color: 'orange'});
             };
 
             $(window).on('resize', function () {
