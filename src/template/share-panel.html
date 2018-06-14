@@ -47,13 +47,23 @@
 			on-send="findUserOrGroup()">
 		</search-user>
 		<div class="found-users-list">
-			<div ng-repeat="item in found | limitTo:maxResults | orderBy:'lastName'" class="row autocomplete">
-				<em ng-click="addEdit(item)" class="row">
-					<span class="cell reduce-block-two">[[item.name]][[item.lastName]] [[item.firstName]]</span>
+			<div ng-repeat="item in sharebookmarks | limitTo:maxResults | orderBy: 'name'" class="row autocomplete">
+				<div ng-click="addEdit(item)" class="row">
+					<a class="cell sharebookmark">
+						<i class="add-favorite cell"></i>
+						[[item.name]]
+					</a>
+				</div>
+			</div>
+
+			<div ng-repeat="item in found | limitTo:maxResults | orderBy: 'lastName'" class="row autocomplete">
+				<div ng-click="addEdit(item)" class="row">
+					<a class="cell" ng-class="{sharebookmark: item.type === 'sharebookmark'}">
+						<i class="add-favorite cell" ng-if="item.type === 'sharebookmark'"></i>
+						[[item.name]][[item.lastName]] [[item.firstName]]
+					</a>
 					<em class="low-importance cell">[[translate(item.profile)]] </em>
-					<em class="low-importance cell"> [[item.login]]</em>
-					<div class="row"></div>
-				</em>
+				</div>
 			</div>
 			<div class="row">
 				<a ng-click="addResults()" ng-if="found.length > maxResults" class="right-magnet reduce-block-four">

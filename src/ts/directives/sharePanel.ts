@@ -201,6 +201,7 @@ export const sharePanel = ng.directive('sharePanel', ['$rootScope', ($rootScope)
                 $scope.sharingModel.edited = [];
                 $scope.search = '';
                 $scope.found = [];
+                $scope.sharebookmarks = [];
                 $scope.varyingRights = false;
                 feedData();
             });
@@ -210,6 +211,7 @@ export const sharePanel = ng.directive('sharePanel', ['$rootScope', ($rootScope)
                 $scope.sharingModel.edited = [];
                 $scope.search = '';
                 $scope.found = [];
+                $scope.sharebookmarks = [];
                 $scope.varyingRights = false;
                 feedData();
             });
@@ -244,6 +246,7 @@ export const sharePanel = ng.directive('sharePanel', ['$rootScope', ($rootScope)
                 $scope.sharingModel.groups = [];
                 $scope.sharingModel.users = [];
                 $scope.found = [];
+                $scope.sharebookmarks = [];
             }
         
             $scope.findUserOrGroup = function(){
@@ -281,6 +284,18 @@ export const sharePanel = ng.directive('sharePanel', ['$rootScope', ($rootScope)
                 );
                 $scope.found = _.filter($scope.found, function(element){
                     return $scope.sharingModel.edited.findIndex(i => i.id === element.id) === -1;
+                })
+
+                http().get('/directory/sharebookmark/all').done(function(data) {
+                    var bookmarks = _.map(data, function(bookmark) {
+                        bookmark.type = 'sharebookmark';
+                        return bookmark;
+                    });
+                    $scope.sharebookmarks = _.filter(bookmarks, function(bookmark){
+                        var testName = idiom.removeAccents(bookmark.name).toLowerCase();
+                        return testName.indexOf(searchTerm) !== -1;
+                    });
+                    $scope.$apply();
                 })
             };
         
