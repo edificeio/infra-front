@@ -1022,6 +1022,7 @@ export let ui = {
         }
     },
     breakpoints: {
+        wideScreen: 1200,
         tablette: 800,
         fatMobile: 550,
         smallMobile: 420,
