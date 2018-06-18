@@ -7,25 +7,36 @@ if(appFolder === 'userbook'){
 	appFolder = 'directory';
 }
 
+
 export var template = {
 	viewPath: '/' + appFolder + '/public/template/',
 	containers: {},
-	open: function(name, view?){
-		if(!view){
-			view = name;
-		}
+	getCompletePath(view:string, isPortal?:boolean):string {
 		const split = $('#context').attr('src').split('-');
 		const hash = split[split.length - 1].split('.')[0];
 		var path = this.viewPath + view + '.html?hash=' + hash;
 		var folder = appPrefix;
-		if(appPrefix === '.'){
+		if(appPrefix === '.' || !!isPortal){
 			folder = 'portal';
 		}
 		if(skin.templateMapping[folder] && skin.templateMapping[folder].indexOf(view) !== -1){
 			path = '/assets/themes/' + skin.skin + '/template/' + folder + '/' + view + '.html?hash=' + hash;
 		}
-
-		this.containers[name] = path;
+		return path;
+	},
+	/**
+	 * Enable overriding template into portal directive 
+	 */
+	loadPortalTemplates():void{
+		this.containers
+		this.containers['portal'] = {};
+		this.containers.portal['conversationUnread'] = this.getCompletePath('conversation-unread', true);
+	},
+	open: function(name, view?){
+		if(!view){
+			view = name;
+		}
+		this.containers[name] = this.getCompletePath(view);
 
 		if(this.callbacks && this.callbacks[name]){
 			this.callbacks[name].forEach(function(cb){

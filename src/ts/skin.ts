@@ -116,6 +116,9 @@ export var skin = {
 
 				http().get('/assets/themes/' + that.skin + '/template/override.json', { token: rand }).done(function(override){
 					that.templateMapping = override;
+					if (window.entcore.template) {
+						window.entcore.template.loadPortalTemplates();
+					}
 					resolve();
 				})
 				.e404(() => { 
