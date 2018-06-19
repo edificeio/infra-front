@@ -36,12 +36,15 @@ export const sharePanel = ng.directive('sharePanel', ['$rootScope', ($rootScope)
         
             $scope.editResources = [];
             $scope.sharingModel = {
-                edited: []
+                edited: [],
+                changed: false
             };
         
             $scope.addResults = function(){
                 $scope.maxResults += 5;
             };
+
+            $scope.showMembers = false;
         
             var actionsConfiguration = {};
         
@@ -51,15 +54,15 @@ export const sharePanel = ng.directive('sharePanel', ['$rootScope', ($rootScope)
         
             $scope.translate = idiom.translate;
         
-            function actionToRights(item, action){
-                var actions = [];
-                _.where($scope.actions, { displayName: action.displayName }).forEach(function(item){
+            function actionToRights(action){
+                var rights = [];
+                _.where($scope.actions, { displayName: action }).forEach(function(item){
                     item.name.forEach(function(i){
-                        actions.push(i);
+                        rights.push(i);
                     });
                 });
         
-                return actions;
+                return rights;
             }
         
             function rightsToActions(rights, http?){
@@ -91,29 +94,6 @@ export const sharePanel = ng.directive('sharePanel', ['$rootScope', ($rootScope)
                         action.requires = actionsConfiguration[actionId].requires;
                     }
                 });
-            }
-        
-            function dropRights(callback){
-                function drop(resource, type){
-                    var done = 0;
-                    for(var element in resource[type].checked){
-                        var path = '/' + currentApp + '/share/remove/' + resource._id;
-                        var data:any = {};
-                        if(type === 'users'){
-                            data.userId = element;
-                        }
-                        else{
-                            data.groupId = element;
-                        }
-                        http().put(path, http().serialize(data));
-                    }
-                }
-                $scope.editResources.forEach(function(resource){
-                    drop(resource, 'users');
-                    drop(resource, 'groups');
-                });
-                callback();
-                $scope.varyingRights = false;
             }
         
             function differentRights(model1, model2){
@@ -201,8 +181,9 @@ export const sharePanel = ng.directive('sharePanel', ['$rootScope', ($rootScope)
                 $scope.sharingModel.edited = [];
                 $scope.search = '';
                 $scope.found = [];
-                $scope.sharebookmarks = [];
                 $scope.varyingRights = false;
+                $scope.sharingModel.changed = false;
+                $scope.maxEdit = 3;
                 feedData();
             });
         
@@ -211,8 +192,9 @@ export const sharePanel = ng.directive('sharePanel', ['$rootScope', ($rootScope)
                 $scope.sharingModel.edited = [];
                 $scope.search = '';
                 $scope.found = [];
-                $scope.sharebookmarks = [];
                 $scope.varyingRights = false;
+                $scope.sharingModel.changed = false;
+                $scope.maxEdit = 3;
                 feedData();
             });
         
@@ -231,22 +213,41 @@ export const sharePanel = ng.directive('sharePanel', ['$rootScope', ($rootScope)
                         defaultActions.push(action);
                     }
                 });
-        
-                var index = -1;
-                var loopAction = function(){
-                    if(++index < defaultActions.length){
-                        $scope.saveRights(item, defaultActions[index], loopAction);
-                    }
+
+                if(item.type == 'sharebookmark') {
+                    http().get('/directory/sharebookmark/' + item.id).done(function(data) {
+                        item.users = data.users;
+                        item.groups = data.groups;
+                        if(item.users) {
+                            item.users.forEach(user => {
+                                user.type = 'sharebookmark-user';
+                                user.actions = {};
+                                defaultActions.forEach(defaultAction => {
+                                    user.actions[defaultAction.displayName] = true;
+                                });
+                            });
+                        }
+
+                        if(item.groups) {
+                            item.groups.forEach(group => {
+                                group.type = 'sharebookmark-group';
+                                group.actions = {};
+                                defaultActions.forEach(defaultAction => {
+                                    group.actions[defaultAction.displayName] = true;
+                                });
+                            });
+                        }
+                        $scope.$apply();
+                    });
                 }
-                loopAction()
-        
+
+                $scope.sharingModel.changed = true;
             };
 
             $scope.clearSearch = function(){
                 $scope.sharingModel.groups = [];
                 $scope.sharingModel.users = [];
                 $scope.found = [];
-                $scope.sharebookmarks = [];
             }
         
             $scope.findUserOrGroup = function(){
@@ -270,58 +271,42 @@ export const sharePanel = ng.directive('sharePanel', ['$rootScope', ($rootScope)
                 }
                 $scope.sharingModel.groups = usersCache[startSearch].groups;
                 $scope.sharingModel.users = usersCache[startSearch].users;
-                $scope.found = _.union(
-                    _.filter($scope.sharingModel.groups.visibles, function(group){
-                        var testName = idiom.removeAccents(group.name).toLowerCase();
-                        return testName.indexOf(searchTerm) !== -1 && $scope.sharingModel.edited.find(i => i.id === group.id) === undefined;
-                    }),
-                    _.filter($scope.sharingModel.users.visibles, function(user){
-                        var testName = idiom.removeAccents(user.lastName + ' ' + user.firstName).toLowerCase();
-                        var testNameReversed = idiom.removeAccents(user.firstName + ' ' + user.lastName).toLowerCase();
-                        var testUsername = idiom.removeAccents(user.username).toLowerCase();
-                        return (testName.indexOf(searchTerm) !== -1 || testNameReversed.indexOf(searchTerm) !== -1) || testUsername.indexOf(searchTerm) !== -1 && $scope.sharingModel.edited.find(i => i.id === user.id) === undefined;
-                    })
-                );
-                $scope.found = _.filter($scope.found, function(element){
-                    return $scope.sharingModel.edited.findIndex(i => i.id === element.id) === -1;
-                })
 
                 http().get('/directory/sharebookmark/all').done(function(data) {
                     var bookmarks = _.map(data, function(bookmark) {
                         bookmark.type = 'sharebookmark';
                         return bookmark;
                     });
-                    $scope.sharebookmarks = _.filter(bookmarks, function(bookmark){
-                        var testName = idiom.removeAccents(bookmark.name).toLowerCase();
-                        return testName.indexOf(searchTerm) !== -1;
-                    });
+
+                    $scope.found = _.union(
+                        _.filter(bookmarks, function(bookmark){
+                            var testName = idiom.removeAccents(bookmark.name).toLowerCase();
+                            return testName.indexOf(searchTerm) !== -1 && $scope.sharingModel.edited.find(i => i.id === bookmark.id) === undefined;
+                        }),
+                        _.filter($scope.sharingModel.groups.visibles, function(group){
+                            var testName = idiom.removeAccents(group.name).toLowerCase();
+                            return testName.indexOf(searchTerm) !== -1 && $scope.sharingModel.edited.find(i => i.id === group.id) === undefined;
+                        }),
+                        _.filter($scope.sharingModel.users.visibles, function(user){
+                            var testName = idiom.removeAccents(user.lastName + ' ' + user.firstName).toLowerCase();
+                            var testNameReversed = idiom.removeAccents(user.firstName + ' ' + user.lastName).toLowerCase();
+                            var testUsername = idiom.removeAccents(user.username).toLowerCase();
+                            return (testName.indexOf(searchTerm) !== -1 || testNameReversed.indexOf(searchTerm) !== -1) || testUsername.indexOf(searchTerm) !== -1 && $scope.sharingModel.edited.find(i => i.id === user.id) === undefined;
+                        })
+                    );
+                    $scope.found = _.filter($scope.found, function(element){
+                        return $scope.sharingModel.edited.findIndex(i => i.id === element.id) === -1;
+                    })
+
                     $scope.$apply();
                 })
             };
         
             $scope.remove = function(element){
-                var data;
-                if(element.login !== undefined){
-                    data = {
-                        userId: element.id
-                    }
-                }
-                else{
-                    data = {
-                        groupId: element.id
-                    }
-                }
-        
                 $scope.sharingModel.edited = _.reject($scope.sharingModel.edited, function(item){
                     return item.id === element.id;
                 });
-        
-                $scope.resources.forEach(function(resource){
-                    var path = '/' + currentApp + '/share/remove/' + resource._id;
-                    http().put(path, http().serialize(data)).done(function(){
-                        $rootScope.$broadcast('share-updated', data);
-                    });
-                })
+                $scope.sharingModel.changed = true;
             }
         
             $scope.maxEdit = 3;
@@ -330,74 +315,75 @@ export const sharePanel = ng.directive('sharePanel', ['$rootScope', ($rootScope)
                 var displayMoreInc = 5;
                 $scope.maxEdit += displayMoreInc;
             }
-        
-            function applyRights(element, action, cb){
-                var data;
-                if(element.login !== undefined){
-                    data = { userId: element.id, actions: [] }
-                }
-                else{
-                    data = { groupId: element.id, actions: [] }
-                }
-                data.actions = actionToRights(element, action);
-        
-                var setPath = 'json';
-                if(!element.actions[action.displayName]){
-                    setPath = 'remove';
-                    _.filter($scope.actions, function(item){
-                        return _.find(item.requires, function(dependency){
-                            return action.displayName.split('.')[1].indexOf(dependency) !== -1;
-                        }) !== undefined
-                    })
-                    .forEach(function(item){
-                        if(item){
-                            element.actions[item.displayName] = false;
-                            data.actions = data.actions.concat(actionToRights(element, item));
-                        }
-                    })
-                }
-                else{
-                    action.requires.forEach(function(required){
-                        var action = _.find($scope.actions, function(action){
-                            return action.displayName.split('.')[1].indexOf(required) !== -1;
-                        });
-                        if(action){
-                            element.actions[action.displayName] = true;
-                            data.actions = data.actions.concat(actionToRights(element, action));
-                        }
+
+            $scope.changeAction = function(item, action) {
+                if(item.type == 'sharebookmark') {
+                    item.users.forEach(user => {
+                        user.actions[action.displayName] = item.actions[action.displayName];
+                    });
+
+                    item.groups.forEach(group => {
+                        group.actions[action.displayName] = item.actions[action.displayName];
                     });
                 }
-        
-                var times = $scope.resources.length
-                var countdownAction = function(){
-                    if(--times <= 0 && typeof cb === 'function'){
-                        cb()
+
+                if(item.type == 'sharebookmark-user' || item.type == 'sharebookmark-group') {
+                    var element = $scope.sharingModel.edited.find(edited => edited.id == item.id);
+                    if(element) {
+                        element.actions = item.actions;
+                        element.hide = true;
+                    } else {
+                        let newElement: any = {};
+                        newElement.type = item.type;
+                        newElement.actions = item.actions;
+                        newElement.hide = true;
+                        $scope.sharingModel.edited.push(newElement);
                     }
                 }
-        
-                $scope.resources.forEach(function(resource){
-                    http().put('/' + currentApp + '/share/' + setPath + '/' + resource._id, http().serialize(data)).done(function(){
-                        if(setPath === 'remove'){
-                            $rootScope.$broadcast('share-updated', { removed: { groupId: data.groupId, userId: data.userId, actions: rightsToActions(data.actions) } });
+            }
+
+            $scope.share = function() {
+                var data: any = {};
+                var users: any = {};
+                var groups: any = {};
+                var sharebookmarks: any = {};
+
+                $scope.sharingModel.edited.forEach(function(item) {
+                    var rights = [];
+                    for(var action in item.actions) {
+                        if(item.actions.hasOwnProperty(action) 
+                            && item.actions[action] == true) {
+                            rights = rights.concat(actionToRights(action));
                         }
-                        else{
-                            $rootScope.$broadcast('share-updated', { added: { groupId: data.groupId, userId: data.userId, actions: rightsToActions(data.actions) } });
-                        }
-                        countdownAction()
-                    });
+                    }
+
+                    if (item.type == 'sharebookmark') {
+                        sharebookmarks[item.id] = rights;
+                    } else if (item.login !== undefined || item.type == 'sharebookmark-user') {
+                        users[item.id] = rights;
+                    } else {
+                        groups[item.id] = rights;
+                    }
+                });
+
+                data['users'] = users;
+                data['groups'] = groups;
+                data['bookmarks'] = sharebookmarks;
+                
+                $scope.resources.forEach(function(resource) {
+                    http().put('/' + currentApp + '/share/resource/' + resource._id, JSON.stringify(data))
+                        .done(function(res){
+                            console.log(res);
+                            // if(setPath === 'remove'){
+                            //     $rootScope.$broadcast('share-updated', { removed: { groupId: data.groupId, userId: data.userId, actions: rightsToActions(data.actions) } });
+                            // }
+                            // else{
+                            //     $rootScope.$broadcast('share-updated', { added: { groupId: data.groupId, userId: data.userId, actions: rightsToActions(data.actions) } });
+                            // }
+                            // countdownAction()
+                        });
                 });
             }
-        
-            $scope.saveRights = function(element, action, cb){
-                if($scope.varyingRights){
-                    dropRights(function(){
-                        applyRights(element, action, cb)
-                    });
-                }
-                else{
-                    applyRights(element, action, cb)
-                }
-            };
 		}
 	}
 }]);

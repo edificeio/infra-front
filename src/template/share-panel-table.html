@@ -2,7 +2,6 @@
 
     <div class="row">
         <table>
-
             <thead>
                 <th></th>
                 <th ng-repeat="action in actions | orderBy:'priority'">[[translate(action.displayName)]]</th>
@@ -14,23 +13,54 @@
                     <td>[[translate('share.me')]]</td>
                     <td ng-repeat="action in actions | orderBy:'priority'" data-label="[[translate(action.displayName)]]">
                         <label class="checkbox">
-                            <input type="checkbox" checked disabled /><span></span></label>
+                            <input type="checkbox" checked disabled /><span></span>
+                        </label>
                     </td>
                     <td></td>
                 </tr>
+            </tbody>
 
-                <tr ng-repeat="item in sharingModel.edited | orderBy:'index':true | limitTo:maxEdit">
-                    <td>
-                        [[item.name]][[item.firstName]] [[item.lastName]]
+            <tbody ng-repeat="item in sharingModel.edited | orderBy:'index':true | limitTo:maxEdit"
+                ng-if="!item.hide || item.hide != true">
+                <tr ng-class="{'nested-root': item.type == 'sharebookmark'}">
+                    <td ng-click="showMembers = !showMembers">
+                        <i class="add-favorite cell" ng-if="item.type === 'sharebookmark'"></i>
+                        <span class="cell">[[item.name]][[item.firstName]] [[item.lastName]]</span>
+                        <i class="down-open cell" ng-if="item.type === 'sharebookmark' && showMembers === false"></i>
+                        <i class="up-open cell" ng-if="item.type === 'sharebookmark' && showMembers === true"></i>
                         <div class="drop-line" ng-click="remove(item)"></div>
                     </td>
                     <td ng-repeat="action in actions | orderBy:'priority'" data-label="[[translate(action.displayName)]]">
                         <label class="checkbox">
-                            <input type="checkbox" ng-model="item.actions[action.displayName]" ng-change="saveRights(item, action)" />
+                            <input type="checkbox" ng-model="item.actions[action.displayName]" ng-change="changeAction(item, action)"/>
                             <span></span>
                         </label>
                     </td>
                     <td class="drop-line" ng-click="remove(item)"></td>
+                </tr>
+
+                <tr ng-repeat="user in item.users" ng-if="showMembers === true" class="nested-child">
+                    <td>
+                        [[user.displayName]]
+                    </td>
+                    <td ng-repeat="action in actions | orderBy:'priority'" data-label="[[translate(action.displayName)]]">
+                        <label class="checkbox">
+                            <input type="checkbox" ng-model="user.actions[action.displayName]" ng-change="changeAction(user, action)" />
+                            <span></span>
+                        </label>
+                    </td>
+                </tr>
+    
+                <tr ng-repeat="group in item.groups" ng-if="showMembers === true" class="nested-child">
+                    <td>
+                        [[group.name]]
+                    </td>
+                    <td ng-repeat="action in actions | orderBy:'priority'" data-label="[[translate(action.displayName)]]">
+                        <label class="checkbox">
+                            <input type="checkbox" ng-model="group.actions[action.displayName]" ng-change="changeAction(group, action)" />
+                            <span></span>
+                        </label>
+                    </td>
                 </tr>
             </tbody>
         </table>

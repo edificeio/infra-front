@@ -21,20 +21,28 @@
 <div class="share">
 	<div class="row line">
 		<h2><i18n>share.title</i18n></h2>
-		<div class="block" ng-if="varyingRights">
-			<div class="warning">
-				<i18n>share.varyingrights</i18n>
+		<form name="myForm">
+			<div class="flex-row justify-between">
+				<button>tmp</button>
+				<button ng-click="share()" ng-disabled="myForm.$pristine && !sharingModel.changed">
+					<i18n>share</i18n>
+				</button>
 			</div>
-		</div>
-
-		<div class="groups-list">
-
-			<div>
-				<ng-include src="shareTable"></ng-include>
+			<div class="block" ng-if="varyingRights">
+				<div class="warning">
+					<i18n>share.varyingrights</i18n>
+				</div>
 			</div>
 
-			<a ng-click="displayMore()" ng-if="sharingModel.edited.length > maxEdit" class="display-more"><i18n>share.more</i18n></a>
-		</div>
+			<div class="groups-list">
+
+				<div>
+					<ng-include src="shareTable"></ng-include>
+				</div>
+
+				<a ng-click="displayMore()" ng-if="sharingModel.edited.length > maxEdit" class="display-more"><i18n>share.more</i18n></a>
+			</div>
+		</form>
 	</div>
 
 
@@ -47,15 +55,6 @@
 			on-send="findUserOrGroup()">
 		</search-user>
 		<div class="found-users-list">
-			<div ng-repeat="item in sharebookmarks | limitTo:maxResults | orderBy: 'name'" class="row autocomplete">
-				<div ng-click="addEdit(item)" class="row">
-					<a class="cell sharebookmark">
-						<i class="add-favorite cell"></i>
-						[[item.name]]
-					</a>
-				</div>
-			</div>
-
 			<div ng-repeat="item in found | limitTo:maxResults | orderBy: 'lastName'" class="row autocomplete">
 				<div ng-click="addEdit(item)" class="row">
 					<a class="cell" ng-class="{sharebookmark: item.type === 'sharebookmark'}">
