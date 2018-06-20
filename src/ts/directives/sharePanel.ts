@@ -373,14 +373,7 @@ export const sharePanel = ng.directive('sharePanel', ['$rootScope', ($rootScope)
                 $scope.resources.forEach(function(resource) {
                     http().put('/' + currentApp + '/share/resource/' + resource._id, JSON.stringify(data))
                         .done(function(res){
-                            console.log(res);
-                            // if(setPath === 'remove'){
-                            //     $rootScope.$broadcast('share-updated', { removed: { groupId: data.groupId, userId: data.userId, actions: rightsToActions(data.actions) } });
-                            // }
-                            // else{
-                            //     $rootScope.$broadcast('share-updated', { added: { groupId: data.groupId, userId: data.userId, actions: rightsToActions(data.actions) } });
-                            // }
-                            // countdownAction()
+                            $rootScope.$broadcast('share-updated', res['notify-timeline-array']);
                         });
                 });
             }
