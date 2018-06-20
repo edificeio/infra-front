@@ -5,6 +5,8 @@ import { idiom } from '../idiom';
 import { _ } from '../libs/underscore/underscore';
 import { Model } from '../modelDefinitions';
 import { Me } from '../me';
+import { notify } from '../notify';
+import { template } from '../template';
 
 export const sharePanel = ng.directive('sharePanel', ['$rootScope', ($rootScope) => {
 	return {
@@ -373,7 +375,9 @@ export const sharePanel = ng.directive('sharePanel', ['$rootScope', ($rootScope)
                 $scope.resources.forEach(function(resource) {
                     http().put('/' + currentApp + '/share/resource/' + resource._id, JSON.stringify(data))
                         .done(function(res){
+                            notify.success('share.notify.success');
                             $rootScope.$broadcast('share-updated', res['notify-timeline-array']);
+                            template.close('lightboxes');
                         });
                 });
             }
