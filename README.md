@@ -1,30 +1,52 @@
-# Développement
+# infra-front : Open Digital Education Framework
 
-Un Springboard doit être installé sur la machine locale.
+infra-front is the Open Digital Education (ODE) frontend framework. 
+It is wriiten in typescript and it provides features and components to build and run ODE applications :
 
-### Build sur le springboard
+- angularJS bootstrap and (light) abstraction (Model, Controllers and Direcctives injection)
+- portal theming (skin, assets overriding, SASS extensions for applications ...)
+- widgets management
+- sniplets management (sniplets are small and dynamic pieces of UI useful to mix contents from different applications)
+- user session and rights managment
+- collections of UI components + domain specific components
+- advanced multi-media components : RTE, Image Editor, Sound Recorder, Media Librairy
+- animation library
 
-*Note : l'option --springboard utilise par defaut le springboard recette. Le springboard doit se trouver dans le même dossier que entcore et infra-front.*
+## Install
 
-*Ne pas oublier d'ajouter le volume du springboard dans docker-compose.yml* :
+Install and configure the following projects in the same root direectory.
 
-    - ../nomDuSpringboard:/home/node/nomDuSpringboard
+### 1. ENT Core
 
-Dans le repo **infra-front** :
+```bash
+git clone git@github.com:entcore/entcore.git
+./build.sh install
+```
 
-    ./build.sh --springboard=nomDuSpringboard install
+### 2. Springboard
 
-Dans le repo **entcore** :
+https://opendigitaleducation.gitbooks.io/reference-manual/content/first-steps/install-with-docker.html
 
-    ./build.sh --springboard=nomDuSpringboard clean infra install
+In `docker-compose.yml` add the following volume mapping for `node` container :
 
-Dans le **springboard** :
+```yml
+../yourSpringboard:/home/node/yourSpringboard
+```
 
-    rm -rf mods/*
-    ./build.sh stop run buildFront buildLocalFront
+3. infra-front
 
-### Watcher
+```bash
+git clone git@github.com:entcore/infra-front.git
+ 
+```
 
-Dans le repo **infra-front** :
+In `docker-compose.yml` add the same (than in Springboard) volume mapping for `node` container :
 
-    ./build.sh --springboard=nomDuSpringboard watch
+```bash
+../yourSpringboard:/home/node/yourSpringboard
+```
+
+## Run (watch) and develop 
+
+1. under **/infra-front** run  `./build.sh --springboard=yourSpringboard watch`
+2. under **/yourSpringboard** run `./build.sh run`
