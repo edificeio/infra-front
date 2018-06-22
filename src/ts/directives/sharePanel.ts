@@ -41,6 +41,11 @@ export const sharePanel = ng.directive('sharePanel', ['$rootScope', ($rootScope)
                 edited: [],
                 changed: false
             };
+
+            $scope.display = {
+                showSaveSharebookmarkInput: false,
+                sharebookmarkSaved: false
+            }    
         
             $scope.addResults = function(){
                 $scope.maxResults += 5;
@@ -335,11 +340,8 @@ export const sharePanel = ng.directive('sharePanel', ['$rootScope', ($rootScope)
                         element.actions = item.actions;
                         element.hide = true;
                     } else {
-                        let newElement: any = {};
-                        newElement.type = item.type;
-                        newElement.actions = item.actions;
-                        newElement.hide = true;
-                        $scope.sharingModel.edited.push(newElement);
+                        item.hide = true;
+                        $scope.sharingModel.edited.push(item);
                     }
                 }
             }
@@ -377,8 +379,27 @@ export const sharePanel = ng.directive('sharePanel', ['$rootScope', ($rootScope)
                         .done(function(res){
                             notify.success('share.notify.success');
                             $rootScope.$broadcast('share-updated', res['notify-timeline-array']);
-                            template.close('lightboxes');
+                            // template.close('lightboxes');
                         });
+                });
+            }
+
+            $scope.createSharebookmark = function(newSharebookmarkName) {
+                let members = [];
+                $scope.sharingModel.edited.forEach(item => {
+                    // if item is a user or a group
+                    if(item.name || item.login) {
+                        members.push(item.id);
+                    }
+                })
+                let data = {
+                    "name": newSharebookmarkName, 
+                    "members": members
+                };
+                
+                http().post('/directory/sharebookmark', JSON.stringify(data)).done(res => {
+                    $scope.display.sharebookmarkSaved = true;
+                    $scope.$apply();
                 });
             }
 		}
