@@ -1140,6 +1140,22 @@ export let ui = {
                 }
             }
         }
+    },
+    profileColors: {
+        relative: 'cyan',
+		teacher: 'green',
+		student: 'orange',
+		personnel: 'purple',
+        guest: 'pink',
+        match: function(profile) {
+            if (profile) {
+                if (profile instanceof Array) {
+                    return this[profile[0].toLowerCase()];
+                }
+                return this[profile.toLowerCase()];
+            }
+            return "grey";
+        }
     }
 };
 
