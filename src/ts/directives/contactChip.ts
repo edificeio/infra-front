@@ -32,8 +32,6 @@ export const contactChip = ng.directive('contactChip', () => {
 
         link: (scope, element, attributes) => {
             scope.stickernotselected = attributes.hasOwnProperty('stickernotselected');
-            console.log(scope.stickerNotSelected)
-            console.log(attributes)
             scope.profile = function() {
                 return ui.profileColors.match(scope.ngModel.profile);
             };

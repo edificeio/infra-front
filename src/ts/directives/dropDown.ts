@@ -37,7 +37,7 @@ export const dropDown = ng.directive('dropDown', ['$compile', '$timeout', ($comp
 					scope.setDropDownHeight()
 				});
 			};
-			scope.$watchCollection('options', function(newValue){
+			scope.positionOptions = function() {
 				if(!scope.options || scope.options.length === 0){
 					dropDown.height();
 					dropDown.addClass('hidden');
@@ -64,6 +64,9 @@ export const dropDown = ng.directive('dropDown', ['$compile', '$timeout', ($comp
 				setTimeout(function(){
 					scope.setDropDownHeight()
 				}, 100);
+			}
+			scope.$watchCollection('options', function(newValue){
+				scope.positionOptions();
 			});
 
 			dropDown.detach().appendTo('body');
@@ -73,7 +76,12 @@ export const dropDown = ng.directive('dropDown', ['$compile', '$timeout', ($comp
 					return;
 				}
 				scope.limit = 6;
-				dropDown.attr('style', '');
+				if (attributes.for) {
+					dropDown.attr('style', '');
+				}
+				else {
+					scope.positionOptions();
+				}
 				scope.current = $(this).scope().option;
 				scope.ngModel = $(this).scope().option;
 				scope.$apply('ngModel');
