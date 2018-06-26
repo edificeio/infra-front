@@ -344,6 +344,7 @@ export const sharePanel = ng.directive('sharePanel', ['$rootScope', ($rootScope)
                         $scope.sharingModel.edited.push(item);
                     }
                 }
+                $scope.sharingModel.changed = true;
             }
 
             $scope.share = function() {

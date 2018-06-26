@@ -21,7 +21,7 @@
 <div class="share">
 	<div class="row line">
 		<h2><i18n>share.title</i18n></h2>
-		<form name="myForm">
+		<form name="sharePanelForm">
 			<div class="flex-row justify-between">
 				<div class="saveSharebookmark">
 					<div ng-if="display.showSaveSharebookmarkInput === false && display.sharebookmarkSaved === false">
@@ -40,8 +40,14 @@
 						</div>
 					</div>
 					<div ng-if="display.showSaveSharebookmarkInput === true && display.sharebookmarkSaved === false">
-						<input class="cell" type="text" ng-model="newSharebookmarkName" i18n-placeholder="share.mysharebookmark">
-						<button ng-click="createSharebookmark(newSharebookmarkName)">
+						<input class="cell" 
+							type="text"
+							ng-model="newSharebookmarkName" 
+							i18n-placeholder="share.mysharebookmark"
+							required 
+							ng-minlength="1">
+						<button ng-click="createSharebookmark(newSharebookmarkName)"
+							ng-disabled="!newSharebookmarkName">
 							<i18n>ok</i18n>
 						</button>
 					</div>
@@ -49,7 +55,7 @@
 						<span class="italic-text"><i18n>share.save.sharebookmark.in</i18n></span> <a href="/userbook/annuaire#/search"><i18n>share.mysharebookmarks</i18n></a>
 					</div>
 				</div>
-				<button ng-click="share()" ng-disabled="myForm.$pristine && !sharingModel.changed">
+				<button ng-click="share()" ng-disabled="!sharingModel.changed">
 					<i18n>share</i18n>
 				</button>
 			</div>
@@ -60,7 +66,6 @@
 			</div>
 
 			<div class="groups-list">
-
 				<div>
 					<ng-include src="shareTable"></ng-include>
 				</div>
@@ -69,8 +74,6 @@
 			</div>
 		</form>
 	</div>
-
-
 
 	<div class="row">
 		<h2>[[translate('share.search.title')]]</h2>
