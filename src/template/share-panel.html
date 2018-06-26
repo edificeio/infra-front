@@ -47,7 +47,7 @@
 							required 
 							ng-minlength="1">
 						<button ng-click="createSharebookmark(newSharebookmarkName)"
-							ng-disabled="!newSharebookmarkName">
+							ng-disabled="!newSharebookmarkName || sharingModel.edited.length < 1">
 							<i18n>ok</i18n>
 						</button>
 					</div>
