@@ -190,6 +190,8 @@ export const sharePanel = ng.directive('sharePanel', ['$rootScope', ($rootScope)
                 $scope.found = [];
                 $scope.varyingRights = false;
                 $scope.sharingModel.changed = false;
+                $scope.display.showSaveSharebookmarkInput = false;
+                $scope.display.sharebookmarkSaved = false;
                 $scope.maxEdit = 3;
                 feedData();
             });
@@ -201,6 +203,8 @@ export const sharePanel = ng.directive('sharePanel', ['$rootScope', ($rootScope)
                 $scope.found = [];
                 $scope.varyingRights = false;
                 $scope.sharingModel.changed = false;
+                $scope.display.showSaveSharebookmarkInput = false;
+                $scope.display.sharebookmarkSaved = false;
                 $scope.maxEdit = 3;
                 feedData();
             });
@@ -249,6 +253,8 @@ export const sharePanel = ng.directive('sharePanel', ['$rootScope', ($rootScope)
                 }
 
                 $scope.sharingModel.changed = true;
+                $scope.display.showSaveSharebookmarkInput = false;
+                $scope.display.sharebookmarkSaved = false
             };
 
             $scope.clearSearch = function(){
@@ -314,6 +320,8 @@ export const sharePanel = ng.directive('sharePanel', ['$rootScope', ($rootScope)
                     return item.id === element.id;
                 });
                 $scope.sharingModel.changed = true;
+                $scope.display.showSaveSharebookmarkInput = false;
+                $scope.display.sharebookmarkSaved = false
             }
         
             $scope.maxEdit = 3;
