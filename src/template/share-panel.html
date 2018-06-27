@@ -25,10 +25,10 @@
 			<div class="flex-row justify-between">
 				<div class="saveSharebookmark">
 					<div ng-if="display.showSaveSharebookmarkInput === false && display.sharebookmarkSaved === false">
-						<button class="flat-button" ng-click="display.showSaveSharebookmarkInput = true">
+						<button class="button is-light" ng-click="display.showSaveSharebookmarkInput = true">
 							<i18n>share.save.sharebookmark</i18n>
 						</button>
-						<div class="tipbox top-spacing">
+						<div class="tipbox">
 							<div>
 								<i class="help sticker square-medium"></i>
 							</div>
@@ -46,7 +46,8 @@
 							i18n-placeholder="share.mysharebookmark"
 							required 
 							ng-minlength="1">
-						<button ng-click="createSharebookmark(newSharebookmarkName)"
+						<button class="button is-light uppercase"
+							ng-click="createSharebookmark(newSharebookmarkName)"
 							ng-disabled="!newSharebookmarkName || sharingModel.edited.length < 1">
 							<i18n>ok</i18n>
 						</button>
