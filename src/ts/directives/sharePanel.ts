@@ -338,13 +338,39 @@ export const sharePanel = ng.directive('sharePanel', ['$rootScope', ($rootScope)
             }
 
             $scope.changeAction = function(item, action) {
+                function requiredActions(item, action) {
+                    if(!item.actions[action.displayName]){
+                        _.filter($scope.actions, function(i){
+                            return _.find(i.requires, function(dependency){
+                                return action.displayName.split('.')[1].indexOf(dependency) !== -1;
+                            }) !== undefined
+                        })
+                        .forEach(function(i){
+                            if(i){
+                                item.actions[i.displayName] = false;
+                            }
+                        })
+                    } else{
+                        action.requires.forEach(function(required){
+                            var action = _.find($scope.actions, function(action){
+                                return action.displayName.split('.')[1].indexOf(required) !== -1;
+                            });
+                            if(action){
+                                item.actions[action.displayName] = true;
+                            }
+                        });
+                    }
+                }
+
                 if(item.type == 'sharebookmark') {
                     item.users.forEach(user => {
                         user.actions[action.displayName] = item.actions[action.displayName];
+                        requiredActions(user, action);
                     });
 
                     item.groups.forEach(group => {
                         group.actions[action.displayName] = item.actions[action.displayName];
+                        requiredActions(group, action);
                     });
                 }
 
@@ -358,6 +384,9 @@ export const sharePanel = ng.directive('sharePanel', ['$rootScope', ($rootScope)
                         $scope.sharingModel.edited.push(item);
                     }
                 }
+
+                requiredActions(item, action);
+                
                 $scope.sharingModel.changed = true;
             }
 
