@@ -279,42 +279,46 @@ export const sharePanel = ng.directive('sharePanel', ['$rootScope', ($rootScope)
                         usersCache[startSearch] = { groups: data.groups, users: data.users };
                         $scope.sharingModel.groups = usersCache[startSearch].groups;
                         $scope.sharingModel.users = usersCache[startSearch].users;
-                        $scope.findUserOrGroup();
-                        $scope.$apply();
+
+                        http().get('/directory/sharebookmark/all').done(function(data) {
+                            var bookmarks = _.map(data, function(bookmark) {
+                                bookmark.type = 'sharebookmark';
+                                return bookmark;
+                            });
+                            usersCache[startSearch]['sharebookmarks'] = bookmarks;
+
+                            $scope.findUserOrGroup();
+                            $scope.$apply();
+                        });
+
                     });
                     return;
                 }
                 $scope.sharingModel.groups = usersCache[startSearch].groups;
                 $scope.sharingModel.users = usersCache[startSearch].users;
+                $scope.sharingModel.sharebookmarks = usersCache[startSearch].sharebookmarks;
 
-                http().get('/directory/sharebookmark/all').done(function(data) {
-                    var bookmarks = _.map(data, function(bookmark) {
-                        bookmark.type = 'sharebookmark';
-                        return bookmark;
-                    });
-
-                    $scope.found = _.union(
-                        _.filter(bookmarks, function(bookmark){
-                            var testName = idiom.removeAccents(bookmark.name).toLowerCase();
-                            return testName.indexOf(searchTerm) !== -1 && $scope.sharingModel.edited.find(i => i.id === bookmark.id) === undefined;
-                        }),
-                        _.filter($scope.sharingModel.groups.visibles, function(group){
-                            var testName = idiom.removeAccents(group.name).toLowerCase();
-                            return testName.indexOf(searchTerm) !== -1 && $scope.sharingModel.edited.find(i => i.id === group.id) === undefined;
-                        }),
-                        _.filter($scope.sharingModel.users.visibles, function(user){
-                            var testName = idiom.removeAccents(user.lastName + ' ' + user.firstName).toLowerCase();
-                            var testNameReversed = idiom.removeAccents(user.firstName + ' ' + user.lastName).toLowerCase();
-                            var testUsername = idiom.removeAccents(user.username).toLowerCase();
-                            return (testName.indexOf(searchTerm) !== -1 || testNameReversed.indexOf(searchTerm) !== -1) || testUsername.indexOf(searchTerm) !== -1 && $scope.sharingModel.edited.find(i => i.id === user.id) === undefined;
-                        })
-                    );
-                    $scope.found = _.filter($scope.found, function(element){
-                        return $scope.sharingModel.edited.findIndex(i => i.id === element.id) === -1;
+                $scope.found = _.union(
+                    _.filter($scope.sharingModel.sharebookmarks, function(bookmark){
+                        var testName = idiom.removeAccents(bookmark.name).toLowerCase();
+                        return testName.indexOf(searchTerm) !== -1 && $scope.sharingModel.edited.find(i => i.id === bookmark.id) === undefined;
+                    }),
+                    _.filter($scope.sharingModel.groups.visibles, function(group){
+                        var testName = idiom.removeAccents(group.name).toLowerCase();
+                        return testName.indexOf(searchTerm) !== -1 && $scope.sharingModel.edited.find(i => i.id === group.id) === undefined;
+                    }),
+                    _.filter($scope.sharingModel.users.visibles, function(user){
+                        var testName = idiom.removeAccents(user.lastName + ' ' + user.firstName).toLowerCase();
+                        var testNameReversed = idiom.removeAccents(user.firstName + ' ' + user.lastName).toLowerCase();
+                        var testUsername = idiom.removeAccents(user.username).toLowerCase();
+                        return (testName.indexOf(searchTerm) !== -1 || testNameReversed.indexOf(searchTerm) !== -1) || testUsername.indexOf(searchTerm) !== -1 && $scope.sharingModel.edited.find(i => i.id === user.id) === undefined;
                     })
-
-                    $scope.$apply();
+                );
+                $scope.found = _.filter($scope.found, function(element){
+                    return $scope.sharingModel.edited.findIndex(i => i.id === element.id) === -1;
                 })
+
+                $scope.$apply();
             };
         
             $scope.remove = function(element){
