@@ -193,6 +193,7 @@ export const sharePanel = ng.directive('sharePanel', ['$rootScope', ($rootScope)
                 $scope.display.showSaveSharebookmarkInput = false;
                 $scope.display.sharebookmarkSaved = false;
                 $scope.maxEdit = 3;
+                $scope.maxResults = 5;
                 feedData();
             });
         
@@ -206,6 +207,7 @@ export const sharePanel = ng.directive('sharePanel', ['$rootScope', ($rootScope)
                 $scope.display.showSaveSharebookmarkInput = false;
                 $scope.display.sharebookmarkSaved = false;
                 $scope.maxEdit = 3;
+                $scope.maxResults = 5;
                 feedData();
             });
         
