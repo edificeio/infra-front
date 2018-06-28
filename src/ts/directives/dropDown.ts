@@ -11,15 +11,24 @@ export const dropDown = ng.directive('dropDown', ['$compile', '$timeout', ($comp
 			onClose: '&',
 			ngModel: '='
 		},
-		template: '<div data-drop-down class="drop-down">' +
-						'<div>' +
-							'<ul class="ten cell right-magnet">' +
-								'<li ng-repeat="option in options | limitTo:limit" ng-model="option">[[option.toString()]]</li>' +
-								'<li class="display-more" ng-show="limit < options.length" ng-click="increaseLimit()">' + idiom.translate('seemore') + '</li>' +
-							'</ul>' +
-						'</div>' +
-					'</div>',
+		template: `
+			<div data-drop-down class="drop-down">
+				<div>
+					<ul class="ten cell right-magnet">
+						<li ng-repeat="option in options | limitTo:limit" ng-model="option">
+							<a class="cell" ng-class="{'sharebookmark': option.type === 'sharebookmark'}">
+								<i class="add-favorite cell" ng-if="option.type === 'sharebookmark'"></i>
+								[[option.name]][[option.displayName]]
+							</a>
+							<em class="left-spacing top-spacing-twice low-importance cell">[[translate(option.profile)]] </em>
+						</li>
+						<li class="display-more" ng-show="limit < options.length" ng-click="increaseLimit()">[[translate('seemore')]]</li>
+					</ul>
+				</div>
+			</div>
+		`,
 		link: function(scope, element, attributes){
+			scope.translate = idiom.translate;
 			scope.limit = 6;
 			var dropDown = element.find('[data-drop-down]');
 			scope.setDropDownHeight = function(){
@@ -71,7 +80,7 @@ export const dropDown = ng.directive('dropDown', ['$compile', '$timeout', ($comp
 
 			dropDown.detach().appendTo('body');
 
-			dropDown.on('click', 'li', function(e){
+			dropDown.on('click', 'li', async function(e){
 				if($(e.target).hasClass('display-more')){
 					return;
 				}
@@ -85,7 +94,7 @@ export const dropDown = ng.directive('dropDown', ['$compile', '$timeout', ($comp
 				scope.current = $(this).scope().option;
 				scope.ngModel = $(this).scope().option;
 				scope.$apply('ngModel');
-				scope.$eval(scope.ngChange);
+				await scope.ngChange();
 				scope.$eval(scope.onClose);
 				scope.$apply('ngModel');
 			});
