@@ -13,17 +13,25 @@ export let autocomplete = ng.directive('autocomplete', ['$timeout', function ($t
             ngChange: '&',
             search: '=?'
         },
-        template: '' +
-        '<div class="row">' +
-        '<input type="text" class="twelve cell" ng-model="search" translate attr="placeholder" placeholder="search" autocomplete="off" />' +
-        '<div data-drop-down class="drop-down autocomplete">' +
-        '<div>' +
-        '<ul class="ten cell right-magnet">' +
-        '<li ng-repeat="option in match | limitTo:10" ng-model="option">[[option.toString()]]</li>' +
-        '</ul>' +
-        '</div>' +
-        '</div>' +
-        '</div>',
+        template: `
+            <div class="row">
+                <input type="text" class="twelve cell" ng-model="search" translate attr="placeholder" placeholder="search" autocomplete="off" />
+                <div data-drop-down class="drop-down">
+                    <div>
+                        <ul class="ten cell right-magnet">
+                            <li ng-repeat="option in match | limitTo:limit" ng-model="option">
+                                <a class="cell" ng-class="{'sharebookmark': option.type === 'sharebookmark'}">
+                                    <i class="add-favorite cell" ng-if="option.type === 'sharebookmark'"></i>
+                                    [[option.name]][[option.displayName]]
+                                </a>
+                                <em class="left-spacing top-spacing-twice low-importance cell">[[translate(option.profile)]] </em>
+                            </li>
+                            <li class="display-more" ng-show="limit < match.length" ng-click="increaseLimit()">[[translate('seemore')]]</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        `,
         link: function (scope, element, attributes) {
             var token;
             if (attributes.autocomplete === 'off') {
@@ -32,19 +40,37 @@ export let autocomplete = ng.directive('autocomplete', ['$timeout', function ($t
             var dropDownContainer = element.find('[data-drop-down]');
             var linkedInput = element.find('input');
             scope.search = '';
+            scope.translate = lang.translate;
+            scope.limit = 6;
             scope.match = [];
+
+            scope.increaseLimit = function(){
+				scope.limit += 5;
+				$timeout(function(){
+					scope.setDropDownHeight()
+				});
+			};
 
             scope.setDropDownHeight = function () {
                 var liHeight = 0;
-                var max = Math.min(10, scope.match.length);
+                var max = Math.min(scope.limit, scope.match.length);
                 dropDownContainer.find('li').each(function (index, el) {
                     liHeight += $(el).height();
+
                     return index < max;
                 })
                 dropDownContainer.height(liHeight)
             };
 
             var placeDropDown = function () {
+                if(!scope.match || scope.match.length === 0){
+					dropDownContainer.height();
+					dropDownContainer.addClass('hidden');
+					scope.limit = 6;
+					dropDownContainer.attr('style', '');
+					return;
+                }
+                
                 var pos = linkedInput.offset();
                 var width = linkedInput.width() +
                     parseInt(linkedInput.css('padding-right')) +
@@ -58,9 +84,10 @@ export let autocomplete = ng.directive('autocomplete', ['$timeout', function ($t
                 pos.top = pos.top + height;
                 dropDownContainer.offset(pos);
                 dropDownContainer.width(width);
-                $timeout(function () {
-                    scope.setDropDownHeight();
-                }, 1);
+                scope.setDropDownHeight();
+				setTimeout(function(){
+					scope.setDropDownHeight()
+				}, 100);
 
                 token = requestAnimationFrame(placeDropDown);
             };
@@ -82,6 +109,7 @@ export let autocomplete = ng.directive('autocomplete', ['$timeout', function ($t
                 });
                 if (!scope.match || scope.match.length === 0) {
                     dropDownContainer.height("");
+                    scope.limit = 6;
                     dropDownContainer.addClass('hidden');
                     return;
                 }
@@ -100,15 +128,14 @@ export let autocomplete = ng.directive('autocomplete', ['$timeout', function ($t
                 dropDownContainer.remove();
             });
 
-            element.find('input').on('blur', function () {
-                cancelAnimationFrame(token);
-                setTimeout(function () {
-                    scope.search = '';
-                }, 200);
-            });
             dropDownContainer.detach().appendTo('body');
 
             dropDownContainer.on('click', 'li', function (e) {
+                if($(e.target).hasClass('display-more')){
+					return;
+				}
+				scope.limit = 6;
+				dropDownContainer.attr('style', '');
                 scope.ngModel = $(this).scope().option;
                 scope.search = '';
                 scope.$apply('ngModel');
@@ -117,6 +144,16 @@ export let autocomplete = ng.directive('autocomplete', ['$timeout', function ($t
                 dropDownContainer.addClass('hidden');
                 cancelAnimationFrame(token);
             });
+
+            var closeDropDown = function(e){
+				if(element.find(e.target).length > 0 || dropDownContainer.find(e.target).length > 0){
+					return;
+				}
+				scope.match = [];
+				scope.$apply();
+			};
+
+			$('body').on('click', closeDropDown);
             dropDownContainer.attr('data-opened-drop-down', true);
         }
     }
