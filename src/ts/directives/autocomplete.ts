@@ -149,7 +149,8 @@ export let autocomplete = ng.directive('autocomplete', ['$timeout', function ($t
 				if(element.find(e.target).length > 0 || dropDownContainer.find(e.target).length > 0){
 					return;
 				}
-				scope.match = [];
+                scope.match = [];
+                linkedInput.focus();
 				scope.$apply();
 			};
 

@@ -11,13 +11,13 @@ export const contactChip = ng.directive('contactChip', () => {
     return {
         restrict: 'E',
         template: `
-            <span class="cell round square-small" ng-class="{ group: ngModel.name }">
-                <img ng-if="ngModel.name" skin-src="/img/illustrations/group-avatar.svg"/>
-                <img ng-if="!ngModel.name" ng-src="/userbook/avatar/[[ngModel.id]]?thumbnail=100x100"/>
+            <span class="cell round square-small" ng-class="{ group: isChipGroup() }">
+                <img ng-if="isChipGroup()" skin-src="/img/illustrations/group-avatar.svg"/>
+                <img ng-if="!isChipGroup()" ng-src="/userbook/avatar/[[ngModel.id]]?thumbnail=100x100"/>
             </span>
-            <span ng-if="!ngModel.name" class="cell circle square-mini" ng-class="profile()"></span>
-            <span ng-if="ngModel.name" class="cell-ellipsis block left-text">[[ ngModel.name ]]</span>
-            <span ng-if="!ngModel.name" class="cell-ellipsis block left-text">[[ ngModel.displayName ]]</span>
+            <span ng-if="!isChipGroup()" class="cell circle square-mini" ng-class="profile()"></span>
+            <span ng-if="isChipGroup()" class="cell-ellipsis block left-text">[[ ngModel.name ]]</span>
+            <span ng-if="!isChipGroup()" class="cell-ellipsis block left-text">[[ ngModel.name ]][[ ngModel.displayName ]]</span>
             <i class="absolute-magnet" 
                 ng-if="(stickernotselected || !ngModel.selected) && (isMovable() || isRemovable())" 
                 ng-class="{ 'right-arrow':isMovable(), 'close':isRemovable() }"
@@ -46,6 +46,10 @@ export const contactChip = ng.directive('contactChip', () => {
 
             scope.isChipHover = function() {
                 return element.hasClass('chip-hover');
+            };
+
+            scope.isChipGroup = function() {
+                return scope.ngModel.groupType || scope.ngModel.isGroup || scope.ngModel.type === 'group';
             };
 
             scope.onGeneralClick = function() {
