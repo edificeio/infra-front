@@ -24,11 +24,11 @@
 		<form name="sharePanelForm">
 			<div class="flex-row justify-between">
 				<div class="saveSharebookmark">
-					<div ng-if="display.showSaveSharebookmarkInput === false && display.sharebookmarkSaved === false">
-						<button class="button is-light" ng-click="display.showSaveSharebookmarkInput = true">
+					<div class="flex-row" ng-if="display.showSaveSharebookmarkInput === false && display.sharebookmarkSaved === false">
+						<a class="is-light" ng-click="display.showSaveSharebookmarkInput = true">
 							<i18n>share.save.sharebookmark</i18n>
-						</button>
-						<div class="tipbox">
+						</a>
+						<span class="tipbox">
 							<div>
 								<i class="help sticker square-medium"></i>
 							</div>
@@ -37,7 +37,7 @@
 									<i18n>share.tip.addFavorite</i18n>
 								</span>
 							</div>
-						</div>
+						</span>
 					</div>
 					<div ng-if="display.showSaveSharebookmarkInput === true && display.sharebookmarkSaved === false">
 						<input class="cell" 
@@ -46,11 +46,11 @@
 							i18n-placeholder="share.mysharebookmark"
 							required 
 							ng-minlength="1">
-						<button class="button is-light uppercase"
+						<a class="button is-light uppercase"
 							ng-click="createSharebookmark(newSharebookmarkName)"
 							ng-disabled="!newSharebookmarkName || sharingModel.edited.length < 1">
 							<i18n>ok</i18n>
-						</button>
+						</a>
 					</div>
 					<div ng-if="display.sharebookmarkSaved === true">
 						<span class="italic-text"><i18n>share.save.sharebookmark.in</i18n></span> <a href="/userbook/annuaire#/search"><i18n>share.mysharebookmarks</i18n></a>
@@ -76,7 +76,7 @@
 		</form>
 	</div>
 
-	<div class="row">
+	<div class="row bottom-spacing-twice">
 		<h2>[[translate('share.search.title')]]</h2>
 		<search-user class="twelve cell" 
 			ng-model="search"
