@@ -24,7 +24,8 @@
 		<form name="sharePanelForm">
 			<div class="flex-row justify-between">
 				<div class="saveSharebookmark">
-					<div class="flex-row" ng-if="display.showSaveSharebookmarkInput === false && display.sharebookmarkSaved === false">
+					<div class="flex-row" ng-if="display.showSaveSharebookmarkInput === false && display.sharebookmarkSaved === false"
+						workflow="directory.allowSharebookmarks">
 						<a class="is-light" ng-click="display.showSaveSharebookmarkInput = true">
 							<i18n>share.save.sharebookmark</i18n>
 						</a>
@@ -39,7 +40,8 @@
 							</div>
 						</span>
 					</div>
-					<div ng-if="display.showSaveSharebookmarkInput === true && display.sharebookmarkSaved === false">
+					<div ng-if="display.showSaveSharebookmarkInput === true && display.sharebookmarkSaved === false"
+						workflow="directory.allowSharebookmarks">
 						<input class="cell" 
 							type="text"
 							ng-model="newSharebookmarkName" 
@@ -52,7 +54,7 @@
 							<i18n>ok</i18n>
 						</a>
 					</div>
-					<div ng-if="display.sharebookmarkSaved === true">
+					<div ng-if="display.sharebookmarkSaved === true" workflow="directory.allowSharebookmarks">
 						<span class="italic-text"><i18n>share.save.sharebookmark.in</i18n></span> <a href="/userbook/annuaire#/search"><i18n>share.mysharebookmarks</i18n></a>
 					</div>
 				</div>

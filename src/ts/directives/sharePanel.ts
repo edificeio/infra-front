@@ -4,6 +4,7 @@ import { http } from '../http';
 import { idiom } from '../idiom';
 import { _ } from '../libs/underscore/underscore';
 import { Model } from '../modelDefinitions';
+import { model } from '../modelDefinitions';
 import { Me } from '../me';
 import { notify } from '../notify';
 import { template } from '../template';
@@ -19,6 +20,14 @@ export const sharePanel = ng.directive('sharePanel', ['$rootScope', ($rootScope)
 		link: function($scope, $element, $attributes){
             var currentApp = appPrefix;
             var usersCache = {};
+
+            // get directory workflow to manage allowSharebookmarks workflow
+            async function loadDirectoryWorkflow() {
+                await model.me.workflow.load(['directory']);
+                $scope.$apply();
+            }
+            loadDirectoryWorkflow();
+
             if($scope.appPrefix){
                 currentApp = $scope.appPrefix;
             }
@@ -280,17 +289,19 @@ export const sharePanel = ng.directive('sharePanel', ['$rootScope', ($rootScope)
                         $scope.sharingModel.groups = usersCache[startSearch].groups;
                         $scope.sharingModel.users = usersCache[startSearch].users;
 
-                        http().get('/directory/sharebookmark/all').done(function(data) {
-                            var bookmarks = _.map(data, function(bookmark) {
-                                bookmark.type = 'sharebookmark';
-                                return bookmark;
+                        if(model.me.workflow.directory.allowSharebookmarks == true) {
+                            http().get('/directory/sharebookmark/all').done(function(data) {
+                                var bookmarks = _.map(data, function(bookmark) {
+                                    bookmark.type = 'sharebookmark';
+                                    return bookmark;
+                                });
+                                usersCache[startSearch]['sharebookmarks'] = bookmarks;
+    
+                                $scope.findUserOrGroup();
+                                $scope.$apply();
                             });
-                            usersCache[startSearch]['sharebookmarks'] = bookmarks;
-
-                            $scope.findUserOrGroup();
-                            $scope.$apply();
-                        });
-
+                        }
+                        $scope.$apply();
                     });
                     return;
                 }
@@ -429,22 +440,24 @@ export const sharePanel = ng.directive('sharePanel', ['$rootScope', ($rootScope)
             }
 
             $scope.createSharebookmark = function(newSharebookmarkName) {
-                let members = [];
-                $scope.sharingModel.edited.forEach(item => {
-                    // if item is a user or a group
-                    if(item.name || item.login) {
-                        members.push(item.id);
-                    }
-                })
-                let data = {
-                    "name": newSharebookmarkName, 
-                    "members": members
-                };
-                
-                http().post('/directory/sharebookmark', JSON.stringify(data)).done(res => {
-                    $scope.display.sharebookmarkSaved = true;
-                    $scope.$apply();
-                });
+                if(model.me.workflow.directory.allowSharebookmarks == true) {
+                    let members = [];
+                    $scope.sharingModel.edited.forEach(item => {
+                        // if item is a user or a group
+                        if(item.name || item.login) {
+                            members.push(item.id);
+                        }
+                    })
+                    let data = {
+                        "name": newSharebookmarkName, 
+                        "members": members
+                    };
+                    
+                    http().post('/directory/sharebookmark', JSON.stringify(data)).done(res => {
+                        $scope.display.sharebookmarkSaved = true;
+                        $scope.$apply();
+                    });
+                }
             }
 		}
 	}
