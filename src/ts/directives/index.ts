@@ -39,6 +39,7 @@ export * from './smartBanner';
 export * from './sniplet';
 export * from './sortableList';
 export * from './stickyRow';
+export * from './switch';
 export * from './tooltip';
 export * from './transferColumns';
 export * from './userRole';
