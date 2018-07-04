@@ -24,7 +24,8 @@
 		<form name="sharePanelForm">
 			<div class="flex-row justify-between">
 				<div class="saveSharebookmark">
-					<div class="flex-row" ng-if="display.showSaveSharebookmarkInput === false && display.sharebookmarkSaved === false"
+					<div class="flex-row" 
+						ng-if="display.showSaveSharebookmarkInput === false && display.sharebookmarkSaved === false && sharingModel.edited.length > 0"
 						workflow="directory.allowSharebookmarks">
 						<a class="is-light" ng-click="display.showSaveSharebookmarkInput = true">
 							<i18n>share.save.sharebookmark</i18n>
