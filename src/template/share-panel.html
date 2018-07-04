@@ -86,11 +86,11 @@
 			on-send="findUserOrGroup()">
 		</search-user>
 		<div class="found-users-list">
-			<div ng-repeat="item in found | orderBy: ['type', 'name', 'username'] | limitTo:maxResults" class="row autocomplete">
+			<div ng-repeat="item in found | orderBy:[typeSort, 'name', 'username'] | limitTo:maxResults" class="row autocomplete">
 				<div ng-click="addEdit(item)" class="row">
 					<a class="cell" ng-class="{sharebookmark: item.type === 'sharebookmark'}">
 						<i class="add-favorite cell" ng-if="item.type === 'sharebookmark'"></i>
-						<!-- group name -->
+						<!-- group or sharebookmark name -->
 						<span ng-if="item.name">[[item.name]]</span>
 						<!-- user displayName -->
 						<span ng-if="item.username">[[item.username]]</span>

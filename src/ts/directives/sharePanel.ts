@@ -145,6 +145,9 @@ export const sharePanel = ng.directive('sharePanel', ['$rootScope', ($rootScope)
                     var id = resource._id;
                     http().get('/' + currentApp + '/share/json/' + id + '?search=').done(function(data){
                         if(initModel){
+                            data.users.visibles.map(user => user.type = 'user');
+                            data.groups.visibles.map(group => group.type = 'group');
+
                             $scope.sharingModel = data;
                             $scope.sharingModel.edited = [];
                         }
@@ -285,6 +288,9 @@ export const sharePanel = ng.directive('sharePanel', ['$rootScope', ($rootScope)
                         path = '/' + currentApp + '/share/json/' + id;
                     }
                     http().get(path).done(function(data){
+                        data.users.visibles.map(user => user.type = 'user');
+                        data.groups.visibles.map(group => group.type = 'group');
+
                         usersCache[startSearch] = { groups: data.groups, users: data.users };
                         $scope.sharingModel.groups = usersCache[startSearch].groups;
                         $scope.sharingModel.users = usersCache[startSearch].users;
@@ -418,7 +424,7 @@ export const sharePanel = ng.directive('sharePanel', ['$rootScope', ($rootScope)
 
                     if (item.type == 'sharebookmark') {
                         sharebookmarks[item.id] = rights;
-                    } else if (item.login !== undefined || item.type == 'sharebookmark-user') {
+                    } else if (item.type == 'user' || item.type == 'sharebookmark-user') {
                         users[item.id] = rights;
                     } else {
                         groups[item.id] = rights;
@@ -443,9 +449,15 @@ export const sharePanel = ng.directive('sharePanel', ['$rootScope', ($rootScope)
                 if(model.me.workflow.directory.allowSharebookmarks == true) {
                     let members = [];
                     $scope.sharingModel.edited.forEach(item => {
-                        // if item is a user or a group
-                        if(item.name || item.login) {
+                        if(item.type == 'user' || item.type == 'group') {
                             members.push(item.id);
+                        } else { // if it is a sharebookmark
+                            if(item.users) {
+                                item.users.forEach(user => members.push(user.id));
+                            }
+                            if(item.groups) {
+                                item.groups.forEach(group => members.push(group.id));
+                            }
                         }
                     })
                     let data = {
@@ -458,6 +470,12 @@ export const sharePanel = ng.directive('sharePanel', ['$rootScope', ($rootScope)
                         $scope.$apply();
                     });
                 }
+            }
+
+            $scope.typeSort = function(value) {
+                if(value.type == 'sharebookmark') return 0;
+                if(value.type == 'group') return 1;
+                return 2;
             }
 		}
 	}
