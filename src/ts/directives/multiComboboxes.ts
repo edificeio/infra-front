@@ -29,12 +29,12 @@ export const multiComboboxes = ng.directive('multiComboboxes', () => {
                     <div class="search-pagination flex-row align-center">
                         <div class="cell twelve">
                             <input class="twelve" name="searchField" type="text" ng-model="searchField"
-                                i18n-placeholder="search"/>
+                                i18n-placeholder="portal.searching"/>
                             <i class="search"></i>
                         </div>
                     </div>
                     <div class="top-spacing-twice left-text smaller-text">
-                        <a class="text-underline-hover" ng-click="selectNone()"><i18n>portal.none</i18n></a> <span class="horizontal-margin-small">|</span> <a class="text-underline-hover" ng-click="selectAll()"><i18n>portal.select.all</i18n></a>
+                        <a class="text-underline-hover" ng-click="selectNone()"><i18n>portal.none</i18n></a> <span class="horizontal-margin-small">|</span> <a class="text-underline-hover" ng-click="selectAll()"><i18n>portal.all</i18n></a>
                     </div>
                     <div class="top-spacing-twice left-text scroll-seven-checks" bottom-scroll="updatingMaxItems()">
                         <div class="row cell-ellipsis top-spacing" ng-repeat="option in options | filter:filterByLabel">
