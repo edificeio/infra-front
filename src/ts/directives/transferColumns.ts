@@ -5,7 +5,6 @@ import { ng, _ } from '../entcore';
  * @param ngModel The right list of result items.
  * @param searchedItems The left list of searched items.
  * @param loading The boolean used to know if the loading needs to be displayed for searching.
- * @param textTitle The label translation used for the title.
  * @param textRightWarningTitle The label translation used for the warning title.
  * @param textRightWarningDescription The label translation used for the warning description.
  * @example
@@ -13,7 +12,6 @@ import { ng, _ } from '../entcore';
         ng-model="<ngModel>"
         searched-items="<searchedItems>"
         loading="<loading>"
-        text-title="[[lang.translate('<key>')]]"
         text-right-warning-title = "[[lang.translate('<key>')]]"
         text-right-warning-description = "[[lang.translate('<key>')]]">
     </transfer-columns>
@@ -25,20 +23,17 @@ export const transferColumns = ng.directive('transferColumns', () => {
         template: `
             <div class="flex-row bottom-spacing">
                 <div class="six">
-                    <div class="circle square-normal green right-magnet right-spacing-three"
+                    <div class="right-magnet right-spacing-three"
                         ng-click="addAllItems()" 
-                        ng-if="searchedItems.length > 0"
-                        tooltip="portal.all.add">
-                        <i class="right-arrow white-text centered-text block"></i>
+                        ng-if="searchedItems.length > 0">
+                        <a><i18n class="small-text">portal.all.add</i18n> <i class="right-arrow horizontal-margin-small"></i></a>
                     </div>
                 </div>
                 <div class="six">
-                    <span class="medium-importance left-spacing-twice">[[ textTitle ]]</span>
-                    <div class="circle square-normal red right-magnet right-spacing" 
+                    <div class="right-magnet right-spacing"
                         ng-click="removeAllItems()" 
-                        ng-if="ngModel.length > 0"
-                        tooltip="portal.all.remove">
-                        <i class="close white-text centered-text block"></i>
+                        ng-if="ngModel.length > 0">
+                        <a><i18n class="small-text">portal.all.remove</i18n> <i class="close-icon horizontal-margin-small"></i></a>
                     </div>
                 </div>
             </div>
