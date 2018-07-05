@@ -61,6 +61,19 @@ export const contactChip = ng.directive('contactChip', () => {
                     scope.onGeneralClick();
                 }
             });
+
+            // Tootltip
+            element.on("mouseenter", function() {
+                var ellispsis = element.find('.cell-ellipsis');
+                for (var i = 0, l = ellispsis.length; i < l; i++) {
+                    if (ellispsis[i].offsetWidth < ellispsis[i].scrollWidth) {
+                        ellispsis.eq(i).attr('title', scope.isChipGroup() ? scope.ngModel.name : (scope.ngModel.name ? scope.ngModel.name : "") + (scope.ngModel.displayName ? scope.ngModel.displayName : ""));
+                    }
+                    else {
+                        ellispsis.eq(i).attr('title', null);
+                    }
+                }
+            });
         }
     };
 });

@@ -59,7 +59,6 @@ export const transferColumns = ng.directive('transferColumns', () => {
                             <div>[[ textRightWarningDescription ]]</div>
                         </div>
                     </div>
-                    <div class="row info" ng-if="ngModel.length === 0 && searchedItems.length > 0"><i18n>portal.select.users.criterias</i18n></div>
                     <contact-chip class="block relative removable chip-hover" stickerNotSelected
                         ng-model="item"
                         action="removeItem(item)"
