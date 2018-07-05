@@ -37,7 +37,7 @@ export const multiComboboxes = ng.directive('multiComboboxes', () => {
                         <a class="text-underline-hover" ng-click="selectNone()"><i18n>portal.none</i18n></a> <span class="horizontal-margin-small">|</span> <a class="text-underline-hover" ng-click="selectAll()"><i18n>portal.all</i18n></a>
                     </div>
                     <div class="top-spacing-twice left-text scroll-seven-checks" bottom-scroll="updatingMaxItems()">
-                        <div class="row cell-ellipsis top-spacing" ng-repeat="option in options | filter:filterByLabel">
+                        <div class="row cell-ellipsis top-spacing" ng-repeat="option in options | orderBy:'label' | filter:filterByLabel">
                             <label class="wrapping-checkbox relative">
                                 <input type="checkbox" ng-model="option.checked" />
                                 <i18n class="low-importance">[[ option.label ]]</i18n>
