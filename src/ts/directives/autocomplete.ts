@@ -150,7 +150,6 @@ export let autocomplete = ng.directive('autocomplete', ['$timeout', function ($t
 					return;
 				}
                 scope.match = [];
-                linkedInput.focus();
 				scope.$apply();
 			};
 
