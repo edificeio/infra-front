@@ -11,7 +11,9 @@ const secondLevelWidgets = [
 	"my-apps", 
 	"rss-widget", 
 	"bookmark-widget", 
-	"cursus-widget"
+	"cursus-widget",
+	"maxicours-widget",
+	"qwant"
 ];
 
 export let widgets = {
@@ -46,24 +48,24 @@ function WidgetModel(){
 			var that = this;
 			var data = model.me.widgets;
 
-			http().get('/userbook/preference/widgets').done(function(pref){
+			http().get('/userbook/preference/widgets').done(async function(pref){
 				if(!pref.preference){
 					this.preferences = {};
 				}
 				else{
 					this.preferences = JSON.parse(pref.preference);
 				}
-				skin.listSkins().then(function(){
+				await skin.listSkins().then(function(){
 					let widgetsToHide = skin.skins.find((s) => s.child == skin.skin).parent == "panda" ?
 						secondLevelWidgets :
 						firstLevelWidgets;
+					data = data.filter((widget => widgetsToHide.find((w) => w == widget.name) ? false : true));
 					data = data.map(function(widget, i){
 						if(!that.preferences[widget.name]){
 							that.preferences[widget.name] = { index: i, show: true };
 						}
 						widget.index = that.preferences[widget.name].index;
 						widget.hide = widget.mandatory ? false : that.preferences[widget.name].hide;
-						widget.themeHide = widgetsToHide.find((w) => w == widget.name) ? true : false;
 						return widget;
 					})
 				});
