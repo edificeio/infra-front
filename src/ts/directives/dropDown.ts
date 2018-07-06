@@ -18,7 +18,7 @@ export const dropDown = ng.directive('dropDown', ['$compile', '$timeout', ($comp
 						<li ng-repeat="option in options | limitTo:limit" ng-model="option">
 							<a class="cell" ng-class="{'sharebookmark': option.type === 'sharebookmark'}">
 								<i class="add-favorite cell" ng-if="option.type === 'sharebookmark'"></i>
-								[[option.name]][[option.displayName]]
+								[[option.title]][[option.name]][[option.displayName]]
 							</a>
 							<em class="left-spacing top-spacing-twice low-importance cell">[[translate(option.profile)]] </em>
 						</li>
