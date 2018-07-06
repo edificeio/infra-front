@@ -15,12 +15,12 @@ export const dropDown = ng.directive('dropDown', ['$compile', '$timeout', ($comp
 			<div data-drop-down class="drop-down">
 				<div>
 					<ul class="ten cell right-magnet">
-						<li ng-repeat="option in options | limitTo:limit" ng-model="option">
+						<li class="flex-row" ng-repeat="option in options | limitTo:limit" ng-model="option">
 							<a class="cell" ng-class="{'sharebookmark': option.type === 'sharebookmark'}">
 								<i class="add-favorite cell" ng-if="option.type === 'sharebookmark'"></i>
 								[[option.title]][[option.name]][[option.displayName]]
 							</a>
-							<em class="left-spacing top-spacing-twice low-importance cell">[[translate(option.profile)]] </em>
+							<em class="cell right-spacing low-importance">[[translate(option.profile)]] </em>
 						</li>
 						<li class="display-more" ng-show="limit < options.length" ng-click="increaseLimit()">[[translate('seemore')]]</li>
 					</ul>
