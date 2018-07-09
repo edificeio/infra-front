@@ -3,15 +3,12 @@ import { ng, _, angular } from '../entcore';
 /**
  * @description Display pastilles and a particular search template according to the selected pastille.
  * @param ngModel The activated pastille index.
- * @param showClose bool indicating if the close button needs to be shown or not.
  * @param ngChange Function to call after the activated pastill changed.
  * @param search Function applying a search according to the selected pastille.
- * @param onClose Function to call after clicking on the close button.
  * @param images A string representing an array of string containing the list of images paths.
  * @example
  *  <search-module 
         search="<function>()"
-        on-close="<function>()"
         images="<images>">
         <div>
             Page 1
@@ -42,9 +39,6 @@ export const searchModule = ng.directive('searchModule', ['$window', ($window) =
             <form name="searchForm" ng-submit="search()" novalidate>
                 <article class="twelve cell reduce-block-six">
                     <div class="spacer-large"></div>
-                    <a ng-click="onClose()" class="zero-large-desktop close-lightbox" ng-show="showClose">
-                        <i class="close" />
-                    </a>
                     <ng-transclude></ng-transclude>
                 </article>
             </form>
@@ -52,10 +46,8 @@ export const searchModule = ng.directive('searchModule', ['$window', ($window) =
 
         scope: {
             ngModel: '=',
-            showClose: '=',
             ngChange: '&',
             search: '&',
-            onClose: '&',
         },
 
         link: (scope, element, attributes) => {
