@@ -20,12 +20,12 @@ export const multiComboboxes = ng.directive('multiComboboxes', () => {
         restrict: 'E',
         template: `
             <div class="fluid row">
-                <button type="button" class="select-button left-text low-text row" ng-class="{ selected : showOptions }" ng-click="showOptions = !showOptions">
+                <button type="button" class="select-button left-text low-text row" ng-class="{ selected : showOptions }">
                     <span ng-if="!ngModel" class="block cell-ellipsis right-spacing active">[[ titleAll ]]</span>
                     <span ng-if="ngModel && ngModel.length === 0" class="block cell-ellipsis right-spacing">[[ title ]]</span>
                     <span ng-if="ngModel && ngModel.length > 0" class="block cell-ellipsis right-spacing active">[[ title ]]: [[ ngModel.length ]] <i18n>portal.selected</i18n></span> <i class="sort horizontal-margin top-spacing absolute-magnet"/>
                 </button>
-                <article ng-show="showOptions" class="absolute-w high-index">
+                <article class="absolute-w">
                     <div class="search-pagination flex-row align-center">
                         <div class="cell twelve">
                             <input class="twelve" name="searchField" type="text" ng-model="searchField"
@@ -57,6 +57,9 @@ export const multiComboboxes = ng.directive('multiComboboxes', () => {
             scope.titleAll = attributes.titleAll;
             scope.title = attributes.title;
             scope.maxItems = 20;
+            scope.showOptions = false;
+            scope.firstShow = true;
+            element.find('article').hide();
 
             scope.updatingMaxItems = function() {
                 scope.maxItems += 20;
@@ -89,13 +92,33 @@ export const multiComboboxes = ng.directive('multiComboboxes', () => {
                 });
             });
 
-            scope.showOptions = false;
             scope.searchField = "";
 
             // Show / Hide the options on click
+            var hide = function() {
+                element.find('article').css('opacity', 0);
+                element.find('article').css('z-index', -1);
+            };
+            element.find('button').on('click', function() {
+                if (scope.showOptions) {
+                    hide();
+                }
+                else {
+                    if (scope.firstShow) {
+                        element.find('article').show();
+                        scope.firstShow = false;
+                    }
+                    element.find('article').css('opacity', 1);
+                    element.find('article').css('z-index', 1000);
+                    element.find('article').focus();
+                }
+                scope.showOptions = !scope.showOptions;
+                scope.$apply();
+            });
             var close = function(e){
 				if(element.find(e.target).length > 0)
                     return;
+                hide();
                 scope.showOptions = false;
 				scope.$apply();
 			};
