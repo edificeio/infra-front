@@ -24,6 +24,7 @@ export let autocomplete = ng.directive('autocomplete', ['$timeout', function ($t
                                     <i class="add-favorite cell" ng-if="option.type === 'sharebookmark'"></i>
                                     [[option.toString()]]
                                 </a>
+                                <em ng-if="option.structureName" class="left-spacing top-spacing-twice low-importance cell">[[option.structureName]]</em>
                                 <em class="left-spacing top-spacing-twice low-importance cell">[[translate(option.profile)]] </em>
                             </li>
                             <li class="display-more" ng-show="limit < match.length" ng-click="increaseLimit()">[[translate('seemore')]]</li>
