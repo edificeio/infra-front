@@ -37,11 +37,12 @@ export const multiComboboxes = ng.directive('multiComboboxes', () => {
                         <a class="text-underline-hover" ng-click="selectNone()"><i18n>portal.none</i18n></a> <span class="horizontal-margin-small">|</span> <a class="text-underline-hover" ng-click="selectAll()"><i18n>portal.all</i18n></a>
                     </div>
                     <div class="top-spacing-twice left-text scroll-seven-checks" bottom-scroll="updatingMaxItems()">
-                        <div class="row cell-ellipsis top-spacing" ng-repeat="option in options | orderBy:'label' | filter:filterByLabel">
-                            <label class="wrapping-checkbox relative">
+                        <div class="flex-row top-spacing" ng-repeat="option in options | orderBy:'label' | filter:filterByLabel" ng-click="option.checked=!option.checked">
+                            <label class="cell wrapping-checkbox">
                                 <input type="checkbox" ng-model="option.checked" />
-                                <i18n class="low-importance">[[ option.label ]]</i18n>
+                                <i18n></i18n>
                             </label>
+                            <i18n class="cell multiline-ellipsis-two top-spacing size-auto left-text low-importance">[[ option.label ]]</i18n>
                         </div>
                     </div>
                 </article>
@@ -88,7 +89,7 @@ export const multiComboboxes = ng.directive('multiComboboxes', () => {
                             if (scope.ngModel && scope.ngModel.length === scope.options.length)
                                 scope.ngModel = null;
                         }
-                    }, true);
+                    }, true);                 
                 });
             });
 
@@ -110,7 +111,6 @@ export const multiComboboxes = ng.directive('multiComboboxes', () => {
                     }
                     element.find('article').css('opacity', 1);
                     element.find('article').css('z-index', 1000);
-                    element.find('article').focus();
                 }
                 scope.showOptions = !scope.showOptions;
                 scope.$apply();
