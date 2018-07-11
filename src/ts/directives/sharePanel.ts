@@ -21,9 +21,16 @@ export const sharePanel = ng.directive('sharePanel', ['$rootScope', ($rootScope)
             var currentApp = appPrefix;
             var usersCache = {};
 
+            $scope.display = {
+                showSaveSharebookmarkInput: false,
+                sharebookmarkSaved: false,
+                workflowAllowSharebookmarks: false
+            } 
+
             // get directory workflow to manage allowSharebookmarks workflow
             async function loadDirectoryWorkflow() {
                 await model.me.workflow.load(['directory']);
+                $scope.display.workflowAllowSharebookmarks = model.me.workflow.directory.allowSharebookmarks;
                 $scope.$apply();
             }
             loadDirectoryWorkflow();
@@ -49,12 +56,7 @@ export const sharePanel = ng.directive('sharePanel', ['$rootScope', ($rootScope)
             $scope.sharingModel = {
                 edited: [],
                 changed: false
-            };
-
-            $scope.display = {
-                showSaveSharebookmarkInput: false,
-                sharebookmarkSaved: false
-            }    
+            };   
         
             $scope.addResults = function(){
                 $scope.maxResults += 5;
@@ -440,7 +442,6 @@ export const sharePanel = ng.directive('sharePanel', ['$rootScope', ($rootScope)
                         .done(function(res){
                             notify.success('share.notify.success');
                             $rootScope.$broadcast('share-updated', res['notify-timeline-array']);
-                            // template.close('lightboxes');
                         });
                 });
             }

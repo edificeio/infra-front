@@ -22,65 +22,79 @@
 	<div class="row line">
 		<h2><i18n>share.title</i18n></h2>
 		<form name="sharePanelForm">
-			<div class="flex-row justify-between">
-				<div class="saveSharebookmark">
-					<div class="flex-row" 
-						ng-if="display.showSaveSharebookmarkInput === false && display.sharebookmarkSaved === false && sharingModel.edited.length > 0"
-						workflow="directory.allowSharebookmarks">
-						<a class="is-light" ng-click="display.showSaveSharebookmarkInput = true">
-							<i18n>share.save.sharebookmark</i18n>
-						</a>
-						<span class="tipbox">
-							<div>
-								<i class="help sticker square-medium"></i>
-							</div>
-							<div class="tipbox-content tipbox-right">
-								<span class="small-text">
-									<i18n>share.tip.addFavorite</i18n>
-								</span>
-							</div>
-						</span>
-					</div>
-					<div ng-if="display.showSaveSharebookmarkInput === true && display.sharebookmarkSaved === false"
-						workflow="directory.allowSharebookmarks">
-						<input class="cell" 
-							type="text"
-							ng-model="newSharebookmarkName" 
-							i18n-placeholder="share.mysharebookmark"
-							required 
-							ng-minlength="1">
-						<a class="button is-light uppercase"
-							ng-click="createSharebookmark(newSharebookmarkName)"
-							ng-disabled="!newSharebookmarkName || sharingModel.edited.length < 1">
-							<i18n>ok</i18n>
-						</a>
-					</div>
-					<div ng-if="display.sharebookmarkSaved === true" workflow="directory.allowSharebookmarks">
-						<span class="italic-text"><i18n>share.save.sharebookmark.in</i18n></span> <a href="/userbook/annuaire#/search" target="_blank"><i18n>share.mysharebookmarks</i18n></a>
-					</div>
-				</div>
-				<button ng-click="share()" ng-disabled="!sharingModel.changed">
+			<div class="row">
+				<button class="right-magnet" ng-click="share()" ng-disabled="!sharingModel.changed">
 					<i18n>share</i18n>
 				</button>
-			</div>
-			<div class="block" ng-if="varyingRights">
-				<div class="warning">
-					<i18n>share.varyingrights</i18n>
+				<div class="block" ng-if="varyingRights">
+					<div class="warning">
+						<i18n>share.varyingrights</i18n>
+					</div>
 				</div>
 			</div>
 
-			<div class="groups-list">
+			<div class="row groups-list">
 				<div>
 					<ng-include src="shareTable"></ng-include>
 				</div>
 
-				<a ng-click="displayMore()" ng-if="sharingModel.edited.length > maxEdit" class="display-more"><i18n>share.more</i18n></a>
+				<div class="flex-row justify-between align-center">
+					<div class="saveSharebookmark">
+						<div class="flex-row align-center" 
+							ng-if="display.showSaveSharebookmarkInput === false && display.sharebookmarkSaved === false && sharingModel.edited.length > 0"
+							workflow="directory.allowSharebookmarks">
+							<a ng-click="display.showSaveSharebookmarkInput = true">
+								<i class="add-favorite cell"></i> <i18n>share.save.sharebookmark</i18n>
+							</a>
+						</div>
+						<div ng-if="display.showSaveSharebookmarkInput === true && display.sharebookmarkSaved === false"
+							workflow="directory.allowSharebookmarks">
+							<input class="cell" 
+								type="text"
+								ng-model="newSharebookmarkName" 
+								i18n-placeholder="share.mysharebookmark"
+								required 
+								ng-minlength="1">
+							<a class="button is-light uppercase"
+								ng-click="createSharebookmark(newSharebookmarkName)"
+								ng-disabled="!newSharebookmarkName || sharingModel.edited.length < 1">
+								<i18n>ok</i18n>
+							</a>
+						</div>
+						<div ng-if="display.sharebookmarkSaved === true" workflow="directory.allowSharebookmarks">
+							<span class="italic-text saved-in"><i18n>share.save.sharebookmark.in</i18n></span>
+							<a href="/userbook/annuaire#/search" target="_blank"><i18n>share.mysharebookmarks</i18n></a>
+						</div>
+					</div>
+
+					<a ng-click="displayMore()" 
+						ng-if="sharingModel.edited.length > maxEdit" 
+						class="display-more">
+						<i18n>share.more</i18n>
+					</a>
+				</div>
 			</div>
 		</form>
 	</div>
 
 	<div class="row bottom-spacing-twice">
-		<h2>[[translate('share.search.title')]]</h2>
+		<div class="flex-row align-center">
+			<h2>
+				<span ng-if="!display.workflowAllowSharebookmarks || display.workflowAllowSharebookmarks == false">[[translate('share.search.title')]]</span>
+				<span workflow="directory.allowSharebookmarks">[[translate('share.search.sharebookmark.title')]]</span>
+			</h2>
+			<span class="tipbox" workflow="directory.allowSharebookmarks">
+				<div>
+					<i class="help sticker square-medium"></i>
+				</div>
+				<div class="tipbox-content">
+					<span class="small-text">
+						<i18n>share.tip.addFavorite</i18n>
+					</span>
+				</div>
+			</span>
+		</div>
+		
 		<search-user class="twelve cell" 
 			ng-model="search"
 			clear-list="clearSearch()"
