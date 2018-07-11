@@ -436,7 +436,7 @@ export const sharePanel = ng.directive('sharePanel', ['$rootScope', ($rootScope)
                 data['bookmarks'] = sharebookmarks;
                 
                 $scope.resources.forEach(function(resource) {
-                    http().put('/' + currentApp + '/share/resource/' + resource._id, JSON.stringify(data))
+                    http().putJson('/' + currentApp + '/share/resource/' + resource._id, data)
                         .done(function(res){
                             notify.success('share.notify.success');
                             $rootScope.$broadcast('share-updated', res['notify-timeline-array']);
@@ -465,7 +465,7 @@ export const sharePanel = ng.directive('sharePanel', ['$rootScope', ($rootScope)
                         "members": members
                     };
                     
-                    http().post('/directory/sharebookmark', JSON.stringify(data)).done(res => {
+                    http().postJson('/directory/sharebookmark', data).done(res => {
                         $scope.display.sharebookmarkSaved = true;
                         $scope.$apply();
                     });
