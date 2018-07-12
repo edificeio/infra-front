@@ -19,15 +19,15 @@ export let autocomplete = ng.directive('autocomplete', ['$timeout', function ($t
                 <div data-drop-down class="drop-down">
                     <div>
                         <ul class="ten cell right-magnet">
-                            <li ng-repeat="option in match | limitTo:limit" ng-model="option">
-                                <a class="cell" ng-class="{'sharebookmark': option.type === 'sharebookmark'}">
+                            <li class="row block-container" ng-repeat="option in match | limitTo:limit" ng-model="option">
+                                <a class="cell right-spacing" ng-class="{'sharebookmark': option.type === 'sharebookmark'}">
                                     <i class="add-favorite cell" ng-if="option.type === 'sharebookmark'"></i>
                                     [[option.toString()]]
                                 </a>
-                                <em ng-if="option.structureName" class="left-spacing top-spacing-twice low-importance cell">[[option.structureName]]</em>
-                                <em class="left-spacing top-spacing-twice low-importance cell">[[translate(option.profile)]] </em>
+                                <em ng-if="option.structureName" class="top-spacing-twice low-importance cell">[[option.structureName]]</em>
+                                <em class="top-spacing-twice low-importance cell">[[translate(option.profile)]] </em>
                             </li>
-                            <li class="display-more" ng-show="limit < match.length" ng-click="increaseLimit()">[[translate('seemore')]]</li>
+                            <li class="display-more block-container" ng-show="limit < match.length" ng-click="increaseLimit()">[[translate('seemore')]]</li>
                         </ul>
                     </div>
                 </div>
@@ -56,7 +56,7 @@ export let autocomplete = ng.directive('autocomplete', ['$timeout', function ($t
                 var liHeight = 0;
                 var max = Math.min(scope.limit, scope.match.length);
                 dropDownContainer.find('li').each(function (index, el) {
-                    liHeight += $(el).height();
+                    liHeight += $(el).offsetHeight;
 
                     return index < max;
                 })

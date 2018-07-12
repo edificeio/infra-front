@@ -15,15 +15,15 @@ export const dropDown = ng.directive('dropDown', ['$compile', '$timeout', ($comp
 			<div data-drop-down class="drop-down">
 				<div>
 					<ul class="ten cell right-magnet">
-						<li class="flex-row" ng-repeat="option in options | limitTo:limit" ng-model="option">
-							<a class="cell" ng-class="{'sharebookmark': option.type === 'sharebookmark'}">
+						<li class="row block-container" ng-repeat="option in options | limitTo:limit" ng-model="option">
+							<a class="cell right-spacing" ng-class="{'sharebookmark': option.type === 'sharebookmark'}">
 								<i class="add-favorite cell" ng-if="option.type === 'sharebookmark'"></i>
 								[[option.toString()]]
 							</a>
-							<em ng-if="option.structureName" class="cell right-spacing low-importance">[[option.structureName]]</em>
-							<em class="cell right-spacing low-importance">[[translate(option.profile)]] </em>
+							<em ng-if="option.structureName" class="cell low-importance">[[option.structureName]]</em>
+							<em class="cell low-importance">[[translate(option.profile)]] </em>
 						</li>
-						<li class="display-more" ng-show="limit < options.length" ng-click="increaseLimit()">[[translate('seemore')]]</li>
+						<li class="display-more block-container" ng-show="limit < options.length" ng-click="increaseLimit()">[[translate('seemore')]]</li>
 					</ul>
 				</div>
 			</div>
@@ -36,7 +36,7 @@ export const dropDown = ng.directive('dropDown', ['$compile', '$timeout', ($comp
 				var liHeight = 0;
 				var max = Math.min(scope.limit, scope.options.length);
 				dropDown.find('li').each(function(index, el){
-					liHeight += $(el).height();
+					liHeight += $(el).offsetHeight;
 					return index < max;
 				});
 				dropDown.height(liHeight)
