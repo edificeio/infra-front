@@ -15,7 +15,7 @@ export const dropDown = ng.directive('dropDown', ['$compile', '$timeout', ($comp
 			<div data-drop-down class="drop-down">
 				<div>
 					<ul class="ten cell right-magnet">
-						<li class="row block-container" ng-repeat="option in options | limitTo:limit" ng-model="option">
+						<li class="block-container" ng-repeat="option in options | limitTo:limit" ng-model="option">
 							<a class="cell right-spacing" ng-class="{'sharebookmark': option.type === 'sharebookmark'}">
 								<i class="add-favorite cell" ng-if="option.type === 'sharebookmark'"></i>
 								[[option.toString()]]
