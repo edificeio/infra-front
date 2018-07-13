@@ -1,6 +1,6 @@
 {
   "name": "entcore",
-  "version": "2.2.5-dev.37",
+  "version": "2.2.5-dev.38",
   "description": "",
   "main": "gulpfile.js",
   "dependencies": {

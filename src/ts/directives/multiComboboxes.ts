@@ -29,7 +29,7 @@ export const multiComboboxes = ng.directive('multiComboboxes', () => {
                     <div class="search-pagination flex-row align-center">
                         <div class="cell twelve">
                             <input class="twelve" name="searchField" type="text" ng-model="searchField"
-                                i18n-placeholder="portal.searching"/>
+                                i18n-placeholder="portal.searching" autocomplete="off"/>
                             <i class="search"></i>
                         </div>
                     </div>
@@ -99,6 +99,7 @@ export const multiComboboxes = ng.directive('multiComboboxes', () => {
             var hide = function() {
                 element.find('article').css('opacity', 0);
                 element.find('article').css('z-index', -1);
+                scope.searchField = "";
             };
             element.find('button').on('click', function() {
                 if (scope.showOptions) {
@@ -136,6 +137,7 @@ export const multiComboboxes = ng.directive('multiComboboxes', () => {
                 scope.options.forEach(option => {
                     option.checked = checked;
                 });
+                scope.searchField = "";
             };
             scope.selectNone = () => {
                 scope.select(false);
