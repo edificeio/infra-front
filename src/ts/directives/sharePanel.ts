@@ -438,6 +438,20 @@ export const sharePanel = ng.directive('sharePanel', ['$rootScope', ($rootScope)
                 data['bookmarks'] = sharebookmarks;
                 
                 $scope.resources.forEach(function(resource) {
+                    // if authentified user is the resource manager, add user to share users array
+                    var myRights = resource.shared.find(sharedItem => sharedItem.userId == model.me.userId);
+                    if(myRights && myRights['org-entcore-workspace-service-WorkspaceService|shareResource'] == true) {
+                        var rights = [];
+                        Object.keys(myRights).forEach(key => {
+                            if(myRights[key] == true && key != 'userId') {
+                                rights.push(key);
+                            }
+                        });
+
+                        users[model.me.userId] = rights;
+                        data['users'] = users;
+                    }
+
                     http().putJson('/' + currentApp + '/share/resource/' + resource._id, data)
                         .done(function(res){
                             notify.success('share.notify.success');
