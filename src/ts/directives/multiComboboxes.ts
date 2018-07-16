@@ -21,9 +21,8 @@ export const multiComboboxes = ng.directive('multiComboboxes', () => {
         template: `
             <div class="fluid row">
                 <button type="button" class="select-button left-text low-text row" ng-class="{ selected : showOptions }">
-                    <span ng-if="!ngModel" class="block cell-ellipsis right-spacing active">[[ titleAll ]]</span>
-                    <span ng-if="ngModel && ngModel.length === 0" class="block cell-ellipsis right-spacing">[[ title ]]</span>
-                    <span ng-if="ngModel && ngModel.length > 0" class="block cell-ellipsis right-spacing active">[[ title ]]: [[ ngModel.length ]] <i18n>portal.selected</i18n></span> <i class="sort horizontal-margin top-spacing absolute-magnet"/>
+                    <span ng-if="ngModel.length === 0" class="block cell-ellipsis right-spacing">[[ titleAll ]]</span>
+                    <span ng-if="ngModel.length > 0" class="block cell-ellipsis right-spacing active">[[ title ]]: [[ ngModel.length ]] <i18n>portal.selected</i18n></span> <i class="sort horizontal-margin top-spacing absolute-magnet"/>
                 </button>
                 <article class="absolute-w">
                     <div class="search-pagination flex-row align-center">
@@ -74,20 +73,11 @@ export const multiComboboxes = ng.directive('multiComboboxes', () => {
                     scope.$watch(function() { return option; }, function(newValue, oldValue) {
                         if (newValue != oldValue) {
                             if (newValue.checked) {
-                                if (scope.ngModel)
                                     scope.ngModel.push(newValue.type);
                             }
                             else {
-                                if (!scope.ngModel) {
-                                    scope.ngModel = [];
-                                    scope.options.forEach(o => {
-                                        scope.ngModel.push(o.type);
-                                    });
-                                }
                                 scope.ngModel.splice(scope.ngModel.indexOf(newValue.type), 1);
                             }
-                            if (scope.ngModel && scope.ngModel.length === scope.options.length)
-                                scope.ngModel = null;
                         }
                     }, true);                 
                 });
