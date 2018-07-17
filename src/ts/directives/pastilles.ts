@@ -138,7 +138,7 @@ export const pastilles = ng.directive('pastilles', ['$window', ($window) => {
                     });
                 }
 
-                scope.$watch(function() { return element.find('div').css('width'); }, function(newValue) {
+                scope.$watch(function() { return element.find('div')[0].style.width }, function(newValue) {
                     updatePastillesPosition();
                 });
 
