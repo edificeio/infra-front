@@ -20,8 +20,8 @@ export const dropDown = ng.directive('dropDown', ['$compile', '$timeout', ($comp
 								<i class="add-favorite cell" ng-if="option.type === 'sharebookmark'"></i>
 								[[option.toString()]]
 							</a>
-							<em ng-if="option.structureName" class="cell low-importance">[[option.structureName]]</em>
-							<em class="cell low-importance">[[translate(option.profile)]] </em>
+							<em ng-if="option.structureName" class="low-importance">[[option.structureName]]</em>
+							<em class="low-importance">[[translate(option.profile)]] </em>
 						</li>
 						<li class="display-more block-container" ng-show="limit < options.length" ng-click="increaseLimit()">[[translate('seemore')]]</li>
 					</ul>
