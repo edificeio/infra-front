@@ -18,7 +18,7 @@
  ~
  -->
 
-<div class="share">
+<div class="share temp">
 	<div class="row line">
 		<h2><i18n>share.title</i18n></h2>
 		<form name="sharePanelForm">
@@ -101,7 +101,7 @@
 			on-send="findUserOrGroup()">
 		</search-user>
 		<div class="found-users-list">
-			<div ng-repeat="item in found | orderBy:[typeSort, 'name', 'username'] | limitTo:maxResults" class="row autocomplete">
+			<div ng-repeat="item in found | orderBy:[typeSort, 'name', 'username'] | limitTo:maxResults" class="row autocomplete temp">
 				<div ng-click="addEdit(item)" class="row">
 					<a class="cell right-spacing" ng-class="{sharebookmark: item.type === 'sharebookmark'}">
 						<i class="add-favorite cell" ng-if="item.type === 'sharebookmark'"></i>
