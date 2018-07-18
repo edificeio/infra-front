@@ -410,6 +410,8 @@ export const sharePanel = ng.directive('sharePanel', ['$rootScope', ($rootScope)
             }
 
             $scope.share = function() {
+                $scope.sharingModel.changed = false;
+                
                 var data: any = {};
                 var users: any = {};
                 var groups: any = {};
