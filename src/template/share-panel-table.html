@@ -25,7 +25,7 @@
                 <tr ng-class="{'nested-root': item.type == 'sharebookmark'}">
                     <td ng-click="showMembers = !showMembers" class="flex-row twelve">
                         <i class="add-favorite cell" ng-if="item.type === 'sharebookmark'"></i>
-                        <span class="cell">[[item.name]][[item.firstName]] [[item.lastName]]</span>
+                        <span class="cell">[[item.name]][[item.username]]</span>
                         <i class="down-open cell" ng-if="item.type === 'sharebookmark' && showMembers === false"></i>
                         <i class="up-open cell" ng-if="item.type === 'sharebookmark' && showMembers === true"></i>
                         <div class="drop-line" ng-click="remove(item)"></div>
