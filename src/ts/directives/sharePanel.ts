@@ -308,8 +308,10 @@ export const sharePanel = ng.directive('sharePanel', ['$rootScope', ($rootScope)
                                 $scope.findUserOrGroup();
                                 $scope.$apply();
                             });
+                        } else {
+                            $scope.findUserOrGroup();
+                            $scope.$apply();
                         }
-                        $scope.$apply();
                     });
                     return;
                 }
