@@ -26,6 +26,19 @@ export let calendarComponent = ng.directive('calendar', function () {
                 $scope.display.editItem = false;
                 $scope.display.createItem = false;
 
+                $scope.setCookieQuarterHours  = () => {
+                    window.localStorage.setItem('showQuarterHours',  $scope.display.showQuarterHours);
+                };
+                if( $scope.display.showQuarterHoursOption ){
+                    let infoCookie = window.localStorage.getItem('showQuarterHours');
+                    if(!infoCookie){
+                        $scope.display.showQuarterHour=false;
+                        window.localStorage.setItem('showQuarterHours',  $scope.display.showQuarterHours);
+                    }
+
+                    $scope.display.showQuarterHours =  ('true' === infoCookie.toString());
+                }
+
                 $scope.editItem = function (item) {
                     $scope.calendarEditItem = item;
                     $scope.display.editItem = true;
@@ -100,7 +113,7 @@ export let calendarComponent = ng.directive('calendar', function () {
                 refreshCalendar();
             });
         }],
-        link: function (scope, element, attributes) {
+        link:  function (scope, element, attributes) {
             var allowCreate;
 
             if (attributes.itemTooltipTemplate) {
@@ -111,7 +124,6 @@ export let calendarComponent = ng.directive('calendar', function () {
                 readonly: false,
                 mode: 'week',
                 enableModes: attributes.enableDisplayModes === 'true',
-                showQuarterHours: false,
                 showQuarterHoursOption:  attributes.showQuarterHours === 'true',
                 showNextPreviousButton: attributes.showNextPreviousButton === 'true'
             };
