@@ -23,9 +23,9 @@
             <tbody ng-repeat="item in sharingModel.edited | orderBy:'index':true | limitTo:maxEdit"
                 ng-if="!item.hide || item.hide != true">
                 <tr ng-class="{'nested-root': item.type == 'sharebookmark'}">
-                    <td ng-click="showMembers = !showMembers" class="flex-row twelve">
+                    <td ng-click="showMembers = !showMembers"  ng-class="{'only-desktop': flex-row}" class="twelve">
                         <i class="add-favorite cell" ng-if="item.type === 'sharebookmark'"></i>
-                        <span class="cell">[[item.name]][[item.username]]</span>
+                        <span>[[item.name]][[item.username]]</span>
                         <i class="down-open cell" ng-if="item.type === 'sharebookmark' && showMembers === false"></i>
                         <i class="up-open cell" ng-if="item.type === 'sharebookmark' && showMembers === true"></i>
                         <div class="drop-line" ng-click="remove(item)"></div>
