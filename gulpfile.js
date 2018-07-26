@@ -34,6 +34,7 @@ gulp.task('update', ['build-dev'], () => {
         f.forEach((file) => {
             const split = file.split('/');
             const fileName = split[split.length - 1];
+            console.log('Copying resources to ' + split.slice(0, split.length - 1).join('/'));
             gulp.src('./bundle/ng-app.js')
                 .pipe(rename(fileName))
                 .pipe(gulp.dest(split.slice(0, split.length - 1).join('/')));
