@@ -33,11 +33,10 @@ In `docker-compose.yml` add the following volume mapping for `node` container :
 ../yourSpringboard:/home/node/yourSpringboard
 ```
 
-3. infra-front
+### 3. infra-front
 
 ```bash
 git clone git@github.com:entcore/infra-front.git
- 
 ```
 
 In `docker-compose.yml` add the same (than in Springboard) volume mapping for `node` container :
@@ -48,5 +47,13 @@ In `docker-compose.yml` add the same (than in Springboard) volume mapping for `n
 
 ## Run (watch) and develop 
 
-1. under **/infra-front** run  `./build.sh --springboard=yourSpringboard watch`
-2. under **/yourSpringboard** run `./build.sh run`
+1. under **/infra-front** run  
+    ```bash
+    ./build.sh --springboard=yourSpringboard install
+    ./build.sh --springboard=yourSpringboard watch
+    ```
+
+2. under **/yourSpringboard** run 
+    ```bash
+    ./build.sh run
+    ```
