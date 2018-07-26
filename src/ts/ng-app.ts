@@ -459,6 +459,9 @@ module.directive('portal', function(){
 			Http.prototype.bind('disconnected', function(){
 				window.location.href = '/';
 			})
+			return function postLink( scope, element, attributes, controller, transcludeFn ) {
+				scope.template = template;
+			};
 		}
 	}
 });
