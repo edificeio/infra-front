@@ -442,20 +442,21 @@ export const sharePanel = ng.directive('sharePanel', ['$rootScope', ($rootScope)
                 data['bookmarks'] = sharebookmarks;
                 
                 $scope.resources.forEach(function(resource) {
-                    // if user can share resource (and not owner), add user to share users array
-                    if(resource.myRights && resource.myRights['share'] != undefined
-                        && ((resource.folder && resource.owner != model.me.userId) || (!resource.folder && resource.owner.userId != model.me.userId))) {
+                    // if user can share resource => add user to share users array
+                    if(resource.myRights && resource.myRights['share'] != undefined && resource.shared) {
                         var rights = [];
                         var myRights = resource.shared.find(sharedItem => sharedItem.userId == model.me.userId);
 
-                        Object.keys(myRights).forEach(key => {
-                            if(myRights[key] == true && key != 'userId') {
-                                rights.push(key);
-                            }
-                        });
-                        
-                        users[model.me.userId] = rights;
-                        data['users'] = users;
+                        if(myRights) {
+                            Object.keys(myRights).forEach(key => {
+                                if(myRights[key] == true && key != 'userId') {
+                                    rights.push(key);
+                                }
+                            });
+                            
+                            users[model.me.userId] = rights;
+                            data['users'] = users;
+                        }
                     }
 
                     http().putJson('/' + currentApp + '/share/resource/' + resource._id, data)
