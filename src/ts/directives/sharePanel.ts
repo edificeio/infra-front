@@ -468,6 +468,9 @@ export const sharePanel = ng.directive('sharePanel', ['$rootScope', ($rootScope)
                         .done(function(res){
                             notify.success('share.notify.success');
                             $rootScope.$broadcast('share-updated', res['notify-timeline-array']);
+                        })
+                        .error(function(){
+                            notify.error('share.notify.error');
                         });
                 });
             }
