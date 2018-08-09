@@ -12,6 +12,7 @@ export * from './dropDown';
 export * from './dropdownButtons';
 export * from './embedder';
 export * from './explorer';
+export * from './groupsUsersSelector';
 export * from './imageCompression';
 export * from './imageEditor';
 export * from './imageSelect';
