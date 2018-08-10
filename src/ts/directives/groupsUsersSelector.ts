@@ -23,6 +23,7 @@ import { ng, _, idiom } from '../entcore';
  * {
  *      search :number => The string for the users search field.
  *      selectedGroup :boolean => Indicates whether a group is selected or not.
+ *      loading :boolean => Indicates whether there is a loading in both lists.
  * }
  * @example
  *  <groups-users-selector
@@ -47,27 +48,33 @@ export const groupsUsersSelector = ng.directive('groupsUsersSelector', () => {
                             ng-repeat="group in groupsList"
                             isgroup stickernotselected>
                         </contact-chip>
-                        <div class="small-text" data-ng-if="groupsList.length === 0">
+                        <div class="small-text" ng-if="groupsList.length === 0 && !selector.loading">
                             <i18n>portal.group.none.added</i18n>
                         </div>
+                    </div>
+                    <div class="row centered-text reduce-block-six" ng-if="selector.loading">
+                        <img skin-src="/img/illustrations/loading.gif" width="30px" heigh="30px"/>
                     </div>
                 </div>
                 <div class="cell six horizontal-spacing">
                     <h4><i18n>portal.user.added</i18n></h4>
-                    <div class="small-text row" data-ng-if="usersList.length > 0">
+                    <div class="small-text row" ng-if="usersList.length > 0">
                         <input type="text" class="six cell" autocomplete="off" ng-model="selector.search" i18n-placeholder="portal.search" /><span class="one cell">&nbsp;</span><label>[[getTotalUser().ok]] <i18n>portal.users</i18n></label>
                     </div>
                     <div id="userScroll" style="overflow-y: auto; max-height: 170px;">
-                    <contact-chip id='user-[[id(user)]]' class="block relative removable" ng-class="{selected: user.selected}"
-                        ng-if="!user.exclude"
-                        ng-model="user"
-                        action="removeItem(item)"
-                        ng-repeat="user in usersList | filter:filterAllUser()"
-                        stickernotselected>
-                    </contact-chip>
-                        <div class="small-text" data-ng-if="usersList.length === 0">
+                        <contact-chip id='user-[[id(user)]]' class="block relative removable" ng-class="{selected: user.selected}"
+                            ng-if="!user.exclude"
+                            ng-model="user"
+                            action="removeItem(item)"
+                            ng-repeat="user in usersList | filter:filterAllUser()"
+                            stickernotselected>
+                        </contact-chip>
+                        <div class="small-text" ng-if="usersList.length === 0 && !selector.loading">
                             <i18n>portal.user.none.added</i18n>
                         </div>
+                    </div>
+                    <div class="row centered-text reduce-block-six" ng-if="selector.loading">
+                        <img skin-src="/img/illustrations/loading.gif" width="30px" heigh="30px"/>
                     </div>
                 </div>
             </div>
