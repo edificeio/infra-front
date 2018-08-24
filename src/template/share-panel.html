@@ -18,7 +18,7 @@
  ~
  -->
 
-<div class="share temp">
+<div class="share temp" ng-if="display.showCloseConfirmation === false">
 	<div class="row line">
 		<h2><i18n>share.title</i18n></h2>
 		<form name="sharePanelForm">
@@ -124,3 +124,15 @@
 		</div>
 	</div>
 </div>
+
+<diV ng-if="display.showCloseConfirmation === true">
+	<h1><i18n>sharepanel.close.title</i18n></h1>
+	<div>
+		<p><i18n>sharepanel.close.explanation</i18n></p>
+		<p><i18n>sharepanel.close.confirmation</i18n></p>
+	</div>
+	<div class="row">
+		<button ng-click="closePanel()" class="right-magnet"><i18n>sharepanel.close.confirm</i18n></button>
+		<button ng-click="revertClose()" class="right-magnet"><i18n>cancel</i18n></button>
+	</div>
+</diV>

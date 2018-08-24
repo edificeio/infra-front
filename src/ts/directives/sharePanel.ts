@@ -1,3 +1,4 @@
+import * as $ from 'jquery';
 import { ng } from '../ng-start';
 import { appPrefix, infraPrefix } from '../globals';
 import { http } from '../http';
@@ -24,7 +25,8 @@ export const sharePanel = ng.directive('sharePanel', ['$rootScope', ($rootScope)
             $scope.display = {
                 showSaveSharebookmarkInput: false,
                 sharebookmarkSaved: false,
-                workflowAllowSharebookmarks: false
+                workflowAllowSharebookmarks: false,
+                showCloseConfirmation: false
             } 
 
             // get directory workflow to manage allowSharebookmarks workflow
@@ -503,6 +505,39 @@ export const sharePanel = ng.directive('sharePanel', ['$rootScope', ($rootScope)
                 if(value.type == 'group') return 1;
                 return 2;
             }
+
+            $scope.closePanel = function(){
+                $element.closest('.lightbox').first().fadeOut();
+                $('body').css({ overflow: 'auto' });
+                $('body').removeClass('lightbox-opened');
+
+                $element.closest('.lightbox').find('.content > .close-lightbox').css({visibility: 'visible'});
+                $element.closest('lightbox').isolateScope().$eval($element.closest('lightbox').isolateScope().onClose);
+                $element.closest('lightbox').isolateScope().show = false;
+                $element.closest('lightbox').isolateScope().$parent.$apply();
+                
+                $scope.display.showCloseConfirmation = false;
+                
+                $scope.$apply();
+            }
+
+            $scope.revertClose = function(){
+                $element.closest('.lightbox').find('.content > .close-lightbox').css({visibility: 'visible'});
+                $scope.display.showCloseConfirmation = false;
+                $scope.$apply();
+            }
+
+            $element.closest('.lightbox').find('.background, .content > .close-lightbox').on('click', function(e){
+                e.stopPropagation();
+                if (!$scope.sharingModel.changed)
+                    $scope.closePanel();
+                else if (!$scope.display.showCloseConfirmation){
+                    $scope.display.showCloseConfirmation = true;
+                    $element.closest('.lightbox').find('.content > .close-lightbox').css({visibility: 'hidden'});
+                    $scope.$apply();
+                }
+                $scope.$apply();
+            });
 		}
 	}
 }]);
