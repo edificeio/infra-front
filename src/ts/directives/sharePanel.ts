@@ -8,7 +8,6 @@ import { Model } from '../modelDefinitions';
 import { model } from '../modelDefinitions';
 import { Me } from '../me';
 import { notify } from '../notify';
-import { template } from '../template';
 
 export const sharePanel = ng.directive('sharePanel', ['$rootScope', ($rootScope) => {
 	return {
@@ -506,7 +505,7 @@ export const sharePanel = ng.directive('sharePanel', ['$rootScope', ($rootScope)
                 return 2;
             }
 
-            $scope.closePanel = function(){
+            $scope.closePanel = async function(){
                 $element.closest('.lightbox').first().fadeOut();
                 $('body').css({ overflow: 'auto' });
                 $('body').removeClass('lightbox-opened');
@@ -517,6 +516,7 @@ export const sharePanel = ng.directive('sharePanel', ['$rootScope', ($rootScope)
                 $element.closest('lightbox').isolateScope().$parent.$apply();
                 
                 $scope.display.showCloseConfirmation = false;
+                await feedData();
                 
                 $scope.$apply();
             }
