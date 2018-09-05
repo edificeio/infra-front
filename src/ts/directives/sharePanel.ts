@@ -8,6 +8,8 @@ import { Model } from '../modelDefinitions';
 import { model } from '../modelDefinitions';
 import { Me } from '../me';
 import { notify } from '../notify';
+import { template } from '../template';
+import { ui } from '../ui';
 
 export const sharePanel = ng.directive('sharePanel', ['$rootScope', ($rootScope) => {
 	return {
@@ -25,7 +27,8 @@ export const sharePanel = ng.directive('sharePanel', ['$rootScope', ($rootScope)
                 showSaveSharebookmarkInput: false,
                 sharebookmarkSaved: false,
                 workflowAllowSharebookmarks: false,
-                showCloseConfirmation: false
+                showCloseConfirmation: false,
+                showBookmarkMembers: false
             } 
 
             // get directory workflow to manage allowSharebookmarks workflow
@@ -62,8 +65,6 @@ export const sharePanel = ng.directive('sharePanel', ['$rootScope', ($rootScope)
             $scope.addResults = function(){
                 $scope.maxResults += 5;
             };
-
-            $scope.showMembers = false;
         
             var actionsConfiguration = {};
         
@@ -541,6 +542,9 @@ export const sharePanel = ng.directive('sharePanel', ['$rootScope', ($rootScope)
                 }
                 $scope.$apply();
             });
+            $scope.getColor = function(profile) {
+                return ui.profileColors.match(profile);
+            };
 		}
 	}
 }]);
