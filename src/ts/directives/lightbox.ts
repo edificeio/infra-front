@@ -21,8 +21,21 @@ export let lightbox = ng.directive('lightbox', () => {
 					'</section>'+
 				'</div>',
 		link: function(scope, element, attributes){
-			var content = element.find('.content');
-			element.children('.lightbox').find('> .background, > .content > .close-lightbox > i.close-2x').on('click', function(e){
+			element.children('.lightbox').find('> .background').on('click', function(e){
+				if (element.children('.lightbox').find('image-editor, share-panel, .import-files, .split-screen').length === 0){
+					element.children('.lightbox').first().fadeOut();
+					$('body').css({ overflow: 'auto' });
+					$('body').removeClass('lightbox-opened');
+
+					scope.$eval(scope.onClose);
+					scope.$apply();
+					scope.show = false;
+					if(!scope.$$phase){
+						scope.$parent.$apply();
+					}
+				}
+			});
+			element.children('.lightbox').find('> .content > .close-lightbox > i.close-2x').on('click', function(e){
 				if (element.children('.lightbox').find('share-panel').length === 0){
 					element.children('.lightbox').first().fadeOut();
 					$('body').css({ overflow: 'auto' });
