@@ -9,7 +9,7 @@ import { model } from './modelDefinitions';
 import { Rights, Shareable } from './rights';
 import { Me } from './me';
 
-const maxFileSize = parseInt(lang.translate('max.file.size'));
+let maxFileSize;
 
 let xsrfCookie;
 if(document.cookie){
@@ -322,6 +322,9 @@ export class Document implements Selectable, Shareable {
                 }
                 else{
                     if(this.xhr.status === 413){
+
+                        if(!maxFileSize)
+                            maxFileSize = parseInt(lang.translate('max.file.size'));
                         notify.error(lang.translate('file.too.large.limit') + (maxFileSize / 1024 / 1024) + lang.translate('mb'));
                     }
                     else{
