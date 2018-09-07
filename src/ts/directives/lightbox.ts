@@ -22,7 +22,7 @@ export let lightbox = ng.directive('lightbox', () => {
 				'</div>',
 		link: function(scope, element, attributes){
 			element.children('.lightbox').find('> .background').on('click', function(e){
-				if (element.children('.lightbox').find('image-editor, share-panel, .import-files, .split-screen').length === 0){
+				if (element.children('.lightbox').find('image-editor, share-panel, .import-files, .split-screen, [template=entcore\\/image-editor\\/main]').length === 0){
 					element.children('.lightbox').first().fadeOut();
 					$('body').css({ overflow: 'auto' });
 					$('body').removeClass('lightbox-opened');
