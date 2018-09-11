@@ -24,7 +24,7 @@ export const contentDivider = ng.directive('contentDivider', () => {
                 + 
                     tElement.children()[0].outerHTML
                 +
-                    `<div class="horizontal-margin-four divider-border" ng-if="$index < ngModel.length - 1"></div>
+                    `<div class="horizontal-margin-twice divider-border" ng-if="$index < ngModel.length - 1"></div>
                 </div>
             </div>
             <div class="mobile-fat-mobile flex-row f-column reduce-block-eight">
