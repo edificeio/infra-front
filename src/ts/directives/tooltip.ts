@@ -31,6 +31,12 @@ export let tooltip = ng.directive('tooltip', ['$compile', function($compile){
 						tooltipCheck = true
 					}
 				});
+            }
+            // Handle multiline  
+            if(element[0].hasAttribute('tooltip-check-content')) {
+				scope.$watch(function() { return element[0].offsetHeight }, function (newValue, oldValue) {
+                    tooltipCheck = element[0].offsetHeight < element[0].scrollHeight;
+                });
 			}
 
 			var tip;
