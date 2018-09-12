@@ -52,7 +52,7 @@
                             ng-class="getColor(item.profile)">
                         </div>
                         
-                        <div ng-if="item.type === 'user'">[[item.username]]</div>
+                        <div ng-if="item.type === 'user'"><a href="/userbook/annuaire#/[[item.id]]">[[item.username]]</a></div>
                         <div ng-if="item.type === 'group'">[[item.name]]</div>
                     </td>
 
