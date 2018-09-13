@@ -1,5 +1,5 @@
 ﻿import { appPrefix } from '../globals';
-import { ng } from '../ng-start';
+import { ng, Directive } from '../ng-start';
 import { recorder } from '../recorder';
 
 export let recorderComponent = ng.directive('recorder', function () {

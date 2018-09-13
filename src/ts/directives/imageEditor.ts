@@ -1,4 +1,4 @@
-import { ng } from '../ng-start';
+import { ng, Directive } from '../ng-start';
 import { appPrefix, devices } from '../globals';
 import { ImageEditor } from '../image-editor/ImageEditor';
 import { template } from '../template';

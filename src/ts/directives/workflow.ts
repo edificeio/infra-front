@@ -1,4 +1,4 @@
-import { ng } from '../ng-start';
+import { ng, Directive } from '../ng-start';
 import { model } from '../modelDefinitions';
 import { Behaviours } from '../behaviours';
 

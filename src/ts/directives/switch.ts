@@ -1,4 +1,4 @@
-import { ng } from '../ng-start';
+import { ng, Directive } from '../ng-start';
 
 export const Switch = ng.directive('switch', () => {
     return {

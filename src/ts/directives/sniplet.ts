@@ -1,4 +1,4 @@
-import { ng } from '../ng-start';
+import { ng, Directive } from '../ng-start';
 import { Behaviours } from '../behaviours';
 
 export let sniplet = ng.directive('sniplet', ['$timeout', function($timeout){

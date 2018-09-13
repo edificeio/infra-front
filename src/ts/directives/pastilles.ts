@@ -1,4 +1,4 @@
-import { ng, _, angular } from '../entcore';
+import { ng, Directive, _, angular } from '../entcore';
 
 /**
  * @description Display pastilles that can be used as tabs.

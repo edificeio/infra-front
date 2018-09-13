@@ -1,4 +1,4 @@
-import { ng } from '../ng-start';
+import { ng, Directive } from '../ng-start';
 import { $ } from '../libs/jquery/jquery';
 
 export let dropdownButtons = ng.directive('dropdownButtons', () => {

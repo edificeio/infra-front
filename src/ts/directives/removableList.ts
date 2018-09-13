@@ -1,4 +1,4 @@
-import { ng, _, angular } from '../entcore';
+import { ng, Directive, _, angular } from '../entcore';
 
 /**
  * @description A list that can be filtered and items can be removed.

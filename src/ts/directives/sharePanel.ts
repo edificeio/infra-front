@@ -1,5 +1,5 @@
 import * as $ from 'jquery';
-import { ng } from '../ng-start';
+import { ng, Directive } from '../ng-start';
 import { appPrefix, infraPrefix } from '../globals';
 import { http } from '../http';
 import { idiom } from '../idiom';
@@ -8,7 +8,6 @@ import { Model } from '../modelDefinitions';
 import { model } from '../modelDefinitions';
 import { Me } from '../me';
 import { notify } from '../notify';
-import { template } from '../template';
 import { ui } from '../ui';
 
 export const sharePanel = ng.directive('sharePanel', ['$rootScope', ($rootScope) => {
@@ -445,10 +444,10 @@ export const sharePanel = ng.directive('sharePanel', ['$rootScope', ($rootScope)
                 
                 $scope.resources.forEach(function(resource) {
                     // if user can share resource => add user to share users array
-                    if(resource.myRights 
-                        && (resource.myRights['share'] != undefined 
+                    if(resource.myRights
+                        && (resource.myRights['share'] != undefined
                             || resource.myRights['manage'] != undefined
-                            || resource.myRights['manager'] != undefined) 
+                            || resource.myRights['manager'] != undefined)
                         && resource.shared) {
                         var rights = [];
                         var myRights = resource.shared.find(sharedItem => sharedItem.userId == model.me.userId);
@@ -518,10 +517,10 @@ export const sharePanel = ng.directive('sharePanel', ['$rootScope', ($rootScope)
                 $element.closest('lightbox').isolateScope().$eval($element.closest('lightbox').isolateScope().onClose);
                 $element.closest('lightbox').isolateScope().show = false;
                 $element.closest('lightbox').isolateScope().$parent.$apply();
-                
+
                 $scope.display.showCloseConfirmation = false;
                 await feedData();
-                
+
                 $scope.$apply();
             }
 

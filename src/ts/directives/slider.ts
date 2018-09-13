@@ -1,4 +1,4 @@
-﻿import { ng } from '../ng-start';
+﻿import { ng, Directive } from '../ng-start';
 import { idiom } from '../idiom';
 import { $ } from '../libs/jquery/jquery';
 import { ui } from '../ui';

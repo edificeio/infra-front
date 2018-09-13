@@ -1,5 +1,5 @@
 import { appPrefix } from '../globals';
-import { ng } from '../ng-start';
+import { ng, Directive } from '../ng-start';
 
 export let carousel = ng.directive('carousel', function(){
 	return {

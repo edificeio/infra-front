@@ -1,4 +1,4 @@
-import { ng } from '../ng-start';
+import { ng, Directive } from '../ng-start';
 import { Me } from "../me";
 
 export let searchUser = ng.directive('searchUser', ['$timeout', ($timeout) => {

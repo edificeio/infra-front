@@ -1,4 +1,4 @@
-﻿import { ng } from '../ng-start';
+﻿import { ng, Directive } from '../ng-start';
 import { Model } from '../modelDefinitions';
 import { _ } from '../libs/underscore/underscore';
 

@@ -1,4 +1,4 @@
-import { ng } from '../ng-start';
+﻿import { ng, Directive } from '../ng-start';
 import { $ } from '../libs/jquery/jquery';
 import { _ } from '../libs/underscore/underscore';
 import { idiom as lang } from '../idiom';

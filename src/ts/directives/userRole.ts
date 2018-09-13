@@ -1,5 +1,5 @@
 import { model } from '../modelDefinitions';
-import { ng } from '../ng-start';
+import { ng, Directive } from '../ng-start';
 
 export const userRole = ng.directive('userRole', function(){
 	return {

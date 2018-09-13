@@ -1,4 +1,4 @@
-import { ng } from '../ng-start';
+import { ng, Directive } from '../ng-start';
 
 export const inputPassword = ng.directive('inputPassword', function(){
 	return {

@@ -1,4 +1,4 @@
-import { ng, _ } from '../entcore';
+import { ng, Directive, _ } from '../entcore';
 
 /**
  * @description A component with two columns with a left onee that can be transfered to the right (result).

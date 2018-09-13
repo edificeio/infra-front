@@ -1,4 +1,4 @@
-import { ng } from '../ng-start';
+import { ng, Directive } from '../ng-start';
 import { MediaLibrary, Document } from '../workspace';
 import { $ } from "../libs/jquery/jquery";
 import { notify } from '../notify';

@@ -1,4 +1,4 @@
-import { ng, _, angular } from '../entcore';
+import { ng, Directive, _, angular } from '../entcore';
 
 /**
  * @description Display pastilles and a particular search template according to the selected pastille.

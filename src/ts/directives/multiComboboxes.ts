@@ -1,4 +1,4 @@
-import { ng, _, idiom as lang, $ } from '../entcore';
+import { ng, Directive, _, idiom as lang, $ } from '../entcore';
 
 /**
  * @description Filter with multiple checkboxes.

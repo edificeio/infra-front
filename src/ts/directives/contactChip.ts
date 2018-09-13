@@ -1,4 +1,4 @@
-import { ng, _ } from '../entcore';
+import { ng, Directive, _ } from '../entcore';
 import { ui } from '../ui';
 
 /**

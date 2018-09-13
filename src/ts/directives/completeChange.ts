@@ -1,4 +1,4 @@
-import { ng } from '../ng-start';
+import { ng, Directive } from '../ng-start';
 import { devices } from '../globals';
 
 export const completeChange = ng.directive('completeChange', function() {

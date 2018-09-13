@@ -1,5 +1,5 @@
 import { appPrefix } from '../globals';
-import { ng } from '../ng-start';
+import { ng, Directive } from '../ng-start';
 import { $ } from "../libs/jquery/jquery";
 import { MediaLibrary, Document, DocumentStatus } from '../workspace';
 import { template } from '../template';
