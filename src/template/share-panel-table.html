@@ -52,8 +52,8 @@
                             ng-class="getColor(item.profile)">
                         </div>
                         
-                        <div ng-if="item.type === 'user'"><a href="/userbook/annuaire#/[[item.id]]">[[item.username]]</a></div>
-                        <div ng-if="item.type === 'group'">[[item.name]]</div>
+                        <div ng-if="item.type === 'user'"><a href="/userbook/annuaire#/[[item.id]]" target="_blank">[[item.username]]</a></div>
+                        <div ng-if="item.type === 'group'"><a href="/userbook/annuaire#/group-view/[[item.id]]" target="_blank">[[item.name]]</a></div>
                     </td>
 
                     <!-- Checkboxes -->
