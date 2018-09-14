@@ -1458,7 +1458,7 @@ module.directive('help', function(){
                         $(item).attr('src', scope.helpPath + $(item).attr('src'));
 				});
 				helpContent.find('script').remove();
-				element.find('div.content').html(helpContent.html());
+				element.find('div.content > div[ng-transclude]').html(helpContent.html());
 				element.find('li a').on('click', function(e){
 					element.find('.sect1').slideUp();
                     $('#' + $(e.target).attr('href').split('#')[1]).parent().slideDown();

@@ -15,7 +15,7 @@ export let lightbox = ng.directive('lightbox', () => {
 						'<div class="content">' +
 							'<div class="twelve cell" ng-transclude></div>'+
 							'<div class="close-lightbox">'+
-							'<i class="close-2x"></i>'+
+								'<i class="close-2x"></i>'+
 							'</div>'+
 						'</div>'+
 					'</section>'+
