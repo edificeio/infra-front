@@ -443,7 +443,11 @@ export const sharePanel = ng.directive('sharePanel', ['$rootScope', ($rootScope)
                 
                 $scope.resources.forEach(function(resource) {
                     // if user can share resource => add user to share users array
-                    if(resource.myRights && resource.myRights['share'] != undefined && resource.shared) {
+                    if(resource.myRights 
+                        && (resource.myRights['share'] != undefined 
+                            || resource.myRights['manage'] != undefined
+                            || resource.myRights['manager'] != undefined) 
+                        && resource.shared) {
                         var rights = [];
                         var myRights = resource.shared.find(sharedItem => sharedItem.userId == model.me.userId);
 
