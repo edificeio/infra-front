@@ -402,27 +402,47 @@ module.directive('iconsSelect', function() {
 			change: '&'
 		},
 		link: function(scope, element, attributes){
-			element.bind('change', function(){
-				scope.current.id = element.find('.current').data('selected');
-				scope.$eval(scope.change);
-				element.unbind('change');
-			})
+			scope.$watch('options', function() {
+				var current = _.findWhere(scope.options, {
+					id: scope.current.id
+				});
+				scope.selected = {
+					id: current.id,
+					icon: current.icon,
+					text: current.text
+				}
+	
+				element.bind('change', function(){
+					current = _.findWhere(scope.options, {
+						id: element.find('.current').data('selected')
+					});
+					scope.current.id = current.id;
+					scope.selected.id = current.id;
+					scope.selected.icon = current.icon;
+					scope.selected.text = current.text;
+					scope.$eval(scope.change); 
+					element.unbind('change'); 
+					scope.$apply();
+				});
+			});
 		},
-		template: '' +
-			'<div>' +
-				'<div class="current fixed cell twelve" data-selected="[[current.id]]">' +
-					'<i class="[[current.icon]]"></i>' +
-					'<span translate content="[[current.text]]"></span>' +
-				'</div>' +
-				'<div class="options-list icons-view">' +
-				'<div class="wrapper">' +
-					'<div class="cell three option" data-value="[[option.id]]" data-ng-repeat="option in options">' +
-						'<i class="[[option.icon]]"></i>' +
-						'<span translate content="[[option.text]]"></span>' +
-					'</div>' +
-				'</div>' +
-				'</div>' +
-			'</div>'
+		template: `
+			<div>
+				<article class="current cell twelve medium-block-container" data-selected="[[current.id]]">
+					<i class="[[selected.icon]] no-2d right-spacing-twice"></i>
+					<i class="[[selected.icon === 'default' ? 'none' : selected.icon]] no-1d right-spacing-twice"></i>
+					<h2 class="top-spacing-twice"><a translate content="[[selected.text]]"></a></h2>
+				</article>
+				<div class="options-list icons-view">
+				<div class="wrapper">
+					<div class="cell three option" data-value="[[option.id]]" data-ng-repeat="option in options">
+						<i class="[[option.icon]] no-2d"></i>
+						<i class="[[option.icon === 'default' ? 'none' : option.icon]] no-1d"></i>
+						<span translate content="[[option.text]]"></span>
+					</div>
+				</div>
+			</div>
+		`
 	};
 });
 

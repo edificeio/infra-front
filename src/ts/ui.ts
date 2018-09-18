@@ -159,7 +159,6 @@ $(document).ready(function(){
 		optionsList.find('.option').on('click', function(){
 			$(that).removeClass('editing');
 			$(that).data('selected', $(this).data('value'));
-			$(that).html($(this).html());
 			optionsList.removeClass('toggle-visible');
 			select.change();
 		});
