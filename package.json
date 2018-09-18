@@ -30,10 +30,16 @@
     "webpack-stream": "^3.2.0"
   },
   "devDependencies": {
-    "@types/core-js": "^0.9.35"
+    "@types/core-js": "^0.9.35",
+    "karma": "^3.0.0",
+    "karma-firefox-launcher": "^1.1.0",
+    "@types/jasmine": "^2.8.8",
+    "karma-jasmine": "^1.1.2",
+    "jasmine": "^3.2.0",
+    "karma-typescript": "3.0.8"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "karma start"
   },
   "repository": {
     "type": "git",

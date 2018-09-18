@@ -5,5 +5,9 @@ node_modules/
 !gulpfile.js
 !webpack-dev.config.js
 !webpack.config.js
+!karma.conf.js
 **/*.js.map
 **/*.d.ts
+.idea
+coverage
+package-lock.json
