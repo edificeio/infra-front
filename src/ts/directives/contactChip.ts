@@ -16,8 +16,8 @@ export const contactChip = ng.directive('contactChip', () => {
                 <img ng-if="!isChipGroup()" ng-src="/userbook/avatar/[[id]]?thumbnail=100x100"/>
             </span>
             <span ng-if="!isChipGroup()" class="cell circle square-mini" ng-class="profile()"></span>
-            <span ng-if="isChipGroup()" class="cell-ellipsis block left-text">[[ ngModel.name ]]</span>
-            <span ng-if="!isChipGroup()" class="cell-ellipsis block left-text">[[ ngModel.name ]][[ ngModel.displayName ]]</span>
+            <span ng-if="!isChipGroup()" class="cell-ellipsis block left-text"><a ng-click="$event.stopPropagation();" href="/userbook/annuaire#[[ngModel.id]]" target="_blank">[[ ngModel.name ]][[ ngModel.displayName ]]</a></span>
+            <span ng-if="isChipGroup()" class="cell-ellipsis block left-text"><a ng-click="$event.stopPropagation();" href="/userbook/annuaire#/group-view/[[ngModel.id]]" target="_blank">[[ ngModel.name ]]</a></span>
             <i class="absolute-magnet" 
                 ng-if="(stickernotselected || !ngModel.selected) && (isMovable() || isRemovable())" 
                 ng-class="{ 'right-arrow':isMovable(), 'close':isRemovable() }"
