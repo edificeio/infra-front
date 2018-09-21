@@ -116,6 +116,15 @@
 					<em ng-if="item.profile" class="low-importance">[[translate(item.profile)]]</em>
 				</div>
 			</div>
+			<div class="row" ng-if="found.length === 0">
+				<div class="spacer-small"></div>
+				<label class="low-importance medium-importance italic-text" ng-if="search.length >= 3" user-role="ADMIN_LOCAL">
+					<i18n>portal.no.result</i18n>
+				</label>
+				<label class="low-importance medium-importance italic-text" ng-if="search.length" user-missing-role="ADMIN_LOCAL">
+					<i18n>portal.no.result</i18n>
+				</label>
+			</div>
 			<div class="row">
 				<a ng-click="addResults()" ng-if="found.length > maxResults" class="right-magnet reduce-block-four">
 					<i18n>seemore</i18n>
