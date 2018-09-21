@@ -1470,9 +1470,10 @@ module.directive('help', function(){
 
 			var setHtml = function(content){
 				helpContent = $('<div>' + content + '</div>');
+				// Swap ToC and introduction paragraphs
+				helpContent.find('> p').prev().insertAfter(helpContent.find('> p'));
 				helpContent.find('img').each(function(index, item){
                     $(item).attr('src', scope.helpPath + "../.." + $(item).attr('src'));
-
 				});
 				element.find('div.content > div[ng-transclude]').html(helpContent.html());
 				element.find('li a').on('click', function(e){
