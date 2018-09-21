@@ -1512,6 +1512,8 @@ module.directive('stickToTop', function() {
     return {
         restrict: 'EA',
         link: function(scope, element, attributes) {
+			if ("noStickMobile" in attributes && ui.breakpoints.checkMaxWidth("wideScreen"))
+				return;
 			var initialPosition = null;
             var scrollTop = $(window).scrollTop()
             var actualScrollTop = $(window).scrollTop()
