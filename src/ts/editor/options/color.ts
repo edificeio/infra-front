@@ -63,6 +63,12 @@ export const color = {
                     scope.$apply('foreColor');
                 });
 
+                element.children('input').on('click', function () {
+                    scope.foreColor = element.children('input').val();
+                    scope.$apply('foreColor');
+                    instance.selection.css({'color': scope.foreColor});
+                });
+
                 scope.$watch('foreColor', function(){
                     if(scope.foreColor !== eval(document.queryCommandValue('foreColor')) && !(instance.selection.isEmpty() && scope.foreColor === '#000000')) {
                         instance.selection.css({ 'color': scope.foreColor });
