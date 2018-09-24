@@ -63,15 +63,16 @@ export const color = {
                     scope.$apply('foreColor');
                 });
 
+                element.children('input').on('click', function () {
+                    scope.foreColor = element.children('input').val();
+                    scope.$apply('foreColor');
+                    instance.selection.css({'color': scope.foreColor});
+                });
+
                 scope.$watch('foreColor', function(){
                     if(scope.foreColor !== eval(document.queryCommandValue('foreColor')) && !(instance.selection.isEmpty() && scope.foreColor === '#000000')) {
                         instance.selection.css({ 'color': scope.foreColor });
                     }
-                });
-
-                instance.on('selectionchange', function(e){
-                    scope.foreColor = eval(document.queryCommandValue('foreColor'));
-                    element.children('input').val(scope.foreColor);
                 });
             }
         };
@@ -112,9 +113,15 @@ export const backgroundColor = {
                     }
                     scope.backColor = $(this).val();
                     scope.$apply('backColor');
+                    applyBackgroundColor();
+                });
+                element.children('input').on('click', function () {
+                    scope.backColor = element.children('input').val();
+                    scope.$apply('backColor');
+                    applyBackgroundColor();
                 });
 
-                scope.$watch('backColor', function () {
+                function applyBackgroundColor() {
                     var rgbColor = {} as any;
                     if (typeof scope.backColor === 'string') {
                         if(scope.backColor[0] === '#'){
@@ -133,7 +140,7 @@ export const backgroundColor = {
                                 a: parseInt(spl[3])
                             }
                         }
-                    
+
                         if (rgbColor.r > 130 && rgbColor.g > 130 && rgbColor.b > 130 && rgbColor.a !== 0) {
                             element.find('i').css({ 'color': '#000' });
                         }
@@ -141,20 +148,11 @@ export const backgroundColor = {
                             element.find('i').css({ 'color': '#fff' });
                         }
                     }
-                    
+
                     if(scope.backColor !== eval(instance.selection.css('background-color')) && rgbColor.a !== 0 && scope.backColor) {
                         instance.selection.css({ 'background-color': scope.backColor });
                     }
-                });
-
-                instance.on('selectionchange', function(e){
-                    scope.backColor = eval(instance.selection.css('background-color'));
-                    if (scope.backColor === 'rgba(255, 255, 255, 0)') {
-                        scope.backColor = '';
-                    }
-                    element.children('input').val(scope.backColor);
-                    scope.$apply('backColor');
-                });
+                }
             }
         };
     }
