@@ -404,7 +404,7 @@ module.directive('iconsSelect', function() {
 		link: function(scope, element, attributes){
 			scope.$watch('options', function() {
 				var current = _.findWhere(scope.options, {
-					id: scope.current.id
+					id: scope.current
 				});
 				scope.selected = {
 					id: current.id,
@@ -421,7 +421,6 @@ module.directive('iconsSelect', function() {
 					scope.selected.icon = current.icon;
 					scope.selected.text = current.text;
 					scope.$eval(scope.change); 
-					element.unbind('change'); 
 					scope.$apply();
 				});
 			});
