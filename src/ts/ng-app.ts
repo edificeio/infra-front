@@ -402,24 +402,25 @@ module.directive('iconsSelect', function() {
 			change: '&'
 		},
 		link: function(scope, element, attributes){
+			var current;
+
+			var updateCurrent = function() {
+				scope.current.id = current.id;
+				scope.current.icon = current.icon;
+				scope.current.text = current.text;
+			};
+
 			scope.$watch('options', function() {
-				var current = _.findWhere(scope.options, {
-					id: scope.current
+				current = _.findWhere(scope.options, {
+					id: scope.current.id
 				});
-				scope.selected = {
-					id: current.id,
-					icon: current.icon,
-					text: current.text
-				}
+				updateCurrent();
 	
 				element.bind('change', function(){
 					current = _.findWhere(scope.options, {
 						id: element.find('.current').data('selected')
 					});
-					scope.current.id = current.id;
-					scope.selected.id = current.id;
-					scope.selected.icon = current.icon;
-					scope.selected.text = current.text;
+					updateCurrent();
 					scope.$eval(scope.change); 
 					scope.$apply();
 				});
@@ -428,9 +429,11 @@ module.directive('iconsSelect', function() {
 		template: `
 			<div>
 				<article class="current cell twelve medium-block-container" data-selected="[[current.id]]">
-					<i class="[[selected.icon]] no-2d right-spacing-twice"></i>
-					<i class="[[selected.icon === 'default' ? 'none' : selected.icon]] no-1d right-spacing-twice"></i>
-					<h2 class="top-spacing-twice"><a translate content="[[selected.text]]"></a></h2>
+					<div class="flex-row">
+						<i class="[[current.icon]] cell no-2d no-margin right-spacing-twice"></i>
+						<i class="[[current.icon === 'default' ? 'none' : current.icon]] cell no-1d no-margin right-spacing-twice"></i>
+						<h2 class="top-spacing-twice"><a translate content="[[current.text]]"></a></h2>
+					</div>
 				</article>
 				<div class="options-list icons-view">
 				<div class="wrapper">
