@@ -159,7 +159,7 @@ for (let directive in directives) {
 }
 
 //directives
-module.directive('container', function(){
+module.directive('container', function($timeout){
 	return {
 		restrict: 'E',
 		scope: true,
@@ -168,10 +168,13 @@ module.directive('container', function(){
 			scope.tpl = template;
 
 			template.watch(attributes.template, function(){
-				scope.templateContainer = template.containers[attributes.template];
-				if(scope.templateContainer === 'empty'){
-					scope.templateContainer = undefined;
-				}
+				//use timeout to force reload template (like a scope.apply)
+				$timeout(function(){
+					scope.templateContainer = template.containers[attributes.template];
+					if(scope.templateContainer === 'empty'){
+						scope.templateContainer = undefined;
+					}
+				},0)
 			});
 
 			if(attributes.template){
