@@ -1,21 +1,53 @@
 import { $ } from "../libs/jquery/jquery";
 
+export function isElementNode(node: Node, nodeName: string): boolean {
+    return node.nodeType === Node.ELEMENT_NODE && node.nodeName === nodeName;
+}
+
 export function onPressEnter(e, range, editorInstance, editZone, textNodes){
     editorInstance.addState(editZone.html());
     
     var parentContainer = range.startContainer;
 
-    if (
-            (parentContainer.nodeType === 1 && parentContainer.nodeName === 'LI') ||
-            (parentContainer.parentNode.nodeType === 1 && parentContainer.parentNode.nodeName === 'LI') ||
-            (parentContainer.nodeType === 1 && parentContainer.nodeName === 'TD') ||
-            (parentContainer.parentNode.nodeType === 1 && parentContainer.parentNode.nodeName === 'TD')
-        ) {
+    if (isElementNode(parentContainer, 'TD') || isElementNode(parentContainer.parentNode, 'TD')) {
+        return;
+    }
+
+    if (isElementNode(parentContainer, 'LI') || isElementNode(parentContainer.parentNode, 'LI')) {
+        const editZoneElement = editZone.get(0);
+        if (parentContainer.textContent.length === 0 && parentContainer !== editZoneElement) {
+            let currentNode = parentContainer, rootListNode, itemListNode;
+            do {
+                if (isElementNode(currentNode, 'LI') && !itemListNode) {
+                    itemListNode = currentNode;
+                }
+                if (isElementNode(currentNode, 'UL') || isElementNode(currentNode, 'OL')) {
+                    if (!rootListNode) {
+                        rootListNode = currentNode;
+                    } else {
+                        return; // range is in a nested list
+                    }
+                }
+            } while ((currentNode = currentNode.parentNode) && currentNode !== editZoneElement);
+            if (!itemListNode.nextSibling) {
+                let nextElement = document.createElement('div');
+                nextElement.appendChild(document.createTextNode('\u200b'));
+                rootListNode.parentNode.insertBefore(nextElement, rootListNode.nextSibling);
+                rootListNode.removeChild(rootListNode.lastChild);
+
+                const sel = document.getSelection();
+                sel.removeAllRanges();
+                const range = document.createRange();
+                range.setStart(nextElement.firstChild, nextElement.textContent.length);
+                sel.addRange(range);
+                e.preventDefault();
+            }
+        }
         return;
     }
 
     var blockContainer = parentContainer;
-    while (blockContainer.nodeType !== 1 || textNodes.indexOf(blockContainer.nodeName) !== -1) {
+    while (blockContainer.nodeType !== Node.ELEMENT_NODE || textNodes.indexOf(blockContainer.nodeName) !== -1) {
         blockContainer = blockContainer.parentNode;
     }
     if (parentContainer === editZone[0]) {
@@ -42,8 +74,8 @@ export function onPressEnter(e, range, editorInstance, editZone, textNodes){
         range = r;
     }
     var newNodeName = 'div';
-    if ((parentContainer.nodeType === 1 && range.startOffset < parentContainer.childNodes.length)
-        || (parentContainer.nodeType === 3 && range.startOffset < parentContainer.textContent.length)) {
+    if ((parentContainer.nodeType === Node.ELEMENT_NODE && range.startOffset < parentContainer.childNodes.length)
+        || (parentContainer.nodeType === Node.TEXT_NODE && range.startOffset < parentContainer.textContent.length)) {
         newNodeName = blockContainer.nodeName.toLowerCase();
     }
     var newLine = $('<' + newNodeName + '>&#8203;</' + newNodeName + '>');
@@ -55,7 +87,7 @@ export function onPressEnter(e, range, editorInstance, editZone, textNodes){
     
     e.preventDefault();
     var rangeStart = 1;
-    if(parentContainer.nodeType === 3){
+    if(parentContainer.nodeType === Node.TEXT_NODE){
         var content = parentContainer.textContent.substring(range.startOffset, parentContainer.textContent.length);
         if(!content){
             content = '&#8203;';
@@ -75,7 +107,7 @@ export function onPressEnter(e, range, editorInstance, editZone, textNodes){
     var nodeCursor = parentContainer as HTMLElement;
     while (nodeCursor !== blockContainer) {
         var cursorClone;
-        if (nodeCursor.nodeType === 1) {
+        if (nodeCursor.nodeType === Node.ELEMENT_NODE) {
             let nodeName = nodeCursor.nodeName.toLowerCase();
             if(nodeName === 'a'){
                 nodeName = 'span';
@@ -87,19 +119,19 @@ export function onPressEnter(e, range, editorInstance, editZone, textNodes){
                     cursorClone.style[prop] = nodeCursor.style[prop];
                 }
             }
-            
+
             $(cursorClone).append(newLine[0].firstChild);
             newLine.prepend(cursorClone);
         }
-                
+
         var sibling = nodeCursor.nextSibling;
         while (sibling !== null) {
             //order matters here. appending sibling before getting nextsibling breaks the loop
             var currentSibling = sibling;
             sibling = sibling.nextSibling;
-            if(currentSibling.nodeType === 3){
+            if(currentSibling.nodeType === Node.TEXT_NODE){
                 let newNode = document.createElement('span');
-                
+
                 for(let prop in currentSibling.parentElement.style){
                     if(newNode.style[prop] !== currentSibling.parentElement.style[prop]){
                         newNode.style[prop] = currentSibling.parentElement.style[prop];
@@ -114,7 +146,7 @@ export function onPressEnter(e, range, editorInstance, editZone, textNodes){
         nodeCursor = nodeCursor.parentNode as HTMLElement;
     }
 
-    if (!(parentContainer as any).wholeText && parentContainer.nodeType === 3) {
+    if (!(parentContainer as any).wholeText && parentContainer.nodeType === Node.TEXT_NODE) {
         // FF forces encode on textContent, this is a hack to get the actual entities codes,
         // since innerHTML doesn't exist on text nodes
         parentContainer.textContent = $('<div>&#8203;</div>')[0].textContent;
