@@ -8,6 +8,23 @@ export function isElementNodeWithName(node: Node, nodeName: string): boolean {
     return isElementNode(node) && node.nodeName === nodeName;
 }
 
+export function toKebabCase(s: string): string {
+    return s.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase();
+}
+
+function copyStyle(dest: HTMLElement, src: HTMLElement) {
+    for (const camelCasedProperty in src.style) {
+        const property = toKebabCase(camelCasedProperty);
+        if (dest.style.getPropertyValue(property) !== src.style.getPropertyValue(property) ||
+            dest.style.getPropertyPriority(property) !== src.style.getPropertyPriority(property)) {
+            dest.style.setProperty(property,
+                src.style.getPropertyValue(property),
+                src.style.getPropertyPriority(property)
+            );
+        }
+    }
+}
+
 export function onPressEnter(e, range, editorInstance, editZone, textNodes){
     editorInstance.addState(editZone.html());
     
@@ -118,12 +135,7 @@ export function onPressEnter(e, range, editorInstance, editZone, textNodes){
             }
             cursorClone = document.createElement(nodeName);
             $(cursorClone).attr('class', $(nodeCursor).attr('class'));
-            for(let prop in nodeCursor.style){
-                if(cursorClone.style[prop] !== nodeCursor.style[prop]){
-                    cursorClone.style[prop] = nodeCursor.style[prop];
-                }
-            }
-
+            copyStyle(cursorClone, nodeCursor);
             $(cursorClone).append(newLine[0].firstChild);
             newLine.prepend(cursorClone);
         }
@@ -142,11 +154,7 @@ export function onPressEnter(e, range, editorInstance, editZone, textNodes){
                 }
 
                 if (isElementNode(currentSiblingParentElement)) {
-                    for(let prop in currentSiblingParentElement.style){
-                        if(newNode.style[prop] !== currentSiblingParentElement.style[prop]){
-                            newNode.style[prop] = currentSiblingParentElement.style[prop];
-                        }
-                    }
+                    copyStyle(newNode, currentSiblingParentElement);
                 }
                 newNode.appendChild(currentSibling);
                 currentSibling = newNode;
