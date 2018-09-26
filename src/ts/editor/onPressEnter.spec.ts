@@ -1,4 +1,4 @@
-import { isElementNodeWithName, onPressEnter } from "./onPressEnter";
+import { isElementNodeWithName, onPressEnter, toKebabCase } from "./onPressEnter";
 import { textNodes } from "./selection";
 import { $ } from "../libs";
 
@@ -48,6 +48,12 @@ describe('onPressEnter', () => {
             when pressing enter in a tag without text`, () => {
         expect(pressEnter('<div><span>test1</span>↵<span>test2</span></div>', selection))
             .toBeEditedAs('<div><span>test1</span>&#8203;</div><div>&#8203;‸<span>test2</span></div>');
+    });
+
+    it(`should create a new <div><span></span></div> and copy style properties from the styled <span></span>
+            when pressing enter in a styled <span></span>`, () => {
+        expect(pressEnter('<div>test1<span style="background-color: rgb(217, 28, 28);">test2↵test3</span></div>', selection))
+            .toBeEditedAs('<div>test1<span style="background-color: rgb(217, 28, 28);">test2</span></div><div><span style="background-color: rgb(217, 28, 28);">‸test3</span></div>');
     });
 
     it(`should wrap the <span></span> tag in a <div></div> tag
@@ -130,6 +136,18 @@ describe('isElementNodeWithName', () => {
     });
     it(`should return false when given (textNode, 'DIV')`, () => {
         expect(isElementNodeWithName(document.createTextNode('test'), 'DIV')).toBe(false);
+    });
+});
+
+describe('toKebabCase', () => {
+    it(`should return 'color' when given 'color'`, () => {
+        expect(toKebabCase('color')).toBe('color');
+    });
+    it(`should return 'background-color' when given 'backgroundColor'`, () => {
+        expect(toKebabCase('backgroundColor')).toBe('background-color');
+    });
+    it(`should return 'border-top-left-radius' when given 'borderTopLeftRadius'`, () => {
+        expect(toKebabCase('borderTopLeftRadius')).toBe('border-top-left-radius');
     });
 });
 
