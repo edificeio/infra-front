@@ -1,7 +1,11 @@
 import { $ } from "../libs/jquery/jquery";
 
-export function isElementNode(node: Node, nodeName: string): boolean {
-    return node.nodeType === Node.ELEMENT_NODE && node.nodeName === nodeName;
+function isElementNode(node: Node): node is HTMLElement {
+    return node.nodeType === Node.ELEMENT_NODE;
+}
+
+export function isElementNodeWithName(node: Node, nodeName: string): boolean {
+    return isElementNode(node) && node.nodeName === nodeName;
 }
 
 export function onPressEnter(e, range, editorInstance, editZone, textNodes){
@@ -9,19 +13,19 @@ export function onPressEnter(e, range, editorInstance, editZone, textNodes){
     
     var parentContainer = range.startContainer;
 
-    if (isElementNode(parentContainer, 'TD') || isElementNode(parentContainer.parentNode, 'TD')) {
+    if (isElementNodeWithName(parentContainer, 'TD') || isElementNodeWithName(parentContainer.parentNode, 'TD')) {
         return;
     }
 
-    if (isElementNode(parentContainer, 'LI') || isElementNode(parentContainer.parentNode, 'LI')) {
+    if (isElementNodeWithName(parentContainer, 'LI') || isElementNodeWithName(parentContainer.parentNode, 'LI')) {
         const editZoneElement = editZone.get(0);
         if (parentContainer.textContent.length === 0 && parentContainer !== editZoneElement) {
             let currentNode = parentContainer, rootListNode, itemListNode;
             do {
-                if (isElementNode(currentNode, 'LI') && !itemListNode) {
+                if (isElementNodeWithName(currentNode, 'LI') && !itemListNode) {
                     itemListNode = currentNode;
                 }
-                if (isElementNode(currentNode, 'UL') || isElementNode(currentNode, 'OL')) {
+                if (isElementNodeWithName(currentNode, 'UL') || isElementNodeWithName(currentNode, 'OL')) {
                     if (!rootListNode) {
                         rootListNode = currentNode;
                     } else {
@@ -131,10 +135,17 @@ export function onPressEnter(e, range, editorInstance, editZone, textNodes){
             sibling = sibling.nextSibling;
             if(currentSibling.nodeType === Node.TEXT_NODE){
                 let newNode = document.createElement('span');
+                let currentSiblingParentElement = currentSibling.parentNode;
 
-                for(let prop in currentSibling.parentElement.style){
-                    if(newNode.style[prop] !== currentSibling.parentElement.style[prop]){
-                        newNode.style[prop] = currentSibling.parentElement.style[prop];
+                while(currentSiblingParentElement && (currentSiblingParentElement.nodeType !== Node.ELEMENT_NODE)) {
+                    currentSiblingParentElement = currentSiblingParentElement.parentNode;
+                }
+
+                if (isElementNode(currentSiblingParentElement)) {
+                    for(let prop in currentSiblingParentElement.style){
+                        if(newNode.style[prop] !== currentSiblingParentElement.style[prop]){
+                            newNode.style[prop] = currentSiblingParentElement.style[prop];
+                        }
                     }
                 }
                 newNode.appendChild(currentSibling);
