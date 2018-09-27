@@ -1,19 +1,19 @@
-import { isElementNode, onPressEnter } from "./onPressEnter";
+import { isElementNodeWithName, onPressEnter } from "./onPressEnter";
 import { textNodes } from "./selection";
 import { $ } from "../libs";
 
-describe('isElementNode', () => {
+describe('isElementNodeWithName', () => {
     it(`should return true when given (<div><div>, 'DIV')`, () => {
-        expect(isElementNode(document.createElement('div'), 'DIV')).toBe(true);
+        expect(isElementNodeWithName(document.createElement('div'), 'DIV')).toBe(true);
     });
     it(`should return true when given (<span><span>, 'SPAN')`, () => {
-        expect(isElementNode(document.createElement('span'), 'SPAN')).toBe(true);
+        expect(isElementNodeWithName(document.createElement('span'), 'SPAN')).toBe(true);
     });
     it(`should return false when given (<span><span>, 'DIV')`, () => {
-        expect(isElementNode(document.createElement('span'), 'DIV')).toBe(false);
+        expect(isElementNodeWithName(document.createElement('span'), 'DIV')).toBe(false);
     });
     it(`should return false when given (textNode, 'DIV')`, () => {
-        expect(isElementNode(document.createTextNode('test'), 'DIV')).toBe(false);
+        expect(isElementNodeWithName(document.createTextNode('test'), 'DIV')).toBe(false);
     });
 });
 
@@ -169,7 +169,7 @@ const customMatchers: jasmine.CustomMatcherFactories = {
 };
 
 function findNodeAndOffsetOf(node: Node, char: string): { node: Node, offset: number } {
-    const tw = document.createTreeWalker(node, NodeFilter.SHOW_TEXT);
+    const tw = document.createTreeWalker(node, NodeFilter.SHOW_TEXT, null, false);
 
     let currentNode: Node;
     while (currentNode = tw.nextNode()) {
