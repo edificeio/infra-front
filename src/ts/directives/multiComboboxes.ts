@@ -20,7 +20,7 @@ export const multiComboboxes = ng.directive('multiComboboxes', () => {
         restrict: 'E',
         template: `
             <div class="fluid row">
-                <button type="button" class="select-button left-text low-text row" ng-class="{ selected : showOptions }">
+                <button type="button" class="select-button left-text low-text row" ng-class="{ selected : showOptions }" ng-disabled="ngDisabled">
                     <span ng-if="ngModel.length === 0" class="block cell-ellipsis right-spacing">[[ titleAll ]]</span>
                     <span ng-if="ngModel.length > 0" class="block cell-ellipsis right-spacing active">[[ title ]]: [[ ngModel.length ]] <i18n>portal.selected</i18n></span> <i class="sort horizontal-margin top-spacing absolute-magnet"/>
                 </button>
@@ -50,6 +50,7 @@ export const multiComboboxes = ng.directive('multiComboboxes', () => {
 
         scope: {
             ngModel: '=',
+            ngDisabled: '=',
             options: '='
         },
 
