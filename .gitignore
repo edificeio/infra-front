@@ -6,6 +6,7 @@ node_modules/
 !webpack-dev.config.js
 !webpack.config.js
 !karma.conf.js
+!karma-compatibility.conf.js
 **/*.js.map
 **/*.d.ts
 .history/
