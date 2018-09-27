@@ -47,13 +47,19 @@ describe('onPressEnter', () => {
     it(`should adds a &#8203; in the textNode and adds a new line
             when pressing enter in a tag without text`, () => {
         expect(pressEnter('<div><span>test1</span>↵<span>test2</span></div>', selection))
-            .toBeEditedAs('<div><span>test1</span>&#8203;</div><div>&#8203;‸<span>test2</span></div>');
+            .toBeEditedAs('<div><span>test1</span></div><div>&#8203;‸<span>test2</span></div>');
     });
 
     it(`should create a new <div><span></span></div> and copy style properties from the styled <span></span>
             when pressing enter in a styled <span></span>`, () => {
         expect(pressEnter('<div>test1<span style="background-color: rgb(217, 28, 28);">test2↵test3</span></div>', selection))
             .toBeEditedAs('<div>test1<span style="background-color: rgb(217, 28, 28);">test2</span></div><div><span style="background-color: rgb(217, 28, 28);">‸test3</span></div>');
+    });
+
+    it(`should create a new <li><span></span></li> and copy style properties from the styled <span></span> and the styled <li></li>
+            when pressing enter in a styled <li><span></span></li>`, () => {
+        expect(pressEnter('<ul><li>init<span style="color: blue;">test<span style="background-color: red;">te↵st<span style="color: green;">test</span></span></span></li></ul>', selection))
+            .toBeEditedAs('<ul><li>init<span style="color: blue;">test<span style="background-color: red;">te</span></span></li><li><span style="color: blue;"><span style="background-color: red;">‸st<span style="color: green;">test</span></span></span></li></ul>');
     });
 
     it(`should wrap the <span></span> tag in a <div></div> tag
@@ -76,7 +82,7 @@ describe('onPressEnter', () => {
             expect({
                 editZone,
                 range
-            }).toBeEditedAs(`<${uol}><li>test</li><li>abc<span>d</span></li><li><span>‸ef</span><span>gh</span></li></${uol}>`);
+            }).toBeEditedAs(`<${uol}><li>test</li><li>abc<span>d</span></li><li><span>‸ef</span>gh</li></${uol}>`);
             expect(event.preventDefault).toHaveBeenCalled();
         });
 
