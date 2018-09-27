@@ -158,7 +158,7 @@ function getNormalizedEndOffset(node: Node): number {
     return node.childNodes.length;
 }
 
-function findFirstChildTextNode(node: Node): Node {
+export function findFirstChildTextNode(node: Node): Node {
     return document.createNodeIterator(node, NodeFilter.SHOW_TEXT, null, false).nextNode();
 }
 
