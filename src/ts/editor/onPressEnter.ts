@@ -12,22 +12,38 @@ export function toKebabCase(s: string): string {
     return s.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase();
 }
 
-function copyStyle(dest: HTMLElement, src: HTMLElement) {
-    for (const camelCasedProperty in src.style) {
-        const property = toKebabCase(camelCasedProperty);
-        if (dest.style.getPropertyValue(property) !== src.style.getPropertyValue(property) ||
-            dest.style.getPropertyPriority(property) !== src.style.getPropertyPriority(property)) {
-            dest.style.setProperty(property,
-                src.style.getPropertyValue(property),
-                src.style.getPropertyPriority(property)
-            );
-        }
+function setRange(node: Node, offset: number) {
+    const sel = document.getSelection();
+    sel.removeAllRanges();
+    const range = document.createRange();
+    range.setStart(node, offset);
+    sel.addRange(range);
+}
+
+// Cross-compatible cloneNode, issue fixed:
+// - ie11's cloneNode remove empty textNode and merge sibling textNodes
+function cloneNode(node: Node): Node {
+    const clone = node.nodeType === Node.TEXT_NODE ? document.createTextNode(node.nodeValue) : node.cloneNode(false);
+
+    let child = node.firstChild;
+    while (child) {
+        clone.appendChild(cloneNode(child));
+        child = child.nextSibling;
     }
+    return clone;
+}
+
+function findClosestElementNode(node: Node): Node {
+    let currentParent = node.parentNode;
+    while(currentParent && (currentParent.nodeType !== Node.ELEMENT_NODE)) {
+        currentParent = currentParent.parentNode;
+    }
+    return currentParent;
 }
 
 export function onPressEnter(e, range, editorInstance, editZone, textNodes){
     editorInstance.addState(editZone.html());
-    
+
     var parentContainer = range.startContainer;
 
     if (isElementNodeWithName(parentContainer, 'TD') || isElementNodeWithName(parentContainer.parentNode, 'TD')) {
@@ -56,11 +72,7 @@ export function onPressEnter(e, range, editorInstance, editZone, textNodes){
                 rootListNode.parentNode.insertBefore(nextElement, rootListNode.nextSibling);
                 rootListNode.removeChild(rootListNode.lastChild);
 
-                const sel = document.getSelection();
-                sel.removeAllRanges();
-                const range = document.createRange();
-                range.setStart(nextElement.firstChild, nextElement.textContent.length);
-                sel.addRange(range);
+                setRange(nextElement.firstChild, nextElement.textContent.length);
                 e.preventDefault();
             }
         }
@@ -81,7 +93,7 @@ export function onPressEnter(e, range, editorInstance, editZone, textNodes){
     if (blockContainer === editZone[0]) {
         let startOffset = range.startOffset;
         let wrapper = $('<div></div>');
-        
+
         while (editZone[0].childNodes.length) {
             $(wrapper).append(editZone[0].childNodes[0]);
         }
@@ -94,91 +106,64 @@ export function onPressEnter(e, range, editorInstance, editZone, textNodes){
         sel.addRange(r);
         range = r;
     }
-    var newNodeName = 'div';
-    if ((parentContainer.nodeType === Node.ELEMENT_NODE && range.startOffset < parentContainer.childNodes.length)
-        || (parentContainer.nodeType === Node.TEXT_NODE && range.startOffset < parentContainer.textContent.length)) {
-        newNodeName = blockContainer.nodeName.toLowerCase();
-    }
-    var newLine = $('<' + newNodeName + '>&#8203;</' + newNodeName + '>');
 
-    blockContainer.parentNode.insertBefore(newLine[0], blockContainer.nextSibling);
-
-    newLine.attr('style', $(blockContainer).attr('style'));
-    newLine.attr('class', $(blockContainer).attr('class'));
-    
     e.preventDefault();
-    var rangeStart = 1;
-    if(parentContainer.nodeType === Node.TEXT_NODE){
-        var content = parentContainer.textContent.substring(range.startOffset, parentContainer.textContent.length);
-        if(!content){
-            content = '&#8203;';
-        }
-        else {
-            rangeStart = 0;
-        }
-        newLine.html(content);
+
+    const clone = cloneNode(blockContainer);
+    const endOffset = range.endOffset;
+
+    // remove everything after range start
+    if (parentContainer.nodeType === Node.TEXT_NODE) {
         parentContainer.textContent = parentContainer.textContent.substring(0, range.startOffset);
     }
-    else{
-        while(parentContainer.childNodes.length > range.startOffset){
-            newLine.append(parentContainer.childNodes[range.startOffset]);
+    let currentAncestorNode = parentContainer, currentNode, path = [];
+    while(currentAncestorNode !== blockContainer) {
+        currentNode = currentAncestorNode;
+        while(currentNode = currentAncestorNode.nextSibling) {
+            currentAncestorNode.parentNode.removeChild(currentNode);
+        }
+        currentNode = currentAncestorNode;
+        let i = 0;
+        while(currentNode = currentNode.previousSibling) {
+            i++;
+        }
+        path.push(i);
+        currentAncestorNode = currentAncestorNode.parentNode;
+    }
+
+    // remove everything before range end
+    currentNode = clone;
+    while (path.length) {
+        const pos = path.pop();
+        for (let i = 0; i < pos; i++) {
+            currentNode.removeChild(currentNode.firstChild);
+        }
+        currentNode = currentNode.firstChild;
+    }
+    let startOffset;
+    if (currentNode.nodeType === Node.TEXT_NODE) {
+        if (endOffset === currentNode.textContent.length) {
+            currentNode.textContent = '\u200b';
+            startOffset = currentNode.textContent.length;
+        } else {
+            currentNode.textContent = currentNode.textContent.substring(endOffset, currentNode.textContent.length);
+            startOffset = 0;
         }
     }
 
-    var nodeCursor = parentContainer as HTMLElement;
-    while (nodeCursor !== blockContainer) {
-        var cursorClone;
-        if (nodeCursor.nodeType === Node.ELEMENT_NODE) {
-            let nodeName = nodeCursor.nodeName.toLowerCase();
-            if(nodeName === 'a'){
-                nodeName = 'span';
+    let parentElementNode = currentNode;
+    while(parentElementNode = findClosestElementNode(parentElementNode)) {
+        if(isElementNodeWithName(parentElementNode, "A")){
+            const spanElement = document.createElement('span');
+            for(let child of parentElementNode.childNodes) {
+                spanElement.appendChild(child);
             }
-            cursorClone = document.createElement(nodeName);
-            $(cursorClone).attr('class', $(nodeCursor).attr('class'));
-            copyStyle(cursorClone, nodeCursor);
-            $(cursorClone).append(newLine[0].firstChild);
-            newLine.prepend(cursorClone);
+            parentElementNode.parentNode.insertBefore(spanElement, parentElementNode.nextSibling);
+            parentElementNode.parentNode.removeChild(parentElementNode);
         }
-
-        var sibling = nodeCursor.nextSibling;
-        while (sibling !== null) {
-            //order matters here. appending sibling before getting nextsibling breaks the loop
-            var currentSibling = sibling;
-            sibling = sibling.nextSibling;
-            if(currentSibling.nodeType === Node.TEXT_NODE){
-                let newNode = document.createElement('span');
-                let currentSiblingParentElement = currentSibling.parentNode;
-
-                while(currentSiblingParentElement && (currentSiblingParentElement.nodeType !== Node.ELEMENT_NODE)) {
-                    currentSiblingParentElement = currentSiblingParentElement.parentNode;
-                }
-
-                if (isElementNode(currentSiblingParentElement)) {
-                    copyStyle(newNode, currentSiblingParentElement);
-                }
-                newNode.appendChild(currentSibling);
-                currentSibling = newNode;
-            }
-            newLine.append(currentSibling);
-        }
-
-        nodeCursor = nodeCursor.parentNode as HTMLElement;
     }
 
-    if (!(parentContainer as any).wholeText && parentContainer.nodeType === Node.TEXT_NODE) {
-        // FF forces encode on textContent, this is a hack to get the actual entities codes,
-        // since innerHTML doesn't exist on text nodes
-        parentContainer.textContent = $('<div>&#8203;</div>')[0].textContent;
-    }
+    blockContainer.parentNode.insertBefore(clone, blockContainer.nextSibling);
 
-    let newRange = document.createRange();
-    let newStartContainer = newLine[0];
-    while(newStartContainer.firstChild){
-        newStartContainer = newStartContainer.firstChild;
-    }
-    newRange.setStart(newStartContainer, rangeStart);
-
-    let sel = document.getSelection();
-    sel.removeAllRanges();
-    sel.addRange(newRange);
+    setRange(currentNode, startOffset);
 }
