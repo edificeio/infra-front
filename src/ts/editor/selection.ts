@@ -198,7 +198,7 @@ export const Selection = function(data){
                     }
                     
                     elementAtCaret.parentNode.insertBefore(newEl, elementAtCaret);
-                    elementAtCaret.remove();
+                    elementAtCaret.parentNode.removeChild(elementAtCaret);
                     elementAtCaret = newEl;
                 }
                 else{
@@ -221,7 +221,7 @@ export const Selection = function(data){
             if (formatNodes.indexOf(elementAtCaret.nodeName) !== -1) {
                 element.html($(elementAtCaret).html());
                 elementAtCaret.parentNode.insertBefore(element[0], elementAtCaret);
-                elementAtCaret.remove();
+                elementAtCaret.parentNode.removeChild(elementAtCaret);
                 var sel = window.getSelection();
                 var r = document.createRange();
                 r.setStart(element[0], 0);
@@ -264,7 +264,7 @@ export const Selection = function(data){
 
                     el.html(item.innerHTML || item.textContent);
                     item.parentNode.insertBefore(el[0], item);
-                    item.remove();
+                    item.parentNode.removeChild(item);
                     var sel = window.getSelection();
                     var r = document.createRange();
                     r.setStart(el[0], 0);
@@ -473,7 +473,7 @@ export const Selection = function(data){
             elementAtCaret.parentNode.insertBefore(nodeAfter[0], elementAtCaret);
             elementAtCaret.parentNode.insertBefore(el[0], nodeAfter[0]);
             elementAtCaret.parentNode.insertBefore(nodeBefore[0], el[0]);
-            elementAtCaret.remove();
+            elementAtCaret.parentNode.removeChild(elementAtCaret);
         }
         else {
             elementAtCaret.parentNode.insertBefore(el[0], elementAtCaret.nextSibling);
@@ -759,7 +759,7 @@ export const Selection = function(data){
                         el.css(css);
                         el.text(sibling.textContent);
                         sibling.parentNode.insertBefore(el[0], sibling);
-                        sibling.remove();
+                        sibling.parentNode.removeChild(sibling);
                     }
 
                     if(sibling === range.endContainer){
@@ -844,7 +844,7 @@ export const Selection = function(data){
                     while(child !== null){
                         let nextChild = child.nextSibling;
                         if(child.nodeType === 3 && child.textContent === ""){
-                            child.remove();
+                            child.parentNode.removeChild(child);
                         }
                         child = nextChild;
                     }
@@ -892,7 +892,7 @@ export const Selection = function(data){
                     while(item.childNodes[0].childNodes.length){
                         $(item).append(item.childNodes[0].childNodes[0]);
                     }
-                    item.childNodes[0].remove();
+                    item.removeChild(item.childNodes[0]);
 
                     sel.removeAllRanges();
                     newRanges.forEach(function(rangeDef){
@@ -914,7 +914,7 @@ export const Selection = function(data){
                         while(item.childNodes.length){
                             $(item.nextSibling).prepend(item.childNodes[item.childNodes.length - 1]);
                         }
-                        item.remove();
+                        item.parentNode.removeChild(item);
                     }
                 }
                 if($(item).html() === ""){
