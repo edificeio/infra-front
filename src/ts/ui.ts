@@ -159,14 +159,15 @@ $(document).ready(function(){
 		optionsList.find('.option').on('click', function(){
 			$(that).removeClass('editing');
 			$(that).data('selected', $(this).data('value'));
-			optionsList.removeClass('toggle-visible');
+            optionsList.removeClass('toggle-visible');
 			select.change();
 		});
 
 		$(document).on('click.close', function(e){
 			$(that).removeClass('editing');
 			optionsList.removeClass('toggle-visible');
-			$(document).unbind('click.close');
+            $(document).unbind('click.close');
+            optionsList.find('.option').unbind('click');
 			e.preventDefault();
 		})
 	});
