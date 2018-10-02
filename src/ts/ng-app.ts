@@ -159,7 +159,7 @@ for (let directive in directives) {
 }
 
 //directives
-module.directive('container', function($timeout){
+module.directive('container', ['$timeout', function($timeout){
 	return {
 		restrict: 'E',
 		scope: true,
@@ -182,7 +182,7 @@ module.directive('container', function($timeout){
 			}
 		}
 	}
-});
+}]);
 
 module.directive('colorSelect', function(){
 	return {
