@@ -15,9 +15,22 @@ export const contactChip = ng.directive('contactChip', () => {
                 <img ng-if="isChipGroup()" skin-src="/img/illustrations/group-avatar.svg"/>
                 <img ng-if="!isChipGroup()" ng-src="/userbook/avatar/[[id]]?thumbnail=100x100"/>
             </span>
+
             <span ng-if="!isChipGroup()" class="cell circle square-mini" ng-class="profile()"></span>
-            <span ng-if="!isChipGroup()" class="cell-ellipsis block left-text"><a ng-click="$event.stopPropagation();" href="/userbook/annuaire#[[ngModel.id]]" target="_blank">[[ ngModel.name ]][[ ngModel.displayName ]]</a></span>
-            <span ng-if="isChipGroup()" class="cell-ellipsis block left-text"><a ng-click="$event.stopPropagation();" href="/userbook/annuaire#/group-view/[[ngModel.id]]" target="_blank">[[ ngModel.name ]]</a></span>
+
+            <span ng-if="!isChipGroup() && !isNotLinked" class="cell-ellipsis block left-text">
+                <a ng-click="$event.stopPropagation();" href="/userbook/annuaire#[[id]]" target="_blank">[[ ngModel.name ]][[ ngModel.displayName ]]</a>
+            </span>
+            <span ng-if="!isChipGroup() && isNotLinked" class="cell-ellipsis block left-text">
+                [[ ngModel.name ]][[ ngModel.displayName ]]
+            </span>
+            <span ng-if="isChipGroup() && !isNotLinked" class="cell-ellipsis block left-text">
+                <a ng-if="!isNotLinked" ng-click="$event.stopPropagation();" href="/userbook/annuaire#/group-view/[[id]]" target="_blank">[[ ngModel.name ]]</a>
+            </span>
+            <span ng-if="isChipGroup() && isNotLinked" class="cell-ellipsis block left-text">
+                [[ ngModel.name ]]
+            </span>
+
             <i class="absolute-magnet" 
                 ng-if="(stickernotselected || !ngModel.selected) && (isMovable() || isRemovable())" 
                 ng-class="{ 'right-arrow':isMovable(), 'close':isRemovable() }"
@@ -35,6 +48,7 @@ export const contactChip = ng.directive('contactChip', () => {
             scope.stickernotselected = attributes.hasOwnProperty('stickernotselected');
             scope.isGroup = attributes.hasOwnProperty('isgroup');
             scope.iconActionExists = !angular.isUndefined(attributes.actionIcon);
+            scope.isNotLinked = attributes.hasOwnProperty('isnotlinked');
             scope.id = scope.ngModel.id ? scope.ngModel.id : scope.ngModel._id;
             scope.profile = function() {
                 return ui.profileColors.match(scope.ngModel.profile);

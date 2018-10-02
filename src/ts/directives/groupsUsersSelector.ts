@@ -46,7 +46,7 @@ export const groupsUsersSelector = ng.directive('groupsUsersSelector', () => {
                             action="selectGroupItem(item)"
                             action-icon="removeItem(item)"
                             ng-repeat="group in groupsList"
-                            isgroup stickernotselected>
+                            isgroup stickernotselected isnotlinked>
                         </contact-chip>
                         <div class="small-text" ng-if="groupsList.length === 0 && !selector.loading">
                             <i18n>portal.group.none.added</i18n>
