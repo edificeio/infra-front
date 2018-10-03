@@ -930,9 +930,15 @@ module.directive('datePicker', ['$compile','$timeout',function($compile, $timeou
 		template: '<input ng-transclude type="text" data-date-format="dd/mm/yyyy"  />',
 		link: function(scope, element, attributes){
 			scope.$watch('ngModel', function(newVal){
-				element.val(moment(scope.ngModel).format('DD/MM/YYYY'));
-                if(element.datepicker)
-                    element.datepicker('setValue', moment(scope.ngModel).format('DD/MM/YYYY'));
+				//parse strictly
+				const parsed = moment(scope.ngModel,"DD/MM/YYYY",true);
+				const formatted = parsed.format("DD/MM/YYYY");
+				//change date only if value match format (when typing the value does not match)
+				if(parsed.isValid()){
+					element.val(formatted);
+                	if(element.datepicker)
+						element.datepicker('setValue', formatted);
+				}
 			});
 
 			if(scope.minDate){
