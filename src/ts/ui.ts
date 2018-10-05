@@ -146,7 +146,8 @@ $(document).ready(function(){
 		var optionsList = select.children('.options-list');
 
 		if($(this).hasClass('editing')){
-			$(this).removeClass('editing');
+            $(this).removeClass('editing');
+            $(this).removeClass('slided');
 			optionsList.removeClass('toggle-visible');
 			$(document).unbind('click.close');
 			e.preventDefault();
@@ -154,17 +155,20 @@ $(document).ready(function(){
 		}
 
 		var that = this;
-		$(that).addClass('editing');
+        $(that).addClass('editing');
+        $(that).addClass('slided');
 		optionsList.addClass('toggle-visible');
 		optionsList.find('.option').on('click', function(){
-			$(that).removeClass('editing');
+            $(that).removeClass('editing');
+            $(that).removeClass('slided');
 			$(that).data('selected', $(this).data('value'));
             optionsList.removeClass('toggle-visible');
 			select.change();
 		});
 
 		$(document).on('click.close', function(e){
-			$(that).removeClass('editing');
+            $(that).removeClass('editing');
+            $(that).removeClass('slided');
 			optionsList.removeClass('toggle-visible');
             $(document).unbind('click.close');
             optionsList.find('.option').unbind('click');

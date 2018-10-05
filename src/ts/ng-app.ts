@@ -427,9 +427,10 @@ module.directive('iconsSelect', function() {
 			});
 		},
 		template: `
-			<div>
+			<div class="drop-down-block">
 				<article class="current cell twelve medium-block-container" data-selected="[[current.id]]">
-					<div class="flex-row">
+					<div class="flex-row drop-down-label no-margin no-border">
+						<i class="arrow no-margin right-spacing"></i>
 						<i class="[[current.icon]] cell no-2d no-margin right-spacing-twice"></i>
 						<i class="[[current.icon === 'default' ? 'none' : current.icon]] cell no-1d no-margin right-spacing-twice"></i>
 						<h2 class="top-spacing-twice"><a translate content="[[current.text]]"></a></h2>
