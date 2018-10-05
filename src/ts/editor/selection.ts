@@ -3,6 +3,320 @@ import { $ } from '../libs/jquery/jquery';
 export const textNodes = ['SPAN', 'A', 'STRONG', 'EM', 'B', 'I', 'I18N'];
 export const formatNodes = ['P', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6'];
 
+// Cross-compatible cloneNode, issue fixed:
+// - ie11's cloneNode remove empty textNode and merge sibling textNodes
+function cloneNode(node: Node): Node {
+    const clone = node.nodeType === Node.TEXT_NODE ? document.createTextNode(node.nodeValue) : node.cloneNode(false);
+
+    let child = node.firstChild;
+    while (child) {
+        clone.appendChild(cloneNode(child));
+        child = child.nextSibling;
+    }
+    return clone;
+}
+
+// Cross-compatible css, some browsers leave the style attribute empty
+function css(node: HTMLElement, applyProperties: any) {
+    $(node).css(applyProperties);
+    if (!node.style.cssText) {
+        node.removeAttribute('style');
+    }
+}
+
+function removeEmptyChildTextNodes(node: Node) {
+    const tw = document.createTreeWalker(node, NodeFilter.SHOW_TEXT, null, false);
+    let currentNode: Node;
+
+    while (currentNode = tw.nextNode()) {
+        if (currentNode.nodeType === Node.TEXT_NODE && currentNode.textContent === '') {
+            currentNode.parentNode.removeChild(currentNode);
+        }
+    }
+}
+
+function isNodeInRange(node: Node, range: Range): boolean {
+    let positionComparedWithRangeStart = node.compareDocumentPosition(range.startContainer);
+    let positionComparedWithRangeEnd = node.compareDocumentPosition(range.endContainer);
+
+    return !(isBeforeComparedNode(positionComparedWithRangeStart) || isAfterComparedNode(positionComparedWithRangeEnd));
+}
+
+function tryToRemoveOrMergeTextElementOutOfRange(currentNode: Node, ranges: Array<Range>): Node {
+    if (!isHTMLBlockElement(currentNode)) {
+        if (ranges.every(r => !isNodeInRange(currentNode, r))) {
+            if (currentNode.textContent === '' || currentNode.textContent === '\u200b') {
+                currentNode.parentNode.removeChild(currentNode);
+            } else if (currentNode.previousSibling && ranges.every(r => !isNodeInRange(currentNode.previousSibling, r))) {
+                const previousNode = currentNode.previousSibling;
+                const currentNodeClone = currentNode.cloneNode(false);
+                const previousNodeClone = previousNode.cloneNode(false);
+                if (currentNodeClone.isEqualNode(previousNodeClone)) {
+                    while (previousNode.firstChild) {
+                        currentNode.insertBefore(previousNode.firstChild, currentNode.firstChild);
+                    }
+                    currentNode.parentNode.removeChild(previousNode);
+                }
+            }
+        }
+    }
+    return currentNode;
+}
+
+export function isHTMLElement(node: Node): node is HTMLElement {
+    return node && node.nodeType === node.ELEMENT_NODE;
+}
+
+export function findClosestHTMLElement(node: Node): HTMLElement {
+    let parentElement, currentParent = node;
+    while ((currentParent = currentParent.parentNode) && !parentElement) {
+        if (isHTMLElement(currentParent)) {
+            parentElement = currentParent;
+        }
+    }
+    return parentElement;
+}
+
+export function isHTMLBlockElement(node: Node): boolean {
+    return textNodes.indexOf(node.nodeName) === -1;
+}
+
+export function hasStyleProperty(node: HTMLElement, styleProperty: string): boolean {
+    return (typeof node.style[styleProperty] !== 'undefined') && node.style[styleProperty] !== '';
+}
+
+function findStyledParentNode(currentNode: Node, styleProperty: string): HTMLElement {
+    let target;
+    while ((currentNode = findClosestHTMLElement(currentNode)) && !isHTMLBlockElement(currentNode) && !target) {
+        if (hasStyleProperty(currentNode as HTMLElement, styleProperty)) {
+            target = currentNode;
+        }
+    }
+    return target;
+}
+
+function separateTreeBranchAfterRange(root: Node, node: Node, offset: number): Node {
+    let branch, leaf = cloneNode(node);
+    if (node.nodeType === Node.TEXT_NODE) {
+        node.textContent = node.textContent.substring(0, offset);
+        leaf.textContent = leaf.textContent.substring(offset, leaf.textContent.length);
+    } else {
+        const childNodesLength = node.childNodes.length;
+        for (let i = offset; i < childNodesLength; i++) {
+            leaf.appendChild(node.childNodes[i]);
+        }
+    }
+
+    let currentAncestorNode = node, currentNode;
+    while (currentAncestorNode !== root) {
+        branch = currentAncestorNode.parentNode.cloneNode(false);
+
+        currentNode = currentAncestorNode;
+        branch.appendChild(leaf);
+        while (currentNode = currentNode.nextSibling) {
+            branch.appendChild(currentNode);
+        }
+        leaf = branch;
+        currentAncestorNode = currentAncestorNode.parentNode;
+    }
+
+    return branch;
+}
+
+function separateTreeBranchBeforeRange(root: Node, node: Node, offset: number): Node {
+    let branch, leaf = node.cloneNode();
+    if (node.nodeType === Node.TEXT_NODE) {
+        node.textContent = node.textContent.substring(offset, node.textContent.length);
+        leaf.textContent = leaf.textContent.substring(0, offset);
+    } else {
+        for (let i = 0; i < offset; i++) {
+            leaf.appendChild(node.firstChild);
+        }
+    }
+
+    let currentAncestorNode = node, currentNode;
+    while (currentAncestorNode !== root) {
+        branch = currentAncestorNode.parentNode.cloneNode(false);
+        currentNode = currentAncestorNode;
+        while (currentNode = currentNode.previousSibling) {
+            branch.appendChild(currentNode);
+        }
+        branch.appendChild(leaf);
+        leaf = branch;
+        currentAncestorNode = currentAncestorNode.parentNode;
+    }
+
+    return branch;
+}
+
+function getNormalizedEndOffset(node: Node): number {
+    if (node.nodeType === Node.TEXT_NODE) {
+        return node.textContent.length;
+    }
+    return node.childNodes.length;
+}
+
+function findFirstChildTextNode(node: Node): Node {
+    return document.createNodeIterator(node, NodeFilter.SHOW_TEXT, null, false).nextNode();
+}
+
+function findLatestChildTextNode(node: Node): Node {
+    let lastNode, currentNode;
+    const ni = document.createNodeIterator(node, NodeFilter.SHOW_TEXT, null, false);
+    while (currentNode = ni.nextNode()) {
+        lastNode = currentNode;
+    }
+    return lastNode;
+}
+
+function separateTreeBranchesAroundRange(root: Node, range: Range): Node {
+    const startOffset = range.startOffset;
+    const endOffset = range.endOffset - startOffset;
+    const startContainer = range.startContainer;
+    const endContainer = range.endContainer;
+    const branchBeforeRange = separateTreeBranchBeforeRange(root, startContainer, startOffset);
+    const branchAfterRange = separateTreeBranchAfterRange(root, endContainer, endOffset);
+
+    if (branchBeforeRange && branchBeforeRange.textContent.length > 0) {
+        root.parentNode.insertBefore(branchBeforeRange, root);
+    }
+    if (branchAfterRange && branchAfterRange.textContent.length > 0) {
+        root.parentNode.insertBefore(branchAfterRange, root.nextSibling);
+    }
+    if (startContainer.textContent.length === 0) {
+        startContainer.textContent = '\u200b';
+    }
+    if (endContainer.textContent.length === 0) {
+        endContainer.textContent = '\u200b';
+    }
+    const newStartContainer = findFirstChildTextNode(range.startContainer) || range.startContainer;
+    const newEndContainer = findLatestChildTextNode(range.endContainer) || range.endContainer;
+    range.setStart(newStartContainer, 0);
+    range.setEnd(newEndContainer, getNormalizedEndOffset(newEndContainer));
+    return root;
+}
+
+export function isBeforeComparedNode(bitmask: number): boolean {
+    return ((bitmask & Node.DOCUMENT_POSITION_FOLLOWING) === Node.DOCUMENT_POSITION_FOLLOWING) && !(bitmask & Node.DOCUMENT_POSITION_CONTAINED_BY);
+}
+
+export function isAfterComparedNode(bitmask: number): boolean {
+    return (bitmask & Node.DOCUMENT_POSITION_PRECEDING) === Node.DOCUMENT_POSITION_PRECEDING && !(bitmask & Node.DOCUMENT_POSITION_CONTAINS);
+}
+
+export function isParentOfComparedNode(bitmask: number): boolean {
+    return (bitmask & Node.DOCUMENT_POSITION_CONTAINED_BY) === Node.DOCUMENT_POSITION_CONTAINED_BY;
+}
+
+function explodeRangeOnChildNodes(range: Range, root: Node): Array<{ node: Node, range: Range }> {
+    const childNodesAndRanges: Array<{ node: Node, range: Range }> = [];
+    let child = root.firstChild;
+    do {
+        if (isNodeInRange(child, range)) {
+            let positionComparedWithRangeStart = child.compareDocumentPosition(range.startContainer);
+            let positionComparedWithRangeEnd = child.compareDocumentPosition(range.endContainer);
+            let newRange = document.createRange();
+            if (isParentOfComparedNode(positionComparedWithRangeStart) || child === range.startContainer) {
+                newRange.setStart(range.startContainer, range.startOffset);
+            } else {
+                let startContainer = findFirstChildTextNode(child) || child;
+                newRange.setStart(startContainer, 0)
+            }
+            if (isParentOfComparedNode(positionComparedWithRangeEnd) || child === range.endContainer) {
+                newRange.setEnd(range.endContainer, range.endOffset);
+            } else {
+                let endContainer = findLatestChildTextNode(child) || child;
+                const endOffset = getNormalizedEndOffset(endContainer);
+                newRange.setEnd(endContainer, endOffset);
+            }
+            childNodesAndRanges.push({node: child, range: newRange});
+        }
+    } while (child = child.nextSibling);
+    return childNodesAndRanges;
+}
+
+function applyCssToTextNode(node: Node, startOffset: number, endOffset: number, style: any): Node {
+    const parent = node.parentNode;
+    const span = document.createElement('span');
+    const text = document.createTextNode(node.textContent.substring(startOffset, endOffset) || '\u200b');
+    span.appendChild(text);
+    const textBefore = document.createTextNode(node.textContent.substring(0, startOffset));
+    const textAfter = document.createTextNode(node.textContent.substring(endOffset, node.textContent.length));
+    css(span, style);
+    parent.insertBefore(textBefore, node);
+    parent.replaceChild(span, node);
+    parent.insertBefore(textAfter, span.nextSibling);
+    return text;
+}
+
+function cancelCssOnEveryChildNodes(root: Node, style: any): Node {
+    const ni = document.createNodeIterator(root, NodeFilter.SHOW_ELEMENT, null, false);
+    const styleKeys = Object.keys(style);
+
+    let currentNode: HTMLElement;
+    while (currentNode = (ni.nextNode() as HTMLElement)) {
+        if (currentNode != root) {
+            styleKeys.forEach(key => currentNode.style.removeProperty(key));
+        }
+    }
+    return root;
+}
+
+function applyCssToRange(root: Node, range: Range, property: string, style: any): Range {
+    if (range.startContainer === range.endContainer && range.startContainer === root) {
+        if (root.nodeType === Node.TEXT_NODE) {
+            const styledTextNode = applyCssToTextNode(root, range.startOffset, range.endOffset, style);
+            range.selectNodeContents(styledTextNode);
+        } else {
+            explodeRangeOnChildNodes(range, root)
+                .map((child) => applyCssToRange(child.node, child.range, property, style))
+                .forEach((childRange, i, arr) => {
+                    if (i === 0) {
+                        range.setStart(childRange.startContainer, childRange.startOffset);
+                    }
+                    if (i === arr.length - 1) {
+                        range.setEnd(childRange.endContainer, childRange.endOffset);
+                    }
+                });
+        }
+    } else {
+        let styledNode = findStyledParentNode(range.commonAncestorContainer, property);
+        if (styledNode) {
+            separateTreeBranchesAroundRange(styledNode, range);
+            css(styledNode, style);
+            cancelCssOnEveryChildNodes(styledNode, style)
+        } else {
+            if (range.startContainer === range.endContainer &&
+                range.startContainer.nodeType === Node.TEXT_NODE &&
+                isHTMLBlockElement(findClosestHTMLElement(range.startContainer))) {
+                const container = range.startContainer;
+                const styledTextNode = applyCssToTextNode(container, range.startOffset, range.endOffset, style);
+                range.selectNodeContents(styledTextNode);
+            } else {
+                const container = isHTMLElement(range.commonAncestorContainer) ?
+                    range.commonAncestorContainer : findClosestHTMLElement(range.commonAncestorContainer);
+                if (!isHTMLBlockElement(container)) {
+                    separateTreeBranchesAroundRange(container, range);
+                    css(container, style);
+                    cancelCssOnEveryChildNodes(container, style);
+                } else {
+                    explodeRangeOnChildNodes(range, container)
+                        .map((child) => applyCssToRange(child.node, child.range, property, style))
+                        .forEach((childRange, i, arr) => {
+                            if (i === 0) {
+                                range.setStart(childRange.startContainer, childRange.startOffset);
+                            }
+                            if (i === arr.length - 1) {
+                                range.setEnd(childRange.endContainer, childRange.endOffset);
+                            }
+                        });
+                }
+            }
+        }
+    }
+    return range;
+}
+
 export const Selection = function(data){
     var that = this;
     this.selectedElements = [];
@@ -448,328 +762,6 @@ export const Selection = function(data){
         this.selectNode(el[0]);
     };
 
-    function applyCSSCursor(css){
-        var elementAtCaret;
-        var el = $('<span>&#8203;</span>');
-        if (!that.range && !that.editZone.html() || that.range.startContainer === that.editZone[0]) {
-            if(that.editZone.children('div').length > 0){
-                elementAtCaret = that.editZone.children('div')[0].firstChild;
-            }
-            else{
-                elementAtCaret = $('<div>&#8203;</div>').appendTo(that.editZone)[0].firstChild;
-            }
-        }
-        else {
-            elementAtCaret = that.range.startContainer;
-            if (elementAtCaret.nodeType === 1 && elementAtCaret.nodeName === 'SPAN') {
-                el.attr('style', $(elementAtCaret).attr('style'));
-            }
-        }
-        
-        el.css(css);
-        var nodeBefore = $('<span>' + elementAtCaret.textContent.substring(0, that.range.startOffset) + '</span>');
-        var nodeAfter = $('<span>' + elementAtCaret.textContent.substring(that.range.startOffset) + '</span>');
-        if (nodeAfter.text().length) {
-            elementAtCaret.parentNode.insertBefore(nodeAfter[0], elementAtCaret);
-            elementAtCaret.parentNode.insertBefore(el[0], nodeAfter[0]);
-            elementAtCaret.parentNode.insertBefore(nodeBefore[0], el[0]);
-            elementAtCaret.parentNode.removeChild(elementAtCaret);
-        }
-        else {
-            elementAtCaret.parentNode.insertBefore(el[0], elementAtCaret.nextSibling);
-        }
-        
-        that.moveCaret(el[0], 1);
-    }
-
-    function applyCSSNode(css, range){
-        var element = range.startContainer;
-        if (element.nodeType !== 1 && element.parentNode.nodeName !== 'SPAN') {
-            var el = document.createElement('span');
-            el.textContent = element.textContent;
-            element.parentNode.insertBefore(el, element.nextSibling);
-            $(element).remove();
-            element = el;
-        }
-        else {
-            element = element.parentNode;
-        }
-        $(element).css(css);
-        $(element).find('*').css(css);
-        that.selectNode(element);
-    }
-
-    function applyCSSBetween(range, nodeStart, nodeEnd, css, keepRangeStart?, startOffset?) {
-        let startSet = false;
-        if (startOffset === undefined) {
-            startOffset = range.startOffset;
-        }
-        var sibling = nodeStart;
-        var i = startOffset;
-        do {
-            if (sibling.nodeType === 1) {
-                let r;
-                if(!keepRangeStart && !startSet){
-                    r = document.createRange();
-                    let newStartOffset = 0;
-                    if(range.startContainer === sibling){
-                        newStartOffset = startOffset;
-                    }
-                    
-                    r.setStart(sibling, newStartOffset);
-                    that.nextRanges.push(r);
-                    startSet = true;
-                }
-                else{
-                    r = that.nextRanges[that.nextRanges.length - 1];
-                }
-                r.setEnd(sibling, sibling.childNodes.length);
-                if(range.endContainer === sibling){
-                    r.setEnd(sibling, range.endOffset);
-                }
-                
-                if($(sibling).find(range.endContainer).length){
-                    applyCSSBetween(range, sibling.firstChild, range.endContainer, css, true, 0);
-                    break;
-                }
-                else{
-                    $(sibling).css(css);
-                    $(sibling).find('*').each(function(index, item){
-                        for(var i = 0; i < item.style.length; i++){
-                            for(var prop in css){
-                                item.style.removeProperty(prop);
-                            }
-                        }
-                    });
-                }
-            }
-            else {
-                var el = $('<span></span>')
-                    .css(css);
-                if (sibling === nodeStart && sibling === nodeEnd) {
-                    el.html(sibling.textContent.substring(startOffset, range.endOffset));
-                    if (el.html().length > 0) {
-                        sibling.parentNode.insertBefore(el[0], sibling);
-                        let afterText = document.createTextNode(sibling.textContent.substring(range.endOffset));
-                        sibling.parentNode.insertBefore(afterText, el[0].nextSibling);
-                        sibling.textContent = sibling.textContent.substring(0, startOffset);
-                        that.moveRanges(range, sibling, -(el.text().length), afterText);
-                        var r = document.createRange();
-                        if (keepRangeStart || startSet) {
-                            r = that.nextRanges[that.nextRanges.length - 1];
-                            r.setEnd(el[0], 1);
-                        }
-                        else {
-                            startSet = true;
-                            r.setStart(el[0], 0);
-                            r.setEnd(el[0], 1);
-                            that.nextRanges.push(r);
-                        }
-                    }
-                }
-                else if (
-                    sibling === nodeEnd
-                    || (sibling.parentNode === range.endContainer && sibling === range.endContainer.childNodes[range.endOffset])
-                ) {
-                    el.text(sibling.textContent.substring(0, range.endOffset));
-                    if (el.text()) {
-                        sibling.parentNode.insertBefore(el[0], sibling);
-                        sibling.textContent = sibling.textContent.substring(range.endOffset);
-                        range.endOffset = 0;
-                        that.moveRanges(range, sibling, -(el.text().length + range.startOffset));
-                        let r = that.nextRanges[that.nextRanges.length - 1];
-                        r.setEnd(el[0], 1);
-                    }
-                }
-                else if (sibling === nodeStart) {
-                    el.text(sibling.textContent.substring(startOffset, sibling.textContent.length));
-                    if(el.text()){
-                        sibling.parentNode.insertBefore(el[0], sibling.nextSibling);
-                        sibling.textContent = sibling.textContent.substring(0, startOffset);
-                        if (!keepRangeStart && !startSet) {
-                            let r = document.createRange();
-                            r.setStart(el[0], 0);
-                            r.setEnd(el[0], 1);
-                            that.nextRanges.push(r);
-                            startSet = true;
-                        }
-                        else{
-                            let r = that.nextRanges[that.nextRanges.length - 1];
-                            r.setEnd(el[0], 1);
-                        }
-                    }
-                }
-                else {
-                    el.text(sibling.textContent.substring(0, sibling.textContent.length));
-                    if (el.text()) {
-                        sibling.parentNode.insertBefore(el[0], sibling);
-                        sibling.textContent = sibling.textContent.substring(sibling.textContent.length);
-                        that.moveRanges(range, sibling, -el.text().length);
-                    }
-                    
-                }
-            }
-            if(sibling === nodeEnd || (sibling.parentNode === range.endContainer && sibling === range.endContainer.childNodes[range.endOffset])){
-                break;
-            }
-
-            if(sibling !== nodeEnd){
-                sibling = sibling.nextSibling;
-            }
-            
-            i++;
-        } while (sibling);
-    }
-
-    function applyCSSText(css, range){
-        var el = $(document.createElement('span'));
-        $(el).css(css);
-
-        el.html(range.startContainer.textContent.substring(range.startOffset, range.endOffset));
-        var textBefore = document.createTextNode('');
-        textBefore.textContent = range.startContainer.textContent.substring(0, range.startOffset);
-        range.startContainer.parentNode.insertBefore(el[0], range.startContainer);
-        range.startContainer.parentNode.insertBefore(textBefore, el[0]);
-        range.startContainer.textContent = range.startContainer.textContent.substring(range.endOffset);
-
-        that.moveRanges(range, range.startContainer, -(el.text().length + range.startOffset));
-
-        var r = document.createRange();
-        r.setStart(el[0], 0);
-        r.setEnd(el[0], 1);
-        that.nextRanges.push(r);
-    }
-
-    function applyCSS(css, range) {
-        that.instance.addState(that.editZone.html());
-
-        if(that.isCursor()){
-            applyCSSCursor(css);
-            return;
-        }
-        
-        if (range.startContainer === range.endContainer &&
-            (
-                range.startContainer.nodeType === 3 &&
-                range.startOffset === 0 &&
-                range.endOffset === range.startContainer.textContent.length
-            )
-        ) {
-            applyCSSNode(css, range)
-        }
-        else if(range.startContainer === range.endContainer && 
-            (
-                range.startContainer.nodeType === 1 &&
-                range.startOffset === 0 &&
-                range.endOffset === range.startContainer.childNodes.length
-            )
-        ){
-            if(range.startContainer !== that.editZone[0]){
-                $(range.startContainer).css(css);
-                $(range.startContainer).find('span').css(css);
-            }
-            else{
-                $(range.startContainer).find('*').css(css);
-            }
-        }
-        else{
-            if(range.commonAncestorContainer.nodeType === 3){
-                applyCSSText(css, range);
-            }
-            else{
-                var foundFirst = false;
-                for(var i = 0; i < range.commonAncestorContainer.childNodes.length; i++){
-                    var sibling = range.commonAncestorContainer.childNodes[i];
-                    if(
-                        sibling === range.startContainer || 
-                        (sibling.nodeType === 1 && $(sibling).find(range.startContainer).length) || 
-                        (range.startContainer.nodeType === 1 && $(range.startContainer).find(sibling).length && range.startOffset === i)
-                    ){
-                        foundFirst = true;
-                    }
-                    if(!foundFirst){
-                        continue;
-                    }
-
-                    if(
-                        (sibling === range.endContainer && range.endOffset === 0) ||
-                        ($(range.endContainer).find(sibling).length && range.endOffset === i)
-                    ){
-                        break;
-                    }
-
-                    if (
-                        sibling.nodeType === 1 && $(sibling).find(range.startContainer).length
-                    ) {
-                        let currentNode = range.startContainer;
-                        while(currentNode.parentNode !== sibling && currentNode.nextSibling){
-                            applyCSSBetween(range, currentNode.nextSibling, range.endContainer, css);
-                            currentNode = currentNode.parentNode;
-                        }
-                        applyCSSBetween(range, range.startContainer, range.endContainer, css);
-                        
-                        continue;
-                    }
-
-                    if (
-                        (
-                            range.startContainer.nodeType === 1
-                            && $(range.startContainer).find(sibling).length
-                            && range.startOffset === i
-                        )
-                        || sibling === range.startContainer
-                    ) {
-                        applyCSSBetween(range, sibling, range.endContainer, css);
-                        continue;
-                    }
-
-                    if (
-                        sibling.nodeType === 1 
-                        && $(sibling).find(range.endContainer).length
-                    ) {
-                        var firstChild = sibling.firstChild;
-                        var startOffset = 0;
-                        if ($(sibling).find(range.startContainer).length) {
-                            firstChild = range.startContainer;
-                            startOffset = range.startOffset;
-                        }
-                        applyCSSBetween(range, firstChild, range.endContainer, css, true, startOffset);
-                        break;
-                    }
-
-                    if (
-                            sibling === range.endContainer
-                        )
-                    {
-                        var firstChild = range.endContainer.firstChild;
-                        if (!firstChild) {
-                            firstChild = range.endContainer;
-                        }
-                        applyCSSBetween(range, firstChild, range.endContainer, css, true, 0);
-                        break;
-                    }
-
-                    if(sibling.nodeType === 1){
-                        $(sibling).css(css);
-                        $(sibling).find('*').css(css);
-                        continue;
-                    }
-                    else{
-                        var el = $(document.createElement('span'));
-                        el.css(css);
-                        el.text(sibling.textContent);
-                        sibling.parentNode.insertBefore(el[0], sibling);
-                        sibling.parentNode.removeChild(sibling);
-                    }
-
-                    if(sibling === range.endContainer){
-                        break;
-                    }
-                }
-            }
-        }
-    }
-
     this.isEmpty = function () {
         return !this.range || this.isCursor();
     };
@@ -809,34 +801,30 @@ export const Selection = function(data){
     this.css = function(params){
         if(typeof params === 'object'){
             let selection = window.getSelection();
-            if(!this.instance.editZone.html()){
-                this.instance.editZone.html('<div>&#8203;</div>');
-            }
             if(!this.instance.editZone.is(':focus')){
                 this.instance.editZone[0].focus();
                 let range = selection.getRangeAt(0);
                 this.range = range;
                 this.rangeCount = 1;
             }
-            this.ranges = [];
-            for(let i = 0; i < selection.rangeCount; i++){
-                let range = selection.getRangeAt(i);
-                this.ranges.push({
-                    startContainer: range.startContainer,
-                    endContainer: range.endContainer,
-                    startOffset: range.startOffset,
-                    endOffset: range.endOffset,
-                    commonAncestorContainer: range.commonAncestorContainer
-                });
-                
+            if(!this.instance.editZone.html()){
+                const block = document.createElement('div');
+                const child = document.createElement('span');
+                child.appendChild(document.createTextNode('\u200b'));
+                block.appendChild(child);
+                $(child).css(params);
+                this.instance.editZone.append(block);
+                selection.getRangeAt(0).setStart(child.firstChild, 0);
+                selection.getRangeAt(0).setEnd(child.firstChild, child.textContent.length);
+            } else {
+                this.ranges = [];
+                for(let i = 0; i < selection.rangeCount; i++){
+                    let range = selection.getRangeAt(i);
+                    this.ranges.push(range);
+                }
+                this.ranges.forEach((range) => applyCssToRange(this.instance.editZone.get(0), range, Object.keys(params)[0], params));
             }
-            this.ranges.forEach(function(range){
-                applyCSS(params, range);
-            });
-            if(this.nextRanges.length){
-                this.applyNextRanges();
-            }
-            
+
             //cleanup
             that.editZone.find('span').each(function(index, item){
                 if(item.childNodes.length > 1){
@@ -902,26 +890,17 @@ export const Selection = function(data){
                         sel.addRange(range);
                     });
                 }
-                if(item.nextSibling && item.nextSibling.nodeType === 1 && item.nextSibling.nodeName === 'SPAN'){
-                    let sameStyle = true;
-                    for(let i = 0; i < item.nextSibling.style.length; i++){
-                        sameStyle = sameStyle && $(item).css(item.nextSibling.style[i]) === $(item.nextSibling).css(item.nextSibling.style[i]);
-                    }
-                    for(let i = 0; i < item.style.length; i++){
-                        sameStyle = sameStyle && $(item.nextSibling).css(item.style[i]) === $(item).css(item.style[i]);
-                    }
-                    if(sameStyle){
-                        while(item.childNodes.length){
-                            $(item.nextSibling).prepend(item.childNodes[item.childNodes.length - 1]);
-                        }
-                        item.parentNode.removeChild(item);
-                    }
-                }
-                if($(item).html() === ""){
+                if (item.textContent === "") {
                     $(item).remove();
                 }
             });
 
+            removeEmptyChildTextNodes(that.editZone.get(0));
+            let ranges = [];
+            for (let i = 0; i < window.getSelection().rangeCount; i++) {
+                ranges.push(window.getSelection().getRangeAt(i));
+            }
+            that.editZone.find('span').each((i, span) => tryToRemoveOrMergeTextElementOutOfRange(span, ranges));
             that.instance.addState(that.editZone.html());
             that.instance.trigger('contentupdated');
         }
