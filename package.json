@@ -3,6 +3,7 @@
   "version": "2.3.0-dev.28",
   "description": "",
   "main": "gulpfile.js",
+  "types": "./types/src/ts/entcore.d.ts",
   "dependencies": {
     "@types/core-js": "^0.9.36",
     "@types/pixi.js": "^4.5.7",
