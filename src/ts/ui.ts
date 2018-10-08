@@ -364,7 +364,7 @@ let touchEvents = {
     }
 };
 
-interface ResizeParams{
+export interface ResizeParams{
     lock?: {
         right?: boolean,
         left?: boolean,
@@ -382,7 +382,7 @@ interface ResizeParams{
     }
 }
 
-export let ui = {
+export const ui = {
     extendElement: {
         touchEvents: function (element, params?) {
             if (!params) {

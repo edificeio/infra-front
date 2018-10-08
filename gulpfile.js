@@ -3,14 +3,17 @@ var webpack = require('webpack-stream');
 var glob = require("glob");
 var rename = require('gulp-rename');
 var argv = require('yargs').argv;
+var rimraf = require("rimraf");
 
 let springboardPath = '../springboard-open-ent';
 if(argv.springboard){
     springboardPath = argv.springboard;
     console.log('Using springboard at ' + springboardPath);
 }
-
-gulp.task("build", function () {
+gulp.task('clean:types', function (cb) {
+    rimraf('./types/src', cb);
+ });
+gulp.task("build",["clean:types"], function () {
     return gulp.src('./')
         .pipe(webpack(require('./webpack.config.js')))
         .on('error', function handleError() {

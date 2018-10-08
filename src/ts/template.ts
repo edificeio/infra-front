@@ -10,7 +10,7 @@ if(appFolder === 'userbook'){
 
 export var template = {
 	viewPath: '/' + appFolder + '/public/template/',
-	containers: {},
+	containers: {} as any,
 	getCompletePath(view:string, isPortal?:boolean):string {
 		const split = $('#context').attr('src').split('-');
 		const hash = split[split.length - 1].split('.')[0];
