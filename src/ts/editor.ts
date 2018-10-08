@@ -753,7 +753,7 @@ export let RTE = {
                             }
                         }
 
-                        if (!e.ctrlKey) {
+                        if (!(e.ctrlKey || e.metaKey)) {
                             editingTimer = setTimeout(editingDone, 500);
                         }
 
@@ -807,18 +807,18 @@ export let RTE = {
                                 }
                             });
                         }
-                        if (e.ctrlKey && e.keyCode === 86) {
+                        if ((e.ctrlKey || e.metaKey) && e.keyCode === 86) {
                             setTimeout(function() {
                                 editorInstance.editZone.find('i').contents().unwrap().wrap('<em/>');
                                 editorInstance.addState(editorInstance.editZone.html());
                             }, 0);
                         }
-                        if(e.keyCode === 90 && e.ctrlKey && !e.shiftKey){
+                        if(e.keyCode === 90 && (e.ctrlKey || e.metaKey) && !e.shiftKey){
                             editorInstance.undo();
                             e.preventDefault();
                             scope.$apply();
                         }
-                        if((e.keyCode === 90 && e.ctrlKey && e.shiftKey) || (e.keyCode === 89 && e.ctrlKey)){
+                        if((e.keyCode === 90 && (e.ctrlKey || e.metaKey) && e.shiftKey) || (e.keyCode === 89 && (e.ctrlKey || e.metaKey))){
                             editorInstance.redo();
                             e.preventDefault();
                             scope.$apply();
