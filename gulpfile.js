@@ -55,7 +55,7 @@ gulp.task('update', ['build-dev'], () => {
     });
 })
 
-gulp.task('watch', () => {
+gulp.task("watch",["clean:types"], () =>{
     gulp.watch('**/*.ts', () => gulp.start('update'));
     gulp.watch('**/*.html', () => {
         const apps = [];
