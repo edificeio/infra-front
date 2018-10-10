@@ -928,11 +928,12 @@ module.directive('datePicker', ['$compile','$timeout',function($compile, $timeou
 		transclude: true,
 		replace: true,
 		restrict: 'E',
-		template: '<input ng-transclude type="text" data-date-format="dd/mm/yyyy"  />',
+		template: '<input ng-transclude type="text" data-date-format="dd/mm/yyyy" ng-readonly="isreadonly" />',
 		link: function(scope, element, attributes){
+			scope.isreadonly = !!attributes.readonly;
 			scope.$watch('ngModel', function(newVal){
 				//parse strictly
-				const parsed = moment(scope.ngModel,"DD/MM/YYYY",true);
+				const parsed = moment(scope.ngModel,["DD/MM/YYYY","YYYY-MM-DD"],true);
 				const formatted = parsed.format("DD/MM/YYYY");
 				//change date only if value match format (when typing the value does not match)
 				if(parsed.isValid()){
@@ -949,24 +950,24 @@ module.directive('datePicker', ['$compile','$timeout',function($compile, $timeou
 			}
 
 			function setNewDate(){
-				var minDate = scope.minDate;
-				var date = element.val().split('/');
-				var temp = date[0];
-				date[0] = date[1];
-				date[1] = temp;
-				date = date.join('/');
-				scope.ngModel = new Date(date);
-
-				if(scope.ngModel < minDate){
-					scope.ngModel = minDate;
-					element.val(moment(minDate).format('DD/MM/YYYY'));
+				const minDate = scope.minDate;
+				const dateStr = element.val();
+				const parsed = moment(dateStr,["DD/MM/YYYY","YYYY-MM-DD"],true);
+				//update model only if valid
+				if(parsed.isValid()){
+					scope.ngModel = parsed.toDate();
+	
+					if(scope.ngModel < minDate){
+						scope.ngModel = minDate;
+						element.val(moment(minDate).format('DD/MM/YYYY'));
+					}
+	
+					$timeout(function() {
+						scope.$apply('ngModel');
+						scope.$parent.$eval(scope.ngChange);
+						scope.$parent.$apply();
+					});
 				}
-
-                $timeout(function() {
-                    scope.$apply('ngModel');
-                    scope.$parent.$eval(scope.ngChange);
-                    scope.$parent.$apply();
-                });
 			}
 
 			http().loadScript('/' + infraPrefix + '/public/js/bootstrap-datepicker.js').then(function(){
@@ -1004,7 +1005,7 @@ module.directive('datePicker', ['$compile','$timeout',function($compile, $timeou
 				});
 				element.datepicker('show');
 			});
-
+			
 			element.on('change', setNewDate);
 
 			element.on('$destroy', function(){
