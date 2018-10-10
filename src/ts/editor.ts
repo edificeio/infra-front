@@ -109,6 +109,13 @@ export function convertToEditorFormat(html: string): string {
     return container.innerHTML;
 }
 
+function tryToConvertClipboardToEditorFormat(e: ClipboardEvent) {
+    if (e.clipboardData) { // when it's possible, catch the paste event and convert the clipboard data, else let's the browser handles the paste (IE11)
+        e.preventDefault();
+        document.execCommand('insertHTML', false, convertToEditorFormat(e.clipboardData.getData('text/html')));
+    }
+}
+
 export let RTE = {
     baseToolbarConf: {} as any,
     Instance: function(data){
@@ -787,8 +794,7 @@ export let RTE = {
                     var editingTimer;
 
                     editZone.on('paste', function (e) {
-                        e.preventDefault();
-                        document.execCommand('insertHTML', false, convertToEditorFormat(e.originalEvent.clipboardData.getData('text/html')));
+                        tryToConvertClipboardToEditorFormat(e.originalEvent);
                         setTimeout(function(){
                             editorInstance.editZone.find('[resizable]').removeAttr('resizable').css('cursor', 'initial');
                             editorInstance.editZone.find('[bind-html]').removeAttr('bind-html');
