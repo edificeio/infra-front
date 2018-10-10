@@ -17,6 +17,98 @@ import { onDropFromDesktop } from './editor/onDropFromDesktop';
 
 declare let Prism: any;
 
+function removeNodes(selector: string, root: HTMLElement): HTMLElement {
+    const nodesToRemove = root.querySelectorAll(selector);
+    for (let i = nodesToRemove.length - 1; i >= 0; i--) {
+        nodesToRemove.item(i).parentNode.removeChild(nodesToRemove.item(i));
+    }
+    return root;
+}
+
+function removeAttribute(attribute: string, root: HTMLElement): HTMLElement {
+    const nodesWithAttribute = root.querySelectorAll(`[${attribute}]`);
+    for (let i = nodesWithAttribute.length - 1; i >= 0; i--) {
+        nodesWithAttribute.item(i).removeAttribute(attribute);
+    }
+    return root;
+}
+
+function convertNode(selector: string, tag: string, style: any, root: HTMLElement): HTMLElement {
+    const selectedNodes = root.querySelectorAll(selector);
+    for (let i = selectedNodes.length - 1; i >= 0; i--) {
+        let selectedNode = selectedNodes.item(i);
+        const newNode = document.createElement(tag);
+        $(newNode).css(style);
+        let currentNode: Node;
+        while (currentNode = selectedNode.firstChild) {
+            newNode.appendChild(currentNode);
+        }
+        selectedNode.parentNode.replaceChild(newNode, selectedNode);
+    }
+    return root;
+}
+
+function convertNodeAndChangeAttributeToStyle(selector: string, tag: string, attribute: string, property: string, root: HTMLElement, converter: (v: string) => string = (v) => v): HTMLElement {
+    const selectedNodes = root.querySelectorAll(selector);
+    for (let i = selectedNodes.length - 1; i >= 0; i--) {
+        let selectedNode = selectedNodes.item(i);
+        const newNode = document.createElement(tag);
+        newNode.style.setProperty(property, converter(selectedNode.getAttribute(attribute)));
+        let currentNode: Node;
+        while (currentNode = selectedNode.firstChild) {
+            newNode.appendChild(currentNode);
+        }
+        selectedNode.parentNode.replaceChild(newNode, selectedNode);
+    }
+    return root;
+}
+
+function removeComments(root: HTMLElement): HTMLElement {
+    const ni = document.createNodeIterator(root, NodeFilter.SHOW_COMMENT, null, false);
+    let currentNode;
+    while(currentNode = ni.nextNode()) {
+        currentNode.parentNode.removeChild(currentNode);
+    }
+    return root;
+}
+
+export function convertToEditorFormat(html: string): string {
+    const container = document.createElement('div');
+    container.innerHTML = html;
+    removeNodes('xml',
+        removeNodes('title',
+            removeNodes('meta',
+                removeNodes('style', container))));
+
+    removeAttribute('class',
+        removeAttribute('style', container));
+
+    convertNode('b', 'span', {'font-weight': 'bold'}, container);
+    convertNode('i', 'span', {'font-style': 'italic'}, container);
+    convertNode('u', 'span', {'text-decoration': 'underline'}, container);
+    convertNode('sup', 'span', {'font-size': '12px', 'vertical-align': 'super'}, container);
+    convertNode('sub', 'span', {'font-size': '12px', 'vertical-align': 'sub'}, container);
+    convertNode('strike', 'span', {}, container);
+    convertNodeAndChangeAttributeToStyle('p[align]', 'div', 'align', 'text-align', container);
+    convertNode('p', 'div', {}, container);
+    convertNodeAndChangeAttributeToStyle('font[color]', 'span', 'color', 'color', container);
+    convertNodeAndChangeAttributeToStyle('font[size]', 'span', 'size', 'font-size', container, v => `${v}px`);
+    convertNodeAndChangeAttributeToStyle('font[face]', 'span', 'face', 'font-family', container);
+    removeComments(container);
+
+    const liDivElements = container.querySelectorAll('li > div');
+    for (let i = liDivElements.length - 1; i >= 0; i--) {
+        let node = liDivElements.item(i);
+        let child: Node;
+        while (child = node.firstChild) {
+            node.parentNode.insertBefore(child, node.nextSibling);
+        }
+        node.parentNode.removeChild(node);
+    }
+
+    return container.innerHTML;
+}
+
 export let RTE = {
     baseToolbarConf: {} as any,
     Instance: function(data){
@@ -694,7 +786,9 @@ export let RTE = {
                     var typingTimer;
                     var editingTimer;
 
-                    editZone.on('paste', function () {
+                    editZone.on('paste', function (e) {
+                        e.preventDefault();
+                        document.execCommand('insertHTML', false, convertToEditorFormat(e.originalEvent.clipboardData.getData('text/html')));
                         setTimeout(function(){
                             editorInstance.editZone.find('[resizable]').removeAttr('resizable').css('cursor', 'initial');
                             editorInstance.editZone.find('[bind-html]').removeAttr('bind-html');
