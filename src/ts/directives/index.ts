@@ -14,6 +14,7 @@ export * from './dropdownButtons';
 export * from './embedder';
 export * from './explorer';
 export * from './filePickerList';
+export * from './foldingList';
 export * from './groupsUsersSelector';
 export * from './imageCompression';
 export * from './imageEditor';
