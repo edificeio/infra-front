@@ -27,6 +27,7 @@
     "src/ts/widget.ts",
     "src/ts/libs/**/*.ts",
     "src/ts/editor.ts",
+    "src/ts/editor.spec.ts",
     "src/ts/editor/**/*.ts",
     "src/ts/directives/userRole.ts",
     "src/ts/directives/userRole.spec.ts"
