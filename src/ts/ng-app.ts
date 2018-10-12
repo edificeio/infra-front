@@ -403,6 +403,7 @@ module.directive('iconsSelect', function() {
 		},
 		link: function(scope, element, attributes){
 			var current;
+			scope.separateIcon = attributes.hasOwnProperty('separateIcon');
 
 			var updateCurrent = function() {
 				scope.current.id = current.id;
@@ -411,29 +412,35 @@ module.directive('iconsSelect', function() {
 			};
 
 			scope.$watch('options', function() {
-				current = _.findWhere(scope.options, {
-					id: scope.current.id
-				});
-				updateCurrent();
-	
-				element.bind('change', function(){
+				if (scope.options && scope.options.length) {
 					current = _.findWhere(scope.options, {
-						id: element.find('.current').data('selected')
+						id: scope.current.id
 					});
 					updateCurrent();
-					scope.$eval(scope.change); 
-					scope.$apply();
-				});
-			});
+		
+					element.bind('change', function(){
+						current = _.findWhere(scope.options, {
+							id: element.find('.current').data('selected')
+						});
+						updateCurrent();
+						scope.$eval(scope.change); 
+						scope.$apply();
+					});
+				}
+			}, true);
 		},
 		template: `
-			<div class="drop-down-block">
-				<article class="current cell twelve medium-block-container" data-selected="[[current.id]]">
+			<div ng-class="{'drop-down-block': !separateIcon}">
+				<div ng-if="separateIcon" class="current fixed cell twelve" data-selected="[[current.id]]"> +
+					<i class="[[current.icon]]"></i> +
+					<span translate content="[[current.text]]"></span> +
+				</div>
+				<article ng-if="!separateIcon" class="current cell twelve medium-block-container" data-selected="[[current.id]]">
 					<div class="flex-row drop-down-label no-margin no-border">
 						<i class="arrow no-margin right-spacing"></i>
 						<i class="[[current.icon]] cell no-2d no-margin right-spacing-twice"></i>
 						<i class="[[current.icon === 'default' ? 'none' : current.icon]] cell no-1d no-margin right-spacing-twice"></i>
-						<h2 class="top-spacing-twice"><a translate content="[[current.text]]"></a></h2>
+						<h2 class="top-spacing-twice cell-ellipsis"><a translate content="[[current.text]]"></a></h2>
 					</div>
 				</article>
 				<div class="options-list icons-view">
