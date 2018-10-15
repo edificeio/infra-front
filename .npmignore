@@ -3,3 +3,5 @@
 *.ts
 !*.d.ts
 tsconfig.json
+.idea
+coverage
