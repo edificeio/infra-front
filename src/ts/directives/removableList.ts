@@ -31,7 +31,8 @@ export const removableList = ng.directive('removableList', () => {
                         <input class="twelve" 
                             type="text" 
                             ng-model="searchText"
-                            placeholder="[[ placeholder ]]"/>
+                            placeholder="[[ placeholder ]]"
+                            ng-keypress="preventKeyEnter($event)"/>
                         <i class="search"></i>
                     </div>
                 </div>
@@ -71,6 +72,12 @@ export const removableList = ng.directive('removableList', () => {
                     item.name = '';
                 return item.name.toLowerCase().includes(scope.searchText.toLowerCase());
             };
+
+            scope.preventKeyEnter = function(e) {
+                if (e.which === 13) {
+                    e.preventDefault();
+                }
+            }
         }
     };
 });
