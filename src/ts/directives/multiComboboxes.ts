@@ -36,12 +36,16 @@ export const multiComboboxes = ng.directive('multiComboboxes', () => {
                         <a class="text-underline-hover" ng-click="selectNone()"><i18n>portal.none</i18n></a> <span class="horizontal-margin-small">|</span> <a class="text-underline-hover" ng-click="selectAll()"><i18n>portal.all</i18n></a>
                     </div>
                     <div class="top-spacing-twice left-text scroll-seven-checks" bottom-scroll="updatingMaxItems()">
-                        <div class="flex-row top-spacing" ng-repeat="option in options | orderBy:'label' | filter:filterByLabel" ng-click="option.checked=!option.checked">
-                            <label class="cell wrapping-checkbox">
-                                <input type="checkbox" ng-model="option.checked" />
+                        <div class="flex-row top-spacing" ng-repeat="option in options | orderBy:'label' | filter:filterByLabel" 
+                            ng-click="check(option, !option.checked)"
+                            ng-disabled="option.available ? !option.available() : false">
+                            <label class="cell wrapping-checkbox" ng-disabled="option.available ? !option.available() : false">
+                                <input type="checkbox" ng-model="option.checked" disabled="disabled" />
                                 <i18n></i18n>
                             </label>
-                            <i18n class="cell multiline-ellipsis-two top-spacing size-auto left-text low-importance">[[ option.label ]]</i18n>
+                            <i18n class="cell multiline-ellipsis-two top-spacing size-auto left-text low-importance">
+                                [[ option.label ]]
+                            </i18n>
                         </div>
                     </div>
                 </article>
@@ -72,7 +76,7 @@ export const multiComboboxes = ng.directive('multiComboboxes', () => {
                     option.checked = scope.ngModel ? scope.ngModel.indexOf(option.type) !== -1 : true;
 
                     scope.$watch(function() { return option; }, function(newValue, oldValue) {
-                        if (newValue != oldValue) {
+                        if (newValue !== oldValue && newValue.checked !== oldValue.checked) {
                             if (newValue.checked) {
                                     scope.ngModel.push(newValue.type);
                             }
@@ -123,10 +127,17 @@ export const multiComboboxes = ng.directive('multiComboboxes', () => {
                 return option.label.toLowerCase().includes(scope.searchField.toLowerCase());
             };
 
+            // Check
+            scope.check = (option, checked) => {
+                if (!option.available || option.available()) {
+                    option.checked = checked;
+                }
+            } 
+
             // Select none / all
             scope.select = (checked) => {
                 scope.options.forEach(option => {
-                    option.checked = checked;
+                    scope.check(option, checked);
                 });
                 scope.searchField = "";
             };
