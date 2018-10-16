@@ -22,7 +22,7 @@ gulp.task("build",["clean:types"], function () {
         .pipe(gulp.dest('./'));
 });
 
-gulp.task("build-dev", function () {
+gulp.task("build-dev",["clean:types"], () =>{
     webpack.plugins = [];
     return gulp.src('./')
         .pipe(webpack(require('./webpack-dev.config.js')))
