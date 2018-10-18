@@ -431,9 +431,9 @@ module.directive('iconsSelect', function() {
 		},
 		template: `
 			<div ng-class="{'drop-down-block': !separateIcon}">
-				<div ng-if="separateIcon" class="current fixed cell twelve" data-selected="[[current.id]]"> +
-					<i class="[[current.icon]]"></i> +
-					<span translate content="[[current.text]]"></span> +
+				<div ng-if="separateIcon" class="current fixed cell twelve" data-selected="[[current.id]]">
+					<i class="[[current.icon]]"></i>
+					<span translate content="[[current.text]]"></span>
 				</div>
 				<article ng-if="!separateIcon" class="current cell twelve medium-block-container" data-selected="[[current.id]]">
 					<div class="flex-row drop-down-label no-margin no-border">
