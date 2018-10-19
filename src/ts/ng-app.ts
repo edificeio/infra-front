@@ -1483,6 +1483,9 @@ module.directive('help', function(){
 			else if(window.location.pathname === '/adapter'){
 				scope.helpPath = helpPath + '/application/' + window.location.search.split('eliot=')[1].split('&')[0] + '/'
 			}
+			else if (window.location.pathname.includes("/directory/class-admin")){
+				scope.helpPath = helpPath + '/application/parametrage-de-la-classe/';
+			}
 
 			var helpContent;
 
