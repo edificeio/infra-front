@@ -66,7 +66,7 @@ function convertNodeAndChangeAttributeToStyle(selector: string, tag: string, att
 function removeComments(root: HTMLElement): HTMLElement {
     const ni = document.createNodeIterator(root, NodeFilter.SHOW_COMMENT, null, false);
     let currentNode;
-    while(currentNode = ni.nextNode()) {
+    while (currentNode = ni.nextNode()) {
         currentNode.parentNode.removeChild(currentNode);
     }
     return root;
@@ -75,13 +75,10 @@ function removeComments(root: HTMLElement): HTMLElement {
 export function convertToEditorFormat(html: string): string {
     const container = document.createElement('div');
     container.innerHTML = html;
-    removeNodes('xml',
-        removeNodes('title',
-            removeNodes('meta',
-                removeNodes('style', container))));
+    removeNodes('xml, title, meta, style', container);
 
-    removeAttribute('class',
-        removeAttribute('style', container));
+    removeAttribute('class', container);
+    removeAttribute('style', container);
 
     convertNode('b', 'span', {'font-weight': 'bold'}, container);
     convertNode('i', 'span', {'font-style': 'italic'}, container);
