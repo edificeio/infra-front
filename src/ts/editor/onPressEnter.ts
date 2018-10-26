@@ -9,6 +9,9 @@ export function isElementNodeWithName(node: Node, nodeName: string): boolean {
     return isElementNode(node) && node.nodeName === nodeName;
 }
 
+// this is a partial implementation of toKebabCase (camelCase -> kebabCase).
+// see lodash implementation for a more general-purposed kebabCase function:
+// https://lodash.com/docs/#kebabCase
 export function toKebabCase(s: string): string {
     return s.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase();
 }
