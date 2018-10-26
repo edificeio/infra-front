@@ -114,9 +114,14 @@ describe('Selection', () => {
             });
 
             describe(`cleanup`, () => {
-                it(`should removes empty <span></span> tags`, () => {
+                it(`should remove empty <span></span> tags`, () => {
                     expect(applyCss(`<div><span>↦test1↤</span><span></span></div><span></span>`, {color: 'blue'}))
                         .toBeStyledAs('<div><span style="color: blue;">↦test1↤</span></div>');
+                });
+
+                it(`should not remove empty <span></span> tags when they are the only tags of a <div></div> tag`, () => {
+                    expect(applyCss(`<div><span>↦test1↤</span><span></span></div><span></span><div><span></span></div><div><span></span></div>`, {color: 'blue'}))
+                        .toBeStyledAs('<div><span style="color: blue;">↦test1↤</span></div><div><span></span></div><div><span></span></div>');
                 });
 
                 it(`should affect sub node style to span`, () => {

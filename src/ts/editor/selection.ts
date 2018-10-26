@@ -46,7 +46,9 @@ function tryToRemoveOrMergeTextElementOutOfRange(currentNode: Node, ranges: Arra
     if (!isHTMLBlockElement(currentNode)) {
         if (ranges.every(r => !isNodeInRange(currentNode, r))) {
             if (currentNode.textContent === '' || currentNode.textContent === '\u200b') {
-                currentNode.parentNode.removeChild(currentNode);
+                if (!(isHTMLBlockElement(currentNode.parentNode) && currentNode.parentNode.childNodes.length === 1)) {
+                    currentNode.parentNode.removeChild(currentNode);
+                }
             } else if (currentNode.previousSibling && ranges.every(r => !isNodeInRange(currentNode.previousSibling, r))) {
                 const previousNode = currentNode.previousSibling;
                 const currentNodeClone = currentNode.cloneNode(false);
@@ -78,7 +80,7 @@ export function findClosestHTMLElement(node: Node): HTMLElement {
 }
 
 export function isHTMLBlockElement(node: Node): boolean {
-    return textNodes.indexOf(node.nodeName) === -1;
+    return node && (textNodes.indexOf(node.nodeName) === -1);
 }
 
 export function hasStyleProperty(node: HTMLElement, styleProperty: string): boolean {
@@ -890,7 +892,7 @@ export const Selection = function(data){
                         sel.addRange(range);
                     });
                 }
-                if (item.textContent === "") {
+                if (item.textContent === "" && !(isHTMLBlockElement(item.parentNode) && item.parentNode.childNodes.length === 1)) {
                     $(item).remove();
                 }
             });
