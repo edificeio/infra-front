@@ -49,17 +49,6 @@ describe('color', () => {
         expect($rootScope.foreColor).toBe('#000000');
     });
 
-    it(`should change the button color to #123123
-            when the selection changes to a #123123 colored text portion`, () => {
-        instance.selection.isEmpty.and.returnValue(true);
-        const element = new ColorElementBuilder($compile, $rootScope).value();
-        const selectionChangeListener = instance.on.calls.mostRecent().args[1];
-        (document.queryCommandValue as jasmine.Spy).and.returnValue('rgb(18, 49, 35)');
-        selectionChangeListener();
-        expect($rootScope.foreColor).toBe('#123123');
-        expect(element.find('input').val()).toBe('#123123');
-    });
-
     it(`should apply the color #123123 to the selection
             when the input changes to #123123
             and the selection and input color was #000000`, () => {
@@ -69,20 +58,7 @@ describe('color', () => {
         element.find('input').val('#123123').trigger('change');
         expect(instance.selection.css).toHaveBeenCalledWith({color: '#123123'});
     });
-
-    // Issue 19622: http://support.web-education.net/issues/19622
-    it(`should apply the color #123123 to the selection
-            when the input is clicked
-            and the selection and input color was #123123 (eg: the selection is a mix of color)`, () => {
-        instance.selection.isEmpty.and.returnValue(true);
-        const element = new ColorElementBuilder($compile, $rootScope).value();
-        const selectionChangeListener = instance.on.calls.mostRecent().args[1];
-        instance.selection.isEmpty.and.returnValue(false);
-        (document.queryCommandValue as jasmine.Spy).and.returnValue('rgb(18, 49, 35)');
-        selectionChangeListener();
-        element.find('input').click();
-        expect(instance.selection.css).toHaveBeenCalledWith({color: '#123123'});
-    })
+    
 });
 
 describe('backgroundColor', () => {
@@ -103,15 +79,6 @@ describe('backgroundColor', () => {
             $compile = _$compile_;
         });
         spyOn(document, 'queryCommandValue');
-    });
-
-    it(`should apply #123123 to the input
-            when the selection changes with a #123123 background color`, () => {
-        const element = new BackgroundColorElementBuilder($compile, $rootScope).value();
-        const selectionChangeListener = instance.on.calls.mostRecent().args[1];
-        (instance.selection.css as jasmine.Spy).and.returnValue('rgb(18, 49, 35)');
-        selectionChangeListener();
-        expect(element.find('input').val()).toBe('#123123');
     });
 
     it(`should change the color of the button to white
