@@ -54,8 +54,8 @@ function tryToRemoveOrMergeTextElementOutOfRange(currentNode: Node, ranges: Arra
                 const currentNodeClone = currentNode.cloneNode(false);
                 const previousNodeClone = previousNode.cloneNode(false);
                 if (currentNodeClone.isEqualNode(previousNodeClone)) {
-                    while (previousNode.firstChild) {
-                        currentNode.insertBefore(previousNode.firstChild, currentNode.firstChild);
+                    while (previousNode.lastChild) {
+                        currentNode.insertBefore(previousNode.lastChild, currentNode.firstChild);
                     }
                     currentNode.parentNode.removeChild(previousNode);
                 }
