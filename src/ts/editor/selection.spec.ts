@@ -106,6 +106,12 @@ describe('Selection', () => {
                     .toBeStyledAs('<div><span style="color: blue;">↦test1↤</span><span style="color: blue;">test2test3</span></div>');
             });
 
+            it(`should merge <span></span> tags out of range and respect children order
+                when editZone <span></span><span blue><span orange></span><span yellow></span></span><span blue></span> and given {color: blue} on the first <span></span>`, () => {
+                expect(applyCss(`<div><span>↦test1↤</span><span style="color: blue;"><span style="background: orange">test2</span><span style="background: yellow">test3</span></span></span><span style="color: blue;">test4</span><span>\u200b</span></div>`, {color: 'blue'}))
+                    .toBeStyledAs('<div><span style="color: blue;">↦test1↤</span><span style="color: blue;"><span style="background: orange">test2</span><span style="background: yellow">test3</span>test4</span></div>');
+            });
+
             // must be related to issue 19610
             xit(`should merge <span></span> tags if the next <span></span> is blue
                 when editZone <span></span><span blue></span> and given {color: blue} on the first <span></span>`, () => {
