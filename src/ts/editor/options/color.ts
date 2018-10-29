@@ -58,22 +58,22 @@ export const color = {
                     setSpectrum(element);
                 }
                 scope.foreColor = "#000000";
+
                 element.children('input').on('change', function(){
                     scope.foreColor = $(this).val();
                     scope.$apply('foreColor');
+                    applyColor();
                 });
 
                 element.children('input').on('click', function () {
                     scope.foreColor = element.children('input').val();
                     scope.$apply('foreColor');
-                    instance.selection.css({'color': scope.foreColor});
+                    applyColor();
                 });
 
-                scope.$watch('foreColor', function(){
-                    if(scope.foreColor !== eval(document.queryCommandValue('foreColor')) && !(instance.selection.isEmpty() && scope.foreColor === '#000000')) {
-                        instance.selection.css({ 'color': scope.foreColor });
-                    }
-                });
+                function applyColor () {
+                    instance.selection.css({'color': scope.foreColor});
+                }
             }
         };
     }
@@ -148,10 +148,7 @@ export const backgroundColor = {
                             element.find('i').css({ 'color': '#fff' });
                         }
                     }
-
-                    if(scope.backColor !== eval(instance.selection.css('background-color')) && rgbColor.a !== 0 && scope.backColor) {
-                        instance.selection.css({ 'background-color': scope.backColor });
-                    }
+                    instance.selection.css({'background-color': scope.backColor});
                 }
             }
         };
