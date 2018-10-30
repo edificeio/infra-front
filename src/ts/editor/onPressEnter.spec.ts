@@ -35,6 +35,12 @@ describe('onPressEnter', () => {
         expect(instance.addState).toHaveBeenCalledWith('<span>test</span>');
     });
 
+    fit(`should add two <div></div> holding ZWS character
+            when pressing enter in an empty editor`, () => {
+        expect(pressEnter('↵', selection))
+            .toBeEditedAs('<div>&#8203;</div><div>&#8203;‸</div>');
+    });
+
     it(`should wrap the initial text in a <div></div> and create a new <div></div>
             when pressing enter in the editor root node`, () => {
         expect(pressEnter('test↵', selection))
