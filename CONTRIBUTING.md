@@ -23,7 +23,7 @@ npm run test:compatibility -- --browsers=bs_ie_11_windows10
 ## Running ui tests
 
 ```shell
-
+npm run test:selenium
 ```
 
 
@@ -40,4 +40,6 @@ Jasmine is a full-featured (assertions, mocks, etc.) test framework.
 A lot of resources can be found in the web about Jasmine.
 
 - why webdriver.io?
+
+Webdriver.io is a low level API to write functional tests using the standard web driver api.
 
