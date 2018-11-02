@@ -940,7 +940,7 @@ module.directive('datePicker', ['$compile','$timeout',function($compile, $timeou
 			scope.isreadonly = !!attributes.readonly;
 			scope.$watch('ngModel', function(newVal){
 				//parse strictly
-				const parsed = moment(scope.ngModel,["DD/MM/YYYY","YYYY-MM-DD"],true);
+				const parsed = moment(scope.ngModel,["DD/MM/YYYY","YYYY-MM-DD","YYYY-MM-DD[T]HH:mm:ss.SSS[Z]","YYYY-MM-DD[T]HH:mm:ss.SSS"],true);
 				const formatted = parsed.format("DD/MM/YYYY");
 				//change date only if value match format (when typing the value does not match)
 				if(parsed.isValid()){
