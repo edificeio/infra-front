@@ -33,8 +33,8 @@
   },
   "devDependencies": {
     "@types/core-js": "^0.9.35",
-    "rimraf": "^2.6.2",
     "@types/jasmine": "^2.8.8",
+    "@types/webdriverio": "^4.13.0",
     "angular-mocks": "^1.3.20",
     "jasmine": "^2.8.0",
     "karma": "^3.0.0",
@@ -43,11 +43,17 @@
     "karma-firefox-launcher": "^1.1.0",
     "karma-jasmine": "^1.1.2",
     "karma-typescript": "3.0.8",
-    "mathjax": "^2.7.5"
+    "mathjax": "^2.7.5",
+    "rimraf": "^2.6.2",
+    "ts-node": "^7.0.1",
+    "wdio-browserstack-service": "^0.1.16",
+    "wdio-jasmine-framework": "^0.3.6",
+    "webdriverio": "^4.13.0"
   },
   "scripts": {
     "test": "karma start",
-    "test:compatibility": "karma start karma-compatibility.conf.js"
+    "test:compatibility": "karma start karma-compatibility.conf.js",
+    "test:selenium": "npx wdio"
   },
   "repository": {
     "type": "git",

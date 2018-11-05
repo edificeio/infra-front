@@ -13,7 +13,33 @@ npm run test
 # override the default browsers, e.g. run unit tests only on local firefox:
 npm run test -- --browsers=Firefox
 
+# /!\ needs env. variables BROWSERSTACK_USERNAME and BROWSERSTACK_ACCESSKEY
 # run unit tests on browserStack:
 npm run test:compatibility
-# /!\ needs env. variables BROWSERSTACK_USERNAME and BROWSERSTACK_ACCESSKEY
+# only on ie11:
+npm run test:compatibility -- --browsers=bs_ie_11_windows10
 ```
+
+## Running ui tests
+
+```shell
+npm run test:selenium
+```
+
+
+## choices
+
+- why karma?
+
+Karma is a javascript test runner that runs unit tests in browser environments.
+Most alternative test runners run tests in the node.js environment.
+
+- why jasmine?
+
+Jasmine is a full-featured (assertions, mocks, etc.) test framework.
+A lot of resources can be found in the web about Jasmine.
+
+- why webdriver.io?
+
+Webdriver.io is a low level API to write functional tests using the standard web driver api.
+
