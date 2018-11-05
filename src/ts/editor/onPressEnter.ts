@@ -13,41 +13,43 @@ export function onPressEnter(e, range, editorInstance, editZone, textNodes){
     
     var parentContainer = range.startContainer;
 
-    if (isElementNodeWithName(parentContainer, 'TD') || isElementNodeWithName(parentContainer.parentNode, 'TD')) {
-        return;
-    }
-
-    if (isElementNodeWithName(parentContainer, 'LI') || isElementNodeWithName(parentContainer.parentNode, 'LI')) {
-        const editZoneElement = editZone.get(0);
-        if (parentContainer.textContent.length === 0 && parentContainer !== editZoneElement) {
-            let currentNode = parentContainer, rootListNode, itemListNode;
-            do {
-                if (isElementNodeWithName(currentNode, 'LI') && !itemListNode) {
-                    itemListNode = currentNode;
-                }
-                if (isElementNodeWithName(currentNode, 'UL') || isElementNodeWithName(currentNode, 'OL')) {
-                    if (!rootListNode) {
-                        rootListNode = currentNode;
-                    } else {
-                        return; // range is in a nested list
-                    }
-                }
-            } while ((currentNode = currentNode.parentNode) && currentNode !== editZoneElement);
-            if (!itemListNode.nextSibling) {
-                let nextElement = document.createElement('div');
-                nextElement.appendChild(document.createTextNode('\u200b'));
-                rootListNode.parentNode.insertBefore(nextElement, rootListNode.nextSibling);
-                rootListNode.removeChild(rootListNode.lastChild);
-
-                const sel = document.getSelection();
-                sel.removeAllRanges();
-                const range = document.createRange();
-                range.setStart(nextElement.firstChild, nextElement.textContent.length);
-                sel.addRange(range);
-                e.preventDefault();
-            }
+    if(parentContainer !== editZone.get(0)) {
+        if (isElementNodeWithName(parentContainer, 'TD') || isElementNodeWithName(parentContainer.parentNode, 'TD')) {
+            return;
         }
-        return;
+
+        if (isElementNodeWithName(parentContainer, 'LI') || isElementNodeWithName(parentContainer.parentNode, 'LI')) {
+            const editZoneElement = editZone.get(0);
+            if (parentContainer.textContent.length === 0 && parentContainer !== editZoneElement) {
+                let currentNode = parentContainer, rootListNode, itemListNode;
+                do {
+                    if (isElementNodeWithName(currentNode, 'LI') && !itemListNode) {
+                        itemListNode = currentNode;
+                    }
+                    if (isElementNodeWithName(currentNode, 'UL') || isElementNodeWithName(currentNode, 'OL')) {
+                        if (!rootListNode) {
+                            rootListNode = currentNode;
+                        } else {
+                            return; // range is in a nested list
+                        }
+                    }
+                } while ((currentNode = currentNode.parentNode) && currentNode !== editZoneElement);
+                if (!itemListNode.nextSibling) {
+                    let nextElement = document.createElement('div');
+                    nextElement.appendChild(document.createTextNode('\u200b'));
+                    rootListNode.parentNode.insertBefore(nextElement, rootListNode.nextSibling);
+                    rootListNode.removeChild(rootListNode.lastChild);
+
+                    const sel = document.getSelection();
+                    sel.removeAllRanges();
+                    const range = document.createRange();
+                    range.setStart(nextElement.firstChild, nextElement.textContent.length);
+                    sel.addRange(range);
+                    e.preventDefault();
+                }
+            }
+            return;
+        }
     }
 
     var blockContainer = parentContainer;
@@ -60,6 +62,10 @@ export function onPressEnter(e, range, editorInstance, editZone, textNodes){
         wrapper.html('&#8203;');
         blockContainer = wrapper[0];
         parentContainer = wrapper[0];
+        let r = document.createRange();
+        r.setStart(parentContainer, 1);
+        replaceSelection(r);
+        range = r;
     }
     if (blockContainer === editZone[0]) {
         let startOffset = range.startOffset;
@@ -70,11 +76,9 @@ export function onPressEnter(e, range, editorInstance, editZone, textNodes){
         }
         $(blockContainer).append(wrapper);
         blockContainer = wrapper[0];
-        let sel = document.getSelection();
         let r = document.createRange();
         r.setStart(parentContainer, startOffset);
-        sel.removeAllRanges();
-        sel.addRange(r);
+        replaceSelection(r);
         range = r;
     }
     var newNodeName = 'div';
@@ -169,8 +173,12 @@ export function onPressEnter(e, range, editorInstance, editZone, textNodes){
         newStartContainer = newStartContainer.firstChild;
     }
     newRange.setStart(newStartContainer, rangeStart);
+    replaceSelection(newRange);
+}
 
-    let sel = document.getSelection();
+function replaceSelection(range: Range): Range {
+    const sel = document.getSelection();
     sel.removeAllRanges();
-    sel.addRange(newRange);
+    sel.addRange(range);
+    return range;
 }
