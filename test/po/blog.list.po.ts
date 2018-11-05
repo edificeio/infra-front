@@ -1,5 +1,4 @@
 export default new class BlogListPo {
-
     navigateToPage(): void {
         browser.url('/blog');
         this.card.waitForVisible();

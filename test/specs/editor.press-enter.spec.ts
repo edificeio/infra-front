@@ -24,6 +24,6 @@ describe('editor press enter', () => {
         editorPage.editor.addValue('Enter');
         editorPage.editor.addValue('Enter');
         editorPage.editor.addValue('abc');
-        expect(editorPage.editor.getHTML(false)).toBe('<div>\u200b</div><div>\u200b</div><div>​abc</div>');
+        expect(editorPage.editor.getHTML(false)).toBe('<div>\u200b</div><div>\u200b</div><div>\u200babc</div>');
     });
 });
