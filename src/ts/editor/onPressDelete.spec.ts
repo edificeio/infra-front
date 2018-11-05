@@ -1,7 +1,6 @@
 import { $ } from "../libs";
-import { onPressEnter } from "./onPressEnter";
-import { textNodes } from "./selection";
 import { findNodeAndOffsetOf } from "./onPressEnter.spec";
+import { onPressDelete } from "./onPressDelete";
 
 describe('onPressDelete', () => {
     let selection: Selection;
@@ -13,7 +12,7 @@ describe('onPressDelete', () => {
 
     it(`should addState <span>test</span>
             when editZone initially contains <span>test</span>`, () => {
-        let {instance} = pressDelete('<span>test↵</span>', selection);
+        let {instance} = pressDelete('<span>test←</span>', selection);
         expect(instance.addState).toHaveBeenCalledWith('<span>test</span>');
     });
 });
@@ -25,13 +24,13 @@ function pressDelete(content: string, selection: Selection): { event: any, range
     const editZoneElement = document.createElement('div');
     editZoneElement.innerHTML = content;
 
-    // find and remove ↵ char, start the range at its position
-    const {node, offset} = findNodeAndOffsetOf(editZoneElement, '↵');
-    node.nodeValue = node.nodeValue.replace('↵', '');
+    // find and remove ← char, start the range at its position
+    const {node, offset} = findNodeAndOffsetOf(editZoneElement, '←');
+    node.nodeValue = node.nodeValue.replace('←', '');
     range.setStart(node, offset);
 
     const editZone = $(editZoneElement);
-    onPressEnter(event, range, instance, editZone, textNodes);
+    onPressDelete(event, selection, instance, editZone);
     if ((selection.addRange as jasmine.Spy).calls.mostRecent()) {
         range = (selection.addRange as jasmine.Spy).calls.mostRecent().args[0];
     }
