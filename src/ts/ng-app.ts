@@ -2065,6 +2065,7 @@ module.controller('Account', ['$scope', function($scope) {
 	$scope.rand = Math.random();
 	$scope.skin = skin;
 	$scope.lang = lang;
+	$scope.currentLanguage = currentLanguage;
 	$scope.refreshAvatar = function(){
 		http().get('/userbook/api/person', {}, {requestName: "refreshAvatar"}).done(function(result){
 			$scope.avatar = result.result['0'].photo;
