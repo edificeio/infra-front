@@ -1,0 +1,40 @@
+[
+  {
+    "name": "bs_chrome_latest_windows10",
+    "browser": "Chrome",
+    "os": "Windows",
+    "os_version": "10"
+  },
+  {
+    "name": "bs_edge_latest_windows10",
+    "browser": "Edge",
+    "os": "Windows",
+    "os_version": "10"
+  },
+  {
+    "name": "bs_ie_11_windows10",
+    "browser": "IE",
+    "browser_version": "11",
+    "os": "Windows",
+    "os_version": "10"
+  },
+  {
+    "name": "bs_ie_11_windows8",
+    "browser": "IE",
+    "browser_version": "11",
+    "os": "Windows",
+    "os_version": "8.1"
+  },
+  {
+    "name": "bs_firefox_latest_windows10",
+    "browser": "Firefox",
+    "os": "Windows",
+    "os_version": "10"
+  },
+  {
+    "name": "bs_safari_latest_macOS_HS",
+    "browser": "Safari",
+    "os": "OS X",
+    "os_version": "High Sierra"
+  }
+]
