@@ -2,21 +2,6 @@ import { isElementNodeWithName, onPressEnter } from "./onPressEnter";
 import { textNodes } from "./selection";
 import { $ } from "../libs";
 
-describe('isElementNodeWithName', () => {
-    it(`should return true when given (<div><div>, 'DIV')`, () => {
-        expect(isElementNodeWithName(document.createElement('div'), 'DIV')).toBe(true);
-    });
-    it(`should return true when given (<span><span>, 'SPAN')`, () => {
-        expect(isElementNodeWithName(document.createElement('span'), 'SPAN')).toBe(true);
-    });
-    it(`should return false when given (<span><span>, 'DIV')`, () => {
-        expect(isElementNodeWithName(document.createElement('span'), 'DIV')).toBe(false);
-    });
-    it(`should return false when given (textNode, 'DIV')`, () => {
-        expect(isElementNodeWithName(document.createTextNode('test'), 'DIV')).toBe(false);
-    });
-});
-
 // in the following spec:
 //      ↵ represents where we are going to press enter
 //      ‸ represents the expected start position of the range
@@ -35,9 +20,9 @@ describe('onPressEnter', () => {
         expect(instance.addState).toHaveBeenCalledWith('<span>test</span>');
     });
 
-    fit(`should add two <div></div> holding ZWS character
+    it(`should add two <div></div> holding ZWS character
             when pressing enter in an empty editor`, () => {
-        expect(pressEnter('↵', selection))
+        expect(pressEnter('', selection, false))
             .toBeEditedAs('<div>&#8203;</div><div>&#8203;‸</div>');
     });
 
@@ -133,6 +118,21 @@ describe('onPressEnter', () => {
     });
 });
 
+describe('isElementNodeWithName', () => {
+    it(`should return true when given (<div><div>, 'DIV')`, () => {
+        expect(isElementNodeWithName(document.createElement('div'), 'DIV')).toBe(true);
+    });
+    it(`should return true when given (<span><span>, 'SPAN')`, () => {
+        expect(isElementNodeWithName(document.createElement('span'), 'SPAN')).toBe(true);
+    });
+    it(`should return false when given (<span><span>, 'DIV')`, () => {
+        expect(isElementNodeWithName(document.createElement('span'), 'DIV')).toBe(false);
+    });
+    it(`should return false when given (textNode, 'DIV')`, () => {
+        expect(isElementNodeWithName(document.createTextNode('test'), 'DIV')).toBe(false);
+    });
+});
+
 function showZWScharacters(s: string): string {
     return s.split('\u200b').join('&#8203;');
 }
@@ -174,7 +174,7 @@ const customMatchers: jasmine.CustomMatcherFactories = {
     }
 };
 
-function findNodeAndOffsetOf(node: Node, char: string): { node: Node, offset: number } {
+export function findNodeAndOffsetOf(node: Node, char: string): { node: Node, offset: number } {
     const tw = document.createTreeWalker(node, NodeFilter.SHOW_TEXT, null, false);
 
     let currentNode: Node;
@@ -186,17 +186,22 @@ function findNodeAndOffsetOf(node: Node, char: string): { node: Node, offset: nu
     }
 }
 
-function pressEnter(content: string, selection: Selection): { event: any, range: Range, instance: any, editZone: any } {
+function pressEnter(content: string, selection: Selection, searchRange = true): { event: any, range: Range, instance: any, editZone: any } {
     const event = jasmine.createSpyObj('KeyboardEvent', ['preventDefault']);
     const instance = jasmine.createSpyObj('Instance', ['addState']);
     let range = document.createRange();
     const editZoneElement = document.createElement('div');
-
     editZoneElement.innerHTML = content;
-    // find and remove ↵ char, start the range at its position
-    const {node, offset} = findNodeAndOffsetOf(editZoneElement, '↵');
-    node.nodeValue = node.nodeValue.replace('↵', '');
-    range.setStart(node, offset);
+
+    if (searchRange) {
+        // find and remove ↵ char, start the range at its position
+        const {node, offset} = findNodeAndOffsetOf(editZoneElement, '↵');
+        node.nodeValue = node.nodeValue.replace('↵', '');
+        range.setStart(node, offset);
+    } else {
+        range.setStart(editZoneElement, 0);
+        range.setEnd(editZoneElement, 0);
+    }
 
     const editZone = $(editZoneElement);
     onPressEnter(event, range, instance, editZone, textNodes);
@@ -204,5 +209,5 @@ function pressEnter(content: string, selection: Selection): { event: any, range:
         range = (selection.addRange as jasmine.Spy).calls.mostRecent().args[0];
     }
 
-    return {event, range, instance, editZone}
+    return {event, range, instance, editZone};
 }
