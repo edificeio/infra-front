@@ -10,7 +10,7 @@ describe('onPressEnter', () => {
     beforeEach(() => {
         jasmine.addMatchers(customMatchers);
         spyOn(document, "getSelection");
-        selection = jasmine.createSpyObj("Selection", ["removeAllRanges", "addRange"]);
+        selection = jasmine.createSpyObj("Selection", ["getRangeAt", "removeAllRanges", "addRange"]);
         (document.getSelection as jasmine.Spy).and.returnValue(selection);
     });
 
@@ -133,6 +133,39 @@ describe('isElementNodeWithName', () => {
     });
 });
 
+const customMatchers: jasmine.CustomMatcherFactories = {toBeEditedAs};
+
+const pressEnter = pressFactory('↵',
+    (event: KeyboardEvent, selection: Selection, range: Range, instance: any, editZone: any, textNodes: Array<String>) =>
+        onPressEnter(event, range, instance, editZone, textNodes));
+
+export function toBeEditedAs(util: jasmine.MatchersUtil, customEqualityTesters: Array<jasmine.CustomEqualityTester>): jasmine.CustomMatcher {
+    return {
+        compare: function (actual: { editZone: any, range: Range }, expected): jasmine.CustomMatcherResult {
+            const editHtml = showZWScharacters(actual.editZone.html()),
+                range = actual.range;
+            if (!util.equals(editHtml, expected.replace('‸', ''), customEqualityTesters)) {
+                return {pass: false, message: `Expected '${editHtml}' to be '${expected.replace('‸', '')}'`};
+            }
+            const el = document.createElement('div');
+            el.innerHTML = hideZWScharacters(expected);
+            const {node, offset} = findNodeAndOffsetOf(el, '‸');
+            node.nodeValue = node.nodeValue.replace('‸', '');
+            const rangeContainer = range.startContainer;
+            if (!node.isEqualNode(rangeContainer)) {
+                return {
+                    pass: false,
+                    message: `Expected range.startContainer '${stringifyNode(rangeContainer)}' to be '${stringifyNode(node)}'`
+                };
+            }
+            if (range.startOffset !== offset) {
+                return {pass: false, message: `Expected range.startOffset '${range.startOffset}' to be '${offset}'`}
+            }
+            return {pass: true};
+        }
+    }
+}
+
 function showZWScharacters(s: string): string {
     return s.split('\u200b').join('&#8203;');
 }
@@ -145,36 +178,7 @@ function stringifyNode(node: Node): string {
     return `${node.parentNode.nodeName}<-${node.nodeName}-(${node.nodeValue})`;
 }
 
-const customMatchers: jasmine.CustomMatcherFactories = {
-    toBeEditedAs: function (util: jasmine.MatchersUtil, customEqualityTesters: Array<jasmine.CustomEqualityTester>): jasmine.CustomMatcher {
-        return {
-            compare: function (actual: { editZone: any, range: Range }, expected): jasmine.CustomMatcherResult {
-                const editHtml = showZWScharacters(actual.editZone.html()),
-                    range = actual.range;
-                if (!util.equals(editHtml, expected.replace('‸', ''), customEqualityTesters)) {
-                    return {pass: false, message: `Expected '${editHtml}' to be '${expected.replace('‸', '')}'`};
-                }
-                const el = document.createElement('div');
-                el.innerHTML = hideZWScharacters(expected);
-                const {node, offset} = findNodeAndOffsetOf(el, '‸');
-                node.nodeValue = node.nodeValue.replace('‸', '');
-                const rangeContainer = range.startContainer;
-                if (!node.isEqualNode(rangeContainer)) {
-                    return {
-                        pass: false,
-                        message: `Expected range.startContainer '${stringifyNode(rangeContainer)}' to be '${stringifyNode(node)}'`
-                    };
-                }
-                if (range.startOffset !== offset) {
-                    return {pass: false, message: `Expected range.startOffset '${range.startOffset}' to be '${offset}'`}
-                }
-                return {pass: true};
-            }
-        }
-    }
-};
-
-export function findNodeAndOffsetOf(node: Node, char: string): { node: Node, offset: number } {
+function findNodeAndOffsetOf(node: Node, char: string): { node: Node, offset: number } {
     const tw = document.createTreeWalker(node, NodeFilter.SHOW_TEXT, null, false);
 
     let currentNode: Node;
@@ -186,28 +190,36 @@ export function findNodeAndOffsetOf(node: Node, char: string): { node: Node, off
     }
 }
 
-function pressEnter(content: string, selection: Selection, searchRange = true): { event: any, range: Range, instance: any, editZone: any } {
-    const event = jasmine.createSpyObj('KeyboardEvent', ['preventDefault']);
-    const instance = jasmine.createSpyObj('Instance', ['addState']);
-    let range = document.createRange();
-    const editZoneElement = document.createElement('div');
-    editZoneElement.innerHTML = content;
+export type pressFunction = (content: string, selection: Selection, searchRange?: boolean) => { event: any, range: Range, instance: any, editZone: any };
 
-    if (searchRange) {
-        // find and remove ↵ char, start the range at its position
-        const {node, offset} = findNodeAndOffsetOf(editZoneElement, '↵');
-        node.nodeValue = node.nodeValue.replace('↵', '');
-        range.setStart(node, offset);
-    } else {
-        range.setStart(editZoneElement, 0);
-        range.setEnd(editZoneElement, 0);
+export type pressCallbackFunction = (event: KeyboardEvent, selection: Selection, range: Range, instance: any, editZone: any, textNodes: Array<String>) => void;
+
+export function pressFactory(char: string, cb: pressCallbackFunction): pressFunction {
+    return function (content: string, selection: Selection, searchRange = true): { event: any, range: Range, instance: any, editZone: any } {
+        const event = jasmine.createSpyObj('KeyboardEvent', ['preventDefault']);
+        const instance = jasmine.createSpyObj('Instance', ['addState']);
+        let range = document.createRange();
+        const editZoneElement = document.createElement('div');
+        editZoneElement.innerHTML = content;
+
+        if (searchRange) {
+            // find and remove the char, start the range at its position
+            const {node, offset} = findNodeAndOffsetOf(editZoneElement, char);
+            node.nodeValue = node.nodeValue.replace(char, '');
+            range.setStart(node, offset);
+        } else {
+            range.setStart(editZoneElement, 0);
+            range.setEnd(editZoneElement, 0);
+        }
+
+        (selection.getRangeAt as jasmine.Spy).and.returnValue(range);
+        (selection as any).rangeCount = 1;
+        const editZone = $(editZoneElement);
+        cb(event, selection, range, instance, editZone, textNodes);
+        if ((selection.addRange as jasmine.Spy).calls.mostRecent()) {
+            range = (selection.addRange as jasmine.Spy).calls.mostRecent().args[0];
+        }
+
+        return {event, range, instance, editZone};
     }
-
-    const editZone = $(editZoneElement);
-    onPressEnter(event, range, instance, editZone, textNodes);
-    if ((selection.addRange as jasmine.Spy).calls.mostRecent()) {
-        range = (selection.addRange as jasmine.Spy).calls.mostRecent().args[0];
-    }
-
-    return {event, range, instance, editZone};
 }
