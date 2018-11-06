@@ -82,6 +82,18 @@ describe('onPressEnter', () => {
             .toBeEditedAs('<div><span style="color: red">&#8203;</span></div><div><span style="color: red">‸test</span></div>')
     });
 
+    it(`should adds a new empty <div></div>
+            when pressing enter at the end of a text with a <br> inside`, () => {
+        expect(pressEnter('<div><span style="color: red">test<br>↵</span></div>', selection))
+            .toBeEditedAs('<div><span style="color: red">test<br></span></div><div><span style="color: red">&#8203;‸</span></div>')
+    });
+
+    it(`should adds a <div></div> with the remaining text
+            when pressing enter in a text with a <br> inside`, () => {
+        expect(pressEnter('<div><span style="color: red">test<br>te↵st</span></div>', selection))
+            .toBeEditedAs('<div><span style="color: red">test<br>te</span></div><div><span style="color: red">‸st</span></div>')
+    });
+
     function generateListSuite(uol: string) {
         it(`should leave the browser handle the situation when pressing enter in a <li></li> tag`, () => {
             let {editZone, range, event} = pressEnter(`<${uol}><li>test</li><li>test↵</li></${uol}>`, selection);
