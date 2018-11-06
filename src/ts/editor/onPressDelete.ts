@@ -4,7 +4,7 @@ import { findClosestHTMLElement, findLatestChildTextNode, isHTMLBlockElement } f
 export function findClosestBlockElement(currentNode: Node, root: Node): Node {
     let target;
     while ((currentNode = findClosestHTMLElement(currentNode)) && currentNode !== root && !target) {
-        if(isHTMLBlockElement(currentNode)) {
+        if (isHTMLBlockElement(currentNode)) {
             target = currentNode;
         }
     }
@@ -18,6 +18,16 @@ export function onPressDelete(event, selection, editorInstance, editZone) {
     for (var i = 0; i < selection.rangeCount; i++) {
         var r = selection.getRangeAt(i);
         var startContainer = r.startContainer;
+
+        if (r.startContainer.nodeType === Node.TEXT_NODE) {
+            let oldStartOffset = r.startOffset;
+            let oldLength = startContainer.textContent.length;
+            startContainer.textContent =
+                startContainer.textContent.substring(0, oldStartOffset).replace(/[\u200B-\u200D\uFEFF]/g, '')
+                + startContainer.textContent.substring(oldStartOffset);
+            r.setStart(startContainer, oldStartOffset - (oldLength - startContainer.textContent.length));
+        }
+
         if (startContainer.nodeType === 1 && startContainer.nodeName === 'TD' || startContainer.nodeName === 'TR') {
             (startContainer as any).remove();
         } else {
