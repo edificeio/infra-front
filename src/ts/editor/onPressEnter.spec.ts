@@ -51,6 +51,12 @@ describe('onPressEnter', () => {
             .toBeEditedAs('<div style="color: red;">test</div><div style="color: red;">&#8203;‸</div>');
     });
 
+    it(`should copy the style prop in the new <div></div>
+            when pressing enter in a <div style="color: red;"></div>`, () => {
+        expect(pressEnter('<div>↵test1<span style="color: red;">test2</span></div>', selection))
+            .toBeEditedAs('<div>&#8203;</div><div>‸test1<span style="color: red;">test2</span></div>');
+    });
+
     it(`should adds a &#8203; in the textNode and adds a new line
             when pressing enter in a tag without text`, () => {
         expect(pressEnter('<div><span>test1</span>↵<span>test2</span></div>', selection))
