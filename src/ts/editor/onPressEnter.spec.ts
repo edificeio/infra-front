@@ -26,6 +26,13 @@ describe('onPressEnter', () => {
             .toBeEditedAs('<div>&#8203;</div><div>&#8203;‸</div>');
     });
 
+    it(`should wrap the <span></span> tag in a <div></div> tag
+            and create a new <div><span></span></div> tags
+            when pressing enter in a root <span></span>`, () => {
+        expect(pressEnter('<span>test</span>', selection, false))
+            .toBeEditedAs('<div>&#8203;</div><div>&#8203;‸</div>');
+    });
+
     it(`should wrap the initial text in a <div></div> and create a new <div></div>
             when pressing enter in the editor root node`, () => {
         expect(pressEnter('test↵', selection))
