@@ -133,6 +133,10 @@ export function onPressEnter(e, range, editorInstance, editZone, textNodes) {
                 parentContainer.textContent = '\u200b';
             }
         }
+    } else {
+        for (let startOffset = (parentContainer.childNodes.length - range.startOffset); startOffset > 0; startOffset--) {
+            parentContainer.removeChild(parentContainer.lastChild);
+        }
     }
     let currentAncestorNode = parentContainer, currentNode, path = [];
     while (currentAncestorNode !== blockContainer) {
@@ -167,6 +171,10 @@ export function onPressEnter(e, range, editorInstance, editZone, textNodes) {
             currentNode.textContent = currentNode.textContent.substring(endOffset, currentNode.textContent.length);
             startOffset = 0;
         }
+    } else {
+        for (let i = 0; i < endOffset; i++) {
+            currentNode.removeChild(currentNode.firstChild);
+        }
     }
 
     let parentElementNode = currentNode;
@@ -186,7 +194,7 @@ export function onPressEnter(e, range, editorInstance, editZone, textNodes) {
         let firstTextNode = findFirstChildTextNode(currentNode);
         if (!firstTextNode) {
             firstTextNode = document.createTextNode('\u200b');
-            currentNode.insertBefore(currentNode.firstChild, firstTextNode);
+            currentNode.insertBefore(firstTextNode, currentNode.firstChild);
             startOffset = currentNode.textContent.length;
         } else {
             startOffset = firstTextNode.textContent.charAt(0) === '\u200b' ? 1 : 0;
