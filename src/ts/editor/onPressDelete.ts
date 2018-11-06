@@ -21,11 +21,16 @@ export function onPressDelete(event, selection, editorInstance, editZone) {
 
         if (r.startContainer.nodeType === Node.TEXT_NODE) {
             let oldStartOffset = r.startOffset;
+            let oldEndContainer = r.endContainer;
+            let oldEndOffset = r.endOffset;
             let oldLength = startContainer.textContent.length;
             startContainer.textContent =
                 startContainer.textContent.substring(0, oldStartOffset).replace(/[\u200B-\u200D\uFEFF]/g, '')
                 + startContainer.textContent.substring(oldStartOffset);
             r.setStart(startContainer, oldStartOffset - (oldLength - startContainer.textContent.length));
+            if (oldEndContainer === startContainer) {
+                r.setEnd(oldEndContainer, oldEndOffset - (oldLength - oldEndContainer.textContent.length))
+            }
         }
 
         if (startContainer.nodeType === 1 && startContainer.nodeName === 'TD' || startContainer.nodeName === 'TR') {
