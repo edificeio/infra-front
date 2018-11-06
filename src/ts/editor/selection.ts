@@ -80,7 +80,7 @@ export function findClosestHTMLElement(node: Node): HTMLElement {
 }
 
 export function isHTMLBlockElement(node: Node): boolean {
-    return node && (textNodes.indexOf(node.nodeName) === -1);
+    return node && isHTMLElement(node) && (textNodes.indexOf(node.nodeName) === -1);
 }
 
 export function hasStyleProperty(node: HTMLElement, styleProperty: string): boolean {
@@ -162,7 +162,7 @@ function findFirstChildTextNode(node: Node): Node {
     return document.createNodeIterator(node, NodeFilter.SHOW_TEXT, null, false).nextNode();
 }
 
-function findLatestChildTextNode(node: Node): Node {
+export function findLatestChildTextNode(node: Node): Node {
     let lastNode, currentNode;
     const ni = document.createNodeIterator(node, NodeFilter.SHOW_TEXT, null, false);
     while (currentNode = ni.nextNode()) {

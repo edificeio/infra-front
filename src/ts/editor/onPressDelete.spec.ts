@@ -1,12 +1,15 @@
-import { $ } from "../libs";
-import { findNodeAndOffsetOf } from "./onPressEnter.spec";
+import { pressFactory, toBeEditedAs } from "./onPressEnter.spec";
 import { onPressDelete } from "./onPressDelete";
 
+// in the following spec:
+//      ← represents where we are going to press enter
+//      ‸ represents the expected start position of the range
 describe('onPressDelete', () => {
     let selection: Selection;
     beforeEach(() => {
+        jasmine.addMatchers(customMatchers);
         spyOn(document, "getSelection");
-        selection = jasmine.createSpyObj("Selection", ["removeAllRanges", "addRange"]);
+        selection = jasmine.createSpyObj("Selection", ["getRangeAt", "removeAllRanges", "addRange"]);
         (document.getSelection as jasmine.Spy).and.returnValue(selection);
     });
 
@@ -15,25 +18,31 @@ describe('onPressDelete', () => {
         let {instance} = pressDelete('<span>test←</span>', selection);
         expect(instance.addState).toHaveBeenCalledWith('<span>test</span>');
     });
+
+    it(`should let the browser handles deletion
+            when the deletion occurred in a non-empty line`, () => {
+        let {editZone, range, event} = pressDelete('<div>test1</div><div>test2←</div>', selection);
+        expect({editZone, range}).toBeEditedAs(`<div>test1</div><div>test2‸</div>`);
+        expect(event.preventDefault).not.toHaveBeenCalled();
+    });
+
+    it(`should delete the empty div
+            when the deletion occurred in an empty line`, () => {
+        let {editZone, range, event} = pressDelete('<div>test</div><div>←</div>', selection);
+        expect({editZone, range}).toBeEditedAs(`<div>test‸</div>`);
+        expect(event.preventDefault).toHaveBeenCalled();
+    });
+
+    it(`should delete the empty div
+            when the deletion occurred in a line with only zws characters`, () => {
+        let {editZone, range, event} = pressDelete('<div>test</div><div>\u200b←\u200b</div>', selection);
+        expect({editZone, range}).toBeEditedAs(`<div>test‸</div>`);
+        expect(event.preventDefault).toHaveBeenCalled();
+    });
 });
 
-function pressDelete(content: string, selection: Selection): { event: any, range: Range, instance: any, editZone: any } {
-    const event = jasmine.createSpyObj('KeyboardEvent', ['preventDefault']);
-    const instance = jasmine.createSpyObj('Instance', ['addState']);
-    let range = document.createRange();
-    const editZoneElement = document.createElement('div');
-    editZoneElement.innerHTML = content;
+const pressDelete = pressFactory('←',
+    (event: KeyboardEvent, selection: Selection, range: Range, instance: any, editZone: any) =>
+        onPressDelete(event, selection, instance, editZone));
 
-    // find and remove ← char, start the range at its position
-    const {node, offset} = findNodeAndOffsetOf(editZoneElement, '←');
-    node.nodeValue = node.nodeValue.replace('←', '');
-    range.setStart(node, offset);
-
-    const editZone = $(editZoneElement);
-    onPressDelete(event, selection, instance, editZone);
-    if ((selection.addRange as jasmine.Spy).calls.mostRecent()) {
-        range = (selection.addRange as jasmine.Spy).calls.mostRecent().args[0];
-    }
-
-    return {event, range, instance, editZone};
-}
+const customMatchers: jasmine.CustomMatcherFactories = {toBeEditedAs};
