@@ -107,37 +107,46 @@ export let embedder = ng.directive('embedder', () => {
                 if(!scope.display.url){
                     return;
                 }
-                scope.display.invalidPath = false;
-                var agnosticUrl = scope.display.url.split('//')[1];
-                var matchParams = new RegExp('\{[a-zA-Z0-9_.]+\}', "g");
-                var params = scope.display.provider.url.match(matchParams);
 
-                var computedEmbed = scope.display.provider.embed;
+                label:for(let pattern of scope.display.provider.url) {
 
-                params.splice(1, params.length);
-                params.forEach(function (param) {
-                    var paramBefore = scope.display.provider.url.split(param)[0];
-                    var additionnalSplit = paramBefore.split('}')
-                    if (additionnalSplit.length > 1) {
-                        paramBefore = additionnalSplit[additionnalSplit.length - 1];
-                    }
-                    var paramAfter = scope.display.provider.url.split(param)[1].split('{')[0];
-                    var paramValue = scope.display.url.split(paramBefore)[1];
-                    if (!paramValue) {
-                        scope.display.invalidPath = true;
-                    }
-                    if(paramAfter){
-                        paramValue = paramValue.split(paramAfter)[0];
-                    }
+                    var agnosticUrl = scope.display.url.split('//')[1];
+                    var matchParams = new RegExp('\{[a-zA-Z0-9_.]+\}', "g");
+                    var params = pattern.match(matchParams);
+
+                    var computedEmbed = scope.display.provider.embed;
                     
-                    var replace = new RegExp('\\' + param.replace(/}/, '\\}'), 'g');
-                    scope.display.htmlCode = computedEmbed.replace(replace, paramValue);
-                });
+                    params.splice(1, params.length);
+                    for(let param of params) {
+                        scope.display.invalidPath = false;
+                        var paramBefore = pattern.split(param)[0];
+                        var additionnalSplit = paramBefore.split('}')
+                        if (additionnalSplit.length > 1) {
+                            paramBefore = additionnalSplit[additionnalSplit.length - 1];
+                        }
+                        var paramAfter = pattern.split(param)[1].split('{')[0];
+                        var paramValue = scope.display.url.split(paramBefore)[1];
+                        if (!paramValue) {
+                            scope.display.invalidPath = true;
+                            continue label;
+                        }
+                        if(paramAfter){
+                            paramValue = paramValue.split(paramAfter)[0];
+                        }
+
+                        var replace = new RegExp('\\' + param.replace(/}/, '\\}'), 'g');
+                        scope.display.htmlCode = computedEmbed.replace(replace, paramValue);
+
+                        break label;
+
+                    };
+                };
 
                 var preview = element.find('.' + scope.display.provider.name + ' .preview');
                 preview.html(
                     scope.display.htmlCode
                 );
+
             };
         }
     }
