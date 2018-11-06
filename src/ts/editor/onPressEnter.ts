@@ -162,6 +162,10 @@ export function onPressEnter(e, range, editorInstance, editZone, textNodes) {
         currentAncestorNode = currentAncestorNode.parentNode;
     }
 
+    if(currentAncestorNode.textContent.length === 0) {
+        currentAncestorNode.textContent = '\u200b';
+    }
+
     // remove everything before range end
     currentNode = clone;
     while (path.length) {
