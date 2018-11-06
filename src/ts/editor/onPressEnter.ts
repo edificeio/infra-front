@@ -7,7 +7,7 @@ function isElementNode(node: Node): node is HTMLElement {
 }
 
 export function isElementNodeWithName(node: Node, nodeName: string): boolean {
-    return isElementNode(node) && node.nodeName === nodeName;
+    return node && isElementNode(node) && node.nodeName === nodeName;
 }
 
 // this is a partial implementation of toKebabCase (camelCase -> kebabCase).
@@ -57,9 +57,15 @@ export function onPressEnter(e, range, editorInstance, editZone, textNodes) {
             return;
         }
 
-        if (isElementNodeWithName(parentContainer, 'LI') || isElementNodeWithName(parentContainer.parentNode, 'LI')) {
-            const editZoneElement = editZone.get(0);
-            if (parentContainer.textContent.length === 0 && parentContainer !== editZoneElement) {
+        const editZoneElement = editZone.get(0);
+        let liElement;
+        if (isElementNodeWithName(parentContainer, 'LI')) {
+            liElement = parentContainer;
+        } else if (isElementNodeWithName(findClosestBlockElement(parentContainer, editZoneElement), 'LI')) {
+            liElement = findClosestBlockElement(parentContainer, editZoneElement);
+        }
+        if (liElement) {
+            if (liElement.textContent.replace(/[\u200B-\u200D\uFEFF]/g, '').length === 0 && parentContainer !== editZoneElement) {
                 let currentNode = parentContainer, rootListNode, itemListNode;
                 do {
                     if (isElementNodeWithName(currentNode, 'LI') && !itemListNode) {
@@ -81,9 +87,12 @@ export function onPressEnter(e, range, editorInstance, editZone, textNodes) {
 
                     setRange(nextElement.firstChild, nextElement.textContent.length);
                     e.preventDefault();
+                    return;
                 }
             }
-            return;
+            if (isElementNodeWithName(parentContainer, 'LI') || isElementNodeWithName(parentContainer.parentNode, 'LI')) {
+                return;
+            }
         }
     } else {
         if(range.startContainer === range.endContainer) {
@@ -151,6 +160,10 @@ export function onPressEnter(e, range, editorInstance, editZone, textNodes) {
         }
         path.push(i);
         currentAncestorNode = currentAncestorNode.parentNode;
+    }
+
+    if(currentAncestorNode.textContent.length === 0) {
+        currentAncestorNode.textContent = '\u200b';
     }
 
     // remove everything before range end
