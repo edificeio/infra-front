@@ -1,5 +1,6 @@
 import { $ } from "../libs/jquery/jquery";
 import { findFirstChildTextNode } from "./selection";
+import { findClosestBlockElement } from "./onPressDelete";
 
 function isElementNode(node: Node): node is HTMLElement {
     return node.nodeType === Node.ELEMENT_NODE;
@@ -118,6 +119,12 @@ export function onPressEnter(e, range, editorInstance, editZone, textNodes) {
     // remove everything after range start
     if (parentContainer.nodeType === Node.TEXT_NODE) {
         parentContainer.textContent = parentContainer.textContent.substring(0, range.startOffset);
+        if(parentContainer.textContent.length === 0) {
+            const parentBlock = findClosestBlockElement(parentContainer, editZone.get(0));
+            if(!parentBlock || parentBlock.textContent.length === 0) {
+                parentContainer.textContent = '\u200b';
+            }
+        }
     }
     let currentAncestorNode = parentContainer, currentNode, path = [];
     while (currentAncestorNode !== blockContainer) {
