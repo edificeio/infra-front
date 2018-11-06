@@ -128,6 +128,18 @@ describe('onPressEnter', () => {
             expect(event.preventDefault).toHaveBeenCalled();
         });
 
+        it(`should create a new <li></li>
+            when pressing enter in a styled text in a <li></li>`, () => {
+            expect(pressEnter(`<${uol}><li>test<span style="color: red">↵</span></li></${uol}>`, selection))
+                .toBeEditedAs(`<${uol}><li>test<span style="color: red"></span></li><li><span style="color: red">&#8203;‸</span></li></${uol}>`);
+        });
+
+        it(`should create a <div></div> after the list and remove the last <li></li>
+            when pressing enter in a styled text in a <li></li>`, () => {
+            expect(pressEnter(`<${uol}><li>test</li><li><span style="color: red">↵</span></li></${uol}>`, selection))
+                .toBeEditedAs(`<${uol}><li>test</li></${uol}><div>&#8203;‸</div>`);
+        });
+
         it(`should leave the browser handle the situation
             when pressing enter in an empty <li></li> if it is not the last <li></li>`, () => {
             let {editZone, range, event} = pressEnter(`<${uol}><li>test</li><li>↵</li><li>test</li></${uol}>`, selection);
