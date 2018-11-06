@@ -85,6 +85,13 @@ export function onPressEnter(e, range, editorInstance, editZone, textNodes) {
             }
             return;
         }
+    } else {
+        if(range.startContainer === range.endContainer) {
+            const editZoneElement = editZone.get(0);
+            while (editZoneElement.firstChild) {
+                editZoneElement.removeChild(editZoneElement.firstChild);
+            }
+        }
     }
 
     var blockContainer = parentContainer;
@@ -93,6 +100,7 @@ export function onPressEnter(e, range, editorInstance, editZone, textNodes) {
     }
     if (parentContainer === editZone[0]) {
         var wrapper = $('<div></div>');
+
         $(editZone[0]).append(wrapper);
         wrapper.html('&#8203;');
         blockContainer = wrapper[0];
