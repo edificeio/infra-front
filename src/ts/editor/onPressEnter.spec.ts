@@ -78,20 +78,20 @@ describe('onPressEnter', () => {
 
     it(`should adds a ZWS character in the empty line
             when pressing enter at the start of a line`, () => {
-        expect(pressEnter('<div><span style="color: red">↵test</span></div>', selection))
-            .toBeEditedAs('<div><span style="color: red">&#8203;</span></div><div><span style="color: red">‸test</span></div>')
+        expect(pressEnter('<div><span style="color: red;">↵test</span></div>', selection))
+            .toBeEditedAs('<div><span style="color: red;">&#8203;</span></div><div><span style="color: red;">‸test</span></div>')
     });
 
     it(`should adds a new empty <div></div>
             when pressing enter at the end of a text with a <br> inside`, () => {
-        expect(pressEnter('<div><span style="color: red">test<br>↵</span></div>', selection))
-            .toBeEditedAs('<div><span style="color: red">test<br></span></div><div><span style="color: red">&#8203;‸</span></div>')
+        expect(pressEnter('<div><span style="color: red;">test<br>↵</span></div>', selection))
+            .toBeEditedAs('<div><span style="color: red;">test<br></span></div><div><span style="color: red;">&#8203;‸</span></div>')
     });
 
     it(`should adds a <div></div> with the remaining text
             when pressing enter in a text with a <br> inside`, () => {
-        expect(pressEnter('<div><span style="color: red">test<br>te↵st</span></div>', selection))
-            .toBeEditedAs('<div><span style="color: red">test<br>te</span></div><div><span style="color: red">‸st</span></div>')
+        expect(pressEnter('<div><span style="color: red;">test<br>te↵st</span></div>', selection))
+            .toBeEditedAs('<div><span style="color: red;">test<br>te</span></div><div><span style="color: red;">‸st</span></div>')
     });
 
     function generateListSuite(uol: string) {
@@ -130,13 +130,13 @@ describe('onPressEnter', () => {
 
         it(`should create a new <li></li>
             when pressing enter in a styled text in a <li></li>`, () => {
-            expect(pressEnter(`<${uol}><li>test<span style="color: red">↵</span></li></${uol}>`, selection))
-                .toBeEditedAs(`<${uol}><li>test<span style="color: red"></span></li><li><span style="color: red">&#8203;‸</span></li></${uol}>`);
+            expect(pressEnter(`<${uol}><li>test<span style="color: red;">↵</span></li></${uol}>`, selection))
+                .toBeEditedAs(`<${uol}><li>test<span style="color: red;"></span></li><li><span style="color: red;">&#8203;‸</span></li></${uol}>`);
         });
 
         it(`should create a <div></div> after the list and remove the last <li></li>
             when pressing enter in a styled text in a <li></li>`, () => {
-            expect(pressEnter(`<${uol}><li>test</li><li><span style="color: red">↵</span></li></${uol}>`, selection))
+            expect(pressEnter(`<${uol}><li>test</li><li><span style="color: red;">↵</span></li></${uol}>`, selection))
                 .toBeEditedAs(`<${uol}><li>test</li></${uol}><div>&#8203;‸</div>`);
         });
 

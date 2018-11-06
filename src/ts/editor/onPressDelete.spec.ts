@@ -2,7 +2,7 @@ import { pressFactory, toBeEditedAs } from "./onPressEnter.spec";
 import { onPressDelete } from "./onPressDelete";
 
 // in the following spec:
-//      ← represents where we are going to press enter
+//      ← represents where we are going to press delete
 //      ‸ represents the expected start position of the range
 describe('onPressDelete', () => {
     let selection: Selection;
