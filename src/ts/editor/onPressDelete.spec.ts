@@ -26,6 +26,13 @@ describe('onPressDelete', () => {
         expect(event.preventDefault).not.toHaveBeenCalled();
     });
 
+    it(`should removes zws character let the browser handles deletion
+            when the deletion occurred in a non-empty line with a zws character`, () => {
+        let {editZone, range, event} = pressDelete('<div>test1</div><div>\u200b←test2</div>', selection);
+        expect({editZone, range}).toBeEditedAs(`<div>test1</div><div>‸test2</div>`);
+        expect(event.preventDefault).not.toHaveBeenCalled();
+    });
+
     it(`should delete the empty div
             when the deletion occurred in an empty line`, () => {
         let {editZone, range, event} = pressDelete('<div>test</div><div>←</div>', selection);
