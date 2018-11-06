@@ -3,8 +3,10 @@ import { findClosestHTMLElement, findLatestChildTextNode, isHTMLBlockElement } f
 
 function findClosestBlockElement(currentNode: Node, root: Node): Node {
     let target;
-    while ((currentNode = findClosestHTMLElement(currentNode)) && isHTMLBlockElement(currentNode) && currentNode !== root && !target) {
-        target = currentNode;
+    while ((currentNode = findClosestHTMLElement(currentNode)) && currentNode !== root && !target) {
+        if(isHTMLBlockElement(currentNode)) {
+            target = currentNode;
+        }
     }
     return target;
 }
