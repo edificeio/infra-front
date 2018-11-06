@@ -1,7 +1,7 @@
 import { $ } from "../libs";
 import { findClosestHTMLElement, findLatestChildTextNode, isHTMLBlockElement } from "./selection";
 
-function findClosestBlockElement(currentNode: Node, root: Node): Node {
+export function findClosestBlockElement(currentNode: Node, root: Node): Node {
     let target;
     while ((currentNode = findClosestHTMLElement(currentNode)) && currentNode !== root && !target) {
         if(isHTMLBlockElement(currentNode)) {

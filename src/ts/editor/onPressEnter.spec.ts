@@ -69,6 +69,12 @@ describe('onPressEnter', () => {
             .toBeEditedAs('<div><span>test</span></div><div><span>&#8203;‸</span></div>');
     });
 
+    it(`should adds a ZWS character in the empty line
+            when pressing enter at the start of a line`, () => {
+        expect(pressEnter('<div><span style="color: red">↵test</span></div>', selection))
+            .toBeEditedAs('<div><span style="color: red">&#8203;</span></div><div><span style="color: red">‸test</span></div>')
+    });
+
     function generateListSuite(uol: string) {
         it(`should leave the browser handle the situation when pressing enter in a <li></li> tag`, () => {
             let {editZone, range, event} = pressEnter(`<${uol}><li>test</li><li>test↵</li></${uol}>`, selection);
