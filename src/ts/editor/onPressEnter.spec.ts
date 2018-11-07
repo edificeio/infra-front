@@ -1,4 +1,4 @@
-import { isElementNodeWithName, onPressEnter } from "./onPressEnter";
+import { isElementNodeWithName, onPressEnter, toKebabCase } from "./onPressEnter";
 import { textNodes } from "./selection";
 import { $ } from "../libs";
 
@@ -26,6 +26,13 @@ describe('onPressEnter', () => {
             .toBeEditedAs('<div>&#8203;</div><div>&#8203;‸</div>');
     });
 
+    it(`should wrap the <span></span> tag in a <div></div> tag
+            and create a new <div><span></span></div> tags
+            when pressing enter in a root <span></span>`, () => {
+        expect(pressEnter('<span>test</span>', selection, false))
+            .toBeEditedAs('<div>&#8203;</div><div>&#8203;‸</div>');
+    });
+
     it(`should wrap the initial text in a <div></div> and create a new <div></div>
             when pressing enter in the editor root node`, () => {
         expect(pressEnter('test↵', selection))
@@ -44,10 +51,28 @@ describe('onPressEnter', () => {
             .toBeEditedAs('<div style="color: red;">test</div><div style="color: red;">&#8203;‸</div>');
     });
 
+    it(`should copy the style prop in the new <div></div>
+            when pressing enter in a <div style="color: red;"></div>`, () => {
+        expect(pressEnter('<div>↵test1<span style="color: red;">test2</span></div>', selection))
+            .toBeEditedAs('<div>&#8203;</div><div>‸test1<span style="color: red;">test2</span></div>');
+    });
+
     it(`should adds a &#8203; in the textNode and adds a new line
             when pressing enter in a tag without text`, () => {
         expect(pressEnter('<div><span>test1</span>↵<span>test2</span></div>', selection))
-            .toBeEditedAs('<div><span>test1</span>&#8203;</div><div>&#8203;‸<span>test2</span></div>');
+            .toBeEditedAs('<div><span>test1</span></div><div>&#8203;‸<span>test2</span></div>');
+    });
+
+    it(`should create a new <div><span></span></div> and copy style properties from the styled <span></span>
+            when pressing enter in a styled <span></span>`, () => {
+        expect(pressEnter('<div>test1<span style="background-color: rgb(217, 28, 28);">test2↵test3</span></div>', selection))
+            .toBeEditedAs('<div>test1<span style="background-color: rgb(217, 28, 28);">test2</span></div><div><span style="background-color: rgb(217, 28, 28);">‸test3</span></div>');
+    });
+
+    it(`should create a new <li><span></span></li> and copy style properties from the styled <span></span> and the styled <li></li>
+            when pressing enter in a styled <li><span></span></li>`, () => {
+        expect(pressEnter('<ul><li>init<span style="color: blue;">test<span style="background-color: red;">te↵st<span style="color: green;">test</span></span></span></li></ul>', selection))
+            .toBeEditedAs('<ul><li>init<span style="color: blue;">test<span style="background-color: red;">te</span></span></li><li><span style="color: blue;"><span style="background-color: red;">‸st<span style="color: green;">test</span></span></span></li></ul>');
     });
 
     it(`should wrap the <span></span> tag in a <div></div> tag
@@ -55,6 +80,24 @@ describe('onPressEnter', () => {
             when pressing enter in a root <span></span>`, () => {
         expect(pressEnter('<span>test↵</span>', selection))
             .toBeEditedAs('<div><span>test</span></div><div><span>&#8203;‸</span></div>');
+    });
+
+    it(`should adds a ZWS character in the empty line
+            when pressing enter at the start of a line`, () => {
+        expect(pressEnter('<div><span style="color: red;">↵test</span></div>', selection))
+            .toBeEditedAs('<div><span style="color: red;">&#8203;</span></div><div><span style="color: red;">‸test</span></div>')
+    });
+
+    it(`should adds a new empty <div></div>
+            when pressing enter at the end of a text with a <br> inside`, () => {
+        expect(pressEnter('<div><span style="color: red;">test<br>↵</span></div>', selection))
+            .toBeEditedAs('<div><span style="color: red;">test<br></span></div><div><span style="color: red;">&#8203;‸</span></div>')
+    });
+
+    it(`should adds a <div></div> with the remaining text
+            when pressing enter in a text with a <br> inside`, () => {
+        expect(pressEnter('<div><span style="color: red;">test<br>te↵st</span></div>', selection))
+            .toBeEditedAs('<div><span style="color: red;">test<br>te</span></div><div><span style="color: red;">‸st</span></div>')
     });
 
     function generateListSuite(uol: string) {
@@ -70,7 +113,7 @@ describe('onPressEnter', () => {
             expect({
                 editZone,
                 range
-            }).toBeEditedAs(`<${uol}><li>test</li><li>abc<span>d</span></li><li><span>‸ef</span><span>gh</span></li></${uol}>`);
+            }).toBeEditedAs(`<${uol}><li>test</li><li>abc<span>d</span></li><li><span>‸ef</span>gh</li></${uol}>`);
             expect(event.preventDefault).toHaveBeenCalled();
         });
 
@@ -89,6 +132,18 @@ describe('onPressEnter', () => {
             let {editZone, range, event} = pressEnter(`<${uol}><li>test</li><li>↵</li></${uol}>`, selection);
             expect({editZone, range}).toBeEditedAs(`<${uol}><li>test</li></${uol}><div>&#8203;‸</div>`);
             expect(event.preventDefault).toHaveBeenCalled();
+        });
+
+        it(`should create a new <li></li>
+            when pressing enter in a styled text in a <li></li>`, () => {
+            expect(pressEnter(`<${uol}><li>test<span style="color: red;">↵</span></li></${uol}>`, selection))
+                .toBeEditedAs(`<${uol}><li>test<span style="color: red;"></span></li><li><span style="color: red;">&#8203;‸</span></li></${uol}>`);
+        });
+
+        it(`should create a <div></div> after the list and remove the last <li></li>
+            when pressing enter in a styled text in a <li></li>`, () => {
+            expect(pressEnter(`<${uol}><li>test</li><li><span style="color: red;">↵</span></li></${uol}>`, selection))
+                .toBeEditedAs(`<${uol}><li>test</li></${uol}><div>&#8203;‸</div>`);
         });
 
         it(`should leave the browser handle the situation
@@ -130,6 +185,18 @@ describe('isElementNodeWithName', () => {
     });
     it(`should return false when given (textNode, 'DIV')`, () => {
         expect(isElementNodeWithName(document.createTextNode('test'), 'DIV')).toBe(false);
+    });
+});
+
+describe('toKebabCase', () => {
+    it(`should return 'color' when given 'color'`, () => {
+        expect(toKebabCase('color')).toBe('color');
+    });
+    it(`should return 'background-color' when given 'backgroundColor'`, () => {
+        expect(toKebabCase('backgroundColor')).toBe('background-color');
+    });
+    it(`should return 'border-top-left-radius' when given 'borderTopLeftRadius'`, () => {
+        expect(toKebabCase('borderTopLeftRadius')).toBe('border-top-left-radius');
     });
 });
 
