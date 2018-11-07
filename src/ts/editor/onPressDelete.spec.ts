@@ -47,10 +47,24 @@ describe('onPressDelete', () => {
         expect(event.preventDefault).toHaveBeenCalled();
     });
 
+    it(`should delete the empty line and move range in the previous text node
+            when the deletion occurred in a child of an empty line`, () => {
+        let {editZone, range, event} = pressDelete('test<div><span style="color: red">←</span></div>', selection);
+        expect({editZone, range}).toBeEditedAs(`test‸`);
+        expect(event.preventDefault).toHaveBeenCalled();
+    });
+
     it(`should delete the empty div
             when the deletion occurred in a line with only zws characters`, () => {
         let {editZone, range, event} = pressDelete('<div>test</div><div>\u200b←\u200b</div>', selection);
         expect({editZone, range}).toBeEditedAs(`<div>test‸</div>`);
+        expect(event.preventDefault).toHaveBeenCalled();
+    });
+
+    it(`should delete the previous div
+            when the deletion occurred in a line with text and previous line is empty`, () => {
+        let {editZone, range, event} = pressDelete('<div></div><div>\u200b←test</div>', selection);
+        expect({editZone, range}).toBeEditedAs(`<div>‸test</div>`);
         expect(event.preventDefault).toHaveBeenCalled();
     });
 });
