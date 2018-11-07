@@ -1,7 +1,7 @@
 import {
     findClosestHTMLElement,
     hasStyleProperty, isBeforeComparedNode,
-    isHTMLBlockElement,
+    isHTMLBlockElement, isRangeMisplacedInList,
     Selection as RTESelection
 } from "./selection";
 import { $ } from "../libs";
@@ -108,15 +108,32 @@ describe('Selection', () => {
 
             it(`should merge <span></span> tags out of range and respect children order
                 when editZone <span></span><span blue><span orange></span><span yellow></span></span><span blue></span> and given {color: blue} on the first <span></span>`, () => {
-                expect(applyCss(`<div><span>↦test1↤</span><span style="color: blue;"><span style="background: orange">test2</span><span style="background: yellow">test3</span></span></span><span style="color: blue;">test4</span><span>\u200b</span></div>`, {color: 'blue'}))
-                    .toBeStyledAs('<div><span style="color: blue;">↦test1↤</span><span style="color: blue;"><span style="background: orange">test2</span><span style="background: yellow">test3</span>test4</span></div>');
+                expect(applyCss(`<div><span>↦test1↤</span><span style="color: blue;"><span style="background: orange;">test2</span><span style="background: yellow;">test3</span></span></span><span style="color: blue;">test4</span><span>\u200b</span></div>`, {color: 'blue'}))
+                    .toBeStyledAs('<div><span style="color: blue;">↦test1↤</span><span style="color: blue;"><span style="background: orange;">test2</span><span style="background: yellow;">test3</span>test4</span></div>');
             });
 
-            // must be related to issue 19610
-            xit(`should merge <span></span> tags if the next <span></span> is blue
-                when editZone <span></span><span blue></span> and given {color: blue} on the first <span></span>`, () => {
+            it(`should select the previous list item and adds a blue span
+                when editZone <ul><li></li>#text</ul> and given {color: blue} on the #text`, () => {
                 expect(applyCss(`<ul><li>test1</li>↦↤</ul>`, {color: 'blue'}))
-                    .toBeStyledAs('<ul><li style="color: blue;">test1</li></ul>');
+                    .toBeStyledAs('<ul><li>test1<span style="color: blue;">↦\u200b↤</span></li></ul>');
+            });
+
+            it(`should select the previous list item and adds a blue span
+                when editZone <ul><li></li>#text<li></li></ul> and given {color: blue} on the #text`, () => {
+                expect(applyCss(`<ul><li>test1</li>↦↤<li>test2</li></ul>`, {color: 'blue'}))
+                    .toBeStyledAs('<ul><li>test1<span style="color: blue;">↦\u200b↤</span></li><li>test2</li></ul>');
+            });
+
+            it(`should select the previous list item and adds a blue span
+                when editZone <ol><li></li>#text</ol> and given {color: blue} on the #text`, () => {
+                expect(applyCss(`<ol><li>test1</li>↦↤</ol>`, {color: 'blue'}))
+                    .toBeStyledAs('<ol><li>test1<span style="color: blue;">↦\u200b↤</span></li></ol>');
+            });
+
+            it(`should select the previous list item and adds a blue span
+                when editZone <ol><li></li>#text<li></li></ol> and given {color: blue} on the #text`, () => {
+                expect(applyCss(`<ol><li>test1</li>↦↤<li>test2</li></ol>`, {color: 'blue'}))
+                    .toBeStyledAs('<ol><li>test1<span style="color: blue;">↦\u200b↤</span></li><li>test2</li></ol>');
             });
 
             describe(`cleanup`, () => {
@@ -200,6 +217,37 @@ describe('positional bitmask compare', () => {
             expect(isBeforeComparedNode(position)).toBe(false);
         });
     });
+});
+
+describe('isRangeMisplacedInList', () => {
+    function generateSuite(uol: string) {
+        it(`should return true when range select a textNode which is a child of the root list element (${uol})`, () => {
+            const root = document.createElement(uol);
+            const li = document.createElement('li');
+            li.appendChild(document.createTextNode('my item'));
+            const text = document.createTextNode('');
+            root.appendChild(li);
+            root.appendChild(text);
+            const range = document.createRange();
+            range.selectNodeContents(text);
+            expect(isRangeMisplacedInList(range)).toBe(true);
+        });
+
+        it(`should return false when range select a li which is a child of the root list element (${uol})`, () => {
+            const root = document.createElement('ul');
+            const li = document.createElement('li');
+            li.appendChild(document.createTextNode('my item'));
+            const text = document.createTextNode('');
+            root.appendChild(li);
+            root.appendChild(text);
+            const range = document.createRange();
+            range.selectNodeContents(li);
+            expect(isRangeMisplacedInList(range)).toBe(false);
+        });
+    }
+
+    generateSuite('ul');
+    generateSuite('ol');
 });
 
 function findNodeAndOffsetOf(node: Node, char: string): { node: Node, offset: number } {

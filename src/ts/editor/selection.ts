@@ -24,6 +24,12 @@ function css(node: HTMLElement, applyProperties: any) {
     }
 }
 
+export function isRangeMisplacedInList(range: Range): boolean {
+    return range.startContainer === range.endContainer &&
+        range.startContainer.nodeType === Node.TEXT_NODE &&
+        (range.endContainer.parentNode.nodeName === 'UL' || range.endContainer.parentNode.nodeName === 'OL');
+}
+
 function removeEmptyChildTextNodes(node: Node) {
     const tw = document.createTreeWalker(node, NodeFilter.SHOW_TEXT, null, false);
     let currentNode: Node;
@@ -158,7 +164,7 @@ function getNormalizedEndOffset(node: Node): number {
     return node.childNodes.length;
 }
 
-function findFirstChildTextNode(node: Node): Node {
+export function findFirstChildTextNode(node: Node): Node {
     return document.createNodeIterator(node, NodeFilter.SHOW_TEXT, null, false).nextNode();
 }
 
@@ -824,6 +830,13 @@ export const Selection = function(data){
                     let range = selection.getRangeAt(i);
                     this.ranges.push(range);
                 }
+                this.ranges
+                    .filter(r => isRangeMisplacedInList(r))
+                    .forEach(r => {
+                        const targetedNode = findLatestChildTextNode(r.endContainer.previousSibling);
+                        r.setStart(targetedNode, getNormalizedEndOffset(targetedNode));
+                        r.setEnd(targetedNode, getNormalizedEndOffset(targetedNode));
+                    });
                 this.ranges.forEach((range) => applyCssToRange(this.instance.editZone.get(0), range, Object.keys(params)[0], params));
             }
 
