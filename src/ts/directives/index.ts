@@ -35,6 +35,7 @@ export * from './searchModule';
 export * from './selectList';
 export * from './sharePanel';
 export * from './slider';
+export * from './smartBanner';
 export * from './sniplet';
 export * from './sortableList';
 export * from './stickyRow';
