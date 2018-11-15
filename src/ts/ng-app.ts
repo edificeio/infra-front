@@ -1189,6 +1189,26 @@ module.directive('dragstart', ['$parse', function($parse){
     }
 }])
 
+
+module.directive('dragend', ['$parse', function($parse){
+    return {
+        restrict: 'A',
+        link: function(scope, element, attributes){
+			const dragEndFn = $parse(attributes.dragend);
+            element.on("dragend", function(event){
+				if(attributes.dragend === ''){
+					return;
+				}
+                dragEndFn(scope, { $originalEvent: event.originalEvent });
+            });
+
+            element.on('$destroy', function() {
+                element.off()
+            })
+        }
+    }
+}])
+
 module.directive('dragdrop', ['$parse', function($parse){
     return {
         restrict: 'A',

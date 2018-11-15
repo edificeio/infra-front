@@ -200,6 +200,56 @@ export let toFormData : (obj) => string = http().serialize;
 
 var $ = require('jquery');
 var humane = require('humane-js');
+/**
+ * Promisified HTTP
+ */
+
+export type PromiseHttp<T> = Promise<T> & { e400: (e) => void }
+export class HttpPromisified<T> {
+    constructor(private inner?: any) {
+        if (!this.inner) {
+            this.inner = http();
+        }
+    }
+    private promisify(req: any): PromiseHttp<T> {
+        const p = new Promise<T>((resolve, reject) => {
+            req.done(e => resolve(e)).error(e => reject(e))
+        });
+        (p as any).e400 = req.e400.bind(req);
+        return p as any;
+    }
+    get(url: string, params?: any): PromiseHttp<T> {
+        return this.promisify(this.inner.get(url, params));
+    }
+    post(url: string, params?: any): PromiseHttp<T> {
+        return this.promisify(this.inner.post(url, params));
+    }
+    postJson(url: string, json: any): PromiseHttp<T> {
+        return this.promisify(this.inner.postJson(url, json));
+    }
+    put(url: string, data?: any): PromiseHttp<T> {
+        return this.promisify(this.inner.put(url, data));
+    }
+    putJson(url: string, json: any): PromiseHttp<T> {
+        return this.promisify(this.inner.putJson(url, json));
+    }
+    delete(url: string): PromiseHttp<T> {
+        return this.promisify(this.inner.delete(url));
+    }
+    deleteJson(url: string, json: any): PromiseHttp<T> {
+        return this.promisify(this.inner.deleteJson(url, json));
+    }
+    putFile(url: string, data: FormData, opt?: any) {
+        return this.promisify(this.inner.putFile(url, data, opt));
+    }
+}
+export function httpPromisy<T>(inner?: any): HttpPromisified<T> {
+    return new HttpPromisified<T>(inner);
+}
+
+/**
+ * Exports
+ */
 
 if(!(window as any).entcore){
 	(window as any).entcore = {};
@@ -207,3 +257,4 @@ if(!(window as any).entcore){
 (window as any).entcore.http = http;
 (window as any).entcore.toFormData = http().serialize;
 (window as any).http = http;
+(window as any).entcore.httpPromisy = httpPromisy;

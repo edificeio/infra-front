@@ -10,16 +10,73 @@ import { Me } from '../me';
 import { notify } from '../notify';
 import { template } from '../template';
 import { ui } from '../ui';
+import { Shareable, ShareVisible, SharePayload, ShareInfos, ShareAction } from '../rights';
 
+export interface ShareableWithId extends Shareable {
+    _id: string
+}
+export interface SharePanelScope {
+    display: {
+        showSaveSharebookmarkInput: boolean,
+        sharebookmarkSaved: boolean,
+        workflowAllowSharebookmarks: boolean,
+        showCloseConfirmation: boolean,
+        showBookmarkMembers: boolean
+    }
+    sharing: {
+        actions?: ShareAction[]
+    }
+    varyingRights: boolean
+    editResources: Shareable[]
+    sharingModel: ShareInfos & { edited: any[], editedInherited: any[], changed?: boolean, sharebookmarks?: any }
+    appPrefix: string
+    shareTable: string
+    resources: ShareableWithId[] | ShareableWithId
+    maxResults: number
+    translate: any
+    actions: ShareAction[]
+    search: string
+    found: ShareVisible[]
+    maxEdit: number
+    onValidate?(args: {
+        $data: SharePayload,
+        $resource: ShareableWithId,
+        $actions: ShareAction[]
+    })
+    autoClose?()
+    onCancel?()
+    onSubmit?(args: { shared: SharePayload })
+    createSharebookmark(name: string)
+    typeSort(sort: any)
+    closePanel()
+    revertClose()
+    getColor(profile): any
+    remove(el: ShareVisible)
+    displayMore()
+    changeAction(item, action: ShareAction)
+    share()
+    findUserOrGroup()
+    addResults()
+    addEdit(item)
+    clearSearch()
+    //angular
+    $apply(a?)
+    $watch(a?, b?)
+    $watchCollection(a?, b?)
+}
 export const sharePanel = ng.directive('sharePanel', ['$rootScope', ($rootScope) => {
-	return {
-		scope: {
-			resources: '=',
-			appPrefix: '='
-		},
-		restrict: 'E',
-		templateUrl: '/' + appPrefix + '/public/template/entcore/share-panel.html',
-		link: function($scope, $element, $attributes){
+    return {
+        scope: {
+            resources: '=',
+            appPrefix: '=',
+            onCancel: '&',
+            onSubmit: '&',
+            onValidate: '&',
+            autoClose: '='
+        },
+        restrict: 'E',
+        templateUrl: '/' + appPrefix + '/public/template/entcore/share-panel.html',
+        link: function ($scope: SharePanelScope, $element, $attributes) {
             var currentApp = appPrefix;
             var usersCache = {};
 
@@ -29,7 +86,7 @@ export const sharePanel = ng.directive('sharePanel', ['$rootScope', ($rootScope)
                 workflowAllowSharebookmarks: false,
                 showCloseConfirmation: false,
                 showBookmarkMembers: false
-            } 
+            }
 
             // get directory workflow to manage allowSharebookmarks workflow
             async function loadDirectoryWorkflow() {
@@ -39,167 +96,188 @@ export const sharePanel = ng.directive('sharePanel', ['$rootScope', ($rootScope)
             }
             loadDirectoryWorkflow();
 
-            if($scope.appPrefix){
+            if ($scope.appPrefix) {
                 currentApp = $scope.appPrefix;
             }
 
             $scope.shareTable = '/' + appPrefix + '/public/template/entcore/share-panel-table.html';
 
-            if(!($scope.resources instanceof Array) && !$scope.resources.myRights && !($scope.resources instanceof Model)){
+            if (!($scope.resources instanceof Array) && !$scope.resources.myRights && !($scope.resources instanceof Model)) {
                 throw new TypeError('Resources in share panel must be instance of Array or implement Rights interface');
             }
-            if(!($scope.resources instanceof Array)){
+            if (!($scope.resources instanceof Array)) {
                 $scope.resources = [$scope.resources];
             }
-        
+
             $scope.sharing = {};
             $scope.found = [];
             $scope.maxResults = 5;
-        
+
             $scope.editResources = [];
             $scope.sharingModel = {
                 edited: [],
                 changed: false
-            };   
-        
-            $scope.addResults = function(){
+            } as any;
+
+            $scope.addResults = function () {
                 $scope.maxResults += 5;
             };
-        
+
             var actionsConfiguration = {};
-        
-            http().get('/' + infraPrefix + '/public/json/sharing-rights.json').done(function(config){
+
+            http().get('/' + infraPrefix + '/public/json/sharing-rights.json').done(function (config) {
                 actionsConfiguration = config;
             });
-        
+
             $scope.translate = idiom.translate;
-        
-            function actionToRights(action){
+
+            function actionToRights(action) {
                 var rights = [];
-                _.where($scope.actions, { displayName: action }).forEach(function(item){
-                    item.name.forEach(function(i){
+                _.where($scope.actions, { displayName: action }).forEach(function (item) {
+                    item.name.forEach(function (i) {
                         rights.push(i);
                     });
                 });
-        
+
                 return rights;
             }
-        
-            function rightsToActions(rights, http?){
+
+            function rightsToActions(rights, http?) {
                 var actions = {};
-        
-                rights.forEach(function(right){
-                    var action = _.find($scope.actions, function(action){
+
+                rights.forEach(function (right) {
+                    var action = _.find($scope.actions, function (action: ShareAction) {
                         return action.name.indexOf(right) !== -1
                     });
-        
-                    if(!action){
+
+                    if (!action) {
                         return;
                     }
-        
-                    if(!actions[action.displayName]){
+
+                    if (!actions[action.displayName]) {
                         actions[action.displayName] = true;
                     }
                 });
-        
+
                 return actions;
             }
-        
-            function setActions(actions){
+
+            function setActions(actions: ShareAction[]) {
                 $scope.actions = actions;
-                $scope.actions.forEach(function(action){
+                $scope.actions.forEach(function (action) {
                     var actionId = action.displayName.split('.')[1];
-                    if(actionsConfiguration[actionId]){
+                    if (actionsConfiguration[actionId]) {
                         action.priority = actionsConfiguration[actionId].priority;
                         action.requires = actionsConfiguration[actionId].requires;
                     }
                 });
             }
-        
-            function differentRights(model1, model2){
+
+            function differentRights(model1, model2) {
                 var result = false;
-                function different(type){
-                    for(var element in model1[type].checked){
-                        if(!model2[type].checked[element]){
+                function different(type) {
+                    for (var element in model1[type].checked) {
+                        if (!model2[type].checked[element]) {
                             return true;
                         }
-        
-                        model1[type].checked[element].forEach(function(right){
+
+                        model1[type].checked[element].forEach(function (right) {
                             result = result || model2[type].checked[element].indexOf(right) === -1
                         });
                     }
-        
+
                     return result;
                 }
-        
+
                 return different('users') || different('groups');
             }
-            
+
             var feeding = false;
-            var feedData = function(){
-                if(feeding){
+            var feedData = function () {
+                if (feeding) {
                     return;
                 }
                 feeding = true;
                 var initModel = true;
-                if(!$scope.resources.length){
+                if (!($scope.resources as ShareableWithId[]).length) {
                     feeding = false;
                 }
-                $scope.resources.forEach(function(resource){
+                ($scope.resources as ShareableWithId[]).forEach(function (resource) {
                     var id = resource._id;
-                    http().get('/' + currentApp + '/share/json/' + id + '?search=').done(function(data){
-                        if(initModel){
+                    http().get('/' + currentApp + '/share/json/' + id + '?search=').done(function (data) {
+                        if (initModel) {
                             data.users.visibles.map(user => user.type = 'user');
                             data.groups.visibles.map(group => group.type = 'group');
 
                             $scope.sharingModel = data;
                             $scope.sharingModel.edited = [];
+                            $scope.sharingModel.editedInherited = [];
                         }
-        
+
                         data._id = resource._id;
                         $scope.editResources.push(data);
-                        var editResource = $scope.editResources[$scope.editResources.length -1];
-                        if(!$scope.sharing.actions){
+                        var editResource = $scope.editResources[$scope.editResources.length - 1];
+                        if (!$scope.sharing.actions) {
                             setActions(data.actions);
                         }
-        
-                        function addToEdit(type){
-                            for(var element in editResource[type].checked){
+
+                        function addToEdit(type) {
+                            for (var element in editResource[type].checked) {
                                 var rights = editResource[type].checked[element];
-        
+
                                 var groupActions = rightsToActions(rights);
                                 var elementObj = _.findWhere(editResource[type].visibles, {
                                     id: element
                                 });
-                                if(elementObj){
+                                if (elementObj) {
                                     elementObj.actions = groupActions;
-                                    if(initModel){
+                                    if (initModel) {
                                         $scope.sharingModel.edited.push(elementObj);
                                     }
-        
+
                                     elementObj.index = $scope.sharingModel.edited.length;
                                 }
                             }
+                            //inherit checked
+                            if (editResource[type].checkedInherited) {
+                                const checkedInherited = editResource[type].checkedInherited;
+                                for (let element in checkedInherited) {
+                                    const rights = checkedInherited[element];
+
+                                    const groupActions = rightsToActions(rights);
+                                    const elementObj = _.findWhere(editResource[type].visibles, {
+                                        id: element
+                                    });
+                                    if (elementObj) {
+                                        elementObj.actions = groupActions;
+                                        if (initModel) {
+                                            $scope.sharingModel.editedInherited.push(elementObj);
+                                        }
+
+                                        elementObj.index = $scope.sharingModel.editedInherited.length;
+                                    }
+                                }
+                            }
                         }
-        
+
                         addToEdit('groups');
                         addToEdit('users');
-        
-                        if(!initModel){
-                            if(differentRights(editResource, $scope.sharingModel) || differentRights($scope.sharingModel, editResource)){
+
+                        if (!initModel) {
+                            if (differentRights(editResource, $scope.sharingModel) || differentRights($scope.sharingModel, editResource)) {
                                 $scope.varyingRights = true;
                                 $scope.sharingModel.edited = [];
                             }
                         }
                         initModel = false;
-        
+
                         $scope.$apply('sharingModel.edited');
                         feeding = false;
                     });
                 })
             };
-        
-            $scope.$watch('resources', function(){
+
+            $scope.$watch('resources', function () {
                 $scope.actions = [];
                 $scope.sharingModel.edited = [];
                 $scope.search = '';
@@ -212,8 +290,8 @@ export const sharePanel = ng.directive('sharePanel', ['$rootScope', ($rootScope)
                 $scope.maxResults = 5;
                 feedData();
             });
-        
-            $scope.$watchCollection('resources', function(){
+
+            $scope.$watchCollection('resources', function () {
                 $scope.actions = [];
                 $scope.sharingModel.edited = [];
                 $scope.search = '';
@@ -226,28 +304,28 @@ export const sharePanel = ng.directive('sharePanel', ['$rootScope', ($rootScope)
                 $scope.maxResults = 5;
                 feedData();
             });
-        
-            $scope.addEdit = function(item){
+
+            $scope.addEdit = function (item) {
                 item.actions = {};
                 $scope.sharingModel.edited.push(item);
                 item.index = $scope.sharingModel.edited.length;
                 var addedIndex = $scope.found.indexOf(item);
                 $scope.found.splice(addedIndex, 1);
-        
+
                 var defaultActions = []
-                $scope.actions.forEach(function(action){
+                $scope.actions.forEach(function (action) {
                     var actionId = action.displayName.split('.')[1];
-                    if(actionsConfiguration[actionId].default){
+                    if (actionsConfiguration[actionId].default) {
                         item.actions[action.displayName] = true;
                         defaultActions.push(action);
                     }
                 });
 
-                if(item.type == 'sharebookmark') {
-                    http().get('/directory/sharebookmark/' + item.id).done(function(data) {
+                if (item.type == 'sharebookmark') {
+                    http().get('/directory/sharebookmark/' + item.id).done(function (data) {
                         item.users = data.users;
                         item.groups = data.groups;
-                        if(item.users) {
+                        if (item.users) {
                             item.users.forEach(user => {
                                 user.type = 'sharebookmark-user';
                                 user.actions = {};
@@ -257,7 +335,7 @@ export const sharePanel = ng.directive('sharePanel', ['$rootScope', ($rootScope)
                             });
                         }
 
-                        if(item.groups) {
+                        if (item.groups) {
                             item.groups.forEach(group => {
                                 group.type = 'sharebookmark-group';
                                 group.actions = {};
@@ -275,23 +353,23 @@ export const sharePanel = ng.directive('sharePanel', ['$rootScope', ($rootScope)
                 $scope.display.sharebookmarkSaved = false
             };
 
-            $scope.clearSearch = function(){
-                $scope.sharingModel.groups = [];
-                $scope.sharingModel.users = [];
+            $scope.clearSearch = function () {
+                $scope.sharingModel.groups = [] as any;
+                $scope.sharingModel.users = [] as any;
                 $scope.found = [];
             }
-        
-            $scope.findUserOrGroup = function(){
+
+            $scope.findUserOrGroup = function () {
                 var searchTerm = idiom.removeAccents($scope.search).toLowerCase();
                 var startSearch = Me.session.functions.ADMIN_LOCAL ? searchTerm.substr(0, 3) : '';
-                if(!usersCache[startSearch] && !(usersCache[startSearch] && usersCache[startSearch].loading)){
+                if (!usersCache[startSearch] && !(usersCache[startSearch] && usersCache[startSearch].loading)) {
                     usersCache[startSearch] = { loading: true };
                     var id = $scope.resources[0]._id;
                     var path = '/' + currentApp + '/share/json/' + id + '?search=' + startSearch;
-                    if(!startSearch){
+                    if (!startSearch) {
                         path = '/' + currentApp + '/share/json/' + id;
                     }
-                    http().get(path).done(function(data){
+                    http().get(path).done(function (data) {
                         data.users.visibles.map(user => user.type = 'user');
                         data.groups.visibles.map(group => group.type = 'group');
 
@@ -299,14 +377,14 @@ export const sharePanel = ng.directive('sharePanel', ['$rootScope', ($rootScope)
                         $scope.sharingModel.groups = usersCache[startSearch].groups;
                         $scope.sharingModel.users = usersCache[startSearch].users;
 
-                        if(model.me.workflow.directory.allowSharebookmarks == true) {
-                            http().get('/directory/sharebookmark/all').done(function(data) {
-                                var bookmarks = _.map(data, function(bookmark) {
+                        if (model.me.workflow.directory.allowSharebookmarks == true) {
+                            http().get('/directory/sharebookmark/all').done(function (data) {
+                                var bookmarks = _.map(data, function (bookmark) {
                                     bookmark.type = 'sharebookmark';
                                     return bookmark;
                                 });
                                 usersCache[startSearch]['sharebookmarks'] = bookmarks;
-    
+
                                 $scope.findUserOrGroup();
                                 $scope.$apply();
                             });
@@ -322,70 +400,70 @@ export const sharePanel = ng.directive('sharePanel', ['$rootScope', ($rootScope)
                 $scope.sharingModel.sharebookmarks = usersCache[startSearch].sharebookmarks;
 
                 $scope.found = _.union(
-                    _.filter($scope.sharingModel.sharebookmarks, function(bookmark){
+                    _.filter($scope.sharingModel.sharebookmarks, function (bookmark) {
                         var testName = idiom.removeAccents(bookmark.name).toLowerCase();
                         return testName.indexOf(searchTerm) !== -1 && $scope.sharingModel.edited.find(i => i.id === bookmark.id) === undefined;
                     }),
-                    _.filter($scope.sharingModel.groups.visibles, function(group){
+                    _.filter($scope.sharingModel.groups.visibles, function (group) {
                         var testName = idiom.removeAccents(group.name).toLowerCase();
                         return testName.indexOf(searchTerm) !== -1 && $scope.sharingModel.edited.find(i => i.id === group.id) === undefined;
                     }),
-                    _.filter($scope.sharingModel.users.visibles, function(user){
+                    _.filter($scope.sharingModel.users.visibles, function (user) {
                         var testName = idiom.removeAccents(user.lastName + ' ' + user.firstName).toLowerCase();
                         var testNameReversed = idiom.removeAccents(user.firstName + ' ' + user.lastName).toLowerCase();
                         var testUsername = idiom.removeAccents(user.username).toLowerCase();
                         return (testName.indexOf(searchTerm) !== -1 || testNameReversed.indexOf(searchTerm) !== -1) || testUsername.indexOf(searchTerm) !== -1 && $scope.sharingModel.edited.find(i => i.id === user.id) === undefined;
                     })
                 );
-                $scope.found = _.filter($scope.found, function(element){
+                $scope.found = _.filter($scope.found, function (element) {
                     return $scope.sharingModel.edited.findIndex(i => i.id === element.id) === -1;
                 })
 
                 $scope.$apply();
             };
-        
-            $scope.remove = function(element){
-                $scope.sharingModel.edited = _.reject($scope.sharingModel.edited, function(item){
+
+            $scope.remove = function (element) {
+                $scope.sharingModel.edited = _.reject($scope.sharingModel.edited, function (item) {
                     return item.id === element.id;
                 });
                 $scope.sharingModel.changed = true;
                 $scope.display.showSaveSharebookmarkInput = false;
                 $scope.display.sharebookmarkSaved = false
             }
-        
+
             $scope.maxEdit = 3;
-        
-            $scope.displayMore = function(){
+
+            $scope.displayMore = function () {
                 var displayMoreInc = 5;
                 $scope.maxEdit += displayMoreInc;
             }
 
-            $scope.changeAction = function(item, action) {
+            $scope.changeAction = function (item, action) {
                 function requiredActions(item, action) {
-                    if(!item.actions[action.displayName]){
-                        _.filter($scope.actions, function(i){
-                            return _.find(i.requires, function(dependency){
+                    if (!item.actions[action.displayName]) {
+                        _.filter($scope.actions, function (i) {
+                            return _.find(i.requires, function (dependency) {
                                 return action.displayName.split('.')[1].indexOf(dependency) !== -1;
                             }) !== undefined
                         })
-                        .forEach(function(i){
-                            if(i){
-                                item.actions[i.displayName] = false;
-                            }
-                        })
-                    } else{
-                        action.requires.forEach(function(required){
-                            var action = _.find($scope.actions, function(action){
+                            .forEach(function (i) {
+                                if (i) {
+                                    item.actions[i.displayName] = false;
+                                }
+                            })
+                    } else {
+                        action.requires.forEach(function (required) {
+                            var action = _.find($scope.actions, function (action) {
                                 return action.displayName.split('.')[1].indexOf(required) !== -1;
                             });
-                            if(action){
+                            if (action) {
                                 item.actions[action.displayName] = true;
                             }
                         });
                     }
                 }
 
-                if(item.type == 'sharebookmark') {
+                if (item.type == 'sharebookmark') {
                     item.users.forEach(user => {
                         user.actions[action.displayName] = item.actions[action.displayName];
                         requiredActions(user, action);
@@ -397,9 +475,9 @@ export const sharePanel = ng.directive('sharePanel', ['$rootScope', ($rootScope)
                     });
                 }
 
-                if(item.type == 'sharebookmark-user' || item.type == 'sharebookmark-group') {
+                if (item.type == 'sharebookmark-user' || item.type == 'sharebookmark-group') {
                     var element = $scope.sharingModel.edited.find(edited => edited.id == item.id);
-                    if(element) {
+                    if (element) {
                         element.actions = item.actions;
                         element.hide = true;
                     } else {
@@ -409,22 +487,22 @@ export const sharePanel = ng.directive('sharePanel', ['$rootScope', ($rootScope)
                 }
 
                 requiredActions(item, action);
-                
+
                 $scope.sharingModel.changed = true;
             }
 
-            $scope.share = function() {
+            $scope.share = async function () {
                 $scope.sharingModel.changed = false;
-                
-                var data: any = {};
-                var users: any = {};
-                var groups: any = {};
-                var sharebookmarks: any = {};
 
-                $scope.sharingModel.edited.forEach(function(item) {
-                    var rights = [];
-                    for(var action in item.actions) {
-                        if(item.actions.hasOwnProperty(action) 
+                const data: SharePayload = {};
+                const users: { [key: string]: string[] } = {};
+                const groups: { [key: string]: string[] } = {};
+                const sharebookmarks: { [key: string]: string[] } = {};
+
+                $scope.sharingModel.edited.forEach(function (item) {
+                    let rights = [];
+                    for (let action in item.actions) {
+                        if (item.actions.hasOwnProperty(action)
                             && item.actions[action] == true) {
                             rights = rights.concat(actionToRights(action));
                         }
@@ -442,60 +520,75 @@ export const sharePanel = ng.directive('sharePanel', ['$rootScope', ($rootScope)
                 data['users'] = users;
                 data['groups'] = groups;
                 data['bookmarks'] = sharebookmarks;
-                
-                $scope.resources.forEach(function(resource) {
-                    // if user can share resource => add user to share users array
-                    if(resource.myRights 
-                        && (resource.myRights['share'] != undefined 
-                            || resource.myRights['manage'] != undefined
-                            || resource.myRights['manager'] != undefined) 
-                        && resource.shared) {
-                        var rights = [];
-                        var myRights = resource.shared.find(sharedItem => sharedItem.userId == model.me.userId);
 
-                        if(myRights) {
+                const promises = ($scope.resources as ShareableWithId[]).map(async function (resource) {
+                    // if user can share resource => add user to share users array
+                    if (resource.myRights
+                        && (resource.myRights['share'] != undefined
+                            || resource.myRights['manage'] != undefined
+                            || resource.myRights['manager'] != undefined)
+                        && resource.shared) {
+                        let rights: string[] = [];
+                        let myRights = resource.shared.find(sharedItem => sharedItem.userId == model.me.userId);
+
+                        if (myRights) {
                             Object.keys(myRights).forEach(key => {
-                                if(myRights[key] == true && key != 'userId') {
+                                if (myRights[key] == true && key != 'userId') {
                                     rights.push(key);
                                 }
                             });
-                            
+
                             users[model.me.userId] = rights;
                             data['users'] = users;
                         }
                     }
-
-                    http().putJson('/' + currentApp + '/share/resource/' + resource._id, data)
-                        .done(function(res){
-                            notify.success('share.notify.success');
-                            $rootScope.$broadcast('share-updated', res['notify-timeline-array']);
-                        })
-                        .error(function(){
-                            notify.error('share.notify.error');
-                        });
+                    if ($scope.onValidate) {
+                        try {
+                            await $scope.onValidate({ '$data': data, '$resource': resource, '$actions': $scope.actions })
+                        } catch (e) {
+                            return Promise.reject(e);
+                        }
+                    }
+                    return new Promise((resolve, reject) => {
+                        http().putJson('/' + currentApp + '/share/resource/' + resource._id, data)
+                            .done(function (res) {
+                                notify.success('share.notify.success');
+                                $rootScope.$broadcast('share-updated', res['notify-timeline-array']);
+                                resolve()
+                            })
+                            .error(function () {
+                                notify.error('share.notify.error');
+                                reject()
+                            });
+                    })
                 });
+                await Promise.all(promises);
+                if ($scope.autoClose) {
+                    await closePanel();
+                }
+                $scope.onSubmit && $scope.onSubmit({ shared: data })
             }
 
-            $scope.createSharebookmark = function(newSharebookmarkName) {
-                if(model.me.workflow.directory.allowSharebookmarks == true) {
+            $scope.createSharebookmark = function (newSharebookmarkName) {
+                if (model.me.workflow.directory.allowSharebookmarks == true) {
                     let members = [];
                     $scope.sharingModel.edited.forEach(item => {
-                        if(item.type == 'user' || item.type == 'group') {
+                        if (item.type == 'user' || item.type == 'group') {
                             members.push(item.id);
                         } else { // if it is a sharebookmark
-                            if(item.users) {
+                            if (item.users) {
                                 item.users.forEach(user => members.push(user.id));
                             }
-                            if(item.groups) {
+                            if (item.groups) {
                                 item.groups.forEach(group => members.push(group.id));
                             }
                         }
                     })
                     let data = {
-                        "name": newSharebookmarkName, 
+                        "name": newSharebookmarkName,
                         "members": members
                     };
-                    
+
                     http().postJson('/directory/sharebookmark', data).done(res => {
                         $scope.display.sharebookmarkSaved = true;
                         $scope.$apply();
@@ -503,48 +596,53 @@ export const sharePanel = ng.directive('sharePanel', ['$rootScope', ($rootScope)
                 }
             }
 
-            $scope.typeSort = function(value) {
-                if(value.type == 'sharebookmark') return 0;
-                if(value.type == 'group') return 1;
+            $scope.typeSort = function (value) {
+                if (value.type == 'sharebookmark') return 0;
+                if (value.type == 'group') return 1;
                 return 2;
             }
-
-            $scope.closePanel = async function(){
+            const closePanel = async () => {
                 $element.closest('.lightbox').first().fadeOut();
                 $('body').css({ overflow: 'auto' });
                 $('body').removeClass('lightbox-opened');
 
-                $element.closest('.lightbox').find('.content > .close-lightbox').css({visibility: 'visible'});
-                $element.closest('lightbox').isolateScope().$eval($element.closest('lightbox').isolateScope().onClose);
-                $element.closest('lightbox').isolateScope().show = false;
-                $element.closest('lightbox').isolateScope().$parent.$apply();
-                
+                $element.closest('.lightbox').find('.content > .close-lightbox').css({ visibility: 'visible' });
+                const isolatedScope = $element.closest('lightbox').isolateScope();
+                if (isolatedScope) {
+                    isolatedScope.$eval(isolatedScope.onClose);
+                    isolatedScope.show = false;
+                    isolatedScope.$parent.$apply();
+                }
                 $scope.display.showCloseConfirmation = false;
                 await feedData();
-                
+
                 $scope.$apply();
             }
+            $scope.closePanel = function () {
+                closePanel()
+                $scope.onCancel && $scope.onCancel();
+            }
 
-            $scope.revertClose = function(){
-                $element.closest('.lightbox').find('.content > .close-lightbox').css({visibility: 'visible'});
+            $scope.revertClose = function () {
+                $element.closest('.lightbox').find('.content > .close-lightbox').css({ visibility: 'visible' });
                 $scope.display.showCloseConfirmation = false;
                 $scope.$apply();
             }
 
-            $element.closest('.lightbox').find('.background, .content > .close-lightbox').on('click', function(e){
+            $element.closest('.lightbox').find('.background, .content > .close-lightbox').on('click', function (e) {
                 e.stopPropagation();
                 if (!$scope.sharingModel.changed)
                     $scope.closePanel();
-                else if (!$scope.display.showCloseConfirmation){
+                else if (!$scope.display.showCloseConfirmation) {
                     $scope.display.showCloseConfirmation = true;
-                    $element.closest('.lightbox').find('.content > .close-lightbox').css({visibility: 'hidden'});
+                    $element.closest('.lightbox').find('.content > .close-lightbox').css({ visibility: 'hidden' });
                     $scope.$apply();
                 }
                 $scope.$apply();
             });
-            $scope.getColor = function(profile) {
+            $scope.getColor = function (profile) {
                 return ui.profileColors.match(profile);
             };
-		}
-	}
+        }
+    }
 }]);
