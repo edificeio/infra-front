@@ -15,15 +15,15 @@ export let explorer = ng.directive('explorer', () => {
         template: '<div class="explorer" ng-transclude></div>',
         link: function (scope, element, attributes) {
 
-            function select() {
+            function select(e) {
                 scope.ngModel = !scope.ngModel;
                 scope.$apply('ngModel');
 
                 if (scope.ngClick) {
-                    scope.ngClick();
+                    scope.ngClick({'$event':e});
                 }
                 if (scope.ngChange) {
-                    scope.ngChange();
+                    scope.ngChange({'$event':e});
                 }
                 scope.$apply();
             }
@@ -37,7 +37,7 @@ export let explorer = ng.directive('explorer', () => {
                     scope.$apply('ngModel');
 
                     if (scope.ngChange) {
-                        scope.ngChange();
+                        scope.ngChange({'$event':e});
                     }
 
                     scope.$apply();
@@ -57,24 +57,24 @@ export let explorer = ng.directive('explorer', () => {
                     })
 
                     element.on('click', function (e, position) {
-                        select();
+                        select(e);
                         scope.$apply('ngModel');
                     })
 
-                    element.on('doubletap dblclick', function () {
+                    element.on('doubletap dblclick', function (e) {
                         scope.ngModel = false;
-                        scope.onOpen();
+                        scope.onOpen({'$event':e});
                         scope.$apply('ngModel');
                     });
                 } else {
                     element.off('click dblclick doubletap contextmenu')
 
-                    element.on('click', function () {
-                        select();
+                    element.on('click', function (e) {
+                        select(e);
                         scope.$apply('ngModel');
                     });
-                    element.on('dblclick', function () {
-                        scope.onOpen();
+                    element.on('dblclick', function (e) {
+                        scope.onOpen({'$event':e});
                         scope.ngModel = false;
                         scope.$apply('ngModel');
                     })

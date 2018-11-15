@@ -22,36 +22,28 @@
                 </tr>
             </tbody>
 
-            <!-- Members lines -->
-            <tbody ng-repeat="item in sharingModel.edited | orderBy:'index':true | limitTo:maxEdit"
-                ng-if="!item.hide || item.hide != true">
+            <!-- Inherit lines -->
+            <tbody ng-repeat="item in sharingModel.editedInherited | orderBy:'index':true | limitTo:maxEdit" ng-if="!item.hide || item.hide != true">
                 <tr ng-class="{'nested-root': item.type == 'sharebookmark'}">
-                    
+
                     <!-- Sharebookmarks -->
-                    <td ng-if="item.type === 'sharebookmark'" 
-                        ng-click="display.showBookmarkMembers = !display.showBookmarkMembers"
-                        class="flex-row twelve align-center">
+                    <td ng-if="item.type === 'sharebookmark'" ng-click="display.showBookmarkMembers = !display.showBookmarkMembers" class="flex-row twelve align-center">
                         <i class="add-favorite"></i>
                         <span>[[item.name]]</span>
                         <i class="down-open" ng-if="display.showBookmarkMembers === false"></i>
                         <i class="up-open" ng-if="display.showBookmarkMembers === true"></i>
                     </td>
-                        
+
                     <!-- Users and Groups -->
-                    <td ng-if="item.type === 'user' || item.type === 'group'"
-                        class="flex-row twelve align-center">
-                        <div class="round bg-white square-normal right-spacing no-shrink"> 
-                            <img ng-if="item.type === 'user'"
-                                ng-src="/userbook/avatar/[[item.id]]?thumbnail=100x100"/> 
-                            <img ng-if="item.type === 'group'"
-                                skin-src="/img/illustrations/group-avatar.svg"/>
+                    <td ng-if="item.type === 'user' || item.type === 'group'" class="flex-row twelve align-center">
+                        <div class="round bg-white square-normal right-spacing no-shrink">
+                            <img ng-if="item.type === 'user'" ng-src="/userbook/avatar/[[item.id]]?thumbnail=100x100" />
+                            <img ng-if="item.type === 'group'" skin-src="/img/illustrations/group-avatar.svg" />
                         </div>
-                        
-                        <div ng-if="item.type === 'user'" 
-                            class="circle square-mini right-spacing" 
-                            ng-class="getColor(item.profile)">
+
+                        <div ng-if="item.type === 'user'" class="circle square-mini right-spacing" ng-class="getColor(item.profile)">
                         </div>
-                        
+
                         <div ng-if="item.type === 'user'"><a href="/userbook/annuaire#/[[item.id]]" target="_blank">[[item.username]]</a></div>
                         <div ng-if="item.type === 'group'"><a href="/userbook/annuaire#/group-view/[[item.id]]" target="_blank">[[item.name]]</a></div>
                     </td>
@@ -59,63 +51,110 @@
                     <!-- Checkboxes -->
                     <td ng-repeat="action in actions | orderBy:'priority'" data-label="[[translate(action.displayName)]]">
                         <label class="checkbox">
-                            <input type="checkbox" ng-model="item.actions[action.displayName]" ng-change="changeAction(item, action)"/>
+                            <input type="checkbox" ng-model="item.actions[action.displayName]" disabled />
                             <span></span>
                         </label>
                     </td>
 
-                    <!-- Remove item line -->
-                    <td class="drop-line" ng-click="remove(item)"></td>
-                </tr>
-
-                <!-- Sharebookmark users -->
-                <tr ng-if="item.type === 'sharebookmark' && display.showBookmarkMembers === true"
-                    ng-repeat="user in item.users" class="nested-child">
-                    
-                    <!-- User -->
-                    <td class="flex-row align-center">
-                        <div class="round bg-white square-normal right-spacing no-shrink"> 
-                            <img ng-src="/userbook/avatar/[[user.id]]?thumbnail=100x100"/> 
-                        </div>
-                        
-                        <div class="circle square-mini right-spacing" 
-                            ng-class="getColor(user.profile)">
-                        </div>
-                        
-                        <div>[[ user.displayName ]]</div> 
-                    </td>
-
-                    <!-- Checkboxes -->
-                    <td ng-repeat="action in actions | orderBy:'priority'" data-label="[[translate(action.displayName)]]">
-                        <label class="checkbox">
-                            <input type="checkbox" ng-model="user.actions[action.displayName]" ng-change="changeAction(user, action)" />
-                            <span></span>
-                        </label>
+                    <!-- Info line -->
+                    <td>
+                            <span class="tipbox up">
+                                    <div>
+                                        <i class="help sticker square-medium"></i>
+                                    </div>
+                                    <div class="tipbox-content top">
+                                        <span class="small-text">
+                                                <i18n>sharepanel.close.inherited</i18n>
+                                        </span>
+                                    </div>
+                                </span>
                     </td>
                 </tr>
-    
-                <!-- Sharebookmark groups -->
-                <tr ng-if="item.type === 'sharebookmark' && display.showBookmarkMembers === true"
-                    ng-repeat="group in item.groups" class="nested-child">
 
-                    <!-- Group -->
-                    <td class="flex-row align-center">
-                        <div class="round bg-white square-normal right-spacing no-shrink"> 
-                            <img skin-src="/img/illustrations/group-avatar.svg"/>
-                        </div>
-                        
-                        <div>[[ group.name ]]</div> 
-                    </td>
 
-                    <!-- Checkbox -->
-                    <td ng-repeat="action in actions | orderBy:'priority'" data-label="[[translate(action.displayName)]]">
-                        <label class="checkbox">
-                            <input type="checkbox" ng-model="group.actions[action.displayName]" ng-change="changeAction(group, action)" />
-                            <span></span>
-                        </label>
-                    </td>
-                </tr>
-            </tbody>
+                <!-- Members lines -->
+                <tbody ng-repeat="item in sharingModel.edited | orderBy:'index':true | limitTo:maxEdit" ng-if="!item.hide || item.hide != true">
+                    <tr ng-class="{'nested-root': item.type == 'sharebookmark'}">
+
+                        <!-- Sharebookmarks -->
+                        <td ng-if="item.type === 'sharebookmark'" ng-click="display.showBookmarkMembers = !display.showBookmarkMembers" class="flex-row twelve align-center">
+                            <i class="add-favorite"></i>
+                            <span>[[item.name]]</span>
+                            <i class="down-open" ng-if="display.showBookmarkMembers === false"></i>
+                            <i class="up-open" ng-if="display.showBookmarkMembers === true"></i>
+                        </td>
+
+                        <!-- Users and Groups -->
+                        <td ng-if="item.type === 'user' || item.type === 'group'" class="flex-row twelve align-center">
+                            <div class="round bg-white square-normal right-spacing no-shrink">
+                                <img ng-if="item.type === 'user'" ng-src="/userbook/avatar/[[item.id]]?thumbnail=100x100" />
+                                <img ng-if="item.type === 'group'" skin-src="/img/illustrations/group-avatar.svg" />
+                            </div>
+
+                            <div ng-if="item.type === 'user'" class="circle square-mini right-spacing" ng-class="getColor(item.profile)">
+                            </div>
+
+                            <div ng-if="item.type === 'user'"><a href="/userbook/annuaire#/[[item.id]]" target="_blank">[[item.username]]</a></div>
+                            <div ng-if="item.type === 'group'"><a href="/userbook/annuaire#/group-view/[[item.id]]" target="_blank">[[item.name]]</a></div>
+                        </td>
+
+                        <!-- Checkboxes -->
+                        <td ng-repeat="action in actions | orderBy:'priority'" data-label="[[translate(action.displayName)]]">
+                            <label class="checkbox">
+                                <input type="checkbox" ng-model="item.actions[action.displayName]" ng-change="changeAction(item, action)" />
+                                <span></span>
+                            </label>
+                        </td>
+
+                        <!-- Remove item line -->
+                        <td class="drop-line" ng-click="remove(item)"></td>
+                    </tr>
+
+                    <!-- Sharebookmark users -->
+                    <tr ng-if="item.type === 'sharebookmark' && display.showBookmarkMembers === true" ng-repeat="user in item.users" class="nested-child">
+
+                        <!-- User -->
+                        <td class="flex-row align-center">
+                            <div class="round bg-white square-normal right-spacing no-shrink">
+                                <img ng-src="/userbook/avatar/[[user.id]]?thumbnail=100x100" />
+                            </div>
+
+                            <div class="circle square-mini right-spacing" ng-class="getColor(user.profile)">
+                            </div>
+
+                            <div>[[ user.displayName ]]</div>
+                        </td>
+
+                        <!-- Checkboxes -->
+                        <td ng-repeat="action in actions | orderBy:'priority'" data-label="[[translate(action.displayName)]]">
+                            <label class="checkbox">
+                                <input type="checkbox" ng-model="user.actions[action.displayName]" ng-change="changeAction(user, action)" />
+                                <span></span>
+                            </label>
+                        </td>
+                    </tr>
+
+                    <!-- Sharebookmark groups -->
+                    <tr ng-if="item.type === 'sharebookmark' && display.showBookmarkMembers === true" ng-repeat="group in item.groups" class="nested-child">
+
+                        <!-- Group -->
+                        <td class="flex-row align-center">
+                            <div class="round bg-white square-normal right-spacing no-shrink">
+                                <img skin-src="/img/illustrations/group-avatar.svg" />
+                            </div>
+
+                            <div>[[ group.name ]]</div>
+                        </td>
+
+                        <!-- Checkbox -->
+                        <td ng-repeat="action in actions | orderBy:'priority'" data-label="[[translate(action.displayName)]]">
+                            <label class="checkbox">
+                                <input type="checkbox" ng-model="group.actions[action.displayName]" ng-change="changeAction(group, action)" />
+                                <span></span>
+                            </label>
+                        </td>
+                    </tr>
+                </tbody>
         </table>
     </div>
 

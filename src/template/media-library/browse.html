@@ -20,10 +20,10 @@
 
 <script type="text/ng-template" id="list-folders">
 	<li ng-repeat="folder in folder.folders.all">
-		<a ng-click="openFolder(folder)" ng-class="{ selected: folder === openedFolder, opened: folder.isOpened(openedFolder) }">
+		<a ng-click="openFolder(folder)" ng-class="{ selected: folder === openedFolder, opened: folder.isOpenedRecursive(openedFolder) }">
 			<i class="arrow" ng-if="folder.folders.all.length"></i> [[folder.name]]
 		</a>
-		<ul ng-include="'list-folders'" ng-show="folder.isOpened(openedFolder)">
+		<ul ng-include="'list-folders'" ng-show="folder.isOpenedRecursive(openedFolder)">
 		</ul>
 	</li>
 </script>
@@ -39,19 +39,26 @@
 
 <div class="row browse">
 	<nav class="four cell vertical zero-mobile">
-		<ul>
+		<ul class="height-minus300">
 			<li workflow="workspace.create">
-				<a ng-click="listFrom('myDocuments')" ng-class="{ selected: myDocuments === openedFolder, opened: myDocuments.isOpened(openedFolder) }">
+				<a ng-click="listFrom('myDocuments')" ng-class="{ selected: myDocuments === openedFolder, opened: isListFrom('myDocuments') }">
 					<i class="arrow" ng-if="myDocuments.folders.all.length"></i>
 					<i18n>workspace.myDocuments</i18n>
 				</a>
 				<div>
-					<ul ng-include="'list-folders'" ng-show="folder.isOpened(openedFolder)">
+					<ul ng-include="'list-folders'" ng-if="isListFrom('myDocuments')"ng-repeat="folder in [myDocuments]">
 					</ul>
 				</div>
 			</li>
 			<li>
-				<a ng-click="listFrom('sharedDocuments')" ng-class="{ selected: display.listFrom === 'sharedDocuments' }"><i18n>workspace.sharedDocuments</i18n></a>
+				<a ng-click="listFrom('sharedDocuments')" ng-class="{ selected: sharedDocuments === openedFolder, opened: isListFrom('sharedDocuments') }">
+					<i class="arrow" ng-if="sharedDocuments.folders.all.length"></i>
+					<i18n>workspace.sharedDocuments</i18n>
+				</a>
+				<div>
+					<ul ng-include="'list-folders'" ng-if="isListFrom('sharedDocuments')" ng-repeat="folder in [sharedDocuments]">
+					</ul>
+				</div>
 			</li>
 			<li workflow="workspace.create">
 				<a ng-click="listFrom('appDocuments')" ng-class="{ selected: display.listFrom === 'appDocuments' }"><i18n>workspace.appDocuments</i18n></a>
@@ -61,21 +68,23 @@
 			</li>
 		</ul>
 	</nav>
-	
-	<div class="cell eight height-five twelve-mobile browse-list">
-		
-		<div class="absolute reduce-block-eight" ng-if="!documents.length && !folders.length" style="text-align: center"><i18n>library.browse.notfound</i18n></div>
+
+	<div class="cell eight height-five twelve-mobile browse-list height-minus300 overflowx-hd overflowy-hd">
+
+		<div class="absolute reduce-block-eight" ng-if="!documents.length && !folders.length" style="text-align: center">
+			<i18n>library.browse.notfound</i18n>
+		</div>
 		<div class="absolute icons-view" style="overflow: auto" bottom-scroll="display.limit = display.limit + 6">
 			<div class="element reduce-block-six" ng-repeat="folder in folders | limitTo:display.limit">
 				<explorer ng-model="folder.selected" on-open="openFolder(folder)">
-					<div class="container" >
+					<div class="container">
 						<i class="folder-large"></i>
 					</div>
 					<legend>
 						<a class="medium-text">[[folder.name]]</a>
 					</legend>
 				</explorer>
-				
+
 			</div>
 			<div class="element reduce-block-six" ng-repeat="document in documents | orderBy:'created':true | limitTo:display.limit - folders.length">
 				<explorer ng-model="document.selected" ng-click="updateSelection(document)" on-open="selectDocument(document)" doc-id="[[document._id]]">
