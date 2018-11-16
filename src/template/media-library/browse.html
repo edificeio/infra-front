@@ -46,7 +46,7 @@
 					<i18n>workspace.myDocuments</i18n>
 				</a>
 				<div>
-					<ul ng-include="'list-folders'" ng-if="isListFrom('myDocuments')"ng-repeat="folder in [myDocuments]">
+					<ul ng-include="'list-folders'" ng-if="isListFrom('myDocuments')" ng-repeat="folder in [myDocuments]">
 					</ul>
 				</div>
 			</li>
@@ -61,10 +61,14 @@
 				</div>
 			</li>
 			<li workflow="workspace.create">
-				<a ng-click="listFrom('appDocuments')" ng-class="{ selected: display.listFrom === 'appDocuments' }"><i18n>workspace.appDocuments</i18n></a>
+				<a ng-click="listFrom('appDocuments')" ng-class="{ selected: display.listFrom === 'appDocuments' }">
+					<i18n>workspace.appDocuments</i18n>
+				</a>
 			</li>
 			<li workflow="workspace.create" ng-if="visibility === 'public'">
-				<a ng-click="listFrom('publicDocuments')" ng-class="{ selected: display.listFrom === 'publicDocuments' }"><i18n>workspace.publicDocuments</i18n></a>
+				<a ng-click="listFrom('publicDocuments')" ng-class="{ selected: display.listFrom === 'publicDocuments' }">
+					<i18n>workspace.publicDocuments</i18n>
+				</a>
 			</li>
 		</ul>
 	</nav>
@@ -77,7 +81,7 @@
 		<div class="absolute icons-view" style="overflow: auto" bottom-scroll="display.limit = display.limit + 6">
 			<div class="element reduce-block-six" ng-repeat="folder in folders | limitTo:display.limit">
 				<explorer ng-model="folder.selected" on-open="openFolder(folder)">
-					<div class="container">
+					<div class="img container">
 						<i class="folder-large"></i>
 					</div>
 					<legend>
@@ -87,7 +91,8 @@
 
 			</div>
 			<div class="element reduce-block-six" ng-repeat="document in documents | orderBy:'created':true | limitTo:display.limit - folders.length">
-				<explorer ng-model="document.selected" ng-click="updateSelection(document)" on-open="selectDocument(document)" doc-id="[[document._id]]">
+				<explorer ng-model="document.selected" ng-click="updateSelection(document)" on-open="selectDocument(document)"
+				 doc-id="[[document._id]]">
 					<div class="img container" ng-if="document.role() === 'img'">
 						<div class="clip">
 							<img ng-src="/workspace/document/[[document._id]]?thumbnail=120x120" />
@@ -96,7 +101,7 @@
 							</div>
 						</div>
 					</div>
-					<div class="container" ng-if="document.role() !== 'img'">
+					<div class="img container" ng-if="document.role() !== 'img'">
 						<i class="[[document.role()]]-large"></i>
 					</div>
 					<legend>
