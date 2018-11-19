@@ -1,7 +1,7 @@
 import { _ } from '../libs/underscore/underscore';
 import { idiom as lang } from '../idiom';
 import http from 'axios';
-import { Eventer, Mix, Selection, Selectable } from 'entcore-toolkit';
+import { Eventer, Selection, Selectable } from 'entcore-toolkit';
 import { model } from '../modelDefinitions';
 import * as workspaceModel from "./model"
 import { workspaceService } from "./services"
@@ -82,21 +82,6 @@ export enum DocumentStatus {
 }
 
 export class Document extends workspaceModel.Element {
-    set canCopy(a) {
-        //need for mixcast
-    }
-    set canMove(a) {
-        //need for mixcast
-    }
-    set canWriteOnFolder(a) {
-        //need for mixcast
-    }
-    set isEditableImage(a) {
-        //need for mixcast
-    }
-    set differentProperties(a) {
-        //need for mixcast
-    }
     async delete() {
         await workspaceService.deleteAll([this]);
     }
@@ -130,6 +115,22 @@ export class Document extends workspaceModel.Element {
         this.metadata.role = this.role();
     }
 
+    /**
+     * used by image editor
+     */
+    async saveChanges() {
+        this.applyNewProperties();
+        await this.applyBlob();
+    }
+    /**
+     * used by image editor
+     */
+    async applyBlob() {
+        if (this.hiddenBlob) {
+            await workspaceService.updateDocument(this.hiddenBlob, this);
+            this.hiddenBlob = undefined;
+        }
+    }
     async refreshHistory() {
         await workspaceService.syncHistory(this);
     }
@@ -141,16 +142,14 @@ export class Document extends workspaceModel.Element {
 
     async protectedDuplicate(callback?: (document: Document) => void): Promise<Document> {
         const temp = await workspaceService.copyDocumentWithVisibility(this, { visibility: "protected", application: "media-library" });
-        const res = Mix.castAs(Document, temp)
-        callback && callback(res);
-        return res;
+        callback && callback(temp);
+        return temp;
     }
 
     async publicDuplicate(callback?: (document: Document) => void) {
         const temp = await workspaceService.copyDocumentWithVisibility(this, { visibility: "public", application: "media-library" });
-        const res = Mix.castAs(Document, temp)
-        callback && callback(res);
-        return res;
+        callback && callback(temp);
+        return temp;
     }
 
     async update(blob: Blob) {
@@ -223,7 +222,7 @@ export class Folder implements Selectable {
     async sync() {
         const response = await workspaceService.fetchDocuments({ filter: "owner", parentId: this._id || "" });
         this.documents.all.splice(0, this.documents.all.length);
-        this.documents.addRange(Mix.castArrayAs(Document, response));
+        this.documents.addRange(response);
         MediaLibrary.eventer.trigger('sync');
     }
 }
@@ -233,7 +232,7 @@ export class MyDocuments extends Folder {
     async sync() {
         const response = await workspaceService.fetchDocuments({ filter: "owner", parentId: this._id || "" });
         this.documents.all.splice(0, this.documents.all.length);
-        this.documents.addRange(Mix.castArrayAs(Document, response));
+        this.documents.addRange(response);
         MediaLibrary.eventer.trigger('sync');
     }
 }
@@ -243,7 +242,7 @@ export class SharedDocuments extends Folder {
     async sync() {
         const response = await workspaceService.fetchDocuments({ filter: "shared", parentId: this._id || "" });
         this.documents.all.splice(0, this.documents.all.length);
-        this.documents.addRange(Mix.castArrayAs(Document, response));
+        this.documents.addRange(response);
         MediaLibrary.eventer.trigger('sync');
     }
 }
@@ -252,7 +251,7 @@ export class AppDocuments extends Folder {
     async sync() {
         const response = await workspaceService.fetchDocuments({ filter: "protected", parentId: this._id || "" });
         this.documents.all.splice(0, this.documents.all.length);
-        this.documents.addRange(Mix.castArrayAs(Document, response));
+        this.documents.addRange((response));
         MediaLibrary.eventer.trigger('sync');
     }
 }
@@ -261,7 +260,7 @@ export class PublicDocuments extends Folder {
     async sync() {
         const docResponse = await workspaceService.fetchDocuments({ filter: "public", parentId: this._id || "" })
         this.documents.all.splice(0, this.documents.all.length);
-        this.documents.addRange(Mix.castArrayAs(Document, docResponse));
+        this.documents.addRange(docResponse);
         MediaLibrary.eventer.trigger('sync');
     }
 }
