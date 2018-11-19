@@ -5,6 +5,8 @@ import { notify } from '../notify';
 import { MediaLibrary } from './workspace-v1';
 import * as workspaceModel from "./model";
 import { Subject } from "rxjs";
+import { Document } from "./workspace-v1"
+
 
 export interface ElementQuery {
     parentId?: string
@@ -122,11 +124,11 @@ export const workspaceService = {
         //
         return trees;
     },
-    async fetchDocuments(params: ElementQuery, sort: "name" | "created" = "name"): Promise<workspaceModel.Element[]> {
-        let files: workspaceModel.Element[] = await http<workspaceModel.Element[]>().get('/workspace/documents', params);
+    async fetchDocuments(params: ElementQuery, sort: "name" | "created" = "name"): Promise<Document[]> {
+        let filesO: workspaceModel.Element[] = await http<workspaceModel.Element[]>().get('/workspace/documents', params);
         //create models
-        files = files.map(f => {
-            const ff = new workspaceModel.Element(f);
+        let files = filesO.map(f => {
+            const ff = new Document(f);
             //load behaviours and myRights
             const res = ff.behaviours("workspace");
             //load rights
@@ -437,7 +439,7 @@ export const workspaceService = {
             return Promise.resolve();
         }
     },
-    async createDocument(file: File | Blob, document: workspaceModel.Element, parent?: workspaceModel.Element, params?: { visibility?: "public" | "protected", application?: string }): Promise<workspaceModel.Element> {
+    async createDocument(file: File | Blob, document: Document, parent?: workspaceModel.Element, params?: { visibility?: "public" | "protected", application?: string }): Promise<Document> {
         document.eType = workspaceModel.FILE_TYPE;
         document.eParent = parent ? parent._id : null;
         document.uploadStatus = "loading";
@@ -473,7 +475,7 @@ export const workspaceService = {
             document.eventer.trigger('progress', e);
         }
 
-        const res = new Promise<workspaceModel.Element>((resolve, reject) => {
+        const res = new Promise<Document>((resolve, reject) => {
             document.uploadXhr.onload = async () => {
                 if (document.uploadXhr.status >= 200 && document.uploadXhr.status < 400) {
                     document.eventer.trigger('loaded');
@@ -525,7 +527,7 @@ export const workspaceService = {
     },
     async copyDocumentWithVisibility(source: workspaceModel.Element, args: { visibility: "public" | "protected", application: string }, parent?: workspaceModel.Element) {
         const blob = await workspaceService.getDocumentBlob(source._id);
-        const clone = new workspaceModel.Element;
+        const clone = new Document;
         Object.assign(clone, source);
         clone._id = null;
         return workspaceService.createDocument(blob, clone, parent, { visibility: args.visibility, application: args.application })
