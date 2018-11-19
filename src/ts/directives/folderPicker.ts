@@ -1,7 +1,7 @@
 import { ng } from '../ng-start';
 import { FolderTreeProps } from './folderTree';
 
-import { workspace } from "../workspace";
+import { workspace, Document } from "../workspace";
 
 import models = workspace.v2.models;
 const workspaceService = workspace.v2.service;
@@ -291,7 +291,7 @@ export const folderPicker = ng.directive('folderPicker', ['$timeout', ($timeout)
                 //
                 if (createFromBlob.length) {
                     const promises = createFromBlob.map(blob => {
-                        const c = new models.Element()
+                        const c = new Document()
                         if (blob.title) {
                             c.name = blob.title
                         }

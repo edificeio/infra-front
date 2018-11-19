@@ -20,7 +20,6 @@ import { Rights, Shareable } from '../rights';
 import * as moment from 'moment';
 
 import { Selectable, Eventer } from 'entcore-toolkit';
-import { workspaceService } from './services';
 
 export const MEDIALIB_APPNAME = "media-library";
 export type TREE_NAME = "owner" | "shared" | "protected" | "public" | "trash" | "all";
@@ -186,23 +185,6 @@ export class Element extends Model implements Node, Shareable, Selectable {
     }
     get canWriteOnFolder() {
         return this.eType == FOLDER_TYPE && (this.owner.userId == model.me.userId || this.myRights["contrib"])
-    }
-
-    /**
-     * used by image editor
-     */
-    async saveChanges() {
-        this.applyNewProperties();
-        await this.applyBlob();
-    }
-    /**
-     * used by image editor
-     */
-    async applyBlob() {
-        if (this.hiddenBlob) {
-            await workspaceService.updateDocument(this.hiddenBlob, this);
-            this.hiddenBlob = undefined;
-        }
     }
     //
     resetNewProperties() {
