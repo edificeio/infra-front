@@ -9,22 +9,28 @@ export let infotip = ng.directive('infotip', () => {
             <i class="close"></i>
             <div ng-transclude></div>
         `,
-        scope: { name: '@' },
+        scope: { name: '@', onChange: '&' },
         transclude: true,
         link: async (scope, element, attributes) => {
-             let infotips = await Me.preference('infotip');
-             if(infotips[scope.name] === false){
-                 element.remove();
-             }
-             else{
-                 element.css({ 'display': 'block' });
-             }
+            const onChange = function () {
+                let isFalse = infotips[scope.name] === false;
+                scope.onChange && scope.onChange({ '$visible': !isFalse })
+            }
+            let infotips = await Me.preference('infotip');
+            onChange();
+            if (infotips[scope.name] === false) {
+                element.remove();
+            }
+            else {
+                element.css({ 'display': 'block' });
+            }
 
-             element.children('i').on('click', () => {
-                 element.slideUp();
-                 Me.preferences.infotip[scope.name] = false;
-                 Me.savePreference('infotip');
-             })
+            element.children('i').on('click', () => {
+                element.slideUp();
+                Me.preferences.infotip[scope.name] = false;
+                onChange();
+                Me.savePreference('infotip');
+            })
         }
     }
 })

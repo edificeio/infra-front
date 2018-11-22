@@ -45,6 +45,7 @@ export interface WorkspacePreference {
 }
 export type WorkspacePreferenceView = "list" | "icons" | "carousel";
 export const workspaceService = {
+    _cacheFolders: [] as workspaceModel.Element[],
     onChange: new Subject<WorkspaceEvent>(),
     onImportFiles: new Subject<FileList>(),
     onConfirmImport: new Subject<workspaceModel.Element[]>(),
@@ -70,6 +71,8 @@ export const workspaceService = {
     },
     async fetchTrees(params: ElementQuery, sort: "name" | "created" = "name"): Promise<workspaceModel.Tree[]> {
         let folders: workspaceModel.Element[] = await http<workspaceModel.Element[]>().get('/workspace/folders/list', params);
+        //
+        workspaceService._cacheFolders = folders;
         //create models
         folders = folders.map(f => {
             const ff = new workspaceModel.Element(f);
@@ -432,8 +435,8 @@ export const workspaceService = {
             return Promise.resolve(copies);
         }).then(copies => Promise.resolve({ nbFiles: 0, nbFolders: ids.length, copies }));
     },
-    notifyContrib(folder: workspaceModel.Element, els: workspaceModel.Element[]) {
-        if (folder._id && folder.isShared && folder.owner.userId != model.me.userId) {
+    notifyContrib(folder: workspaceModel.Element, eltsOrIds: workspaceModel.Element[] | string[]) {
+        if (folder && folder._id && folder.isShared && folder.owner.userId != model.me.userId) {
             return http().post("/workspace/folder/notify/contrib/" + folder._id)
         } else {
             return Promise.resolve();
@@ -482,6 +485,9 @@ export const workspaceService = {
                     document.uploadStatus = "loaded";
                     const result = JSON.parse(document.uploadXhr.responseText);
                     document.uploadXhr = null;
+                    if (parent && parent.isShared) {
+                        document._isShared = parent.isShared;
+                    }
                     resolve(document);
                     document._id = result._id;
                     document.updateProps();
@@ -609,3 +615,19 @@ export const workspaceService = {
         return http().delete(`/workspace/document/${rev.documentId}/revision/${rev._id}`);
     }
 }
+
+workspaceService.onChange.subscribe(event => {
+    if (event.dest && event.dest.isShared && (event.elements.length || event.ids.length)) {
+        workspaceService.notifyContrib(event.dest, event.elements || event.ids)
+    }
+})
+workspaceService.onConfirmImport.subscribe(elts => {
+    const destFolderIds = elts.filter(el => el.eParent).map(el => el.eParent);
+    const uniqDestFolderIds = destFolderIds.filter((elem, pos, arr) => arr.indexOf(elem) == pos);
+    const destFolders = workspaceService._cacheFolders.filter(folder => uniqDestFolderIds.indexOf(folder._id) > -1);
+    //
+    destFolders.forEach(dest => {
+        const children = elts.filter(el => el.eParent == dest._id);
+        workspaceService.notifyContrib(dest, children)
+    })
+})
