@@ -5,7 +5,7 @@ var rename = require('gulp-rename');
 var argv = require('yargs').argv;
 var rimraf = require("rimraf");
 
-let springboardPath = '../springboards/recette';
+let springboardPath = '../springboard-open-ent';
 if (argv.springboard) {
     springboardPath = argv.springboard;
     console.log('Using springboard at ' + springboardPath);
@@ -38,7 +38,7 @@ gulp.task('update', ['build-dev'], () => {
         f.forEach((file) => {
             const split = file.split('/');
             const fileName = split[split.length - 1];
-            //console.log('Copying resources to ' + split.slice(0, split.length - 1).join('/'));
+            console.log('Copying js to ' + split.slice(0, split.length - 1).join('/'));
             gulp.src('./bundle/ng-app.js')
                 .pipe(rename(fileName))
                 .pipe(gulp.dest(split.slice(0, split.length - 1).join('/')));
@@ -79,6 +79,7 @@ const GlobManager = {
     _html: null,
     _buildPromise: (path) => {
         return new Promise((resolve, reject) => {
+            console.log("init glob for: ",path)
             glob(path, (err, f) => {
                 if (err) {
                     reject(err); 
