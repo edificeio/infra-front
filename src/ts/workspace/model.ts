@@ -38,7 +38,7 @@ export interface Tree extends Node {
     filter?: TREE_NAME
     hierarchical?: boolean
     helpbox?: string
-    buttons?: { text: string, action: () => any, icon?: boolean, workflow?: string }[]
+    buttons?: { text: string, action: () => any,disabled:()=>boolean, icon?: boolean, workflow?: string }[]
     contextualButtons?: { text: string, action: () => any, allow?: () => boolean, right?: string }[]
 }
 
@@ -185,6 +185,16 @@ export class Element extends Model implements Node, Shareable, Selectable {
     }
     get canWriteOnFolder() {
         return this.eType == FOLDER_TYPE && (this.owner.userId == model.me.userId || this.myRights["contrib"])
+    }
+    idEquals(id: string) {
+        return id && this._id == id;
+    }
+    idInList(ids: string[]) {
+        return ids.map(id => this.idEquals(id)).reduce((a1, a2) => a1 || a2, false);
+    }
+    canCopyFileIdsInto(ids: string[]) {
+        //cannot copy or move an element into himself
+        return this.canWriteOnFolder && !this.idInList(ids);
     }
     //
     resetNewProperties() {
