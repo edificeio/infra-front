@@ -143,12 +143,12 @@ export const folderPicker = ng.directive('folderPicker', ['$timeout', ($timeout)
                     //can write only on root owner
                     return (folder as models.Tree).filter == "owner";
                 } else {
-                    return folder.canWriteOnFolder;
+                    const fileIds = getSourceFileIds();
+                    return folder.canCopyFileIdsInto(fileIds);
                 }
             }
             //FILTER TREES
             const original = scope.trees = scope.trees.filter(t => t.filter == "owner" || t.filter == "shared")
-            console.log("original ", original)
             //
             const matchFolder = function (folder: models.Element) {
                 if (!scope.search.value || scope.search.value.trim().length == 0) {
@@ -263,6 +263,13 @@ export const folderPicker = ng.directive('folderPicker', ['$timeout', ($timeout)
             }
             scope.cannotSubmit = function () {
                 return !currentFolder;
+            }
+            const getSourceFileIds = function () {
+                const copyFromFiles: FolderPickerSourceFile[] = scope.folderProps.sources.filter(f => f.action == "copy-from-file") as any;
+                const moveFromFiles: FolderPickerSourceFile[] = scope.folderProps.sources.filter(f => f.action == "move-from-file") as any;
+                let copyIds = copyFromFiles.map(c => c.fileId);
+                let moveIds = moveFromFiles.map(c => c.fileId);
+                return copyIds.concat(moveIds);
             }
             scope.onSubmit = async function () {
                 if (scope.folderProps.manageSubmit //
