@@ -1243,7 +1243,7 @@ module.directive('dragdrop', ['$parse', function($parse){
 				dropFn(scope, { $originalEvent: event.originalEvent, $item: item });
             });
 
-            element.on('$destroy', function() {
+            scope.$on('$destroy', function() {
                 element.off()
             });
         }
