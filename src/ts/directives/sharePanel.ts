@@ -21,7 +21,10 @@ export interface SharePanelScope {
         sharebookmarkSaved: boolean,
         workflowAllowSharebookmarks: boolean,
         showCloseConfirmation: boolean,
-        showBookmarkMembers: boolean
+        showBookmarkMembers: boolean,
+        search: {
+            processing: Boolean
+        }
     }
     sharing: {
         actions?: ShareAction[]
@@ -85,7 +88,10 @@ export const sharePanel = ng.directive('sharePanel', ['$rootScope', ($rootScope)
                 sharebookmarkSaved: false,
                 workflowAllowSharebookmarks: false,
                 showCloseConfirmation: false,
-                showBookmarkMembers: false
+                showBookmarkMembers: false,
+                search: {
+                    processing: false
+                }
             }
 
             // get directory workflow to manage allowSharebookmarks workflow
@@ -419,6 +425,7 @@ export const sharePanel = ng.directive('sharePanel', ['$rootScope', ($rootScope)
                     return $scope.sharingModel.edited.findIndex(i => i.id === element.id) === -1;
                 })
 
+                $scope.display.search.processing = false
                 $scope.$apply();
             };
 
