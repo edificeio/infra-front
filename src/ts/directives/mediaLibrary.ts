@@ -311,8 +311,8 @@ export const mediaLibrary = ng.directive('mediaLibrary', ['$timeout', function (
 			}
 			scope.selectDocuments = async () => {
 				const selectedDocuments = scope.selectedDocuments();
-				if ((scope.folder === MediaLibrary.appDocuments && scope.visibility === 'protected') ||
-					(scope.folder === MediaLibrary.publicDocuments && scope.visibility === 'public')) {
+				if ((scope.openedFolder.filter == "protected" && scope.visibility === 'protected') ||
+					(scope.openedFolder.filter == "public" && scope.visibility === 'public')) {
 					if (scope.multiple) {
 						scope.ngModel = selectedDocuments;
 					}

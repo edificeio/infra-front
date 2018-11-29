@@ -38,7 +38,7 @@ export interface Tree extends Node {
     filter?: TREE_NAME
     hierarchical?: boolean
     helpbox?: string
-    buttons?: { text: string, action: () => any,disabled:()=>boolean, icon?: boolean, workflow?: string }[]
+    buttons?: { text: string, action: () => any, disabled: () => boolean, icon?: boolean, workflow?: string }[]
     contextualButtons?: { text: string, action: () => any, allow?: () => boolean, right?: string }[]
 }
 
@@ -140,11 +140,14 @@ export class Element extends Model implements Node, Shareable, Selectable {
         //
         if (data.metadata) {
             const dotSplit = data.metadata.filename.split('.');
-            this.metadata.extension = dotSplit[dotSplit.length - 1];
+            this.metadata.extension = dotSplit.length > 1 ? dotSplit[dotSplit.length - 1] : "";
             if (dotSplit.length > 1) {
                 dotSplit.length = dotSplit.length - 1;
             }
             this.title = dotSplit.join('.');
+            if (this.metadata.extension) {
+                this.name = this.name.replace("." + this.metadata.extension, "")
+            }
         }
         //owner
         this.owner = { userId: data.owner, displayName: data.ownerName };
@@ -221,7 +224,7 @@ export class Element extends Model implements Node, Shareable, Selectable {
                 'content-type': file.type || 'application/octet-stream',
                 'filename': name,
                 size: file.size,
-                extension: nameSplit[nameSplit.length - 1]
+                extension: nameSplit.length > 1 ? nameSplit[nameSplit.length - 1] : ''
             };
             this.metadata.role = this.role();
         }
