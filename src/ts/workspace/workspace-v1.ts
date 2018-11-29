@@ -178,20 +178,22 @@ export class Folder implements Selectable {
     folders = new Selection<Folder>([]);
     documents = new Selection<Document>([]);
     owner: string;
-    constructor(f?: workspaceModel.Element) {
+    filter: workspaceModel.TREE_NAME;
+    constructor(filter: workspaceModel.TREE_NAME, f?: workspaceModel.Element) {
+        this.filter = filter;
         if (f) {
             this._id = f._id;
             this.eParent = f.eParent;
             this.owner = f.ownerName;
             this.name = f.name || "";
             for (let child of f.children) {
-                this.folders.push(new Folder(child))
+                this.folders.push(new Folder(this.filter, child))
             }
         }
     }
     setChildren(children: workspaceModel.Element[]) {
         for (let child of children) {
-            this.folders.push(new Folder(child))
+            this.folders.push(new Folder(this.filter, child))
         }
     }
     deselectAll() {
@@ -215,12 +217,12 @@ export class Folder implements Selectable {
             return true;
         }
         return this.folders.filter((f: Folder) => {
-            return f.isOpened(currentFolder);
+            return f.isOpenedRecursive(currentFolder);
         }).length > 0;
     }
 
     async sync() {
-        const response = await workspaceService.fetchDocuments({ filter: "owner", parentId: this._id || "" });
+        const response = await workspaceService.fetchDocuments({ filter: this.filter, parentId: this._id || "" });
         this.documents.all.splice(0, this.documents.all.length);
         this.documents.addRange(response);
         MediaLibrary.eventer.trigger('sync');
@@ -228,7 +230,9 @@ export class Folder implements Selectable {
 }
 
 export class MyDocuments extends Folder {
-
+    constructor() {
+        super("owner")
+    }
     async sync() {
         const response = await workspaceService.fetchDocuments({ filter: "owner", parentId: this._id || "" });
         this.documents.all.splice(0, this.documents.all.length);
@@ -238,7 +242,9 @@ export class MyDocuments extends Folder {
 }
 
 export class SharedDocuments extends Folder {
-
+    constructor() {
+        super("shared")
+    }
     async sync() {
         const response = await workspaceService.fetchDocuments({ filter: "shared", parentId: this._id || "" });
         this.documents.all.splice(0, this.documents.all.length);
@@ -248,6 +254,9 @@ export class SharedDocuments extends Folder {
 }
 
 export class AppDocuments extends Folder {
+    constructor() {
+        super("protected")
+    }
     async sync() {
         const response = await workspaceService.fetchDocuments({ filter: "protected", parentId: this._id || "" });
         this.documents.all.splice(0, this.documents.all.length);
@@ -257,6 +266,9 @@ export class AppDocuments extends Folder {
 }
 
 export class PublicDocuments extends Folder {
+    constructor() {
+        super("public")
+    }
     async sync() {
         const docResponse = await workspaceService.fetchDocuments({ filter: "public", parentId: this._id || "" })
         this.documents.all.splice(0, this.documents.all.length);
@@ -271,7 +283,7 @@ export class MediaLibrary {
     static sharedDocuments = new SharedDocuments();
     static appDocuments = new AppDocuments();
     static publicDocuments = new PublicDocuments();
-    static trashDocuments = new Folder();
+    static trashDocuments = new Folder("trash");
     static eventer = new Eventer();
 
     static thumbnails = "thumbnail=120x120&thumbnail=100x100&thumbnail=290x290&thumbnail=381x381&thumbnail=1600x0";

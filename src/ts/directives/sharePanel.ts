@@ -11,7 +11,10 @@ import { notify } from '../notify';
 import { template } from '../template';
 import { ui } from '../ui';
 import { Shareable, ShareVisible, SharePayload, ShareInfos, ShareAction } from '../rights';
-
+export interface ShareCloseDelegate {
+    $canceled: boolean
+    $close: () => void
+}
 export interface ShareableWithId extends Shareable {
     _id: string
 }
@@ -46,12 +49,13 @@ export interface SharePanelScope {
         $resource: ShareableWithId,
         $actions: ShareAction[]
     })
-    autoClose?()
+    autoClose?: boolean
+    closeDelegate?(args: ShareCloseDelegate)
     onCancel?()
     onSubmit?(args: { shared: SharePayload })
     createSharebookmark(name: string)
     typeSort(sort: any)
-    closePanel()
+    closePanel(cancelled: boolean)
     revertClose()
     getColor(profile): any
     remove(el: ShareVisible)
@@ -75,6 +79,7 @@ export const sharePanel = ng.directive('sharePanel', ['$rootScope', ($rootScope)
             onCancel: '&',
             onSubmit: '&',
             onValidate: '&',
+            closeDelegate: '&',
             autoClose: '='
         },
         restrict: 'E',
@@ -571,7 +576,7 @@ export const sharePanel = ng.directive('sharePanel', ['$rootScope', ($rootScope)
                 });
                 await Promise.all(promises);
                 if ($scope.autoClose) {
-                    await closePanel();
+                    await $scope.closePanel(false);
                 }
                 $scope.onSubmit && $scope.onSubmit({ shared: data })
             }
@@ -608,7 +613,7 @@ export const sharePanel = ng.directive('sharePanel', ['$rootScope', ($rootScope)
                 if (value.type == 'group') return 1;
                 return 2;
             }
-            const closePanel = async () => {
+            const doClose = async () => {
                 $element.closest('.lightbox').first().fadeOut();
                 $('body').css({ overflow: 'auto' });
                 $('body').removeClass('lightbox-opened');
@@ -625,9 +630,15 @@ export const sharePanel = ng.directive('sharePanel', ['$rootScope', ($rootScope)
 
                 $scope.$apply();
             }
-            $scope.closePanel = function () {
-                closePanel()
-                $scope.onCancel && $scope.onCancel();
+            $scope.closePanel = async function (cancelled = true) {
+                if ($scope.closeDelegate) {
+                    $scope.closeDelegate({ "$canceled": cancelled, "$close": doClose })
+                } else {
+                    await doClose()
+                }
+                if (cancelled) {
+                    $scope.onCancel && $scope.onCancel();
+                }
             }
 
             $scope.revertClose = function () {
@@ -639,7 +650,7 @@ export const sharePanel = ng.directive('sharePanel', ['$rootScope', ($rootScope)
             $element.closest('.lightbox').find('.background, .content > .close-lightbox').on('click', function (e) {
                 e.stopPropagation();
                 if (!$scope.sharingModel.changed)
-                    $scope.closePanel();
+                    $scope.closePanel(true);
                 else if (!$scope.display.showCloseConfirmation) {
                     $scope.display.showCloseConfirmation = true;
                     $element.closest('.lightbox').find('.content > .close-lightbox').css({ visibility: 'hidden' });

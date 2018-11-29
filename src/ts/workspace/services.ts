@@ -448,8 +448,9 @@ export const workspaceService = {
         document.uploadStatus = "loading";
         document.fromFile(file);
         //
+        const fullname = document.metadata.extension ? document.name + "." + document.metadata.extension : document.name;
         let formData = new FormData();
-        formData.append('file', file, document.name);
+        formData.append('file', file, fullname);
         document.uploadXhr = new XMLHttpRequest();
         //
         const args = [];
@@ -564,7 +565,7 @@ export const workspaceService = {
         p.e400((e) => {
             error = JSON.parse(e.responseText).error;
         });
-        p.then(e => {
+        const res = await p.then(e => {
             folder._id = e["_id"];
             copy = new workspaceModel.Element(folder);
             copy.fromMe();//make behaviours working
@@ -573,10 +574,12 @@ export const workspaceService = {
             if (parent && parent.isShared) {
                 copy._isShared = true;
             }
+            if (!copy.children) {
+                copy.children = []
+            }
             workspaceService.onChange.next({ action: "add", elements: [copy], dest: parent })
             return Promise.resolve(copy)
-        })
-        const res = await p;
+        });
         return error == null ? res : { error };
     },
     async createFolders(folder: workspaceModel.Element, parents: workspaceModel.Element[]): Promise<any> {
@@ -617,7 +620,7 @@ export const workspaceService = {
 }
 
 workspaceService.onChange.subscribe(event => {
-    if (event.dest && event.dest.isShared && (event.elements.length || event.ids.length)) {
+    if (event.dest && event.dest.isShared && ((event.elements && event.elements.length) || (event.ids && event.ids.length))) {
         workspaceService.notifyContrib(event.dest, event.elements || event.ids)
     }
 })
