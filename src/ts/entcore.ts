@@ -6,7 +6,7 @@ export * from "./lib";
 export * from "./globals";
 export * from "./idiom";
 export * from "./behaviours";
-export * from './workspace';
+export * from './workspace/index';
 export * from './skin';
 export * from './editor';
 export * from './modelDefinitions';

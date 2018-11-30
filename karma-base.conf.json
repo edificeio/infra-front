@@ -18,7 +18,7 @@
     "src/ts/skin.ts",
     "src/ts/globals.ts",
     "src/ts/notify.ts",
-    "src/ts/workspace.ts",
+    "src/ts/workspace/*.ts",
     "src/ts/behaviours.ts",
     "src/ts/rights.ts",
     "src/ts/entcore.ts",
@@ -41,6 +41,6 @@
   "frameworks": ["jasmine", "karma-typescript"],
   "browsers": ["Chrome", "Firefox"],
   "karmaTypescriptConfig": {
-    "tsconfig": "./tsconfig.json"
+    "tsconfig": "./tsconfig.spec.json"
   }
 }
