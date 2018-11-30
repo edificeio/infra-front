@@ -65,6 +65,7 @@ export class Element extends Model implements Node, Shareable, Selectable {
     deleted?: boolean
     children: Element[] = [];
     created: moment.Moment
+    trasher?: string
     //shared
     _shared: any[];
     inheritedShares?: any[];
