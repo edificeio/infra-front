@@ -125,11 +125,41 @@ export const workspaceService = {
         trees.push(buildTree("trash", el => el.deleted))
         trees.push(buildTree("protected", el => el.protected));
         trees.push(buildTree("owner", _ => true));//all others
+        // filter by trasher
+        const tree = trees.find(tree => tree.filter == "trash");
+        if (tree) {
+            const accept = function (current: workspaceModel.Node) {
+                const currentElement = current as workspaceModel.Element;
+                if (currentElement.deleted && currentElement.trasher) {
+                    return model.me.userId == currentElement.trasher;
+                }
+                return true;
+            }
+            const iterator = function (cursor: workspaceModel.Node) {
+                const current = cursor as workspaceModel.Element;
+                if (current.children) {
+                    for (let child of current.children) {
+                        iterator(child);
+                    }
+                    current.children = current.children.filter(el => accept(el));
+                }
+            }
+            iterator(tree)
+        }
         //
         return trees;
     },
     async fetchDocuments(params: ElementQuery, sort: "name" | "created" = "name"): Promise<Document[]> {
         let filesO: workspaceModel.Element[] = await http<workspaceModel.Element[]>().get('/workspace/documents', params);
+        //filter by trasherid
+        const accept = function (current: workspaceModel.Node) {
+            const currentElement = current as workspaceModel.Element;
+            if (currentElement.deleted && currentElement.trasher) {
+                return model.me.userId == currentElement.trasher;
+            }
+            return true;
+        }
+        filesO = filesO.filter(accept);
         //create models
         let files = filesO.map(f => {
             const ff = new Document(f);
