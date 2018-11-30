@@ -101,13 +101,13 @@
                         <!-- Checkboxes -->
                         <td ng-repeat="action in actions | orderBy:'priority'" data-label="[[translate(action.displayName)]]">
                             <label class="checkbox">
-                                <input type="checkbox" ng-model="item.actions[action.displayName]" ng-change="changeAction(item, action)" />
+                                <input type="checkbox" ng-model="item.actions[action.displayName]" ng-change="changeAction(item, action)" ng-disabled="!canEdit(item)"/>
                                 <span></span>
                             </label>
                         </td>
 
                         <!-- Remove item line -->
-                        <td class="drop-line" ng-click="remove(item)"></td>
+                        <td class="drop-line" ng-click="remove(item)" ng-if="canEdit(item)"></td>
                     </tr>
 
                     <!-- Sharebookmark users -->

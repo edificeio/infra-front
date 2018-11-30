@@ -49,7 +49,11 @@ export interface SharePanelScope {
         $resource: ShareableWithId,
         $actions: ShareAction[]
     })
+    canEditDelegate?(args: {
+        $item: { type: string, id: string }
+    }): boolean
     autoClose?: boolean
+    canEdit(item: { type: string, id: string }): boolean
     closeDelegate?(args: ShareCloseDelegate)
     onCancel?()
     onSubmit?(args: { shared: SharePayload })
@@ -80,6 +84,7 @@ export const sharePanel = ng.directive('sharePanel', ['$rootScope', ($rootScope)
             onSubmit: '&',
             onValidate: '&',
             closeDelegate: '&',
+            canEditDelegate: '&',
             autoClose: '='
         },
         restrict: 'E',
@@ -129,7 +134,12 @@ export const sharePanel = ng.directive('sharePanel', ['$rootScope', ($rootScope)
                 edited: [],
                 changed: false
             } as any;
-
+            $scope.canEdit = function (item) {
+                if ($scope.canEditDelegate) {
+                    return $scope.canEditDelegate({ $item: item })
+                }
+                return true;
+            }
             $scope.addResults = function () {
                 $scope.maxResults += 5;
             };
