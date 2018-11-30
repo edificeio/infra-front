@@ -39,6 +39,8 @@ if (document.cookie) {
 let preferences: WorkspacePreference = null;
 const preferencesDefault: WorkspacePreference = { view: "icons", quickstart: "notviewed" }
 export interface WorkspacePreference {
+    sortField?: string
+    sortDesc?: boolean
     view?: WorkspacePreferenceView
     quickstart?: "viewed" | "notviewed"
 }
