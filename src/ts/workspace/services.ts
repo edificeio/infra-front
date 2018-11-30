@@ -2,10 +2,9 @@ import { model } from '../modelDefinitions';
 import { http as httpOriginal, httpPromisy as http, PromiseHttp } from '../http';
 import { idiom as lang } from '../idiom';
 import { notify } from '../notify';
-import { MediaLibrary } from './workspace-v1';
-import * as workspaceModel from "./model";
-import { Subject } from "rxjs";
-import { Document } from "./workspace-v1"
+import { Document, MediaLibrary } from './workspace-v1';
+import * as workspaceModel from './model';
+import { Subject } from 'rxjs';
 
 
 export interface ElementQuery {
