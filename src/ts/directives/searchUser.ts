@@ -45,7 +45,8 @@ export let searchUser = ng.directive('searchUser', ['$timeout', ($timeout) => {
                 if(!Me.session.functions.ADMIN_LOCAL){
                     force = true;
                 }
-                scope.searchTrack.processing = true
+                if(scope.searchTrack)
+                    scope.searchTrack.processing = true
                 $timeout(() => {
                     if((scope.ngModel.length < 3 && !force) || scope.ngModel.length < 1){
                         scope.clearList();
