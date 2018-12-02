@@ -176,13 +176,13 @@ export var recorder = (function(){
 					that.status = 'stop';
                     notifyFollowers(that.status);
                     closeWs();
-                    notify.info(event.error);
+                    notify.error(event.error);
 				}
                 ws.onmessage = (event) => {
                 	if (event.data && event.data.indexOf("error") !== -1) {
                 		console.log(event.data);
 						closeWs();
-						notify.info(event.data);
+						notify.error(event.data);
                 	} else if (event.data && event.data === "ok" && this.status === "encoding") {
                 		closeWs();
                 		notify.info("recorder.saved");
