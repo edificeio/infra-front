@@ -237,20 +237,21 @@ export const sharePanel = ng.directive('sharePanel', ['$rootScope', ($rootScope)
 
                         data._id = resource._id;
                         $scope.editResources.push(data);
-                        var editResource = $scope.editResources[$scope.editResources.length - 1];
+                        const editResource = $scope.editResources[$scope.editResources.length - 1];
                         if (!$scope.sharing.actions) {
                             setActions(data.actions);
                         }
 
                         function addToEdit(type) {
-                            for (var element in editResource[type].checked) {
-                                var rights = editResource[type].checked[element];
+                            for (let element in editResource[type].checked) {
+                                const rights = editResource[type].checked[element];
 
-                                var groupActions = rightsToActions(rights);
-                                var elementObj = _.findWhere(editResource[type].visibles, {
+                                const groupActions = rightsToActions(rights);
+                                const elementObjOriginal = _.findWhere(editResource[type].visibles, {
                                     id: element
                                 });
-                                if (elementObj) {
+                                if (elementObjOriginal) {
+                                    const elementObj = { ...elementObjOriginal };
                                     elementObj.actions = groupActions;
                                     if (initModel) {
                                         $scope.sharingModel.edited.push(elementObj);
@@ -266,10 +267,11 @@ export const sharePanel = ng.directive('sharePanel', ['$rootScope', ($rootScope)
                                     const rights = checkedInherited[element];
 
                                     const groupActions = rightsToActions(rights);
-                                    const elementObj = _.findWhere(editResource[type].visibles, {
+                                    const elementObjOriginal = _.findWhere(editResource[type].visibles, {
                                         id: element
                                     });
-                                    if (elementObj) {
+                                    if (elementObjOriginal) {
+                                        const elementObj = { ...elementObjOriginal };
                                         elementObj.actions = groupActions;
                                         if (initModel) {
                                             $scope.sharingModel.editedInherited.push(elementObj);
