@@ -186,7 +186,8 @@ export const folderPicker = ng.directive('folderPicker', ['$timeout', ($timeout)
                 scope.safeApply();
             }
             //
-            let currentFolder = null;
+            let selectedFolder = null;
+            let openedFolder = null;
             scope.treeProps = {
                 cssTree: "maxheight-half-vh",
                 get trees() {
@@ -196,19 +197,21 @@ export const folderPicker = ng.directive('folderPicker', ['$timeout', ($timeout)
                     return !canSelect(folder)
                 },
                 isOpenedFolder(folder) {
-                    if (currentFolder === folder) {
+                    if (openedFolder === folder) {
                         return true;
                     } else if ((folder as models.Tree).filter) {
                         return true;
                     }
-                    return currentFolder && workspaceService.findFolderInTreeByRefOrId(folder, currentFolder);
+                    return openedFolder && workspaceService.findFolderInTreeByRefOrId(folder, openedFolder);
                 },
                 isSelectedFolder(folder) {
-                    return currentFolder === folder;
+                    return selectedFolder === folder;
                 },
                 openFolder(folder) {
                     if (canSelect(folder)) {
-                        currentFolder = folder;
+                        openedFolder = selectedFolder = folder;
+                    }else{
+                        openedFolder = folder;
                     }
                 }
             }
@@ -230,15 +233,15 @@ export const folderPicker = ng.directive('folderPicker', ['$timeout', ($timeout)
                 editing = true;
             }
             scope.canOpenEditView = function () {
-                return !!currentFolder && !editing;
+                return !!selectedFolder && !editing;
             }
             scope.isEditVew = function () {
                 return editing;
             }
             scope.submitNewFolder = async function () {
-                await workspaceService.createFolder(scope.newFolder, currentFolder);
+                await workspaceService.createFolder(scope.newFolder, selectedFolder);
                 editing = false;
-                currentFolder = scope.newFolder;
+                selectedFolder = scope.newFolder;
                 scope.newFolder = models.emptyFolder();
                 scope.safeApply();
             }
@@ -262,7 +265,7 @@ export const folderPicker = ng.directive('folderPicker', ['$timeout', ($timeout)
                 scope.folderProps.onCancel()
             }
             scope.cannotSubmit = function () {
-                return !currentFolder;
+                return !selectedFolder;
             }
             const getSourceFileIds = function () {
                 const copyFromFiles: FolderPickerSourceFile[] = scope.folderProps.sources.filter(f => f.action == "copy-from-file") as any;
@@ -273,9 +276,9 @@ export const folderPicker = ng.directive('folderPicker', ['$timeout', ($timeout)
             }
             scope.onSubmit = async function () {
                 if (scope.folderProps.manageSubmit //
-                    && scope.folderProps.manageSubmit(currentFolder) //
+                    && scope.folderProps.manageSubmit(selectedFolder) //
                     && scope.folderProps.submit) {
-                    scope.folderProps.submit(currentFolder)
+                    scope.folderProps.submit(selectedFolder)
                     return;
                 }
                 //
@@ -288,12 +291,12 @@ export const folderPicker = ng.directive('folderPicker', ['$timeout', ($timeout)
                 //
                 if (copyFromFiles.length) {
                     const ids = copyFromFiles.map(c => c.fileId);
-                    await workspaceService.copyAllFromIds(ids, currentFolder)
+                    await workspaceService.copyAllFromIds(ids, selectedFolder)
                 }
                 //
                 if (moveFromFiles.length) {
                     const ids = moveFromFiles.map(c => c.fileId);
-                    await workspaceService.moveAllFromIds(ids, currentFolder)
+                    await workspaceService.moveAllFromIds(ids, selectedFolder)
                 }
                 //
                 if (createFromBlob.length) {
@@ -302,14 +305,14 @@ export const folderPicker = ng.directive('folderPicker', ['$timeout', ($timeout)
                         if (blob.title) {
                             c.name = blob.title
                         }
-                        return workspaceService.createDocument(blob.content, c, currentFolder)
+                        return workspaceService.createDocument(blob.content, c, selectedFolder)
                     })
                     await Promise.all(promises)
                 }
                 //
                 setState("loaded")
                 $timeout(() => {
-                    scope.folderProps.onSubmitSuccess(currentFolder, count);
+                    scope.folderProps.onSubmitSuccess(selectedFolder, count);
                 }, 1000)
             }
             //
