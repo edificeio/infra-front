@@ -101,6 +101,7 @@ export class Document extends workspaceModel.Element {
     async loadProperties() {
         const response = await http.get(`/workspace/document/properties/${this._id}`);
         var dotSplit = response.data.name.split('.');
+        this.metadata = this.metadata || {};
         this.metadata.extension = dotSplit[dotSplit.length - 1];
         if (dotSplit.length > 1) {
             dotSplit.length = dotSplit.length - 1;
