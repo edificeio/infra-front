@@ -115,6 +115,7 @@ export class Element extends Model implements Node, Shareable, Selectable {
         this.version = parseInt("" + (Math.random() * 100));
         this.revisions = [];
         this.fromJSON(data);
+        this.rights = new Rights(this);
     }
     fromJSON(data) {
         if (!data) {
