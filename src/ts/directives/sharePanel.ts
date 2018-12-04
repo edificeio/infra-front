@@ -80,11 +80,11 @@ export const sharePanel = ng.directive('sharePanel', ['$rootScope', ($rootScope)
         scope: {
             resources: '=',
             appPrefix: '=',
-            onCancel: '&',
-            onSubmit: '&',
-            onValidate: '&',
-            closeDelegate: '&',
-            canEditDelegate: '&',
+            onCancel: '&?',
+            onSubmit: '&?',
+            onValidate: '&?',
+            closeDelegate: '&?',
+            canEditDelegate: '&?',
             autoClose: '='
         },
         restrict: 'E',
@@ -135,8 +135,8 @@ export const sharePanel = ng.directive('sharePanel', ['$rootScope', ($rootScope)
                 changed: false
             } as any;
             $scope.canEdit = function (item) {
-                if ($scope.canEditDelegate) {
-                    return $scope.canEditDelegate({ $item: item })
+                if ($attributes.canEditDelegate) {
+                    return $scope.canEditDelegate({ $item: item });
                 }
                 return true;
             }
@@ -566,7 +566,7 @@ export const sharePanel = ng.directive('sharePanel', ['$rootScope', ($rootScope)
                             data['users'] = users;
                         }
                     }
-                    if ($scope.onValidate) {
+                    if ($attributes.onValidate) {
                         try {
                             await $scope.onValidate({ '$data': data, '$resource': resource, '$actions': $scope.actions })
                         } catch (e) {
@@ -590,7 +590,7 @@ export const sharePanel = ng.directive('sharePanel', ['$rootScope', ($rootScope)
                 if ($scope.autoClose) {
                     await $scope.closePanel(false);
                 }
-                $scope.onSubmit && $scope.onSubmit({ shared: data })
+                $attributes.onSubmit && $scope.onSubmit({ shared: data })
             }
 
             $scope.createSharebookmark = function (newSharebookmarkName) {
@@ -643,13 +643,13 @@ export const sharePanel = ng.directive('sharePanel', ['$rootScope', ($rootScope)
                 $scope.$apply();
             }
             $scope.closePanel = async function (cancelled = true) {
-                if ($scope.closeDelegate) {
+                if ($attributes.closeDelegate) {
                     $scope.closeDelegate({ "$canceled": cancelled, "$close": doClose })
                 } else {
                     await doClose()
                 }
                 if (cancelled) {
-                    $scope.onCancel && $scope.onCancel();
+                    $attributes.onCancel && $scope.onCancel();
                 }
             }
 
