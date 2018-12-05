@@ -13,6 +13,7 @@ export interface ElementQuery {
     filter: workspaceModel.TREE_NAME,
     search?: string
     includeall?: boolean
+    ancestorId?: string
 }
 
 export interface WorkspaceEvent {
