@@ -4,6 +4,7 @@ import { FolderTreeProps } from './folderTree';
 import { workspace, Document } from "../workspace";
 
 import models = workspace.v2.models;
+import { idiom } from '../idiom';
 const workspaceService = workspace.v2.service;
 
 export interface FolderPickerScope {
@@ -133,10 +134,31 @@ export const folderPicker = ng.directive('folderPicker', ['$timeout', ($timeout)
             if (scope.folderProps.treeProvider) {
                 scope.trees = await scope.folderProps.treeProvider();
             } else {
-                scope.trees = await workspaceService.fetchTrees({
+                const trees = await workspaceService.fetchTrees({
                     filter: "all",
                     hierarchical: true
                 });
+                scope.trees = []
+                for (let tree of trees) {
+                    switch (tree.filter) {
+                        case "owner":
+                            scope.trees[0] = tree;
+                            tree.name = idiom.translate("workspace.myDocuments");
+                            break
+                        case "shared":
+                            scope.trees[1] = tree;
+                            tree.name = idiom.translate("workspace.sharedDocuments");
+                            break
+                        case "protected":
+                            scope.trees[2] = tree;
+                            tree.name = idiom.translate("workspace.appDocuments");
+                            break
+                        case "public":
+                            scope.trees[3] = tree;
+                            tree.name = idiom.translate("workspace.publicDocuments");
+                            break
+                    }
+                }
             }
             const canSelect = function (folder: models.Element) {
                 if ((folder as models.Tree).filter) {
@@ -186,8 +208,8 @@ export const folderPicker = ng.directive('folderPicker', ['$timeout', ($timeout)
                 scope.safeApply();
             }
             //
-            let selectedFolder = null;
-            let openedFolder = null;
+            let selectedFolder: models.Element = null;
+            let openedFolder: models.Element = null;
             scope.treeProps = {
                 cssTree: "maxheight-half-vh",
                 get trees() {
@@ -210,7 +232,7 @@ export const folderPicker = ng.directive('folderPicker', ['$timeout', ($timeout)
                 openFolder(folder) {
                     if (canSelect(folder)) {
                         openedFolder = selectedFolder = folder;
-                    }else{
+                    } else {
                         openedFolder = folder;
                     }
                 }
@@ -239,9 +261,12 @@ export const folderPicker = ng.directive('folderPicker', ['$timeout', ($timeout)
                 return editing;
             }
             scope.submitNewFolder = async function () {
-                await workspaceService.createFolder(scope.newFolder, selectedFolder);
+                const created = await workspaceService.createFolder(scope.newFolder, selectedFolder);
                 editing = false;
-                selectedFolder = scope.newFolder;
+                if (created instanceof models.Element) {
+                    selectedFolder.children.push(created)
+                    selectedFolder = scope.newFolder;
+                }
                 scope.newFolder = models.emptyFolder();
                 scope.safeApply();
             }
@@ -263,6 +288,7 @@ export const folderPicker = ng.directive('folderPicker', ['$timeout', ($timeout)
             //
             scope.onCancel = function () {
                 scope.folderProps.onCancel()
+                setState("normal");
             }
             scope.cannotSubmit = function () {
                 return !selectedFolder;
@@ -312,6 +338,7 @@ export const folderPicker = ng.directive('folderPicker', ['$timeout', ($timeout)
                 //
                 setState("loaded")
                 $timeout(() => {
+                    setState("normal")
                     scope.folderProps.onSubmitSuccess(selectedFolder, count);
                 }, 1000)
             }
