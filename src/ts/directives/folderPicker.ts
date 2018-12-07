@@ -5,6 +5,8 @@ import { workspace, Document } from "../workspace";
 
 import models = workspace.v2.models;
 import { idiom } from '../idiom';
+import { onErrorResumeNext } from 'rxjs/operator/onErrorResumeNext';
+import { notify } from '../notify';
 const workspaceService = workspace.v2.service;
 
 export interface FolderPickerScope {
@@ -30,6 +32,7 @@ export interface FolderPickerScope {
     resetSearch()
     searchKeyUp(event)
     //
+    onError()
     onCancel()
     onSubmit()
     cannotSubmit(): boolean
@@ -57,6 +60,7 @@ export interface FolderPickerProps {
     manageSubmit?(folder: models.Element): boolean;
     submit?(folder: models.Element);
     onCancel()
+    onError?(error)
     onSubmitSuccess(dest: models.Element, count: number)
 }
 export const folderPicker = ng.directive('folderPicker', ['$timeout', ($timeout) => {
@@ -307,40 +311,52 @@ export const folderPicker = ng.directive('folderPicker', ['$timeout', ($timeout)
                     scope.folderProps.submit(selectedFolder)
                     return;
                 }
-                //
-                setState("loading")
-                //
-                const count = scope.folderProps.sources.length;
-                const copyFromFiles: FolderPickerSourceFile[] = scope.folderProps.sources.filter(f => f.action == "copy-from-file") as any;
-                const moveFromFiles: FolderPickerSourceFile[] = scope.folderProps.sources.filter(f => f.action == "move-from-file") as any;
-                const createFromBlob: FolderPickerSourceBlob[] = scope.folderProps.sources.filter(f => f.action == "create-from-blob") as any;
-                //
-                if (copyFromFiles.length) {
-                    const ids = copyFromFiles.map(c => c.fileId);
-                    await workspaceService.copyAllFromIds(ids, selectedFolder)
-                }
-                //
-                if (moveFromFiles.length) {
-                    const ids = moveFromFiles.map(c => c.fileId);
-                    await workspaceService.moveAllFromIds(ids, selectedFolder)
-                }
-                //
-                if (createFromBlob.length) {
-                    const promises = createFromBlob.map(blob => {
-                        const c = new Document()
-                        if (blob.title) {
-                            c.name = blob.title
+                try {
+                    //
+                    setState("loading")
+                    //
+                    const count = scope.folderProps.sources.length;
+                    const copyFromFiles: FolderPickerSourceFile[] = scope.folderProps.sources.filter(f => f.action == "copy-from-file") as any;
+                    const moveFromFiles: FolderPickerSourceFile[] = scope.folderProps.sources.filter(f => f.action == "move-from-file") as any;
+                    const createFromBlob: FolderPickerSourceBlob[] = scope.folderProps.sources.filter(f => f.action == "create-from-blob") as any;
+                    //
+                    if (copyFromFiles.length) {
+                        const ids = copyFromFiles.map(c => c.fileId);
+                        await workspaceService.copyAllFromIds(ids, selectedFolder)
+                    }
+                    //
+                    if (moveFromFiles.length) {
+                        const ids = moveFromFiles.map(c => c.fileId);
+                        await workspaceService.moveAllFromIds(ids, selectedFolder)
+                    }
+                    //
+                    if (createFromBlob.length) {
+                        const promises = createFromBlob.map(blob => {
+                            const c = new Document()
+                            if (blob.title) {
+                                c.name = blob.title
+                            }
+                            return workspaceService.createDocument(blob.content, c, selectedFolder)
+                        })
+                        await Promise.all(promises)
+                    }
+                    //
+                    setState("loaded")
+                    $timeout(() => {
+                        setState("normal")
+                        scope.folderProps.onSubmitSuccess(selectedFolder, count);
+                    }, 1000)
+                } catch (e) {
+                    console.error(e)
+                    let eJson = e.responseJSON;
+                    if(eJson){
+                        let errText = idiom.translate(eJson.error);
+                        if (errText != eJson.error) {
+                            notify.error(errText);
                         }
-                        return workspaceService.createDocument(blob.content, c, selectedFolder)
-                    })
-                    await Promise.all(promises)
+                    }
+                    scope.folderProps.onError && scope.folderProps.onError(eJson);
                 }
-                //
-                setState("loaded")
-                $timeout(() => {
-                    setState("normal")
-                    scope.folderProps.onSubmitSuccess(selectedFolder, count);
-                }, 1000)
             }
             //
             scope.safeApply();
