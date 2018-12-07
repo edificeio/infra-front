@@ -2,7 +2,7 @@ import editor from '../po/editor.po';
 import { openNewBlogPostPage, setWideScreen } from './spec-helper';
 
 describe('editor justify right', () => {
-    it('should adds a new line when pressing enter on an empty editor', () => {
+    it('should align right the current line when clicking on the justify right button', () => {
         setWideScreen();
         openNewBlogPostPage();
         editor.content.click();

@@ -1,4 +1,4 @@
-import { textNodes } from '../selection';
+import { isParentOfComparedNode, textNodes } from '../selection';
 
 function findBlockParent(node: Node){
     if(node.nodeType === 1 && textNodes.indexOf(node.nodeName) === -1){
@@ -14,20 +14,22 @@ function findBlockParent(node: Node){
         
     }
     if(node.nodeType !== 1 || textNodes.indexOf(node.nodeName) !== -1){
-        return findBlockParent(node.parentElement);
+        return findBlockParent(node.parentNode);
     }
 }
 
-function selectBlockParent(){
-    const sel = document.getSelection();
-    const range = sel.getRangeAt(0);
+export function selectBlockParentPure(range: Range): Range {
     let ancestor = range.commonAncestorContainer;
     let started = false;
     const newRange = document.createRange();
     ancestor = findBlockParent(ancestor);
     for(let i = 0; i < ancestor.childNodes.length; i++){
         const blockParent = findBlockParent(ancestor.childNodes[i]);
-        if(ancestor.childNodes[i] === range.startContainer || ancestor.childNodes[i].contains(range.startContainer) || range.startContainer.contains(ancestor.childNodes[i])){
+        const childNodePositionComparedWithRangeStart = ancestor.childNodes[i].compareDocumentPosition(range.startContainer);
+        const rangeStartPositionComparedWithChildNode = range.startContainer.compareDocumentPosition(ancestor.childNodes[i]);
+        if(ancestor.childNodes[i] === range.startContainer
+            || isParentOfComparedNode(childNodePositionComparedWithRangeStart)
+            || isParentOfComparedNode(rangeStartPositionComparedWithChildNode)) {
             started = true;
             newRange.setStart(blockParent, 0);
         }
@@ -36,13 +38,23 @@ function selectBlockParent(){
             continue;
         }
 
-        if(ancestor.childNodes[i] === range.endContainer || ancestor.childNodes[i].contains(range.endContainer) || range.endContainer.contains(ancestor.childNodes[i])){
+        const childNodePositionComparedWithRangeEnd = ancestor.childNodes[i].compareDocumentPosition(range.endContainer);
+        const rangeEndPositionComparedWithChildNode = range.endContainer.compareDocumentPosition(ancestor.childNodes[i]);
+        if(ancestor.childNodes[i] === range.startContainer
+            || isParentOfComparedNode(childNodePositionComparedWithRangeEnd)
+            || isParentOfComparedNode(rangeEndPositionComparedWithChildNode)) {
             newRange.setEnd(blockParent, blockParent.childNodes.length);
         }
     }
-    
-    sel.removeAllRanges();
-    sel.addRange(newRange);
+    return newRange;
+}
+
+function selectBlockParent() {
+    const selection = document.getSelection();
+    const range = selection.getRangeAt(0);
+    const newRange = selectBlockParentPure(range);
+    selection.removeAllRanges();
+    selection.addRange(newRange);
 }
 
 function beforeJustify(instance){
@@ -55,7 +67,7 @@ function afterJustify(instance){
     instance.editZone.find('mathjax').each(function(index, item){
         var scope = angular.element(item).scope();
         scope.updateFormula(scope.formula)
-    })
+    });
     instance.editZone.find('mathjax').attr('contenteditable', 'false');
 
     instance.trigger('justify-changed');
