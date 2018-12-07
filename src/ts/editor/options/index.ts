@@ -3,7 +3,7 @@ export * from './redo';
 export * from './bold';
 export * from './italic';
 export * from './underline';
-export * from './justify';
+export { justifyFull, justifyCenter, justifyLeft, justifyRight } from './justify';
 export * from './list';
 export * from './color';
 export * from './font';
