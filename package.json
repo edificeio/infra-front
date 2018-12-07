@@ -45,14 +45,14 @@
     "mathjax": "2.7.5",
     "rimraf": "2.6.2",
     "ts-node": "7.0.1",
-    "wdio-browserstack-service": "0.1.16",
-    "wdio-jasmine-framework": "0.3.6",
-    "webdriverio": "4.13.0"
+    "wdio-browserstack-service": "0.1.18",
+    "wdio-jasmine-framework": "0.3.8",
+    "webdriverio": "4.14.1"
   },
   "scripts": {
     "test": "karma start",
     "test:compatibility": "karma start karma-compatibility.conf.js",
-    "test:selenium": "npx wdio"
+    "test:end-to-end": "npx wdio"
   },
   "repository": {
     "type": "git",

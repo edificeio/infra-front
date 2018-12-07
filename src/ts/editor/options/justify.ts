@@ -1,4 +1,3 @@
-import { $ } from '../../libs/jquery/jquery';
 import { textNodes } from '../selection';
 
 function findBlockParent(node: Node){
