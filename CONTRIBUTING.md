@@ -20,10 +20,12 @@ npm run test:compatibility
 npm run test:compatibility -- --browsers=bs_ie_11_windows10
 ```
 
-## Running ui tests
+## Running end-to-end tests
 
 ```shell
-npm run test:selenium
+# /!\ needs env. variables E2E_USERNAME and E2E_PASSWORD
+# which are the credentials to connect to the entcore platform
+E2E_USERNAME=myUsername E2E_PASSWORD=myPassword npm run test:end-to-end
 ```
 
 

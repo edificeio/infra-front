@@ -271,21 +271,31 @@ function cancelCssOnEveryChildNodes(root: Node, style: any): Node {
 }
 
 function applyCssToRange(root: Node, range: Range, property: string, style: any): Range {
-    if (range.startContainer === range.endContainer && range.startContainer === root) {
-        if (root.nodeType === Node.TEXT_NODE) {
-            const styledTextNode = applyCssToTextNode(root, range.startOffset, range.endOffset, style);
-            range.selectNodeContents(styledTextNode);
-        } else {
-            explodeRangeOnChildNodes(range, root)
-                .map((child) => applyCssToRange(child.node, child.range, property, style))
-                .forEach((childRange, i, arr) => {
-                    if (i === 0) {
-                        range.setStart(childRange.startContainer, childRange.startOffset);
-                    }
-                    if (i === arr.length - 1) {
-                        range.setEnd(childRange.endContainer, childRange.endOffset);
-                    }
-                });
+    if (range.startContainer === range.endContainer &&
+        (range.startContainer === root || isHTMLBlockElement(range.startContainer))) {
+        if (range.startContainer === root) {
+            if (root.nodeType === Node.TEXT_NODE) {
+                const styledTextNode = applyCssToTextNode(root, range.startOffset, range.endOffset, style);
+                range.selectNodeContents(styledTextNode);
+            } else {
+                explodeRangeOnChildNodes(range, root)
+                    .map((child) => applyCssToRange(child.node, child.range, property, style))
+                    .forEach((childRange, i, arr) => {
+                        if (i === 0) {
+                            range.setStart(childRange.startContainer, childRange.startOffset);
+                        }
+                        if (i === arr.length - 1) {
+                            range.setEnd(childRange.endContainer, childRange.endOffset);
+                        }
+                    });
+            }
+        } else if (isHTMLElement(range.startContainer) && isHTMLBlockElement(range.startContainer)) {
+            css(range.startContainer, style);
+            const firstTextNode = findFirstChildTextNode(range.startContainer);
+            const latestTextNode = findLatestChildTextNode(range.startContainer);
+            range.setStart(firstTextNode, 0);
+            range.setStart(latestTextNode, latestTextNode.textContent.length);
+            range.selectNodeContents(range.startContainer);
         }
     } else {
         let styledNode = findStyledParentNode(range.commonAncestorContainer, property);
@@ -370,7 +380,7 @@ export const Selection = function(data){
             !that.editZone.find(range.endContainer.parentNode).length && range.endContainer.parentNode !== that.editZone[0]) {
             return;
         }
-        
+
         if(range.startContainer === range.endContainer){
             if(range.startContainer.childNodes.length){
                 for(var i = range.startOffset; i <= range.endOffset; i++){
@@ -390,7 +400,7 @@ export const Selection = function(data){
             if (range.startOffset < range.startContainer.textContent.length) {
                 selector.push(range.startContainer);
             }
-            
+
             that.editZone.find('*').each(function (index, item) {
                 if (((range.intersectsNode && range.intersectsNode(item)) || (!range.intersectsNode && $(range.commonAncestorContainer).find(item).length > 0))
                     && item !== range.startContainer.parentNode
@@ -417,10 +427,10 @@ export const Selection = function(data){
         }
         var range = sel.getRangeAt(0);
 
-        var same = this.range && 
-        this.range.startContainer === range.startContainer && 
-        this.range.startOffset === range.startOffset && 
-        this.range.endContainer === range.endContainer && 
+        var same = this.range &&
+        this.range.startContainer === range.startContainer &&
+        this.range.startOffset === range.startOffset &&
+        this.range.endContainer === range.endContainer &&
         range.endOffset === this.range.endOffset &&
         sel.rangeCount === this.rangeCount;
         same = same || (this.editZone.find(range.startContainer).length === 0 && this.editZone[0] !== range.startContainer);
@@ -446,7 +456,7 @@ export const Selection = function(data){
         var range = document.createRange();
         range.setStart(element.firstChild || element, offset);
         this.range = range;
-        
+
         var sel = getSelection();
         this.rangeCount = sel.rangeCount;
         this.selectedElements = [];
@@ -488,7 +498,7 @@ export const Selection = function(data){
         var commonAncestor = that.range.commonAncestorContainer;
         var startOffset = that.range.startOffset;
         var endOffset = that.range.endOffset;
-        
+
         var elementAtCaret = commonAncestor;
         if (
             elementAtCaret.nodeType === 1
@@ -518,7 +528,7 @@ export const Selection = function(data){
                     else{
                         $(newEl).text(elementAtCaret.textContent);
                     }
-                    
+
                     elementAtCaret.parentNode.insertBefore(newEl, elementAtCaret);
                     elementAtCaret.parentNode.removeChild(elementAtCaret);
                     elementAtCaret = newEl;
@@ -617,8 +627,8 @@ export const Selection = function(data){
             this.range = sel.getRangeAt(0);
         }
 
-        return (this.rangeCount === 1 || this.rangeCount === 0) && 
-        this.range.startContainer === this.range.endContainer && 
+        return (this.rangeCount === 1 || this.rangeCount === 0) &&
+        this.range.startContainer === this.range.endContainer &&
         this.range.startOffset === this.range.endOffset;
     }
 
@@ -638,7 +648,7 @@ export const Selection = function(data){
                 node.parentNode.insertBefore(nextText, node.nextSibling);
             }
             el.append(textNode);
-            
+
             node.textContent = node.textContent.substring(0, start);
         }
 
@@ -654,7 +664,7 @@ export const Selection = function(data){
 
         for(let i = 0; i < nodes.length; i++){
             let child = nodes[i];
-            
+
             if(child === this.range.startContainer){
                 foundFirst = true;
                 if(this.range.startOffset === 0){
@@ -674,7 +684,7 @@ export const Selection = function(data){
                     let textNode;
                     if(this.range.startContainer === this.range.endContainer){
                         textNode = document.createTextNode(child.textContent.substring(this.range.startOffset, this.range.endOffset));
-                        
+
                         let nextText = document.createTextNode(child.textContent.substring(this.range.endOffset));
                         child.parentNode.insertBefore(nextText, child.nextSibling);
                         child.textContent = child.textContent.substring(0, this.range.startOffset);
@@ -685,7 +695,7 @@ export const Selection = function(data){
                     }
                     el.append(textNode);
                 }
-                
+
                 continue;
             }
 
@@ -739,14 +749,14 @@ export const Selection = function(data){
             this.selectNode(el[0]);
         }
         else if(
-            this.range.startContainer === this.range.commonAncestorContainer && 
+            this.range.startContainer === this.range.commonAncestorContainer &&
             this.range.startContainer === this.range.endContainer &&
             this.range.startContainer.nodeType === 1
         ){
             let container = this.range.startContainer;
             if(this.instance.editZone[0] === this.range.startContainer){
                 let newEl = document.createElement('div');
-                
+
                 while (this.instance.editZone[0].childNodes.length) {
                     $(newEl).append(this.instance.editZone[0].childNodes[0]);
                 }
@@ -758,14 +768,14 @@ export const Selection = function(data){
             }
             container.parentNode.insertBefore(el[0], container);
             el.append(container);
-            
+
         }
         else{
             wrapTextOnNode(el);
             this.range.startContainer.parentNode.insertBefore(el[0], this.range.startContainer.nextSibling);
         }
-            
-        
+
+
         this.instance.trigger('change');
         this.selectNode(el[0]);
     };
