@@ -61,7 +61,7 @@ describe('Selection', () => {
                 expect(applyCss(`<div>test1<span style="vertical-align: sub; font-size: 12px;">↦↤</span>test2</div>`, {
                     verticalAlign: '',
                     fontSize: ''
-                })).toBeStyledAs('<div>test1<span>↦\u200b↤</span>test2</div>')
+                })).toBeStyledAs('<div>test1<span>↦\u200b↤</span>test2</div>');
             });
 
             it(`should apply red to selected subtext nodes and <span></span>
@@ -376,7 +376,6 @@ function applyCssToFirstElementMatching(content: string, selector: string, prope
     (selection as any).css(properties);
     return editZoneElement;
 }
-
 
 function getCss(content: string, property: string): string {
     const {editZoneElement, mockSelection} = toHtmlAndSelection(content);
