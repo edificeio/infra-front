@@ -1,7 +1,9 @@
 import {
     findClosestHTMLElement,
-    hasStyleProperty, isBeforeComparedNode,
-    isHTMLBlockElement, isRangeMisplacedInList,
+    hasStyleProperty,
+    isBeforeComparedNode,
+    isHTMLBlockElement,
+    isRangeMisplacedInList,
     Selection as RTESelection
 } from "./selection";
 import { $ } from "../libs";
@@ -36,6 +38,12 @@ describe('Selection', () => {
                     .toBeStyledAs('<div><span style="color: blue;">↦test↤</span></div>');
             });
 
+            it(`should apply align right to the <div></div>
+                when apply align right to a block element`, () => {
+                expect(applyCssToFirstElementMatching(`<div><span>test</span></div>`, 'div', {'text-align': 'right'}))
+                    .toBeStyledAs('<div style="text-align: right;"><span>↦test↤</span></div>');
+            });
+
             it(`should adds a red <span></span>
                 when editZone is a textnode and given {color: red}`, () => {
                 expect(applyCss(`test1↦↤`, {color: 'red'}))
@@ -53,10 +61,8 @@ describe('Selection', () => {
                 expect(applyCss(`<div>test1<span style="vertical-align: sub; font-size: 12px;">↦↤</span>test2</div>`, {
                     verticalAlign: '',
                     fontSize: ''
-                }))
-                    .toBeStyledAs('<div>test1<span>↦\u200b↤</span>test2</div>')
+                })).toBeStyledAs('<div>test1<span>↦\u200b↤</span>test2</div>')
             });
-
 
             it(`should apply red to selected subtext nodes and <span></span>
                 when given {color: red}`, () => {
@@ -350,6 +356,27 @@ function applyCssToEditZone(content: string, properties: { [property: string]: a
     (selection as any).css(properties);
     return editZoneElement;
 }
+
+function applyCssToFirstElementMatching(content: string, selector: string, properties: { [property: string]: any }): Node {
+    const editZoneElement = document.createElement('div');
+    editZoneElement.innerHTML = content;
+
+    const range = document.createRange();
+    const targetedElement = editZoneElement.querySelector(selector);
+    range.setStart(targetedElement, 0);
+    range.setEnd(targetedElement, targetedElement.childNodes.length);
+    const mockSelection = new MockSelection();
+    mockSelection.addRange(range);
+
+    spyOn(window, 'getSelection');
+    (window.getSelection as jasmine.Spy).and.returnValue(mockSelection);
+    const instance = jasmine.createSpyObj('Instance', ['addState', 'on', 'trigger']);
+    const editZone = $(editZoneElement);
+    const selection = new SelectionBuilder(editZone, instance).value();
+    (selection as any).css(properties);
+    return editZoneElement;
+}
+
 
 function getCss(content: string, property: string): string {
     const {editZoneElement, mockSelection} = toHtmlAndSelection(content);
