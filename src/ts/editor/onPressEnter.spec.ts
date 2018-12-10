@@ -57,7 +57,7 @@ describe('onPressEnter', () => {
             .toBeEditedAs('<div>&#8203;</div><div>‸test1<span style="color: red;">test2</span></div>');
     });
 
-    it(`should adds a &#8203; in the textNode and adds a new line
+    it(`should add a &#8203; in the textNode and adds a new line
             when pressing enter in a tag without text`, () => {
         expect(pressEnter('<div><span>test1</span>↵<span>test2</span></div>', selection))
             .toBeEditedAs('<div><span>test1</span></div><div>&#8203;‸<span>test2</span></div>');
@@ -106,19 +106,19 @@ describe('onPressEnter', () => {
             .toBeEditedAs('<div class="my-class">test</div><div>&#8203;‸</div>');
     });
 
-    it(`should adds a ZWS character in the empty line
+    it(`should add a ZWS character in the empty line
             when pressing enter at the start of a line`, () => {
         expect(pressEnter('<div><span style="color: red;">↵test</span></div>', selection))
             .toBeEditedAs('<div><span style="color: red;">&#8203;</span></div><div><span style="color: red;">‸test</span></div>')
     });
 
-    it(`should adds a new empty <div></div>
+    it(`should add a new empty <div></div>
             when pressing enter at the end of a text with a <br> inside`, () => {
         expect(pressEnter('<div><span style="color: red;">test<br>↵</span></div>', selection))
             .toBeEditedAs('<div><span style="color: red;">test<br></span></div><div><span style="color: red;">&#8203;‸</span></div>')
     });
 
-    it(`should adds a <div></div> with the remaining text
+    it(`should add a <div></div> with the remaining text
             when pressing enter in a text with a <br> inside`, () => {
         expect(pressEnter('<div><span style="color: red;">test<br>te↵st</span></div>', selection))
             .toBeEditedAs('<div><span style="color: red;">test<br>te</span></div><div><span style="color: red;">‸st</span></div>')
