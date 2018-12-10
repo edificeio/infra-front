@@ -1,22 +1,31 @@
 import { $ } from './libs/jquery/jquery';
-import { Behaviours } from './behaviours';
 import { idiom as lang } from './idiom';
-import { MediaLibrary, Document } from './workspace';
+import { Document } from './workspace';
 import { ui } from './ui';
 import { model } from './modelDefinitions';
 import { http } from './http';
-import { _ } from './libs/underscore/underscore';
-import { appPrefix } from './globals';
 import { notify } from './notify';
-import { skin } from './skin';
-import { Selection, textNodes, formatNodes } from './editor/selection';
+import { Selection, textNodes } from './editor/selection';
 import * as editorOptions from './editor/options';
-import { workflow } from './directives/workflow';
 import { onPressEnter } from './editor/onPressEnter';
 import { onDropFromDesktop } from './editor/onDropFromDesktop';
 import { onPressDelete } from "./editor/onPressDelete";
 
 declare let Prism: any;
+
+const whitelistedProperties = [
+    'background-color',
+    'color',
+    'font-family',
+    'font-size',
+    'font-style',
+    'font-weight',
+    'line-height',
+    'text-align',
+    'text-decoration',
+    'vertical-align'
+];
+const whitelistedClasses = ['audio-wrapper', 'smiley'];
 
 function removeNodes(selector: string, root: HTMLElement): HTMLElement {
     const nodesToRemove = root.querySelectorAll(selector);
@@ -26,10 +35,38 @@ function removeNodes(selector: string, root: HTMLElement): HTMLElement {
     return root;
 }
 
-function removeAttribute(attribute: string, root: HTMLElement): HTMLElement {
-    const nodesWithAttribute = root.querySelectorAll(`[${attribute}]`);
-    for (let i = nodesWithAttribute.length - 1; i >= 0; i--) {
-        nodesWithAttribute.item(i).removeAttribute(attribute);
+function removeUnauthorizedClasses(root: HTMLElement): HTMLElement {
+    const nodesWithClasses = root.querySelectorAll('[class]');
+    for (let i = nodesWithClasses.length - 1; i >= 0; i--) {
+        const element = (nodesWithClasses.item(i) as HTMLElement);
+        const classes = [];
+        whitelistedClasses.forEach(whitelistedClass => {
+            if ($(element).hasClass(whitelistedClass)) {
+                classes.push(whitelistedClass);
+            }
+        });
+        element.removeAttribute('class');
+        if (classes.length > 0) {
+            element.className = classes.join(' ');
+        }
+    }
+    return root;
+}
+
+function removeUnauthorizedStyleProperties(root: HTMLElement): HTMLElement {
+    const nodesWithStyle = root.querySelectorAll('[style]');
+    for (let i = nodesWithStyle.length - 1; i >= 0; i--) {
+        const element = (nodesWithStyle.item(i) as HTMLElement);
+        const styles: { [property: string]: { value: any, priority: any } } = {};
+        whitelistedProperties.forEach(property => {
+            const value = element.style.getPropertyValue(property);
+            const priority = element.style.getPropertyPriority(property);
+            styles[property] = {priority, value};
+        });
+        element.removeAttribute('style');
+        whitelistedProperties
+            .forEach(property => element.style
+                .setProperty(property, styles[property].value, styles[property].priority));
     }
     return root;
 }
@@ -78,8 +115,8 @@ export function convertToEditorFormat(html: string): string {
     container.innerHTML = html;
     removeNodes('xml, title, meta, style', container);
 
-    removeAttribute('class', container);
-    removeAttribute('style', container);
+    removeUnauthorizedClasses(container);
+    removeUnauthorizedStyleProperties(container);
 
     convertNode('b', 'span', {'font-weight': 'bold'}, container);
     convertNode('i', 'span', {'font-style': 'italic'}, container);
