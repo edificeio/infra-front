@@ -20,7 +20,7 @@ describe('Selection', () => {
                     .toBeStyledAs('<div><span style="color: red;">↦\u200b↤</span></div>');
             });
 
-            it(`should adds color red to <span></span>
+            it(`should add color red to <span></span>
                 when editZone contains a <span></span> and given {color: red}`, () => {
                 expect(applyCss(`<span>↦test↤</span>`, {color: 'red'}))
                     .toBeStyledAs('<span style="color: red;">↦test↤</span>');
@@ -44,13 +44,13 @@ describe('Selection', () => {
                     .toBeStyledAs('<div style="text-align: right;"><span>↦test↤</span></div>');
             });
 
-            it(`should adds a red <span></span>
+            it(`should add a red <span></span>
                 when editZone is a textnode and given {color: red}`, () => {
                 expect(applyCss(`test1↦↤`, {color: 'red'}))
                     .toBeStyledAs('test1<span style="color: red;">↦\u200b↤</span>');
             });
 
-            it(`should adds a red <span></span>
+            it(`should add a red <span></span>
                 when editZone is <div> with text nodes and given {color: red}`, () => {
                 expect(applyCss(`<div>test1↦test2↤test3</div>`, {color: 'red'}))
                     .toBeStyledAs('<div>test1<span style="color: red;">↦test2↤</span>test3</div>');
