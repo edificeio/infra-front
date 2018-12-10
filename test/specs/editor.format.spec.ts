@@ -2,7 +2,7 @@ import { openNewBlogPostPage, setWideScreen } from './spec-helper';
 import editor from '../po/editor.po';
 
 describe('editor press enter in a formatted line', () => {
-    it('should add a new line with a <div></div> when pressing enter', () => {
+    it('should add a new line with an unformatted <div></div> when pressing enter', () => {
         setWideScreen();
         openNewBlogPostPage();
         editor.content.click();
