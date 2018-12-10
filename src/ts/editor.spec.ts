@@ -1,4 +1,4 @@
-import { convertToEditorFormat } from "./editor";
+import { convertToEditorFormat } from './editor';
 
 describe('convertToEditorFormat', () => {
     it('should remove any <style></style> nodes', () => {
@@ -26,9 +26,14 @@ describe('convertToEditorFormat', () => {
             .toBe('<ul><li>test1<span style="font-weight: bold;">test2</span>test3</li></ul>');
     });
 
-    it('should remove style attribute from all styled nodes', () => {
-        expect(convertToEditorFormat('<ul style="margin: 1px;"><li>test1</li></ul><div style="margin: 2px;">test2</div>'))
-            .toBe('<ul><li>test1</li></ul><div>test2</div>');
+    it('should keep style attribute but remove not whitelisted properties from all styled nodes', () => {
+        expect(convertToEditorFormat('<ul style="margin: 1px;"><li>test1</li></ul><div style="text-align: right;">test2</div>'))
+            .toBe('<ul><li>test1</li></ul><div style="text-align: right;">test2</div>');
+    });
+
+    it('should remove unauthorized classes from nodes', () => {
+        expect(convertToEditorFormat('<ul class="unauthorized"><li>test1</li></ul><div class="smiley">test2</div>'))
+            .toBe('<ul><li>test1</li></ul><div class="smiley">test2</div>');
     });
 
     it('should remove class attribute from all classed nodes', () => {
