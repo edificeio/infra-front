@@ -82,6 +82,7 @@ export enum DocumentStatus {
 }
 
 export class Document extends workspaceModel.Element {
+    isNew: boolean = false;
     async delete() {
         await workspaceService.deleteAll([this]);
     }
@@ -137,6 +138,7 @@ export class Document extends workspaceModel.Element {
     }
 
     upload(file: File | Blob, visibility?: 'public' | 'protected' | 'owner', application = "media-library", parent?: workspaceModel.Element): Promise<workspaceModel.Element> {
+        this.isNew = true;
         visibility = (visibility === "public" || visibility === "protected") ? visibility : null
         return workspaceService.createDocument(file, this, parent, { visibility, application });
     }
