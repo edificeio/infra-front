@@ -5,8 +5,8 @@ import {
     isHTMLBlockElement,
     isRangeMisplacedInList,
     Selection as RTESelection
-} from "./selection";
-import { $ } from "../libs";
+} from './selection';
+import { $ } from '../libs';
 
 
 describe('Selection', () => {
@@ -179,7 +179,7 @@ describe('findClosestHTMLElement', () => {
 });
 
 describe('isHTMLBlockElement', () => {
-    const blocks = ['li', 'div', 'p'];
+    const blocks = ['li', 'div', 'p', 'h1'];
 
     for (let block of blocks) {
         it(`should return true when '${block}'`, () => {
@@ -188,10 +188,10 @@ describe('isHTMLBlockElement', () => {
         });
     }
 
-    const texts = ['a', 'span', 'em'];
+    const texts = ['a', 'span', 'em', 'img'];
 
     for (let text of texts) {
-        it(`should return true when '${text}'`, () => {
+        it(`should return false when '${text}'`, () => {
             const element = document.createElement(text);
             expect(isHTMLBlockElement(element)).toBe(false);
         });

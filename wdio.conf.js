@@ -1,6 +1,16 @@
 const browsers = require('./browsers');
 
-const capabilities = browsers.map(browser => Object.assign({}, {browserName: browser.browser.toLowerCase()}, browser));
+let capabilities = [{"browserName": "chrome"}, {"browserName": "firefox"}];
+
+let services = ['selenium-standalone'];
+let user;
+let key;
+if (process.env.BROWSERSTACK === 'true') {
+    services = ['browserstack'];
+    user = process.env.BROWSERSTACK_USERNAME;
+    key = process.env.BROWSERSTACK_ACCESSKEY;
+    capabilities = browsers.map(browser => Object.assign({}, {browserName: browser.browser.toLowerCase()}, browser));
+}
 
 exports.config = {
     specs: [
@@ -17,9 +27,9 @@ exports.config = {
     waitforTimeout: 20000,
     connectionRetryTimeout: 90000,
     connectionRetryCount: 3,
-    services: ['browserstack'],
-    user: process.env.BROWSERSTACK_USERNAME,
-    key: process.env.BROWSERSTACK_ACCESSKEY,
+    services,
+    user,
+    key,
     browserstackLocal: true,
     framework: 'jasmine',
     jasmineNodeOpts: {
