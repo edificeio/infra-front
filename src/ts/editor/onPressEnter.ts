@@ -36,10 +36,10 @@ function cloneNode(node: Node): Node {
     return clone;
 }
 
-function cloneChildren(dest: Node, src: Node) {
-    let child = src.firstChild;
+function cloneChildren(destinationNode: Node, sourceNode: Node) {
+    let child = sourceNode.firstChild;
     while (child) {
-        dest.appendChild(cloneNode(child));
+        destinationNode.appendChild(cloneNode(child));
         child = child.nextSibling;
     }
 }
@@ -182,8 +182,8 @@ export function onPressEnter(e, range, editorInstance, editZone, textNodes) {
     // remove everything before range end
     currentNode = newLineBlockContainer;
     while (path.length) {
-        const pos = path.pop();
-        for (let i = 0; i < pos; i++) {
+        const nodeIndex = path.pop();
+        for (let i = 0; i < nodeIndex; i++) {
             currentNode.removeChild(currentNode.firstChild);
         }
         currentNode = currentNode.firstChild;
