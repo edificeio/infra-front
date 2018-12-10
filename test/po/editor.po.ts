@@ -1,8 +1,13 @@
 export class ToolbarPo {
     private justifyRightSelector = `.option.justify-right`;
+    private formatSelector = `.option.format`;
 
     get justifyRight(): WebdriverIO.Client<WebdriverIO.Element> {
         return browser.element<WebdriverIO.Element>(this.justifyRightSelector);
+    }
+
+    get format(): WebdriverIO.Client<WebdriverIO.Element> {
+        return browser.element<WebdriverIO.Element>(this.formatSelector);
     }
 }
 
