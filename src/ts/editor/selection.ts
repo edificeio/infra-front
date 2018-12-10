@@ -2,6 +2,8 @@ import { $ } from '../libs/jquery/jquery';
 
 export const textNodes = ['SPAN', 'A', 'STRONG', 'EM', 'B', 'I', 'I18N'];
 export const formatNodes = ['P', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6'];
+const blockNodes = ['DIV', 'UL', 'OL', 'LI'];
+blockNodes.push(...formatNodes);
 
 // Cross-compatible cloneNode, issue fixed:
 // - ie11's cloneNode remove empty textNode and merge sibling textNodes
@@ -86,7 +88,7 @@ export function findClosestHTMLElement(node: Node): HTMLElement {
 }
 
 export function isHTMLBlockElement(node: Node): boolean {
-    return node && isHTMLElement(node) && (textNodes.indexOf(node.nodeName) === -1);
+    return node && isHTMLElement(node) && (blockNodes.indexOf(node.nodeName) >= 0);
 }
 
 export function hasStyleProperty(node: HTMLElement, styleProperty: string): boolean {

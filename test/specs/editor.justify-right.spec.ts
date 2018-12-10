@@ -7,6 +7,7 @@ describe('editor justify right', () => {
         openNewBlogPostPage();
         editor.content.click();
         editor.content.addValue('abc');
+        browser.pause(1000);
         editor.toolbar.justifyRight.click();
         browser.pause(1000);
         expect(editor.content.getHTML(false))
