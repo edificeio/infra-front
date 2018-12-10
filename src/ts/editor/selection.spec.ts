@@ -182,7 +182,7 @@ describe('isHTMLBlockElement', () => {
     const blocks = ['li', 'div', 'p', 'h1'];
 
     for (let block of blocks) {
-        it(`should return true when '${block}'`, () => {
+        it(`should return true when giving a '${block}' element`, () => {
             const element = document.createElement(block);
             expect(isHTMLBlockElement(element)).toBe(true);
         });
@@ -191,7 +191,7 @@ describe('isHTMLBlockElement', () => {
     const texts = ['a', 'span', 'em', 'img'];
 
     for (let text of texts) {
-        it(`should return false when '${text}'`, () => {
+        it(`should return false when giving a '${text}' element`, () => {
             const element = document.createElement(text);
             expect(isHTMLBlockElement(element)).toBe(false);
         });
