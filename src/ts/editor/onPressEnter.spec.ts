@@ -1,6 +1,6 @@
-import { isElementNodeWithName, onPressEnter, toKebabCase } from "./onPressEnter";
-import { textNodes } from "./selection";
-import { $ } from "../libs";
+import { isElementNodeWithName, onPressEnter, toKebabCase } from './onPressEnter';
+import { textNodes } from './selection';
+import { $ } from '../libs';
 
 // in the following spec:
 //      ↵ represents where we are going to press enter
@@ -9,8 +9,8 @@ describe('onPressEnter', () => {
     let selection;
     beforeEach(() => {
         jasmine.addMatchers(customMatchers);
-        spyOn(document, "getSelection");
-        selection = jasmine.createSpyObj("Selection", ["getRangeAt", "removeAllRanges", "addRange"]);
+        spyOn(document, 'getSelection');
+        selection = jasmine.createSpyObj('Selection', ['getRangeAt', 'removeAllRanges', 'addRange']);
         (document.getSelection as jasmine.Spy).and.returnValue(selection);
     });
 
@@ -80,6 +80,30 @@ describe('onPressEnter', () => {
             when pressing enter in a root <span></span>`, () => {
         expect(pressEnter('<span>test↵</span>', selection))
             .toBeEditedAs('<div><span>test</span></div><div><span>&#8203;‸</span></div>');
+    });
+
+    it(`should create a new <div></div> tag
+            when pressing enter in a <p></p> tag`, () => {
+        expect(pressEnter('<p>test↵</p>', selection))
+            .toBeEditedAs('<p>test</p><div>&#8203;‸</div>');
+    });
+
+    it(`should create a new <div></div> tag
+            when pressing enter in a <h1></h1> tag`, () => {
+        expect(pressEnter('<h1>test↵</h1>', selection))
+            .toBeEditedAs('<h1>test</h1><div>&#8203;‸</div>');
+    });
+
+    it(`should create a new <div></div> tag
+            when pressing enter in a <h2></h2> tag`, () => {
+        expect(pressEnter('<h2>test↵</h2>', selection))
+            .toBeEditedAs('<h2>test</h2><div>&#8203;‸</div>');
+    });
+
+    it(`should create a new <div></div> tag without class
+            when pressing enter in a <div class="my-class"></div> tag`, () => {
+        expect(pressEnter('<div class="my-class">test↵</div>', selection))
+            .toBeEditedAs('<div class="my-class">test</div><div>&#8203;‸</div>');
     });
 
     it(`should adds a ZWS character in the empty line

@@ -1,6 +1,8 @@
-import { $ } from "../libs/jquery/jquery";
-import { findFirstChildTextNode } from "./selection";
-import { findClosestBlockElement } from "./onPressDelete";
+import { $ } from '../libs/jquery/jquery';
+import { findFirstChildTextNode } from './selection';
+import { findClosestBlockElement } from './onPressDelete';
+
+const cloneableElements = ['DIV', 'LI'];
 
 function isElementNode(node: Node): node is HTMLElement {
     return node.nodeType === Node.ELEMENT_NODE;
@@ -30,13 +32,16 @@ function setRange(node: Node, offset: number): Range {
 // - ie11's cloneNode remove empty textNode and merge sibling textNodes
 function cloneNode(node: Node): Node {
     const clone = node.nodeType === Node.TEXT_NODE ? document.createTextNode(node.nodeValue) : node.cloneNode(false);
+    cloneChildren(clone, node);
+    return clone;
+}
 
-    let child = node.firstChild;
+function cloneChildren(dest: Node, src: Node) {
+    let child = src.firstChild;
     while (child) {
-        clone.appendChild(cloneNode(child));
+        dest.appendChild(cloneNode(child));
         child = child.nextSibling;
     }
-    return clone;
 }
 
 function findClosestElementNode(node: Node): Node {
@@ -130,7 +135,15 @@ export function onPressEnter(e, range, editorInstance, editZone, textNodes) {
 
     e.preventDefault();
 
-    const clone = cloneNode(blockContainer);
+    let newLineBlockContainer: HTMLElement;
+    if(blockContainer.nodeType === Node.ELEMENT_NODE &&
+        cloneableElements.indexOf((blockContainer as HTMLElement).tagName) >= 0) {
+        newLineBlockContainer = (cloneNode(blockContainer) as HTMLElement);
+    } else {
+        newLineBlockContainer = document.createElement('div');
+        cloneChildren(newLineBlockContainer, blockContainer);
+    }
+    newLineBlockContainer.removeAttribute('class');
     const endOffset = range.endOffset;
 
     // remove everything after range start
@@ -167,7 +180,7 @@ export function onPressEnter(e, range, editorInstance, editZone, textNodes) {
     }
 
     // remove everything before range end
-    currentNode = clone;
+    currentNode = newLineBlockContainer;
     while (path.length) {
         const pos = path.pop();
         for (let i = 0; i < pos; i++) {
@@ -192,7 +205,7 @@ export function onPressEnter(e, range, editorInstance, editZone, textNodes) {
 
     let parentElementNode = currentNode;
     while (parentElementNode = findClosestElementNode(parentElementNode)) {
-        if (isElementNodeWithName(parentElementNode, "A")) {
+        if (isElementNodeWithName(parentElementNode, 'A')) {
             const spanElement = document.createElement('span');
             for (let child of parentElementNode.childNodes) {
                 spanElement.appendChild(child);
@@ -201,7 +214,7 @@ export function onPressEnter(e, range, editorInstance, editZone, textNodes) {
             parentElementNode.parentNode.removeChild(parentElementNode);
         }
     }
-    blockContainer.parentNode.insertBefore(clone, blockContainer.nextSibling);
+    blockContainer.parentNode.insertBefore(newLineBlockContainer, blockContainer.nextSibling);
 
     if (currentNode.nodeType !== Node.TEXT_NODE) {
         let firstTextNode = findFirstChildTextNode(currentNode);
