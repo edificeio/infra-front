@@ -56,7 +56,7 @@ export interface SharePanelScope {
     canEdit(item: { type: string, id: string }): boolean
     closeDelegate?(args: ShareCloseDelegate)
     onCancel?()
-    onSubmit?(args: { shared: SharePayload })
+    onSubmit?(args: { $shared: SharePayload })
     createSharebookmark(name: string)
     typeSort(sort: any)
     closePanel(cancelled: boolean)
@@ -590,7 +590,7 @@ export const sharePanel = ng.directive('sharePanel', ['$rootScope', ($rootScope)
                 if ($scope.autoClose) {
                     await $scope.closePanel(false);
                 }
-                $attributes.onSubmit && $scope.onSubmit({ shared: data })
+                $attributes.onSubmit && $scope.onSubmit({ '$shared': data })
             }
 
             $scope.createSharebookmark = function (newSharebookmarkName) {
