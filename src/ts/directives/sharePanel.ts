@@ -57,6 +57,11 @@ export interface SharePanelScope {
     closeDelegate?(args: ShareCloseDelegate)
     onCancel?()
     onSubmit?(args: { $shared: SharePayload })
+    onFeed?(args: {
+        $data: SharePayload,
+        $resource: ShareableWithId,
+        $actions: ShareAction[]
+    })
     createSharebookmark(name: string)
     typeSort(sort: any)
     closePanel(cancelled: boolean)
@@ -83,6 +88,7 @@ export const sharePanel = ng.directive('sharePanel', ['$rootScope', ($rootScope)
             onCancel: '&?',
             onSubmit: '&?',
             onValidate: '&?',
+            onFeed: '&?',
             closeDelegate: '&?',
             canEditDelegate: '&?',
             autoClose: '='
@@ -92,7 +98,11 @@ export const sharePanel = ng.directive('sharePanel', ['$rootScope', ($rootScope)
         link: function ($scope: SharePanelScope, $element, $attributes) {
             var currentApp = appPrefix;
             var usersCache = {};
-
+            const onFeedEvent = function (data: SharePayload, resource: ShareableWithId, actions: ShareAction[]) {
+                if ($attributes.onFeed) {
+                    $scope.onFeed({ '$data': data, '$resource': resource, '$actions': actions })
+                }
+            }
             $scope.display = {
                 showSaveSharebookmarkInput: false,
                 sharebookmarkSaved: false,
@@ -226,6 +236,7 @@ export const sharePanel = ng.directive('sharePanel', ['$rootScope', ($rootScope)
                 ($scope.resources as ShareableWithId[]).forEach(function (resource) {
                     var id = resource._id;
                     http().get('/' + currentApp + '/share/json/' + id + '?search=').done(function (data) {
+                        onFeedEvent(data, resource, data.actions)
                         if (initModel) {
                             data.users.visibles.map(user => user.type = 'user');
                             data.groups.visibles.map(group => group.type = 'group');
