@@ -349,12 +349,6 @@ export const folderPicker = ng.directive('folderPicker', ['$timeout', ($timeout)
                 } catch (e) {
                     console.error(e)
                     let eJson = e.responseJSON;
-                    if(eJson){
-                        let errText = idiom.translate(eJson.error);
-                        if (errText != eJson.error) {
-                            notify.error(errText);
-                        }
-                    }
                     scope.folderProps.onError && scope.folderProps.onError(eJson);
                 }
             }
