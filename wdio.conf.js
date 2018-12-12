@@ -1,6 +1,8 @@
+const os = require('os');
 const browsers = require('./browsers');
 
-let capabilities = [{"browserName": "chrome"}, {"browserName": "firefox"}];
+let capabilities = os.type() === 'Darwin'?
+    [{"browserName": "safari"}] : [{"browserName": "chrome"}, {"browserName": "firefox"}];
 
 let services = ['selenium-standalone'];
 let user;
@@ -9,7 +11,8 @@ if (process.env.BROWSERSTACK === 'true') {
     services = ['browserstack'];
     user = process.env.BROWSERSTACK_USERNAME;
     key = process.env.BROWSERSTACK_ACCESSKEY;
-    capabilities = browsers.map(browser => Object.assign({}, {browserName: browser.browser.toLowerCase()}, browser));
+    capabilities = browsers
+        .map(browser => Object.assign({}, {browserName: browser.browser.toLowerCase()}, browser));
 }
 
 exports.config = {
