@@ -29,6 +29,9 @@ E2E_USERNAME=myUsername E2E_PASSWORD=myPassword npm run test:end-to-end
 
 # On BrowserStack browsers
 BROWSERSTACK=true E2E_USERNAME=myUsername E2E_PASSWORD=myPassword npm run test:end-to-end
+
+# With a different base URL (default is http://localhost:8090/)
+E2E_BASE_URL=http://my-example.com E2E_USERNAME=myUsername E2E_PASSWORD=myPassword npm run test:end-to-end
 ```
 
 
