@@ -65,11 +65,11 @@ export const color = {
                     applyColor();
                 });
 
-                element.children('input').on('click', function () {
+                element.get(0).addEventListener('click', () => {
                     scope.foreColor = element.children('input').val();
                     scope.$apply('foreColor');
                     applyColor();
-                });
+                }, true);
 
                 function applyColor () {
                     instance.selection.css({'color': scope.foreColor});
@@ -115,11 +115,11 @@ export const backgroundColor = {
                     scope.$apply('backColor');
                     applyBackgroundColor();
                 });
-                element.children('input').on('click', function () {
+                element.get(0).addEventListener('click', () => {
                     scope.backColor = element.children('input').val();
                     scope.$apply('backColor');
                     applyBackgroundColor();
-                });
+                }, true);
 
                 function applyBackgroundColor() {
                     var rgbColor = {} as any;
