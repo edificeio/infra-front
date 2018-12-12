@@ -435,6 +435,15 @@ export const workspaceService = {
         const documents = els.filter(el => workspaceService.isFile(el))
         const folders = els.filter(el => workspaceService.isFolder(el))
         const res = ids.length == 0 ? Promise.resolve(null) : http().postJson(`/workspace/documents/copy/${dest._id || "root"}`, { ids })
+        res.catch(e => {
+            if(e.responseText){
+                const error = JSON.parse(e.responseText);
+                let errText = lang.translate(error.error);
+                if (errText != error.error) {
+                    notify.error(errText);
+                }
+            }
+        })
         return res.then(results => {
             const copies = results.map(r => {
                 const copy = new workspaceModel.Element(r);
@@ -452,6 +461,15 @@ export const workspaceService = {
     },
     copyAllFromIds(ids: string[], dest: workspaceModel.Element): Promise<{ copies: workspaceModel.Element[], nbFiles: number, nbFolders: number }> {
         const res = ids.length == 0 ? Promise.resolve(null) : http().postJson(`/workspace/documents/copy/${dest._id || "root"}`, { ids })
+        res.catch(e => {
+            if(e.responseText){
+                const error = JSON.parse(e.responseText);
+                let errText = lang.translate(error.error);
+                if (errText != error.error) {
+                    notify.error(errText);
+                }
+            }
+        })
         return res.then(results => {
             const copies = results.map(r => {
                 const copy = new workspaceModel.Element(r);
