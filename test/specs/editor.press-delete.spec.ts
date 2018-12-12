@@ -1,5 +1,5 @@
 import editor from '../po/editor.po';
-import { openNewBlogPostPage, setWideScreen } from './spec-helper';
+import { openNewBlogPostPage, removeEmptyStyleAttribute, setWideScreen } from './spec-helper';
 
 describe('editor press delete', () => {
     it('should remove the character before the caret', () => {
@@ -10,7 +10,7 @@ describe('editor press delete', () => {
         editor.content.addValue('Enter');
         editor.content.addValue('abc');
         editor.content.addValue('Backspace');
-        expect(editor.content.getHTML(false))
+        expect(removeEmptyStyleAttribute(editor.content.getHTML(false)))
             .toBe('<div>\u200b</div><div>\u200b</div><div>ab</div>');
     });
 });
