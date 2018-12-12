@@ -1,4 +1,4 @@
-import { isParentOfComparedNode, textNodes } from '../selection';
+import { applyCssToRange, isParentOfComparedNode, textNodes } from '../selection';
 
 function findBlockParent(node: Node){
     if(node.nodeType === 1 && textNodes.indexOf(node.nodeName) === -1){
@@ -18,7 +18,7 @@ function findBlockParent(node: Node){
     }
 }
 
-export function selectBlockParentPure(range: Range): Range {
+export function createRangeFromParentBlockElement(range: Range): Range {
     let ancestor = range.commonAncestorContainer;
     let started = false;
     const newRange = document.createRange();
@@ -49,16 +49,7 @@ export function selectBlockParentPure(range: Range): Range {
     return newRange;
 }
 
-function selectBlockParent() {
-    const selection = document.getSelection();
-    const range = selection.getRangeAt(0);
-    const newRange = selectBlockParentPure(range);
-    selection.removeAllRanges();
-    selection.addRange(newRange);
-}
-
 function beforeJustify(instance){
-    selectBlockParent();
     instance.editZone.find('mathjax').html('');
     instance.editZone.find('mathjax').removeAttr('contenteditable');
 }
@@ -84,8 +75,13 @@ export const justifyLeft = {
                     if(!instance.editZone.is(':focus')){
                         instance.focus();
                     }
-                    beforeJustify(instance)
-                    instance.selection.css({ 'text-align': 'left' });
+                    beforeJustify(instance);
+                    applyCssToRange(
+                        instance.editZone.get(0),
+                        createRangeFromParentBlockElement(window.getSelection().getRangeAt(0)),
+                        'text-align',
+                        { 'text-align': 'left' }
+                    );
                     if(document.queryCommandState('justifyLeft')){
                         element.addClass('toggled');							
                     }
@@ -131,11 +127,22 @@ export const justifyCenter = {
 
                     beforeJustify(instance);
                     if(!document.queryCommandState('justifyCenter')){
-                        instance.selection.css({ 'text-align': 'center' });
+
+                        applyCssToRange(
+                            instance.editZone.get(0),
+                            createRangeFromParentBlockElement(window.getSelection().getRangeAt(0)),
+                            'text-align',
+                            { 'text-align': 'center' }
+                        );
                         element.addClass('toggled');
                     }
                     else{
-                        instance.selection.css({ 'text-align': 'left' });
+                        applyCssToRange(
+                            instance.editZone.get(0),
+                            createRangeFromParentBlockElement(window.getSelection().getRangeAt(0)),
+                            'text-align',
+                            { 'text-align': 'left' }
+                        );
                         element.removeClass('toggled');
                     }
 
@@ -181,11 +188,22 @@ export const justifyRight = {
 
                     beforeJustify(instance);
                     if(!document.queryCommandState('justifyRight')){
-                        instance.selection.css({ 'text-align': 'right' });
+
+                        applyCssToRange(
+                            instance.editZone.get(0),
+                            createRangeFromParentBlockElement(window.getSelection().getRangeAt(0)),
+                            'text-align',
+                            { 'text-align': 'right' }
+                        );
                         element.addClass('toggled');
                     }
                     else{
-                        instance.selection.css({ 'text-align': 'left' });
+                        applyCssToRange(
+                            instance.editZone.get(0),
+                            createRangeFromParentBlockElement(window.getSelection().getRangeAt(0)),
+                            'text-align',
+                            { 'text-align': 'left' }
+                        );
                         element.removeClass('toggled');
                     }
 
@@ -229,10 +247,20 @@ export const justifyFull = {
                     beforeJustify(instance);
                     if(!document.queryCommandState('justifyFull')){
                         element.addClass('toggled');
-                        instance.selection.css({ 'text-align': 'justify' });
+                        applyCssToRange(
+                            instance.editZone.get(0),
+                            createRangeFromParentBlockElement(window.getSelection().getRangeAt(0)),
+                            'text-align',
+                            { 'text-align': 'justify' }
+                        );
                     }
                     else{
-                        instance.selection.css({ 'text-align': 'left' });
+                        applyCssToRange(
+                            instance.editZone.get(0),
+                            createRangeFromParentBlockElement(window.getSelection().getRangeAt(0)),
+                            'text-align',
+                            { 'text-align': 'left' }
+                        );
                         element.removeClass('toggled');
                     }
 
