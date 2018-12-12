@@ -183,13 +183,13 @@ export class Element extends Model implements Node, Shareable, Selectable {
         return this.inheritedShares || this._shared;
     }
     get canCopy() {
-        return this.owner.userId == model.me.userId || this.myRights["read"];
+        return this.owner.userId == model.me.userId || !!this.myRights["read"];
     }
     get canMove() {
-        return this.owner.userId == model.me.userId || this.myRights["manager"];
+        return this.owner.userId == model.me.userId || !!this.myRights["manager"];
     }
     get canWriteOnFolder() {
-        return this.eType == FOLDER_TYPE && (this.owner.userId == model.me.userId || this.myRights["contrib"])
+        return this.eType == FOLDER_TYPE && (this.owner.userId == model.me.userId || !!this.myRights["contrib"])
     }
     idEquals(id: string) {
         return id && this._id == id;
