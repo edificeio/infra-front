@@ -33,4 +33,9 @@ export function openNewBlogPostPage() {
     blogPage.newPost.click();
 
     editor.waitForVisible();
+    browser.pause(2000);
+}
+
+export function removeEmptyStyleAttribute(htmlString: string): string {
+    return htmlString.replace(/\s?style=""/g, '');
 }

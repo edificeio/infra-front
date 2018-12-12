@@ -1,4 +1,4 @@
-import { openNewBlogPostPage, setWideScreen } from './spec-helper';
+import { openNewBlogPostPage, removeEmptyStyleAttribute, setWideScreen } from './spec-helper';
 import editor from '../po/editor.po';
 
 describe('editor press enter in a formatted line', () => {
@@ -8,10 +8,14 @@ describe('editor press enter in a formatted line', () => {
         editor.content.click();
         editor.content.addValue('Enter');
         editor.content.addValue('abc');
+        browser.pause(1000);
         editor.toolbar.format.click();
+        browser.pause(2000);
         editor.toolbar.format.element('h2').click();
+        browser.pause(2000);
         editor.content.addValue('Enter');
-        expect(editor.content.getHTML(false))
+        browser.pause(1000);
+        expect(removeEmptyStyleAttribute(editor.content.getHTML(false)))
             .toBe('<div>\u200b</div><h2>\u200babc</h2><div>\u200b</div>');
     });
 });
