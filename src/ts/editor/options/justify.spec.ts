@@ -1,6 +1,6 @@
-import { selectBlockParentPure } from './justify';
+import { createRangeFromParentBlockElement } from './justify';
 
-describe('selectBlockParentPure', () => {
+describe('createRangeFromParentBlockElement', () => {
     it('should select the first parent block element when the range is inside a block element', () => {
         const root = document.createElement('div');
         root.setAttribute('contenteditable', 'true');
@@ -16,7 +16,7 @@ describe('selectBlockParentPure', () => {
         range.setStart(text, 0);
         range.setEnd(text, text.length);
 
-        const expectedRange = selectBlockParentPure(range);
+        const expectedRange = createRangeFromParentBlockElement(range);
         expect(expectedRange.startContainer).toBe(div);
         expect(expectedRange.endContainer).toBe(div);
     });
