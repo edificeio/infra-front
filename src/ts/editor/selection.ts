@@ -272,7 +272,7 @@ function cancelCssOnEveryChildNodes(root: Node, style: any): Node {
     return root;
 }
 
-function applyCssToRange(root: Node, range: Range, property: string, style: any): Range {
+export function applyCssToRange(root: Node, range: Range, property: string, style: any): Range {
     if (range.startContainer === range.endContainer &&
         (range.startContainer === root || isHTMLBlockElement(range.startContainer))) {
         if (range.startContainer === root) {
@@ -795,7 +795,7 @@ export const Selection = function(data){
             element = element.parentNode;
         }
         return $(element);
-    }
+    };
 
     this.moveRanges = function(mover, container, offset, newContainer){
         let selection = window.getSelection();
@@ -834,8 +834,11 @@ export const Selection = function(data){
                 block.appendChild(child);
                 $(child).css(params);
                 this.instance.editZone.append(block);
-                selection.getRangeAt(0).setStart(child.firstChild, 0);
-                selection.getRangeAt(0).setEnd(child.firstChild, child.textContent.length);
+                const newRange = document.createRange();
+                newRange.setStart(child.firstChild, 0);
+                newRange.setEnd(child.firstChild, child.textContent.length);
+                selection.removeAllRanges();
+                selection.addRange(newRange);
             } else {
                 this.ranges = [];
                 for(let i = 0; i < selection.rangeCount; i++){
@@ -849,7 +852,10 @@ export const Selection = function(data){
                         r.setStart(targetedNode, getNormalizedEndOffset(targetedNode));
                         r.setEnd(targetedNode, getNormalizedEndOffset(targetedNode));
                     });
-                this.ranges.forEach((range) => applyCssToRange(this.instance.editZone.get(0), range, Object.keys(params)[0], params));
+                this.ranges
+                    .forEach(range => applyCssToRange(this.instance.editZone.get(0), range, Object.keys(params)[0], params));
+                selection.removeAllRanges();
+                this.ranges.forEach(r => selection.addRange(r));
             }
 
             //cleanup
