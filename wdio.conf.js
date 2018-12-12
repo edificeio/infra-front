@@ -23,7 +23,7 @@ exports.config = {
     deprecationWarnings: true,
     bail: 0,
     screenshotPath: './errorShots/',
-    baseUrl: 'http://localhost:8090',
+    baseUrl: process.env.E2E_BASE_URL || 'http://localhost:8090',
     waitforTimeout: 20000,
     connectionRetryTimeout: 90000,
     connectionRetryCount: 3,
