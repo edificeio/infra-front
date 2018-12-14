@@ -62,6 +62,7 @@ export interface SharePanelScope {
         $resource: ShareableWithId,
         $actions: ShareAction[]
     })
+    isSubmitDisabled(): boolean
     createSharebookmark(name: string)
     typeSort(sort: any)
     closePanel(cancelled: boolean)
@@ -311,7 +312,22 @@ export const sharePanel = ng.directive('sharePanel', ['$rootScope', ($rootScope)
                     });
                 })
             };
-
+            $scope.isSubmitDisabled = function () {
+                let hasUnchecked = false;
+                for (let item of $scope.sharingModel.edited) {
+                    let allUnckecked = true;
+                    for (let a of $scope.actions) {
+                        if (item.actions[a.displayName]) {
+                            allUnckecked = false;
+                        }
+                    }
+                    if (allUnckecked) {
+                        hasUnchecked = true;
+                    }
+                }
+                const hasNotChanged = !$scope.sharingModel.changed;
+                return hasNotChanged || hasUnchecked;
+            }
             $scope.$watch('resources', function () {
                 $scope.actions = [];
                 $scope.sharingModel.edited = [];
