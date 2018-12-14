@@ -436,7 +436,7 @@ export const workspaceService = {
         const folders = els.filter(el => workspaceService.isFolder(el))
         const res = ids.length == 0 ? Promise.resolve(null) : http().postJson(`/workspace/documents/copy/${dest._id || "root"}`, { ids })
         res.catch(e => {
-            if(e.responseText){
+            if (e.responseText) {
                 const error = JSON.parse(e.responseText);
                 let errText = lang.translate(error.error);
                 if (errText != error.error) {
@@ -462,7 +462,7 @@ export const workspaceService = {
     copyAllFromIds(ids: string[], dest: workspaceModel.Element): Promise<{ copies: workspaceModel.Element[], nbFiles: number, nbFolders: number }> {
         const res = ids.length == 0 ? Promise.resolve(null) : http().postJson(`/workspace/documents/copy/${dest._id || "root"}`, { ids })
         res.catch(e => {
-            if(e.responseText){
+            if (e.responseText) {
                 const error = JSON.parse(e.responseText);
                 let errText = lang.translate(error.error);
                 if (errText != error.error) {
@@ -486,7 +486,7 @@ export const workspaceService = {
         }).then(copies => Promise.resolve({ nbFiles: 0, nbFolders: ids.length, copies }));
     },
     notifyContrib(folder: workspaceModel.Element, eltsOrIds: workspaceModel.Element[] | string[]) {
-        if (folder && folder._id && (folder.isShared || folder.shared.length>0) && !folder.deleted && folder.owner.userId != model.me.userId) {
+        if (folder && folder._id && (folder.isShared || folder.shared.length > 0) && !folder.deleted && folder.owner.userId != model.me.userId) {
             return http().post("/workspace/folder/notify/contrib/" + folder._id)
         } else {
             return Promise.resolve();
@@ -553,6 +553,8 @@ export const workspaceService = {
                         if (!MAX_FILE_SIZE)
                             MAX_FILE_SIZE = parseInt(lang.translate('max.file.size'));
                         notify.error(lang.translate('file.too.large.limit') + (MAX_FILE_SIZE / 1024 / 1024) + lang.translate('mb'));
+                    } else if (document.uploadXhr.status === 403) {
+                        notify.error("upload.forbidden")
                     }
                     else {
                         const error = JSON.parse(document.uploadXhr.responseText);
@@ -671,7 +673,7 @@ export const workspaceService = {
 
 workspaceService.onChange.subscribe(event => {
     //if add files => dont notify (onConfirmImport)
-    if(event.action=="add" && event.elements && event.elements.filter(el=>workspaceService.isFolder(el)).length==0){
+    if (event.action == "add" && event.elements && event.elements.filter(el => workspaceService.isFolder(el)).length == 0) {
         return;
     }
     //
