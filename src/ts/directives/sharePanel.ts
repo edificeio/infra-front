@@ -76,7 +76,7 @@ export interface SharePanelScope {
     addEdit(item)
     clearSearch()
     //angular
-    $on(a,b)
+    $on(a, b)
     $apply(a?)
     $watch(a?, b?)
     $watchCollection(a?, b?)
@@ -588,17 +588,20 @@ export const sharePanel = ng.directive('sharePanel', ['$rootScope', ($rootScope)
                     return new Promise((resolve, reject) => {
                         http().putJson('/' + currentApp + '/share/resource/' + resource._id, data)
                             .done(function (res) {
-                                notify.success('share.notify.success');
                                 $rootScope.$broadcast('share-updated', res['notify-timeline-array']);
                                 resolve()
                             })
                             .error(function () {
-                                notify.error('share.notify.error');
                                 reject()
                             });
                     })
                 });
-                await Promise.all(promises);
+                try {
+                    await Promise.all(promises);
+                    notify.success('share.notify.success');
+                } catch (e) {
+                    notify.error('share.notify.error');
+                }
                 if ($scope.autoClose) {
                     await $scope.closePanel(false);
                 }
@@ -670,7 +673,7 @@ export const sharePanel = ng.directive('sharePanel', ['$rootScope', ($rootScope)
                 $scope.display.showCloseConfirmation = false;
                 $scope.$apply();
             }
-            const closeCallback =  function (e) {
+            const closeCallback = function (e) {
                 e.stopPropagation();
                 if (!$scope.sharingModel.changed)
                     $scope.closePanel(true);
@@ -681,14 +684,14 @@ export const sharePanel = ng.directive('sharePanel', ['$rootScope', ($rootScope)
                 }
                 $scope.$apply();
             };
-            $element.closest('.lightbox').find('.background, .content > .close-lightbox').on('click',closeCallback);
+            $element.closest('.lightbox').find('.background, .content > .close-lightbox').on('click', closeCallback);
             $scope.getColor = function (profile) {
                 return ui.profileColors.match(profile);
             };
             //unbind event
             $scope.$on("$destroy", function () {
-				$element.closest('.lightbox').find('.background, .content > .close-lightbox').off('click',closeCallback)
-			});
+                $element.closest('.lightbox').find('.background, .content > .close-lightbox').off('click', closeCallback)
+            });
         }
     }
 }]);
