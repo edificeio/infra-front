@@ -45,6 +45,12 @@ export let lightbox = ng.directive('lightbox', () => {
 			});
 			element.children('.lightbox').find('> .content > .close-lightbox > i.close-2x').on('click', function(e){
 				if (element.children('.lightbox').find('share-panel').length === 0){
+					if (attributes.delegateClose) {
+						let result= scope.delegateClose({ $element:element });
+						if(result===true){
+							return;
+						}
+					}
 					element.children('.lightbox').first().fadeOut();
 					$('body').css({ overflow: 'auto' });
 					$('body').removeClass('lightbox-opened');
