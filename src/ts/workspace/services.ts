@@ -486,7 +486,7 @@ export const workspaceService = {
         }).then(copies => Promise.resolve({ nbFiles: 0, nbFolders: ids.length, copies }));
     },
     notifyContrib(folder: workspaceModel.Element, eltsOrIds: workspaceModel.Element[] | string[]) {
-        if (folder && folder._id && folder.isShared && folder.owner.userId != model.me.userId) {
+        if (folder && folder._id && (folder.isShared || folder.shared.length>0) && !folder.deleted && folder.owner.userId != model.me.userId) {
             return http().post("/workspace/folder/notify/contrib/" + folder._id)
         } else {
             return Promise.resolve();
@@ -670,6 +670,11 @@ export const workspaceService = {
 }
 
 workspaceService.onChange.subscribe(event => {
+    //if add files => dont notify (onConfirmImport)
+    if(event.action=="add" && event.elements && event.elements.filter(el=>workspaceService.isFolder(el)).length==0){
+        return;
+    }
+    //
     if (event.dest && event.dest.isShared && ((event.elements && event.elements.length) || (event.ids && event.ids.length))) {
         workspaceService.notifyContrib(event.dest, event.elements || event.ids)
     }
