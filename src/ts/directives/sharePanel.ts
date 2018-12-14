@@ -76,6 +76,7 @@ export interface SharePanelScope {
     addEdit(item)
     clearSearch()
     //angular
+    $on(a,b)
     $apply(a?)
     $watch(a?, b?)
     $watchCollection(a?, b?)
@@ -669,8 +670,7 @@ export const sharePanel = ng.directive('sharePanel', ['$rootScope', ($rootScope)
                 $scope.display.showCloseConfirmation = false;
                 $scope.$apply();
             }
-
-            $element.closest('.lightbox').find('.background, .content > .close-lightbox').on('click', function (e) {
+            const closeCallback =  function (e) {
                 e.stopPropagation();
                 if (!$scope.sharingModel.changed)
                     $scope.closePanel(true);
@@ -680,10 +680,15 @@ export const sharePanel = ng.directive('sharePanel', ['$rootScope', ($rootScope)
                     $scope.$apply();
                 }
                 $scope.$apply();
-            });
+            };
+            $element.closest('.lightbox').find('.background, .content > .close-lightbox').on('click',closeCallback);
             $scope.getColor = function (profile) {
                 return ui.profileColors.match(profile);
             };
+            //unbind event
+            $scope.$on("$destroy", function () {
+				$element.closest('.lightbox').find('.background, .content > .close-lightbox').off('click',closeCallback)
+			});
         }
     }
 }]);

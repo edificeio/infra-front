@@ -8,7 +8,9 @@ export let lightbox = ng.directive('lightbox', () => {
 		transclude: true,
 		scope: {
 			show: '=',
-			onClose: '&'
+			onShow: '&?',
+			onClose: '&',
+			delegateClose: '&?'
 		},
 		template: '<section class="lightbox">' +
 						'<div class="background"></div>' +
@@ -23,6 +25,12 @@ export let lightbox = ng.directive('lightbox', () => {
 		link: function(scope, element, attributes){
 			element.children('.lightbox').find('> .background').on('click', function(e){
 				if (element.children('.lightbox').find('image-editor, share-panel, .import-files, .split-screen, [template=entcore\\/image-editor\\/main]').length === 0){
+					if (attributes.delegateClose) {
+						let result= scope.delegateClose({ $element:element });
+						if(result===true){
+							return;
+						}
+					}
 					element.children('.lightbox').first().fadeOut();
 					$('body').css({ overflow: 'auto' });
 					$('body').removeClass('lightbox-opened');
@@ -55,6 +63,9 @@ export let lightbox = ng.directive('lightbox', () => {
 
 			scope.$watch('show', function(newVal){
                 if (newVal) {
+					if (attributes.onShow) {
+						scope.onShow({ $element:element });
+					}
 					element.trigger('lightboxvisible');
                     var lightboxWindow = element.children('.lightbox');
 
