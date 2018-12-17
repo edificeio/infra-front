@@ -54,6 +54,7 @@ export interface SharePanelScope {
     }): boolean
     autoClose?: boolean
     canEdit(item: { type: string, id: string }): boolean
+    confirmationCloseDelegate?(args: ShareCloseDelegate)
     closeDelegate?(args: ShareCloseDelegate)
     onCancel?()
     onSubmit?(args: { $shared: SharePayload })
@@ -92,6 +93,7 @@ export const sharePanel = ng.directive('sharePanel', ['$rootScope', ($rootScope)
             onValidate: '&?',
             onFeed: '&?',
             closeDelegate: '&?',
+            confirmationCloseDelegate:'&?',
             canEditDelegate: '&?',
             autoClose: '='
         },
@@ -694,6 +696,10 @@ export const sharePanel = ng.directive('sharePanel', ['$rootScope', ($rootScope)
                 if (!$scope.sharingModel.changed)
                     $scope.closePanel(true);
                 else if (!$scope.display.showCloseConfirmation) {
+                    if($attributes.confirmationCloseDelegate){
+                        $scope.confirmationCloseDelegate({ "$canceled": true, "$close": doClose })
+                        return;
+                    }
                     $scope.display.showCloseConfirmation = true;
                     $element.closest('.lightbox').find('.content > .close-lightbox').css({ visibility: 'hidden' });
                     $scope.$apply();
