@@ -486,7 +486,7 @@ export const workspaceService = {
         }).then(copies => Promise.resolve({ nbFiles: 0, nbFolders: ids.length, copies }));
     },
     notifyContrib(folder: workspaceModel.Element, eltsOrIds: workspaceModel.Element[] | string[]) {
-        if (folder && folder._id && (folder.isShared || folder.shared.length > 0) && !folder.deleted && folder.owner.userId != model.me.userId) {
+        if (folder && folder._id && (folder.isShared || folder.shared.length > 0) && !folder.deleted) {
             return http().post("/workspace/folder/notify/contrib/" + folder._id)
         } else {
             return Promise.resolve();
