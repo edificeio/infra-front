@@ -74,8 +74,10 @@ export const mediaLibrary = ng.directive('mediaLibrary', ['$timeout', function (
 		},
 		templateUrl: '/' + appPrefix + '/public/template/entcore/media-library/main.html',
 		link: function (scope: MediaLibraryScope, element, attributes) {
+			template
 			scope.template = template;
-
+			//prefetch screen to avoid lock
+			template.open("entcore/media-library/cache","entcore/media-library/loading");
 			if (!(window as any).toBlobPolyfillLoaded) {
 				http.get('/infra/public/js/toBlob-polyfill.js').then((response) => {
 					eval(response.data);
