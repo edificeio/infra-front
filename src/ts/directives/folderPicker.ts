@@ -200,7 +200,7 @@ export const folderPicker = ng.directive('folderPicker', ['$timeout', ($timeout)
             const startSearch = function () {
                 if (scope.search.value && scope.search.value.trim().length > 0) {
                     const trees = []
-                    for (let tree of scope.trees) {
+                    for (let tree of original) {
                         const copy = { ...tree };
                         copy.children = filterSubtree(tree.children);
                         trees.push(copy)
@@ -209,6 +209,7 @@ export const folderPicker = ng.directive('folderPicker', ['$timeout', ($timeout)
                 } else {
                     scope.trees = original;
                 }
+                selectedFolder = null;
                 scope.safeApply();
             }
             //
