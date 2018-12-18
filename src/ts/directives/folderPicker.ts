@@ -104,7 +104,7 @@ export const folderPicker = ng.directive('folderPicker', ['$timeout', ($timeout)
                 <div class="flex-row vertical-spacing-four">
                     <div class="centered vertical-spacing-four">
                         <div class="vertical-spacing-four primary-color">
-                            <h2 translate content="[[folderProps.i18.actionProcessing]]"></h2><i class="loadingCopy"></i>
+                            <h2 translate content="[[folderProps.i18.actionProcessing]]"></h2><i class="loading loadingCopy"></i>
                         </div>
                     </div>
                 </div>
