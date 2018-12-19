@@ -1,0 +1,187 @@
+{
+  "projectName": "infra-front",
+  "projectOwner": "entcore",
+  "repoType": "github",
+  "repoHost": "https://github.com",
+  "files": [
+    "CONTRIBUTORS.md",
+    "README.md"
+  ],
+  "imageSize": 100,
+  "commit": false,
+  "contributors": [
+    {
+      "login": "SGrenet",
+      "name": "SGrenet",
+      "avatar_url": "https://avatars0.githubusercontent.com/u/8803434?v=4",
+      "profile": "https://github.com/SGrenet",
+      "contributions": [
+        "doc",
+        "bug"
+      ]
+    },
+    {
+      "login": "Wano-k",
+      "name": "Marie Laporte",
+      "avatar_url": "https://avatars1.githubusercontent.com/u/16018766?v=4",
+      "profile": "http://rpg-paper-maker.com/",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "david-cc",
+      "name": "david-cc",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/6431245?v=4",
+      "profile": "https://github.com/david-cc",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "lauren-ceccotti",
+      "name": "Lauren",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/13572295?v=4",
+      "profile": "https://github.com/lauren-ceccotti",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "ahascour",
+      "name": "ahascour",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/25983043?v=4",
+      "profile": "https://github.com/ahascour",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "benjaminperez",
+      "name": "Benjamin Perez",
+      "avatar_url": "https://avatars0.githubusercontent.com/u/6347987?v=4",
+      "profile": "https://github.com/benjaminperez",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "dboissin",
+      "name": "Damien Boissin",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/479855?v=4",
+      "profile": "https://github.com/dboissin",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "Niphra",
+      "name": "Niphra",
+      "avatar_url": "https://avatars1.githubusercontent.com/u/4052880?v=4",
+      "profile": "https://github.com/Niphra",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "Sinthu-S",
+      "name": "Sinthu",
+      "avatar_url": "https://avatars1.githubusercontent.com/u/10475756?v=4",
+      "profile": "https://github.com/Sinthu-S",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "rdjedjig",
+      "name": "Rafik Djedjig",
+      "avatar_url": "https://avatars1.githubusercontent.com/u/548786?v=4",
+      "profile": "http://opendigitaleducation.com",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "Chokoneko",
+      "name": "Chokoneko",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/15449030?v=4",
+      "profile": "https://github.com/Chokoneko",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "rbunel35",
+      "name": "rbunel35",
+      "avatar_url": "https://avatars0.githubusercontent.com/u/32165847?v=4",
+      "profile": "https://github.com/rbunel35",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "jrobertou",
+      "name": "Jérémy",
+      "avatar_url": "https://avatars0.githubusercontent.com/u/2564598?v=4",
+      "profile": "https://github.com/jrobertou",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "SLedunois",
+      "name": "LEDUNOIS Simon (CGI)",
+      "avatar_url": "https://avatars0.githubusercontent.com/u/3670821?v=4",
+      "profile": "https://github.com/SLedunois",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "LouisVinet",
+      "name": "LouisVinet",
+      "avatar_url": "https://avatars1.githubusercontent.com/u/20284078?v=4",
+      "profile": "https://github.com/LouisVinet",
+      "contributions": [
+        "design"
+      ]
+    },
+    {
+      "login": "nabil-mansouri",
+      "name": "Nabil Mansouri",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/20594638?v=4",
+      "profile": "https://github.com/nabil-mansouri",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "signoret",
+      "name": "signoret",
+      "avatar_url": "https://avatars1.githubusercontent.com/u/33665179?v=4",
+      "profile": "https://github.com/signoret",
+      "contributions": [
+        "bug",
+        "question"
+      ]
+    },
+    {
+      "login": "ode-arnoleo",
+      "name": "Arnaud Léonard",
+      "avatar_url": "https://avatars0.githubusercontent.com/u/43006060?v=4",
+      "profile": "https://github.com/ode-arnoleo",
+      "contributions": [
+        "infra"
+      ]
+    },
+    {
+      "login": "simbas",
+      "name": "Simon Basset",
+      "avatar_url": "https://avatars1.githubusercontent.com/u/1901675?v=4",
+      "profile": "http://smnbsst.me/",
+      "contributions": [
+        "code"
+      ]
+    }
+  ]
+}
