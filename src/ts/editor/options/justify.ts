@@ -1,62 +1,87 @@
-import { applyCssToRange, isParentOfComparedNode, textNodes } from '../selection';
+import {
+    applyCssToRange,
+    explodeRangeOnChildNodes,
+    isHTMLBlockElement,
+    isHTMLElement,
+    isParentOfComparedNode,
+    textNodes
+} from '../selection';
+import { findClosestBlockElement } from "../onPressDelete";
 
-function findBlockParent(node: Node){
-    if(node.nodeType === 1 && textNodes.indexOf(node.nodeName) === -1){
+function findBlockParent(node: Node) {
+    if (node.nodeType === 1 && textNodes.indexOf(node.nodeName) === -1) {
         return node;
     }
-    if(node.attributes && node.attributes['contenteditable'] && node.nodeName === 'DIV'){
+    if (node.attributes && node.attributes['contenteditable'] && node.nodeName === 'DIV') {
         const newNode = document.createElement('div');
         node.appendChild(newNode);
-        for(let i = 0; i < node.childNodes.length; i++){
+        for (let i = 0; i < node.childNodes.length; i++) {
             newNode.appendChild(node.childNodes[i]);
         }
         return node;
-        
     }
-    if(node.nodeType !== 1 || textNodes.indexOf(node.nodeName) !== -1){
+    if (node.nodeType !== 1 || textNodes.indexOf(node.nodeName) !== -1) {
         return findBlockParent(node.parentNode);
     }
 }
 
-export function createRangeFromParentBlockElement(range: Range): Range {
+export function projectRangeOnBlockElements(range: Range, root: HTMLElement): Range[] {
     let ancestor = range.commonAncestorContainer;
+
+    if (ancestor === root) {
+        return explodeRangeOnChildNodes(range, root)
+            .map(obj => obj.range)
+            .map(r => {
+                const newRange = document.createRange();
+                let blockElement: Node;
+                if (isHTMLElement(r.commonAncestorContainer) && isHTMLBlockElement(r.commonAncestorContainer)) {
+                    blockElement = r.commonAncestorContainer;
+                } else {
+                    blockElement = findClosestBlockElement(r.commonAncestorContainer, root);
+                }
+                newRange.setStart(blockElement, 0);
+                newRange.setEnd(blockElement, blockElement.childNodes.length);
+                return newRange;
+            });
+    }
+
     let started = false;
     const newRange = document.createRange();
     ancestor = findBlockParent(ancestor);
-    for(let i = 0; i < ancestor.childNodes.length; i++){
+    for (let i = 0; i < ancestor.childNodes.length; i++) {
         const blockParent = findBlockParent(ancestor.childNodes[i]);
         const childNodePositionComparedWithRangeStart = ancestor.childNodes[i].compareDocumentPosition(range.startContainer);
         const rangeStartPositionComparedWithChildNode = range.startContainer.compareDocumentPosition(ancestor.childNodes[i]);
-        if(ancestor.childNodes[i] === range.startContainer
+        if (ancestor.childNodes[i] === range.startContainer
             || isParentOfComparedNode(childNodePositionComparedWithRangeStart)
             || isParentOfComparedNode(rangeStartPositionComparedWithChildNode)) {
             started = true;
             newRange.setStart(blockParent, 0);
         }
 
-        if(!started){
+        if (!started) {
             continue;
         }
 
         const childNodePositionComparedWithRangeEnd = ancestor.childNodes[i].compareDocumentPosition(range.endContainer);
         const rangeEndPositionComparedWithChildNode = range.endContainer.compareDocumentPosition(ancestor.childNodes[i]);
-        if(ancestor.childNodes[i] === range.startContainer
+        if (ancestor.childNodes[i] === range.startContainer
             || isParentOfComparedNode(childNodePositionComparedWithRangeEnd)
             || isParentOfComparedNode(rangeEndPositionComparedWithChildNode)) {
             newRange.setEnd(blockParent, blockParent.childNodes.length);
         }
     }
-    return newRange;
+    return [newRange];
 }
 
-function beforeJustify(instance){
+function beforeJustify(instance) {
     instance.editZone.find('mathjax').html('');
     instance.editZone.find('mathjax').removeAttr('contenteditable');
 }
 
-function afterJustify(instance){
-    instance.editZone.find('mathjax').each(function(index, item){
-        var scope = angular.element(item).scope();
+function afterJustify(instance) {
+    instance.editZone.find('mathjax').each(function (index, item) {
+        const scope = angular.element(item).scope();
         scope.updateFormula(scope.formula)
     });
     instance.editZone.find('mathjax').attr('contenteditable', 'false');
@@ -64,48 +89,51 @@ function afterJustify(instance){
     instance.trigger('justify-changed');
 }
 
+function applyTextAlignToSelection(selection: Selection, root: HTMLElement, value: string) {
+    const ranges: Range[] = [];
+    const projectedRanges: Range[] = [];
+
+    for (let i = 0; i < selection.rangeCount; i++) {
+        let range = selection.getRangeAt(i);
+        ranges.push(range);
+    }
+    ranges.forEach(range => projectedRanges.push(...projectRangeOnBlockElements(range, root)));
+    projectedRanges.forEach(range => applyCssToRange(root, range, 'text-align', {'text-align': value}));
+}
+
 export const justifyLeft = {
-    name: 'justifyLeft', 
-    run: function(instance){
+    name: 'justifyLeft',
+    run: function (instance) {
         return {
             template: '<i tooltip="editor.option.justify.left"></i>',
-            link: function(scope, element, attributes){
+            link: function (scope, element, attributes) {
                 element.addClass('toggled');
                 element.on('click', function () {
-                    if(!instance.editZone.is(':focus')){
+                    if (!instance.editZone.is(':focus')) {
                         instance.focus();
                     }
                     beforeJustify(instance);
-                    applyCssToRange(
-                        instance.editZone.get(0),
-                        createRangeFromParentBlockElement(window.getSelection().getRangeAt(0)),
-                        'text-align',
-                        { 'text-align': 'left' }
-                    );
-                    if(document.queryCommandState('justifyLeft')){
-                        element.addClass('toggled');							
-                    }
-                    else{
+                    applyTextAlignToSelection(window.getSelection(), instance.editZone.get(0), 'left');
+                    if (document.queryCommandState('justifyLeft')) {
+                        element.addClass('toggled');
+                    } else {
                         element.removeClass('toggled');
                     }
-
                     afterJustify(instance)
                 });
 
-                instance.on('selectionchange', function(e){
-                    if(document.queryCommandState('justifyLeft') && instance.selection.css('float') !== 'right' && instance.selection.css('z-index') !== "1"){
+                instance.on('selectionchange', function (e) {
+                    if (document.queryCommandState('justifyLeft') && instance.selection.css('float') !== 'right' && instance.selection.css('z-index') !== "1") {
                         element.addClass('toggled');
-                    }
-                    else{
+                    } else {
                         element.removeClass('toggled');
                     }
                 });
 
-                instance.on('justify-changed', function(e){
-                    if(document.queryCommandState('justifyLeft') && instance.selection.css('float') !== 'right' && instance.selection.css('z-index') !== "1"){
+                instance.on('justify-changed', function (e) {
+                    if (document.queryCommandState('justifyLeft') && instance.selection.css('float') !== 'right' && instance.selection.css('z-index') !== "1") {
                         element.addClass('toggled');
-                    }
-                    else{
+                    } else {
                         element.removeClass('toggled');
                     }
                 });
@@ -115,58 +143,43 @@ export const justifyLeft = {
 };
 
 export const justifyCenter = {
-    name: 'justifyCenter', 
-    run: function(instance){
+    name: 'justifyCenter',
+    run: function (instance) {
         return {
             template: '<i tooltip="editor.option.justify.center"></i>',
-            link: function(scope, element, attributes){
-                element.on('click', function(){
-                    if(!instance.editZone.is(':focus')){
+            link: function (scope, element, attributes) {
+                element.on('click', function () {
+                    if (!instance.editZone.is(':focus')) {
                         instance.focus();
                     }
 
                     beforeJustify(instance);
-                    if(!document.queryCommandState('justifyCenter')){
-
-                        applyCssToRange(
-                            instance.editZone.get(0),
-                            createRangeFromParentBlockElement(window.getSelection().getRangeAt(0)),
-                            'text-align',
-                            { 'text-align': 'center' }
-                        );
+                    if (!document.queryCommandState('justifyCenter')) {
+                        applyTextAlignToSelection(window.getSelection(), instance.editZone.get(0), 'center');
                         element.addClass('toggled');
-                    }
-                    else{
-                        applyCssToRange(
-                            instance.editZone.get(0),
-                            createRangeFromParentBlockElement(window.getSelection().getRangeAt(0)),
-                            'text-align',
-                            { 'text-align': 'left' }
-                        );
+                    } else {
+                        applyTextAlignToSelection(window.getSelection(), instance.editZone.get(0), 'left');
                         element.removeClass('toggled');
                     }
-
                     afterJustify(instance);
                 });
 
-                instance.on('selectionchange', function(e){
+                instance.on('selectionchange', function (e) {
                     // z-index is a hack to track margin width; auto width is computed as 0 in FF
-                    if(document.queryCommandState('justifyCenter')
-                        || (instance.selection.css('margin-left') === instance.selection.css('margin-right') && instance.selection.css('z-index') === '1')){
+                    if (document.queryCommandState('justifyCenter')
+                        || (instance.selection.css('margin-left') === instance.selection.css('margin-right') && instance.selection.css('z-index') === '1')) {
                         element.addClass('toggled');
-                    }
-                    else{
+                    } else {
                         element.removeClass('toggled');
                     }
                 });
 
-                instance.on('justify-changed', function(e){
+                instance.on('justify-changed', function (e) {
                     // z-index is a hack to track margin width; auto width is computed as 0 in FF
-                    if(document.queryCommandState('justifyCenter')
-                        || (instance.selection.css('margin-left') === instance.selection.css('margin-right') && instance.selection.css('z-index') === '1')){
+                    if (document.queryCommandState('justifyCenter')
+                        || (instance.selection.css('margin-left') === instance.selection.css('margin-right') && instance.selection.css('z-index') === '1')) {
                         element.addClass('toggled');
-                    }
-                    else{
+                    } else {
                         element.removeClass('toggled');
                     }
                 });
@@ -176,54 +189,39 @@ export const justifyCenter = {
 };
 
 export const justifyRight = {
-    name: 'justifyRight', 
-    run: function(instance){
+    name: 'justifyRight',
+    run: function (instance) {
         return {
             template: '<i tooltip="editor.option.justify.right"></i>',
-            link: function(scope, element, attributes){
+            link: function (scope, element, attributes) {
                 element.on('click', function () {
-                    if(!instance.editZone.is(':focus')){
+                    if (!instance.editZone.is(':focus')) {
                         instance.focus();
                     }
 
                     beforeJustify(instance);
-                    if(!document.queryCommandState('justifyRight')){
-
-                        applyCssToRange(
-                            instance.editZone.get(0),
-                            createRangeFromParentBlockElement(window.getSelection().getRangeAt(0)),
-                            'text-align',
-                            { 'text-align': 'right' }
-                        );
+                    if (!document.queryCommandState('justifyRight')) {
+                        applyTextAlignToSelection(window.getSelection(), instance.editZone.get(0), 'right');
                         element.addClass('toggled');
-                    }
-                    else{
-                        applyCssToRange(
-                            instance.editZone.get(0),
-                            createRangeFromParentBlockElement(window.getSelection().getRangeAt(0)),
-                            'text-align',
-                            { 'text-align': 'left' }
-                        );
+                    } else {
+                        applyTextAlignToSelection(window.getSelection(), instance.editZone.get(0), 'left');
                         element.removeClass('toggled');
                     }
-
                     afterJustify(instance);
                 });
 
                 instance.on('selectionchange', function (e) {
-                    if(document.queryCommandState('justifyRight') || instance.selection.css('float') === 'right'){
+                    if (document.queryCommandState('justifyRight') || instance.selection.css('float') === 'right') {
                         element.addClass('toggled');
-                    }
-                    else{
+                    } else {
                         element.removeClass('toggled');
                     }
                 });
 
-                instance.on('justify-changed', function(e){
-                    if(document.queryCommandState('justifyRight') || instance.selection.css('float') === 'right'){
+                instance.on('justify-changed', function (e) {
+                    if (document.queryCommandState('justifyRight') || instance.selection.css('float') === 'right') {
                         element.addClass('toggled');
-                    }
-                    else{
+                    } else {
                         element.removeClass('toggled');
                     }
                 });
@@ -234,53 +232,39 @@ export const justifyRight = {
 
 export const justifyFull = {
     mobile: false,
-    name: 'justifyFull', 
-    run: function(instance){
+    name: 'justifyFull',
+    run: function (instance) {
         return {
             template: '<i tooltip="editor.option.justify.full"></i>',
-            link: function(scope, element, attributes){
-                element.on('click', function(){
-                    if(!instance.editZone.is(':focus')){
+            link: function (scope, element, attributes) {
+                element.on('click', function () {
+                    if (!instance.editZone.is(':focus')) {
                         instance.focus();
                     }
 
                     beforeJustify(instance);
-                    if(!document.queryCommandState('justifyFull')){
+                    if (!document.queryCommandState('justifyFull')) {
+                        applyTextAlignToSelection(window.getSelection(), instance.editZone.get(0), 'justify');
                         element.addClass('toggled');
-                        applyCssToRange(
-                            instance.editZone.get(0),
-                            createRangeFromParentBlockElement(window.getSelection().getRangeAt(0)),
-                            'text-align',
-                            { 'text-align': 'justify' }
-                        );
-                    }
-                    else{
-                        applyCssToRange(
-                            instance.editZone.get(0),
-                            createRangeFromParentBlockElement(window.getSelection().getRangeAt(0)),
-                            'text-align',
-                            { 'text-align': 'left' }
-                        );
+                    } else {
+                        applyTextAlignToSelection(window.getSelection(), instance.editZone.get(0), 'left');
                         element.removeClass('toggled');
                     }
-
                     afterJustify(instance);
                 });
 
-                instance.on('selectionchange', function(e){
-                    if(document.queryCommandState('justifyFull')){
+                instance.on('selectionchange', function (e) {
+                    if (document.queryCommandState('justifyFull')) {
                         element.addClass('toggled');
-                    }
-                    else{
+                    } else {
                         element.removeClass('toggled');
                     }
                 });
 
-                instance.on('justify-changed', function(e){
-                    if(document.queryCommandState('justifyFull')){
+                instance.on('justify-changed', function (e) {
+                    if (document.queryCommandState('justifyFull')) {
                         element.addClass('toggled');
-                    }
-                    else{
+                    } else {
                         element.removeClass('toggled');
                     }
                 });
