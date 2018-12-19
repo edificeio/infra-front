@@ -24,7 +24,7 @@ function tooltipLink($compile: any, scope: any, element: any, attributes: { [nam
     if (element[0].hasAttribute('tooltip-check')) {
         scope.$watch(() => scope.$eval(attributes.tooltipCheck), (newVal) => 
             tooltipCheck = !!newVal
-        });
+        );
     }
     // Handle multiline
     if (element[0].hasAttribute('tooltip-check-content')) {
