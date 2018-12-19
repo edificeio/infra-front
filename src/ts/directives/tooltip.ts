@@ -4,7 +4,7 @@ import { $ } from '../libs/jquery/jquery';
 import { template } from '../template';
 import { ui } from '../ui';
 
-function tooltipLink($compile: any, scope: any, element: any, attributes: {[name: string]: string}, tooltipDisplayCondition: (any) => boolean, tooltipType: string, sourceElement: any) {
+function tooltipLink($compile: any, scope: any, element: any, attributes: { [name: string]: string }, tooltipDisplayCondition: (any) => boolean, tooltipType: string, sourceElement: any) {
     let targetElement = element;
     if (attributes.tooltipTargetSelector) {
         targetElement = element.find(attributes.tooltipTargetSelector);
@@ -122,7 +122,7 @@ export const tooltip = ng.directive('tooltip', ['$compile', function ($compile) 
     return {
         restrict: 'A',
         link: function (scope, element, attributes) {
-            tooltipLink($compile, scope, element, attributes, () => true, "tooltip", element)
+            tooltipLink($compile, scope, element, attributes, () => true, "tooltip", element);
         }
     }
 }]);
@@ -130,7 +130,8 @@ export const tooltipOnEllipsis = ng.directive('tooltipOnEllipsis', ['$compile', 
     return {
         restrict: 'A',
         link: function (scope, element, attributes) {
-            tooltipLink($compile, scope, element, attributes, element => (element.parent('a').get(0).offsetWidth < element.parent('a').get(0).scrollWidth),"tooltipOnEllipsis", element.parent('a'))
+            tooltipLink($compile, scope, element, attributes, element => (element.parent('a').get(0)
+            .offsetWidth < element.parent('a').get(0).scrollWidth), "tooltipOnEllipsis", element.parent('a'));
         }
-    } 
+    }
 }]);
