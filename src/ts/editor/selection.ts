@@ -218,7 +218,7 @@ export function isParentOfComparedNode(bitmask: number): boolean {
     return (bitmask & Node.DOCUMENT_POSITION_CONTAINED_BY) === Node.DOCUMENT_POSITION_CONTAINED_BY;
 }
 
-function explodeRangeOnChildNodes(range: Range, root: Node): Array<{ node: Node, range: Range }> {
+export function explodeRangeOnChildNodes(range: Range, root: Node): Array<{ node: Node, range: Range }> {
     const childNodesAndRanges: Array<{ node: Node, range: Range }> = [];
     let child = root.firstChild;
     do {
