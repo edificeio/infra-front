@@ -1,6 +1,6 @@
 {
   "name": "entcore",
-  "version": "3.3.0-dev.39",
+  "version": "3.3.0-dev.40",
   "description": "",
   "main": "gulpfile.js",
   "types": "./types/src/ts/entcore.d.ts",
