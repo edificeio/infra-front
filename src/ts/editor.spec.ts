@@ -1,4 +1,4 @@
-import { convertToEditorFormat } from './editor';
+import { convertToEditorFormat, tryToConvertClipboardToEditorFormat } from './editor';
 
 describe('convertToEditorFormat', () => {
     it('should remove any <style></style> nodes', () => {
@@ -91,3 +91,39 @@ describe('convertToEditorFormat', () => {
             .toBe('<div>test1</div>');
     });
 });
+
+describe('tryToConvertClipboardToEditorFormat', () => {
+    it(`should prevent paste event and call convertToEditorFormat function
+        when the clipboard types contains 'text/html'`, () => {
+        const event = generateClipboardEventMock(['text/plain', 'text/html'], 'whatever');
+        const convertClipboardToEditorFormat = generateConvertClipboardToEditorFormatMock();
+        tryToConvertClipboardToEditorFormat(event, convertClipboardToEditorFormat);
+        expect(event.preventDefault).toHaveBeenCalled();
+        expect(convertClipboardToEditorFormat).toHaveBeenCalledWith('whatever');
+    });
+
+    it(`should not prevent paste event and not call convertToEditorFormat function
+        when the clipboard types does not contain 'text/html'`, () => {
+        const event = generateClipboardEventMock(['text/plain'], 'whatever');
+        const convertClipboardToEditorFormat = generateConvertClipboardToEditorFormatMock();
+        tryToConvertClipboardToEditorFormat(event, convertClipboardToEditorFormat);
+        expect(event.preventDefault).not.toHaveBeenCalled();
+        expect(convertClipboardToEditorFormat).not.toHaveBeenCalled();
+    });
+});
+
+function generateConvertClipboardToEditorFormatMock() {
+    return jasmine.createSpy('convertClipboardToEditorFormat');
+}
+
+function generateClipboardEventMock(types: string[], data: string): ClipboardEvent {
+    const partialDataTransfer: Partial<DataTransfer> = {
+        types,
+        getData: () => data
+    };
+    const event: Partial<ClipboardEvent> = {
+        preventDefault: jasmine.createSpy('preventDefault'),
+        clipboardData: partialDataTransfer as DataTransfer
+    };
+    return event as ClipboardEvent;
+}
