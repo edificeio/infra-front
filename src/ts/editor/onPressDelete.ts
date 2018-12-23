@@ -1,5 +1,5 @@
 import { $ } from "../libs";
-import { findClosestHTMLElement, findLatestChildTextNode, isHTMLBlockElement } from "./selection";
+import { findClosestHTMLElement, findLatestChildTextNode, isHTMLBlockElement, isHTMLElement } from './selection';
 
 export function findClosestBlockElement(currentNode: Node, root: Node): Node {
     let target;
@@ -72,7 +72,11 @@ export function onPressDelete(event, selection, editorInstance, editZone) {
                 }
                 if (blockElement && blockElement.previousSibling) {
                     const previousElement = blockElement.previousSibling;
-                    if (trim(blockElement.textContent).length === 0) { // current line can be deleted
+                    if ((trim(blockElement.textContent).length === 0) || (
+                        isHTMLElement(blockElement) &&
+                        blockElement.querySelector('.image-container') &&
+                        trim(blockElement.textContent).replace(/\n\r/g, '').trim().length === 0
+                    )) { // current line can be deleted
                         if (previousElement.nodeType === Node.TEXT_NODE) {
                             newRange = document.createRange();
                             newRange.setStart(previousElement, previousElement.textContent.length);
@@ -95,7 +99,6 @@ export function onPressDelete(event, selection, editorInstance, editZone) {
                         event.preventDefault();
                     }
                 }
-
             }
         }
         return newRange? newRange : range;
@@ -107,5 +110,4 @@ export function onPressDelete(event, selection, editorInstance, editZone) {
             $(item).remove();
         }
     });
-
 }

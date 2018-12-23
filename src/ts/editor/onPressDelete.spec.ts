@@ -67,6 +67,17 @@ describe('onPressDelete', () => {
         expect({editZone, range}).toBeEditedAs(`<div>‸test</div>`);
         expect(event.preventDefault).toHaveBeenCalled();
     });
+
+    it(`should delete the current div
+            when the deletion occurred in a line with a img and no text`, () => {
+        let {editZone, range, event} = pressDelete(
+            '<div>test</div><div><span class="delete-here"><span class="image-container"> <img/></span></span></div>',
+            selection,
+            '.delete-here'
+        );
+        expect({editZone, range}).toBeEditedAs(`<div>test‸</div>`);
+        expect(event.preventDefault).toHaveBeenCalled();
+    });
 });
 
 const pressDelete = pressFactory('←',

@@ -16,16 +16,23 @@ declare let Prism: any;
 const whitelistedProperties = [
     'background-color',
     'color',
+    'cursor',
     'font-family',
     'font-size',
     'font-style',
     'font-weight',
+    'height',
     'line-height',
     'text-align',
     'text-decoration',
-    'vertical-align'
+    'vertical-align',
+    'width'
 ];
-const whitelistedClasses = ['audio-wrapper', 'smiley'];
+const whitelistedClasses = [
+    'audio-wrapper',
+    'image-container',
+    'smiley'
+];
 
 function removeNodes(selector: string, root: HTMLElement): HTMLElement {
     const nodesToRemove = root.querySelectorAll(selector);
