@@ -144,10 +144,12 @@ export function convertToEditorFormat(html: string): string {
     return container.innerHTML;
 }
 
-function tryToConvertClipboardToEditorFormat(e: ClipboardEvent) {
-    if (e.clipboardData) { // when it's possible, catch the paste event and convert the clipboard data, else let's the browser handles the paste (IE11)
+
+export function tryToConvertClipboardToEditorFormat(e: ClipboardEvent, convertClipboardToEditorFormat: (html: string) => string) {
+    // when it's possible, catch the paste event and convert the clipboard data, else let's the browser handles the paste (IE11)
+    if (e.clipboardData && e.clipboardData.types.indexOf('text/html') >= 0) {
         e.preventDefault();
-        document.execCommand('insertHTML', false, convertToEditorFormat(e.clipboardData.getData('text/html')));
+        document.execCommand('insertHTML', false, convertClipboardToEditorFormat(e.clipboardData.getData('text/html')));
     }
 }
 
@@ -829,7 +831,7 @@ export let RTE = {
                     var editingTimer;
 
                     editZone.on('paste', function (e) {
-                        tryToConvertClipboardToEditorFormat(e.originalEvent);
+                        tryToConvertClipboardToEditorFormat(e.originalEvent, convertToEditorFormat);
                         setTimeout(function(){
                             editorInstance.editZone.find('[resizable]').removeAttr('resizable').css('cursor', 'initial');
                             editorInstance.editZone.find('[bind-html]').removeAttr('bind-html');
