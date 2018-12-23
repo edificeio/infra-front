@@ -22,14 +22,14 @@ describe('onPressEnter', () => {
 
     it(`should add two <div></div> holding ZWS character
             when pressing enter in an empty editor`, () => {
-        expect(pressEnter('', selection, false))
+        expect(pressEnter('', selection, 'self'))
             .toBeEditedAs('<div>&#8203;</div><div>&#8203;‸</div>');
     });
 
     it(`should wrap the <span></span> tag in a <div></div> tag
             and create a new <div><span></span></div> tags
             when pressing enter in a root <span></span>`, () => {
-        expect(pressEnter('<span>test</span>', selection, false))
+        expect(pressEnter('<span>test</span>', selection, 'self'))
             .toBeEditedAs('<div>&#8203;</div><div>&#8203;‸</div>');
     });
 
@@ -281,26 +281,29 @@ function findNodeAndOffsetOf(node: Node, char: string): { node: Node, offset: nu
     }
 }
 
-export type pressFunction = (content: string, selection: Selection, searchRange?: boolean) => { event: any, range: Range, instance: any, editZone: any };
+export type pressFunction = (content: string, selection: Selection, rangeSelector?: string) => { event: any, range: Range, instance: any, editZone: any };
 
 export type pressCallbackFunction = (event: KeyboardEvent, selection: Selection, range: Range, instance: any, editZone: any, textNodes: Array<String>) => void;
 
 export function pressFactory(char: string, cb: pressCallbackFunction): pressFunction {
-    return function (content: string, selection: Selection, searchRange = true): { event: any, range: Range, instance: any, editZone: any } {
+    return function (content: string, selection: Selection, rangeSelector: string): { event: any, range: Range, instance: any, editZone: any } {
         const event = jasmine.createSpyObj('KeyboardEvent', ['preventDefault']);
         const instance = jasmine.createSpyObj('Instance', ['addState']);
         let range = document.createRange();
         const editZoneElement = document.createElement('div');
         editZoneElement.innerHTML = content;
 
-        if (searchRange) {
+        if (!rangeSelector) {
             // find and remove the char, start the range at its position
             const {node, offset} = findNodeAndOffsetOf(editZoneElement, char);
             node.nodeValue = node.nodeValue.replace(char, '');
             range.setStart(node, offset);
-        } else {
+        } else if (rangeSelector === 'self') {
             range.setStart(editZoneElement, 0);
             range.setEnd(editZoneElement, 0);
+        } else {
+            const selected = editZoneElement.querySelector(rangeSelector);
+            range.setStart(selected, selected.childNodes.length);
         }
 
         (selection.getRangeAt as jasmine.Spy).and.returnValue(range);
