@@ -541,7 +541,9 @@ export let RTE = {
                         if(element.parents('.editor-media').length > 0 || element.parents('body').length === 0){
                             return;
                         }
-                        
+                        if (attributes.inline !== undefined && !element.hasClass('focus')) {
+                            return;
+                        }
                         if(toolbarElement.css('position') !== 'absolute'){
                             toolbarElement.css({ 'position': 'absolute', 'top': '0px' });
                             element.css({ 'padding-top': toolbarElement.height() + 1 + 'px' });
@@ -589,7 +591,11 @@ export let RTE = {
                         }
                         highlightZone.css({ top: (element.find('editor-toolbar').height() + 1) + 'px' });
                         if($(window).width() > ui.breakpoints.tablette){
-                            toolbarElement.css({ 'position': 'relative' });
+                            if (attributes.inline !== undefined && !element.hasClass('focus')) {
+                                toolbarElement.css({ 'position': '' });
+                            } else {
+                                toolbarElement.css({ 'position': 'relative' });
+                            }
                             cancelAnimationFrame(placeEditorToolbar);
                             var placeEditorToolbar = requestAnimationFrame(sticky);
                         }
@@ -767,7 +773,11 @@ export let RTE = {
                             element.children('editor-toolbar').css({
                                 left: 0
                             });
-                            element.css({ 'padding-top': toolbarElement.height() + 1 + 'px' });
+                            if(element.hasClass('focus')) {
+                                element.css({ 'padding-top': toolbarElement.height() + 1 + 'px' });
+                            } else {
+                                element.css({ 'padding-top': '' });
+                            }
                         }
                         else if($(window).width() < ui.breakpoints.tablette){
                             element.css({ 'padding-top': '' });
@@ -779,9 +789,9 @@ export let RTE = {
                         if(e.target === element.find('.close-focus')[0] || element.hasClass('focus')){
                             return;
                         }
-                        placeToolbar();
                         element.trigger('editor-focus');
                         element.addClass('focus');
+                        placeToolbar();
                         element.parent().data('lock', true);
                         element.parents('grid-cell').data('lock', true);
                         if ($(window).width() < ui.breakpoints.tablette) {
