@@ -260,7 +260,12 @@ export const workspaceService = {
             workspaceService.onChange.next({ action: "empty", treeSource: "trash" });
         });
     },
-    rename(el: workspaceModel.Element, newName: string): Promise<any> {
+    rename(el: workspaceModel.Element, newNameOrigin: string): Promise<any> {
+        const extension = el.metadata && el.metadata.extension;
+        let newName = newNameOrigin;
+        if (extension && newName.indexOf(extension) === -1) {
+            newName += '.' + extension;
+        }
         let res = null;
         if (workspaceService.isFile(el)) {
             res = http().putJson("/workspace/rename/" + el._id, { name: newName });
@@ -268,7 +273,7 @@ export const workspaceService = {
             res = http().putJson("/workspace/folder/rename/" + el._id, { name: newName });
         }
         res.then(e => {
-            workspaceService.onChange.next({ action: "update", elements: [{ name: newName, eType: el.eType, _id: el._id } as workspaceModel.Element] });
+            workspaceService.onChange.next({ action: "update", elements: [{ name: newNameOrigin, eType: el.eType, _id: el._id } as workspaceModel.Element] });
         });
         return res;
     },
