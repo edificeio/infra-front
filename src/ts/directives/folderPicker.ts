@@ -78,8 +78,8 @@ export const folderPicker = ng.directive('folderPicker', ['$timeout', ($timeout)
                 </div>
                 <div class="row">
                     <div class="search-pagination ">
-                        <a ng-class="{'show-close':canResetSearch()}" ng-show="canResetSearch()" ng-click="resetSearch()"><i class="close horizontal-spacing cell-ellipsis"></i></a>
-                        <input ng-class="{'eleven':canResetSearch(),'twelve':!canResetSearch()}" type="text" ng-model="search.value" ng-keyup="searchKeyUp($event)"
+                        <a ng-class="{'show-close':canResetSearch()}" ng-show="canResetSearch()" ng-click="resetSearch()"><i class="blue-1d close horizontal-spacing cell-ellipsis"></i></a>
+                        <input class="twelve" type="text" ng-model="search.value" ng-keyup="searchKeyUp($event)"
                             i18n-placeholder="search">
                         <i class="search"></i>
                     </div>
