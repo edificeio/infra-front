@@ -490,9 +490,17 @@ export const workspaceService = {
             return Promise.resolve(copies);
         }).then(copies => Promise.resolve({ nbFiles: 0, nbFolders: ids.length, copies }));
     },
-    notifyContrib(folder: workspaceModel.Element, eltsOrIds: workspaceModel.Element[] | string[]) {
+    notifyContrib(folder: workspaceModel.Element, eltsOrIds: workspaceModel.Element[] | string[], addVersion: boolean = false) {
         if (folder && folder._id && (folder.isShared || folder.shared.length > 0) && !folder.deleted) {
-            return http().post("/workspace/folder/notify/contrib/" + folder._id)
+            const ids: string[] = [];
+            for (let e of eltsOrIds) {
+                if (e instanceof workspaceModel.Element) {
+                    ids.push(e._id);
+                } else {
+                    ids.push(e);
+                }
+            }
+            return http().postJson("/workspace/folder/notify/contrib/" + folder._id, { ids, addVersion })
         } else {
             return Promise.resolve();
         }
@@ -611,6 +619,7 @@ export const workspaceService = {
         document.currentQuality = 1;
         document.version = Math.floor(Math.random() * 100);
         document.eventer.trigger('save');
+        workspaceService.onChange.next({ action: "document-change", elements: [document] });
         return document;
     },
     async createFolder(folder: workspaceModel.Element, parent?: workspaceModel.Element): Promise<{ error?: string } | workspaceModel.Element> {
@@ -684,7 +693,20 @@ workspaceService.onChange.subscribe(event => {
     if (event.action == "add" && event.elements && event.elements.filter(el => workspaceService.isFolder(el)).length == 0) {
         return;
     }
-    //
+    //on create revision or update doc (edit picture on image editor)
+    if (event.action == "document-change" && (event.elements && event.elements.length)) {
+        const elts = event.elements;
+        const destFolderIds = elts.filter(el => el.eParent).map(el => el.eParent);
+        const uniqDestFolderIds = destFolderIds.filter((elem, pos, arr) => arr.indexOf(elem) == pos);
+        const destFolders = workspaceService._cacheFolders.filter(folder => uniqDestFolderIds.indexOf(folder._id) > -1);
+        //
+        destFolders.forEach(dest => {
+            const children = elts.filter(el => el.eParent == dest._id);
+            workspaceService.notifyContrib(dest, children, true)
+        })
+        return;
+    }
+    //on other actions (copy, move...)
     if (event.dest && event.dest.isShared && ((event.elements && event.elements.length) || (event.ids && event.ids.length))) {
         workspaceService.notifyContrib(event.dest, event.elements || event.ids)
     }
