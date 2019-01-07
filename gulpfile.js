@@ -4,6 +4,7 @@ var glob = require('glob');
 var rename = require('gulp-rename');
 var argv = require('yargs').argv;
 var rimraf = require("rimraf");
+var gap = require('gulp-append-prepend');
 
 let springboardPath = '../springboard-open-ent';
 if (argv.springboard) {
@@ -13,13 +14,18 @@ if (argv.springboard) {
 gulp.task('clean:types', function (cb) {
     rimraf('./types/src', cb);
 });
-gulp.task("build", ["clean:types"], function () {
+gulp.task("do-build", ["clean:types"], function () {
     return gulp.src('./')
         .pipe(webpack(require('./webpack.config.js')))
         .on('error', function handleError() {
             this.emit('end');
         })
         .pipe(gulp.dest('./'));
+});
+gulp.task("build", ["do-build"], function () {
+    return gulp.src('./bundle/ng-app.js')
+    .pipe(gap.prependText('window.springboardBuildDate="'+new Date().toISOString()+'";\n'))
+    .pipe(gulp.dest("./bundle/"));
 });
 
 gulp.task("build-dev", ["clean:types"], () => {
