@@ -333,7 +333,9 @@ export class FolderContext {
     private originalDocuments: Element[] = []
     private filteredDocuments: Element[] = []
     private filteredFolders: Element[] = []
-    private filtered = false;
+    private filtered: boolean = false;
+    private sorted: boolean = false;
+    private sortFunction: (el1: Element, el2: Element) => number;
     constructor(public folder: Element = emptyFolder()) {
         this.setFolder(folder);
     }
@@ -352,6 +354,10 @@ export class FolderContext {
         this.filteredDocuments = this.originalDocuments.filter(filter);
         this.filteredFolders = this.folder.children.filter(filter);
         this.filtered = true;
+    }
+    applySort(sort: (el1: Element, el2: Element) => number) {
+        this.sortFunction = sort;
+        this.sorted = true;
     }
     pushDoc(el: Element) {
         this.originalDocuments.push(el)
@@ -374,7 +380,16 @@ export class FolderContext {
         return this.filtered ? this.filteredFolders : this.folder.children;
     }
     get all() {
-        return [...this.folders, ...this.documents]
+        return [...this.folders, ...this.documents];
+    }
+    get sortedDocuments() {
+        return this.sorted ? this.documents.slice(0).sort(this.sortFunction) : this.documents;
+    }
+    get sortedFolders() {
+        return this.sorted ? this.folders.slice(0).sort(this.sortFunction) : this.folders;
+    }
+    get sortedAll() {
+        return [...this.sortedFolders, ...this.sortedDocuments];
     }
 }
 
