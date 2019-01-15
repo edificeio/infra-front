@@ -17,3 +17,5 @@ package-lock.json
 local.log
 errorShots
 .vscode/
+.npmrc
+npm-debug.log
