@@ -25,22 +25,40 @@ case $i in
 esac
 done
 
+build () {
+  local extras=$1
+  docker-compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "node_modules/gulp/bin/gulp.js build ${extras}"
+}
+
 install () {
-  docker-compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "npm install && node_modules/gulp/bin/gulp.js build --springboard=/home/node/$SPRINGBOARD"
+  docker-compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "npm install"
 }
 
 watch () {
   docker-compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "node_modules/gulp/bin/gulp.js watch --springboard=/home/node/$SPRINGBOARD"
 }
 
+publish () {
+  docker-compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "npm publish"
+}
+
 for param in "$@"
 do
   case $param in
-    install)
+    deps)
       install
+      ;;
+    build)
+      build
+      ;;
+    install)
+      install && build "--springboard=/home/node/${SPRINGBOARD}"
       ;;
     watch)
       watch
+      ;;
+    publish)
+      publish
       ;;
     *)
       echo "Invalid argument : $param"
