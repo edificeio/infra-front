@@ -82,8 +82,8 @@ describe('convertToEditorFormat', () => {
     });
 
     it('should tranform <font></font> nodes to <span></span>', () => {
-        expect(convertToEditorFormat('<font color="red">test1</font><font face="Arial">test2</font><font size="6">test3</font>'))
-            .toBe('<span style="color: red;">test1</span><span style="font-family: Arial;">test2</span><span style="font-size: 6px;">test3</span>')
+        expect(convertToEditorFormat('<font color="red">test1</font><font face="Arial">test2</font><font size="6" style="font-size: 16px;">test3</font><font size="3">test4</font>'))
+            .toBe('<span style="color: red;">test1</span><span style="font-family: Arial;">test2</span><span style="font-size: 16px;">test3</span><span>test4</span>')
     });
 
     it('should remove html comments', () => {

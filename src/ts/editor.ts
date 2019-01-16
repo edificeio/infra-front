@@ -13,6 +13,10 @@ import { onPressDelete } from "./editor/onPressDelete";
 
 declare let Prism: any;
 
+interface StyleProperties {
+    [key: string]: string;
+}
+
 const whitelistedProperties = [
     'background-color',
     'color',
@@ -40,6 +44,10 @@ function removeNodes(selector: string, root: HTMLElement): HTMLElement {
         nodesToRemove.item(i).parentNode.removeChild(nodesToRemove.item(i));
     }
     return root;
+}
+
+function isFunction(fn: any): fn is Function {
+    return typeof fn === 'function';
 }
 
 function removeUnauthorizedClasses(root: HTMLElement): HTMLElement {
@@ -78,12 +86,16 @@ function removeUnauthorizedStyleProperties(root: HTMLElement): HTMLElement {
     return root;
 }
 
-function convertNode(selector: string, tag: string, style: any, root: HTMLElement): HTMLElement {
+function convertNode(selector: string, tag: string, style: (StyleProperties | ((element: Element) => StyleProperties)), root: HTMLElement): HTMLElement {
     const selectedNodes = root.querySelectorAll(selector);
     for (let i = selectedNodes.length - 1; i >= 0; i--) {
         let selectedNode = selectedNodes.item(i);
         const newNode = document.createElement(tag);
-        $(newNode).css(style);
+        if (isFunction(style)) {
+            $(newNode).css(style(selectedNode));
+        } else {
+            $(newNode).css(style);
+        }
         let currentNode: Node;
         while (currentNode = selectedNode.firstChild) {
             newNode.appendChild(currentNode);
@@ -134,8 +146,8 @@ export function convertToEditorFormat(html: string): string {
     convertNodeAndChangeAttributeToStyle('p[align]', 'div', 'align', 'text-align', container);
     convertNode('p', 'div', {}, container);
     convertNodeAndChangeAttributeToStyle('font[color]', 'span', 'color', 'color', container);
-    convertNodeAndChangeAttributeToStyle('font[size]', 'span', 'size', 'font-size', container, v => `${v}px`);
     convertNodeAndChangeAttributeToStyle('font[face]', 'span', 'face', 'font-family', container);
+    convertNode('font', 'span', (e: HTMLElement) => ({'font-size': e.style.getPropertyValue('font-size')}), container)
     removeComments(container);
 
     const liDivElements = container.querySelectorAll('li > div');
