@@ -50,6 +50,20 @@ function isFunction(fn: any): fn is Function {
     return typeof fn === 'function';
 }
 
+const mapping = {
+    "1": "7pt",
+    "2": "10pt",
+    "3": "12pt",
+    "4": "14pt",
+    "5": "18pt",
+    "6": "24pt",
+    "7": "36pt"
+};
+
+function getFontSizeFromSizeAttribute(sizeAttribute: string): string {
+    return mapping[sizeAttribute] || mapping[4];
+}
+
 function removeUnauthorizedClasses(root: HTMLElement): HTMLElement {
     const nodesWithClasses = root.querySelectorAll('[class]');
     for (let i = nodesWithClasses.length - 1; i >= 0; i--) {
@@ -147,7 +161,9 @@ export function convertToEditorFormat(html: string): string {
     convertNode('p', 'div', {}, container);
     convertNodeAndChangeAttributeToStyle('font[color]', 'span', 'color', 'color', container);
     convertNodeAndChangeAttributeToStyle('font[face]', 'span', 'face', 'font-family', container);
-    convertNode('font', 'span', (e: HTMLElement) => ({'font-size': e.style.getPropertyValue('font-size')}), container)
+    convertNode('font[style]', 'span', (e: HTMLElement) => ({'font-size': e.style.getPropertyValue('font-size')}), container);
+    convertNode('font[size]', 'span', (e: HTMLElement) => ({'font-size': getFontSizeFromSizeAttribute(e.getAttribute('size'))}), container);
+    convertNode('font', 'span', {}, container);
     removeComments(container);
 
     const liDivElements = container.querySelectorAll('li > div');
