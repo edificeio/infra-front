@@ -6,6 +6,7 @@ import { _ } from '../libs/underscore/underscore';
 import { calendar } from '../calendar';
 import { template } from '../template';
 import { $ } from '../libs/jquery/jquery';
+import { Me } from '../me';
 
 export let calendarComponent = ng.directive('calendar', function () {
     return {
@@ -25,6 +26,22 @@ export let calendarComponent = ng.directive('calendar', function () {
                 $scope.moment = moment;
                 $scope.display.editItem = false;
                 $scope.display.createItem = false;
+
+                let calendarOptions = {showQuarterHours:false};
+                $scope.toggleQuarterHours = () => {
+                    if(!Me.preferences.calendarOptions){
+                        Me.preferences.calendarOptions = {};
+                    }
+                    Me.preferences.calendarOptions.showQuarterHours = $scope.display.showQuarterHours;
+                    Me.savePreference('calendarOptions');
+                };
+                async function initCalendarOptions() {
+                    calendarOptions = await Me.preference('calendarOptions');
+                    $scope.display.showQuarterHours = calendarOptions.showQuarterHours;
+                }
+                if ($scope.display.showQuarterHoursOption) {
+                    initCalendarOptions();
+                }
 
                 $scope.editItem = function (item) {
                     $scope.calendarEditItem = item;
