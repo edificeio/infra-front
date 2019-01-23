@@ -30,7 +30,9 @@
     "src/ts/editor.spec.ts",
     "src/ts/editor/**/*.ts",
     "src/ts/directives/userRole.ts",
-    "src/ts/directives/userRole.spec.ts"
+    "src/ts/directives/userRole.spec.ts",
+    "src/ts/directives/calendar.ts",
+    "src/ts/directives/calendar.spec.ts"
   ],
   "preprocessors": {
     "src/**/*.ts": ["karma-typescript"]
