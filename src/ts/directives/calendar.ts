@@ -8,7 +8,6 @@ import { template } from '../template';
 import { $ } from '../libs/jquery/jquery';
 import { Me } from '../me';
 
-
 export let calendarComponent = ng.directive('calendar', function () {
     return {
         restrict: 'E',
@@ -28,17 +27,17 @@ export let calendarComponent = ng.directive('calendar', function () {
                 $scope.display.editItem = false;
                 $scope.display.createItem = false;
 
-                let calendar_options = {showQuarterHours:false};
-                $scope.toogleQuarterHours = () => {
-                    if(!Me.preferences.calendar_options){
-                        Me.preferences.calendar_options = {};
+                let calendarOptions = {showQuarterHours:false};
+                $scope.toggleQuarterHours = () => {
+                    if(!Me.preferences.calendarOptions){
+                        Me.preferences.calendarOptions = {};
                     }
-                    Me.preferences.calendar_options["showQuarterHours"] = $scope.display.showQuarterHours;
-                    Me.savePreference('calendar_options');
+                    Me.preferences.calendarOptions.showQuarterHours = $scope.display.showQuarterHours;
+                    Me.savePreference('calendarOptions');
                 };
                 async function initCalendarOptions() {
-                    calendar_options = await Me.preference('calendar_options');
-                    $scope.display.showQuarterHours = calendar_options["showQuarterHours"];
+                    calendarOptions = await Me.preference('calendarOptions');
+                    $scope.display.showQuarterHours = calendarOptions.showQuarterHours;
                 }
                 if ($scope.display.showQuarterHoursOption) {
                     initCalendarOptions();
