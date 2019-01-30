@@ -2081,6 +2081,7 @@ module.directive('whereami', function () {
 
 module.controller('Account', ['$scope', function($scope) {
 	$scope.nbNewMessages = 0;
+    $scope.messagerieLink = '/zimbra/zimbra';
 	$scope.me = model.me;
 	$scope.rand = Math.random();
 	$scope.skin = skin;
@@ -2097,6 +2098,23 @@ module.controller('Account', ['$scope', function($scope) {
 			$scope.$apply();
 		});
 	};
+    $scope.goToMessagerie = function(){
+        console.log($scope.messagerieLink);
+        http().get('/userbook/preference/zimbra').done(function(data){
+            try{
+               if( data.preference? JSON.parse(data.preference)['modeExpert'] && model.me.hasWorkflow('fr.openent.zimbra.controllers.ZimbraController|preauth') : false){
+                        $scope.messagerieLink = '/zimbra/preauth';
+                        window.open($scope.messagerieLink);
+                    } else {
+                        $scope.messagerieLink = '/zimbra/zimbra';
+                        window.location.href = window.location.origin + $scope.messagerieLink;
+                    }
+                    console.log($scope.messagerieLink);
+            } catch(e) {
+                $scope.messagerieLink = '/zimbra/zimbra';
+            }
+        })
+    };
 
 	$scope.refreshMails = function(){
 		http().get('/conversation/count/INBOX', { unread: true }).done(function(nbMessages){
