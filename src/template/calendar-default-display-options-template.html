@@ -1,0 +1,25 @@
+<h2 class="ng-scope"><i18n>calendar.display.options</i18n></h2>
+<div class=" vertical-spacing">
+    <div class="row">
+        <label class="quarterHours">
+            <switch class="four" ng-model="display.quarterHours" ng-change="toogleDisplayOptions();"></switch>
+            <i18n>calendar.display.quarterHours</i18n>
+        </label>
+    </div>
+</div>
+<div class=" vertical-spacing">
+    <div class="row">
+        <label class="display_saturday">
+            <switch class="display_saturday" ng-model="display.saturday" ng-change="toogleDisplayOptions();"></switch>
+            <i18n>calendar.display.saturday</i18n>
+        </label>
+    </div>
+</div>
+<div class=" vertical-spacing">
+    <div class="row">
+        <label class="display_sunday">
+            <switch class="display_sunday" ng-model="display.sunday" ng-change="toogleDisplayOptions();"></switch>
+            <i18n>calendar.display.sunday</i18n>
+        </label>
+    </div>
+</div>
