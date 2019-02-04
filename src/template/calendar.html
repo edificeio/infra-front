@@ -1,29 +1,34 @@
-<div class="changeDisplayModeButtons" ng-if="display.enableModes">
-    <button ng-click="display.mode = 'day'" ng-class="{cyan: display.mode === 'day'}" ><i18n>calendar.mode.day</i18n></button>
-    <button ng-click="display.mode = 'week'" ng-class="{cyan: display.mode === 'week'}" ><i18n>calendar.mode.week</i18n></button>
-    <button ng-click="display.mode = 'month'" ng-class="{cyan: display.mode === 'month'}" ><i18n>calendar.mode.month</i18n></button>
-</div>
-
 <div class="calendar-current-week">
-    <span class="next-previous " ng-if="display.showNextPreviousButton" ng-click=" calendar.previous();"><</span>
+    <div class="calendarFiltersButtons" ng-if="display.enableModes || display.showNextPreviousButton">
+        <div class="calendarOptionButtonGroup displayOptionsButtons" ng-if="display.enableModes">
+            <button ng-click="display.lightboxOptions = true;"><i class="manage"></i></button>
+        </div>
+        <div class="calendarOptionButtonGroup displayModeButtons" ng-if="display.enableModes">
+            <button ng-click="display.mode = 'day'" ng-class="{cyan: display.mode === 'day'}">
+                <i18n>calendar.mode.day</i18n>
+            </button>
+            <button ng-click="display.mode = 'week'" ng-class="{cyan: display.mode === 'week'}">
+                <i18n>calendar.mode.week</i18n>
+            </button>
+            <button ng-click="display.mode = 'month'" ng-class="{cyan: display.mode === 'month'}">
+                <i18n>calendar.mode.month</i18n>
+            </button>
+        </div>
+        <div class="calendarOptionButtonGroup nextPrevious" ng-if="display.showNextPreviousButton">
+            <button ng-click="calendar.previous();">&#8592;</button>
+            <button ng-click="calendar.next();">&#8594;</button>
+        </div>
+    </div>
+
 	<span ng-if="display.mode === 'day'">
 		[[calendar.firstDay.format('Do MMMM YYYY')]]
 	</span>
-        <span ng-if="display.mode === 'week'">
-		<i18n>calendar.weekfrom</i18n> [[calendar.firstDay.format('DD/MM/YYYY')]] <i18n>calendar.weekto</i18n> [[moment(calendar.firstDay).add(6, 'days').format('DD/MM/YYYY')]]
+    <span ng-if="display.mode === 'week'">
+		<i18n>calendar.mode.week</i18n> [[moment(calendar.firstDay).week()]] <span class="zero-mobile">- [[calendar.firstDay.format('DD/MM/YYYY')]] <i18n>calendar.weekto</i18n> [[moment(calendar.firstDay).add(6, 'days').format('DD/MM/YYYY')]]</span>
 	</span>
-        <span ng-if="display.mode === 'month'">
+    <span ng-if="display.mode === 'month'">
 		[[moment(calendar.firstDay).format('MMMM YYYY')]]
 	</span>
-    <span class="next-previous" ng-if="display.showNextPreviousButton"  ng-click=" calendar.next();">></span>
-</div>
-<div ng-if="display.showQuarterHoursOption && display.mode !== 'month'" class="row">
-    <div class="right-magnet" >
-        <label class="cell ">
-            <i18n>edt.show.quarter.hours</i18n>
-        </label>
-        <switch ng-model="display.showQuarterHours" ng-change="toggleQuarterHours();"></switch>
-    </div>
 </div>
 <div class="week-switcher">
     <date-picker-icon ng-model="calendar.firstDay" ng-change="updateCalendarDate()" class="cell"></date-picker-icon>
@@ -36,9 +41,14 @@
     </legend>
     <div class="days">
         <button class="previous-timeslots" ng-click="previousTimeslots()" ng-disabled="calendar.timeSlots.first().beginning === 0"></button>
-        <div ng-repeat="day in calendar.days.all" class="day"
-             ng-class="{single: display.mode === 'day'}"
-        >
+        <div ng-if="display.mode === 'week' && (!(!display.saturday && day.name == 'saturday') && !(!display.sunday && day.name == 'sunday'))"
+             ng-repeat="day in calendar.days.all" class="day"
+             ng-class="{
+                single: display.mode === 'day',
+                week: display.mode === 'week',
+                sixDays: ( (display.saturday && !display.sunday) || (!display.saturday && display.sunday) ),
+                fiveDays: (!display.saturday && !display.sunday),
+             }">
             <legend>
                 <div translate content="[[day.name]]"></div>
                 <div>[[ day.date.format('DD/MM') ]]</div>
@@ -48,14 +58,14 @@
             </div>
 
             <div ng-if="display.readonly" class="timeslots" >
-                <div ng-repeat="timeslot in day.timeSlots.all" class="timeslot" ng-class="{showQuarterHours: display.showQuarterHours}">
+                <div ng-repeat="timeslot in day.timeSlots.all" class="timeslot" ng-class="{quarterHours: display.quarterHours}">
                     <hr>
                     <hr>
                     <hr>
                 </div>
             </div>
             <div ng-if="!display.readonly" class="timeslots">
-                <div ng-repeat="timeslot in day.timeSlots.all" class="timeslot" ng-click="createItem(day, timeslot)" ng-class="{showQuarterHours: display.showQuarterHours}">
+                <div ng-repeat="timeslot in day.timeSlots.all" class="timeslot" ng-click="createItem(day, timeslot)" ng-class="{quarterHours: display.quarterHours}">
                     <hr>
                     <hr>
                     <hr>
@@ -80,7 +90,6 @@
     </div>
     <div class="row"></div>
 </div>
-
 <div class="schedule schedule-month" ng-if="display.mode === 'month'">
     <div class="legend">
         <div class="month-day offset-0">[[ moment().day(1).format('dddd') ]]</div>
@@ -91,7 +100,6 @@
         <div class="month-day">[[ moment().day(6).format('dddd') ]]</div>
         <div class="month-day">[[ moment().day(7).format('dddd') ]]</div>
     </div>
-
     <div class="grid">
         <div ng-repeat="day in calendar.days.all"
              class="month-day offset-{{ getMonthDayOffset(day) }}"
@@ -105,8 +113,7 @@
                      class="item"
                      tooltip
                      tooltip-template="{{ itemTooltipTemplate }}"
-                     tooltip-restrict-selector=".schedule-month"
-                >
+                     tooltip-restrict-selector=".schedule-month">
                     <container template="schedule-display-month-template"></container>
                 </div>
             </div>
@@ -122,4 +129,8 @@
 </lightbox>
 <lightbox show="display.moreItems" on-close="display.moreItems = false;" class="schedules-more-items">
     <container template="schedule-more-items-template"></container>
+</lightbox>
+
+<lightbox show="display.lightboxOptions" on-close="display.lightboxOptions = false;">
+    <container template="calendarDefaultDisplayOptionsTemplate"></container>
 </lightbox>

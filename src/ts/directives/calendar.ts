@@ -21,27 +21,41 @@ export let calendarComponent = ng.directive('calendar', function () {
                     item.end = item.endMoment;
                     return item;
                 }), { is_periodic: false });
+
                 model.calendar.addScheduleItems($scope.items);
+                model.calendar.display = $scope.display;
                 $scope.calendar = model.calendar;
                 $scope.moment = moment;
                 $scope.display.editItem = false;
                 $scope.display.createItem = false;
+                $scope.appPrefix = appPrefix;
 
-                let calendarOptions = {showQuarterHours:false};
-                $scope.toggleQuarterHours = () => {
-                    if(!Me.preferences.calendarOptions){
-                        Me.preferences.calendarOptions = {};
+                let calendarOptions = {
+                    displayQuarterHours:false,
+                    displaySaturday: false,
+                    displaySunday: false
+                };
+                $scope.toogleDisplayOptions = () => {
+                    if(Me && Me.preferences) {
+                        if(!Me.preferences.calendarOptions)
+                            Me.preferences.calendarOptions = {};
+
+                        Me.preferences.calendarOptions.displayQuarterHours = $scope.display.quarterHours;
+                        Me.preferences.calendarOptions.displaySaturday = $scope.display.saturday;
+                        Me.preferences.calendarOptions.displaySunday = $scope.display.sunday;
+                        Me.savePreference('calendarOptions');
                     }
-                    Me.preferences.calendarOptions.showQuarterHours = $scope.display.showQuarterHours;
-                    Me.savePreference('calendarOptions');
                 };
                 async function initCalendarOptions() {
                     calendarOptions = await Me.preference('calendarOptions');
-                    $scope.display.showQuarterHours = calendarOptions.showQuarterHours;
+                    $scope.display.quarterHours = calendarOptions.displayQuarterHours;
+                    $scope.display.saturday = calendarOptions.displaySaturday;
+                    $scope.display.sunday = calendarOptions.displaySunday;
                 }
-                if ($scope.display.showQuarterHoursOption) {
+                if ($scope.display.options) {
                     initCalendarOptions();
                 }
+                template.open('calendarDefaultDisplayOptionsTemplate', 'entcore/calendar-default-display-options-template');
 
                 $scope.editItem = function (item) {
                     $scope.calendarEditItem = item;
@@ -119,7 +133,6 @@ export let calendarComponent = ng.directive('calendar', function () {
         }],
         link: function (scope, element, attributes) {
             var allowCreate;
-
             if (attributes.itemTooltipTemplate) {
                 scope.itemTooltipTemplate = attributes.itemTooltipTemplate;
             }
@@ -128,8 +141,11 @@ export let calendarComponent = ng.directive('calendar', function () {
                 readonly: false,
                 mode: 'week',
                 enableModes: attributes.enableDisplayModes === 'true',
-                showQuarterHours: false,
-                showQuarterHoursOption:  attributes.showQuarterHours === 'true',
+                quarterHours: false,
+                sunday: false,
+                saturday: false,
+                options:  attributes.displayOptions === 'true',
+                lightboxOptions: false,
                 showNextPreviousButton: attributes.showNextPreviousButton === 'true'
             };
             attributes.$observe('createTemplate', function () {
