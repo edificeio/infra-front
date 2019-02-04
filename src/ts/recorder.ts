@@ -47,7 +47,7 @@ export var recorder = (function(){
 			var deflate = new Zlib.Deflate(e.data);
 			ws.send(deflate.compress());
 			const endTime = parseInt(performance.now());
-			if(endTime - initialTime > 250){
+			if(endTime - initialTime > 50){
 				compress = false;
 				ws.send('rawdata');
 			}
