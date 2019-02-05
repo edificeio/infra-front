@@ -2117,10 +2117,19 @@ module.controller('Account', ['$scope', function($scope) {
     };
 
 	$scope.refreshMails = function(){
-		http().get('/conversation/count/INBOX', { unread: true }).done(function(nbMessages){
-			$scope.nbNewMessages = nbMessages.count;
-			$scope.$apply('nbNewMessages');
-		});
+	    if(model.me.hasWorkflow('fr.openent.zimbra.controllers.ZimbraController|view')){
+            http().get('/zimbra/count/INBOX', { unread: true }).done(function(nbMessages){
+                $scope.nbNewMessages = nbMessages.count;
+                $scope.$apply('nbNewMessages');
+            });
+
+        }else{
+            http().get('/conversation/count/INBOX', { unread: true }).done(function(nbMessages){
+                $scope.nbNewMessages = nbMessages.count;
+                $scope.$apply('nbNewMessages');
+            });
+        }
+
 	};
 
 	$scope.openApps = function(event){
