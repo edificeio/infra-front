@@ -491,7 +491,10 @@ export const workspaceService = {
         }).then(copies => Promise.resolve({ nbFiles: 0, nbFolders: ids.length, copies }));
     },
     notifyContrib(folder: workspaceModel.Element, eltsOrIds: workspaceModel.Element[] | string[], addVersion: boolean = false) {
-        if (folder && folder._id && (folder.isShared || folder.shared.length > 0) && !folder.deleted) {
+        const isDefinedFolder = folder && folder._id;
+        const isSharedFolder = isDefinedFolder && (folder.isShared || folder.shared.length > 0);
+        const isNotDeletedFolder = isDefinedFolder && !folder.deleted;
+        const getIds = () => {
             const ids: string[] = [];
             for (let e of eltsOrIds) {
                 if (e instanceof workspaceModel.Element) {
@@ -500,7 +503,15 @@ export const workspaceService = {
                     ids.push(e);
                 }
             }
+            return ids;
+        }
+        if (isSharedFolder && isNotDeletedFolder) {
+            const ids: string[] = getIds();
             return http().postJson("/workspace/folder/notify/contrib/" + folder._id, { ids, addVersion })
+        } else if (addVersion) {
+            // when adding version to root => should work
+            const ids: string[] = getIds();
+            return http().postJson("/workspace/folder/notify/contrib/root", { ids, addVersion })
         } else {
             return Promise.resolve();
         }
@@ -697,10 +708,14 @@ workspaceService.onChange.subscribe(event => {
         const uniqDestFolderIds = destFolderIds.filter((elem, pos, arr) => arr.indexOf(elem) == pos);
         const destFolders = workspaceService._cacheFolders.filter(folder => uniqDestFolderIds.indexOf(folder._id) > -1);
         //
-        destFolders.forEach(dest => {
-            const children = elts.filter(el => el.eParent == dest._id);
-            workspaceService.notifyContrib(dest, children, true)
-        })
+        if (destFolders.length==0) {
+            workspaceService.notifyContrib(null, elts, true)
+        } else {
+            destFolders.forEach(dest => {
+                const children = elts.filter(el => el.eParent == dest._id);
+                workspaceService.notifyContrib(dest, children, true)
+            })
+        }
         return;
     }
     //on other actions (copy, move...)
