@@ -41,7 +41,7 @@
     </legend>
     <div class="days">
         <button class="previous-timeslots" ng-click="previousTimeslots()" ng-disabled="calendar.timeSlots.first().beginning === 0"></button>
-        <div ng-if="display.mode === 'week' && (!(!display.saturday && day.name == 'saturday') && !(!display.sunday && day.name == 'sunday'))"
+        <div ng-if="display.mode !== 'week' || (!(!display.saturday && day.name == 'saturday') && !(!display.sunday && day.name == 'sunday'))"
              ng-repeat="day in calendar.days.all" class="day"
              ng-class="{
                 single: display.mode === 'day',
