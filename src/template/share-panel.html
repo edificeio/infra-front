@@ -68,7 +68,7 @@
 					</div>
 
 					<a ng-click="displayMore()" 
-						ng-if="sharingModel.edited.length > maxEdit" 
+						ng-if="canShowMore()" 
 						class="display-more">
 						<i18n>share.more</i18n>
 					</a>

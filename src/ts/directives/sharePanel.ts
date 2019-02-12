@@ -77,6 +77,7 @@ export interface SharePanelScope {
     addResults()
     addEdit(item)
     clearSearch()
+    canShowMore(): boolean
     //angular
     $on(a, b)
     $apply(a?)
@@ -93,7 +94,7 @@ export const sharePanel = ng.directive('sharePanel', ['$rootScope', ($rootScope)
             onValidate: '&?',
             onFeed: '&?',
             closeDelegate: '&?',
-            confirmationCloseDelegate:'&?',
+            confirmationCloseDelegate: '&?',
             canEditDelegate: '&?',
             autoClose: '='
         },
@@ -314,6 +315,16 @@ export const sharePanel = ng.directive('sharePanel', ['$rootScope', ($rootScope)
                     });
                 })
             };
+            $scope.canShowMore = function () {
+                let count = 0;
+                if ($scope.sharingModel.edited && $scope.sharingModel.edited.length) {
+                    count += $scope.sharingModel.edited.length;
+                }
+                if ($scope.sharingModel.editedInherited && $scope.sharingModel.editedInherited.length) {
+                    count += $scope.sharingModel.editedInherited.length;
+                }
+                return count > $scope.maxEdit;
+            }
             $scope.isSubmitDisabled = function () {
                 let hasUnchecked = false;
                 for (let item of $scope.sharingModel.edited) {
@@ -488,7 +499,7 @@ export const sharePanel = ng.directive('sharePanel', ['$rootScope', ($rootScope)
             $scope.maxEdit = 3;
 
             $scope.displayMore = function () {
-                var displayMoreInc = 5;
+                let displayMoreInc = 5;
                 $scope.maxEdit += displayMoreInc;
             }
 
@@ -696,7 +707,7 @@ export const sharePanel = ng.directive('sharePanel', ['$rootScope', ($rootScope)
                 if (!$scope.sharingModel.changed)
                     $scope.closePanel(true);
                 else if (!$scope.display.showCloseConfirmation) {
-                    if($attributes.confirmationCloseDelegate){
+                    if ($attributes.confirmationCloseDelegate) {
                         $scope.confirmationCloseDelegate({ "$canceled": true, "$close": doClose })
                         return;
                     }
