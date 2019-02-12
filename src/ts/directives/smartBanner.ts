@@ -89,7 +89,6 @@ export const smartBanner = ng.directive('smartBanner', () => {
                 <div class="smartbanner-info">
                     <div class="smartbanner-title">[[banner.name]]</div>
                     <div>[[banner.description]]</div>
-                    <span><i18n>Free</i18n> &ndash; [[store]]</span>
                 </div>
                 <a href="[[appRef]]" target="_blank" class="smartbanner-button">
                     <span class="smartbanner-button-text"><i18n>View</i18n></span>
