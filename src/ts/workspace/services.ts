@@ -8,6 +8,7 @@ import { Subject } from 'rxjs';
 
 
 export interface ElementQuery {
+    id?: string;
     parentId?: string
     hierarchical?: boolean
     filter: workspaceModel.TREE_NAME,

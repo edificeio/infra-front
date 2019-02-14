@@ -4,6 +4,7 @@ import { Document, MediaLibrary } from '../../workspace';
 import { Mix } from 'entcore-toolkit';
 import { idiom } from "../../idiom";
 import { Me } from '../../me';
+import { workspaceService } from '../../workspace/services';
 
 const refreshResize = (instance) => {
     ui.extendElement.resizable(instance.editZone.find('.image-container').not('.image-template .image-container'), {
@@ -108,16 +109,12 @@ const showImageContextualMenu = (refElement, scope, instance) => {
             scope.$apply();
             return;
         }
-        scope.imageOption.display.file = Mix.castAs(Document, { _id: urlParts[urlParts.length - 1].split('?')[0] });
-        const isMine = MediaLibrary.appDocuments.documents.all.find(d => d._id === scope.imageOption.display.file._id) !== undefined ||
-        MediaLibrary.publicDocuments.documents.all.find(d => d._id === scope.imageOption.display.file._id) !== undefined;
-        if(isMine){
-            scope.imageOption.display.file.owner = { userId : Me.session.userId };
-            await scope.imageOption.display.file.rights.fromBehaviours('workspace');
-            try{
-                await scope.imageOption.display.file.behaviours("workspace");
-            }catch(e){}
+        const id =  urlParts[urlParts.length - 1].split('?')[0];
+        const founded = await workspaceService.fetchDocuments({filter:"all",id});
+        if(founded.length==0){
+            console.warn("[imageEditor] could not found document for id: ", id)
         }
+        scope.imageOption.display.file = founded[0];
         await scope.imageOption.display.file.loadProperties();
         if(scope.imageOption.display.file.metadata.extension === 'jpg'){
             scope.imageOption.display.file.metadata['content-type'] = 'image/jpeg';
