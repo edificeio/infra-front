@@ -114,6 +114,9 @@ const showImageContextualMenu = (refElement, scope, instance) => {
         if(isMine){
             scope.imageOption.display.file.owner = { userId : Me.session.userId };
             await scope.imageOption.display.file.rights.fromBehaviours('workspace');
+            try{
+                await scope.imageOption.display.file.behaviours("workspace");
+            }catch(e){}
         }
         await scope.imageOption.display.file.loadProperties();
         if(scope.imageOption.display.file.metadata.extension === 'jpg'){
