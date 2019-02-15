@@ -629,6 +629,9 @@ export const workspaceService = {
             if (!copy.children) {
                 copy.children = []
             }
+            if (!copy.ancestors) {
+                copy.ancestors = parent ? [].concat(parent.ancestors || []).concat([parent._id]) : []
+            }
             workspaceService.onChange.next({ action: "add", elements: [copy], dest: parent })
             return Promise.resolve(copy)
         });

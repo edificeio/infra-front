@@ -87,6 +87,8 @@ export class Element extends Model implements Node, Shareable, Selectable {
     hiddenBlob?: Blob
     eventer = new Eventer();
     //
+    ancestors:string[];
+    //
     newName?: string
     newProperties?: {
         name?: string;
@@ -197,9 +199,26 @@ export class Element extends Model implements Node, Shareable, Selectable {
     idInList(ids: string[]) {
         return ids.map(id => this.idEquals(id)).reduce((a1, a2) => a1 || a2, false);
     }
+    anyAncestors(ids: string[]) {
+        for(let id of ids){
+            if(this.ancestors.indexOf(id)>-1){
+                return true;
+            }
+        }
+        return false;
+    }
+    anyParent(ids: string[]){
+        return ids.indexOf(this.eParent)>-1;
+    }
+    anySelf(ids: string[]){
+        return ids.indexOf(this._id)>-1;
+    }
     canCopyFileIdsInto(ids: string[]) {
-        //cannot copy or move an element into himself
-        return this.canWriteOnFolder && !this.idInList(ids);
+        //cannot copy or move an element if has no right
+        //cannot move if dest is self
+        //cannot move if dest is child
+        //cannot move if dest is descendant
+        return this.canWriteOnFolder && !this.anySelf(ids) && !this.anyParent(ids) && !this.anyAncestors(ids);
     }
     //
     resetNewProperties() {
