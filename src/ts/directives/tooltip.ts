@@ -33,11 +33,12 @@ function tooltipLink($compile: any, scope: any, element: any, attributes: { [nam
         });
     }
 
-    let tip;
     let timeout: boolean = false;
     targetElement.on('mouseenter', function () {
 
+        let tip;
         timeout = true;
+
         setTimeout(function() {
             if (timeout) {
                 if (attributes.tooltipTemplate) {
@@ -114,13 +115,10 @@ function tooltipLink($compile: any, scope: any, element: any, attributes: { [nam
         targetElement.one('mouseout', function () {
             timeout = false;
         });
+
     });
 
     scope.$on("$destroy", function () {
-        if (tip) {
-            tip.remove();
-        }
-
         targetElement.off();
     });
 
