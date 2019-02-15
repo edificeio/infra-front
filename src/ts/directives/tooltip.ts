@@ -34,77 +34,86 @@ function tooltipLink($compile: any, scope: any, element: any, attributes: { [nam
     }
 
     let tip;
+    let timeout: boolean = false;
     targetElement.on('mouseenter', function () {
 
-        if (attributes.tooltipTemplate) {
-            let templatePath = template.getPath(attributes.tooltipTemplate);
-            tip = $('<div />')
-                .addClass('tooltip')
-                .html($compile('<div ng-include=\'\"' + templatePath + '\"\'></div>')(scope))
-                .appendTo('body');
-            scope.$apply();
+        timeout = true;
+        setTimeout(function() {
+            if (timeout) {
+                if (attributes.tooltipTemplate) {
+                    let templatePath = template.getPath(attributes.tooltipTemplate);
+                    tip = $('<div />')
+                        .addClass('tooltip')
+                        .html($compile('<div ng-include=\'\"' + templatePath + '\"\'></div>')(scope))
+                        .appendTo('body');
+                    scope.$apply();
 
-            tip.css('position', 'absolute');
-            let top = targetElement.offset().top;
-            let left = parseInt(targetElement.offset().left - tip.width() - 5);
+                    tip.css('position', 'absolute');
+                    let top = targetElement.offset().top;
+                    let left = parseInt(targetElement.offset().left - tip.width() - 5);
 
-            if (restrictToElement) {
-                if (left < restrictToElement.offset().left) {
-                    left = parseInt(targetElement.offset().left + targetElement.width() + 5);
+                    if (restrictToElement) {
+                        if (left < restrictToElement.offset().left) {
+                            left = parseInt(targetElement.offset().left + targetElement.width() + 5);
+                        }
+
+                        if (left + targetElement.width() > restrictToElement.offset().left + restrictToElement.width()) {
+                            left = restrictToElement.offset().left + 5;
+                            top += 30;
+                        }
+
+                        if (top > restrictToElement.height() + 150) {
+                            top -= 130;
+                        }
+                    }
+
+                    tip.css('left', left);
+                    tip.css('top', top);
+                } else {
+                    if ($(window).width() < ui.breakpoints.tablette || !attributes[tooltipType] || !tooltipCheck || attributes[tooltipType] === 'undefined') {
+                        return;
+                    }
+                    tip = $('<div />')
+                        .addClass('tooltip')
+                        .html($compile('<div class="arrow"></div><div class="content">' + idiom.translate(attributes[tooltipType]) + '</div> ')(scope))
+                        .appendTo('body');
+                    scope.$apply();
+
+                    let top = parseInt(sourceElement.offset().top + sourceElement.outerHeight());
+                    let left = parseInt(sourceElement.offset().left + sourceElement.width() / 2 - tip.width() / 2);
+                    if (top < 5) {
+                        top = 5;
+                    }
+                    if (left < 5) {
+                        left = 5;
+                    }
+                    tip.offset({
+                        top: top,
+                        left: left
+                    });
+                    if (tooltipDisplayCondition(element)) {
+                        tip.fadeIn();
+                        element.one('mouseout', function () {
+                            tip.fadeOut(200, function () {
+                                $(this).remove();
+                            })
+                        });
+                    }
                 }
 
-                if (left + targetElement.width() > restrictToElement.offset().left + restrictToElement.width()) {
-                    left = restrictToElement.offset().left + 5;
-                    top += 30;
+                if (tooltipDisplayCondition(element)) {
+                    tip.fadeIn();
+                    targetElement.one('mouseleave', function () {
+                        tip.fadeOut(200, function () {
+                            $(this).remove();
+                        })
+                    });
                 }
-
-                if (top > restrictToElement.height() + 150) {
-                    top -= 130;
-                }
             }
-
-            tip.css('left', left);
-            tip.css('top', top);
-        } else {
-            if ($(window).width() < ui.breakpoints.tablette || !attributes[tooltipType] || !tooltipCheck || attributes[tooltipType] === 'undefined') {
-                return;
-            }
-            tip = $('<div />')
-                .addClass('tooltip')
-                .html($compile('<div class="arrow"></div><div class="content">' + idiom.translate(attributes[tooltipType]) + '</div> ')(scope))
-                .appendTo('body');
-            scope.$apply();
-
-            let top = parseInt(sourceElement.offset().top + sourceElement.outerHeight());
-            let left = parseInt(sourceElement.offset().left + sourceElement.width() / 2 - tip.width() / 2);
-            if (top < 5) {
-                top = 5;
-            }
-            if (left < 5) {
-                left = 5;
-            }
-            tip.offset({
-                top: top,
-                left: left
-            });
-            if (tooltipDisplayCondition(element)) {
-                tip.fadeIn();
-                element.one('mouseout', function () {
-                    tip.fadeOut(200, function () {
-                        $(this).remove();
-                    })
-                });
-            }
-        }
-
-        if (tooltipDisplayCondition(element)) {
-            tip.fadeIn();
-            targetElement.one('mouseleave', function () {
-                tip.fadeOut(200, function () {
-                    $(this).remove();
-                })
-            });
-        }
+        }, 750);
+        targetElement.one('mouseout', function () {
+            timeout = false;
+        });
     });
 
     scope.$on("$destroy", function () {
