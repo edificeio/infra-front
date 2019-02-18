@@ -40,4 +40,5 @@
 <div class="row">
     <button class="cancel" ng-click="restoreOriginal()" type="button"><i18n>imageeditor.restore</i18n></button>
     <button class="right-magnet" ng-click="save()" ng-disabled="loading" type="button"><i18n>save</i18n></button>
+    <i ng-if="loading" class="right-magnet loading save-loading"></i>
 </div>
