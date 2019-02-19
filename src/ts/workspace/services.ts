@@ -685,7 +685,7 @@ export const workspaceService = {
         httpO.bind('request-ended.add-revision', function () {
             listener("end")
         });
-        const p = http(httpO).putFile(`/workspace/document/${doc._id}?thumbnail=120x120&thumbnail=290x290`, data, { requestName: 'add-revision' });
+        const p = http(httpO).putFile(`/workspace/document/${doc._id}?${MediaLibrary.thumbnails}`, data, { requestName: 'add-revision' });
         p.e400(function (e) {
             const error = JSON.parse(e.responseText);
             listener("error", error);
@@ -696,7 +696,7 @@ export const workspaceService = {
         return p
     },
     deleteRevision(rev: workspaceModel.Revision): Promise<any> {
-        return http().delete(`/workspace/document/${rev.documentId}/revision/${rev._id}`);
+        return http().delete(`/workspace/document/${rev.documentId}/revision/${rev._id}?${MediaLibrary.thumbnails}`);
     }
 }
 
