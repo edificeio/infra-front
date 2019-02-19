@@ -520,7 +520,7 @@ export const ui = {
                         }
                     });
                 });
-                element.on('mouseout', function (e) {
+                element.one('mouseout', function (e) {
                     element.unbind('mousemove');
                     let cssClass = '';
                     if(!element.data('resizing')){
@@ -548,12 +548,6 @@ export const ui = {
                 const borderWidth:number = parseInt(element.css('border-width'));
                 const ratio = element.height() / element.width();
                 
-                $('body').css({
-                    '-webkit-user-select': 'none',
-                    '-moz-user-select': 'none',
-                    'user-select': 'none'
-                });
-
                 var interrupt = false;
                 var mouse = {
                     y: e.pageY || e.originalEvent.touches[0].pageY,

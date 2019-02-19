@@ -284,15 +284,16 @@ export const unlink = {
                 });
 
                 instance.on('selectionchange', function (e) {
-                    var currentNode = e.selection.range.startContainer;
-                    if(currentNode.nodeType !==1){
-                        currentNode = currentNode.parentNode;
-                    }
-                    if (currentNode.nodeName === 'A') {
-                        element.removeClass('disabled');
-                    }
-                    else{
-                        element.addClass('disabled');
+                    if (e.selection.range) {
+                        var currentNode = e.selection.range.startContainer;
+                        if (currentNode.nodeType !== 1) {
+                            currentNode = currentNode.parentNode;
+                        }
+                        if (currentNode.nodeName === 'A') {
+                            element.removeClass('disabled');
+                        } else {
+                            element.addClass('disabled');
+                        }
                     }
                 });
             }
