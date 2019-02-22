@@ -493,7 +493,7 @@ export const workspaceService = {
     },
     notifyContrib(folder: workspaceModel.Element, eltsOrIds: workspaceModel.Element[] | string[], addVersion: boolean = false) {
         const isDefinedFolder = folder && folder._id;
-        const isSharedFolder = isDefinedFolder && (folder.isShared || folder.shared.length > 0);
+        const isSharedFolder = isDefinedFolder && (folder.isShared || (folder.shared || []).length > 0);
         const isNotDeletedFolder = isDefinedFolder && !folder.deleted;
         const getIds = () => {
             const ids: string[] = [];
@@ -712,7 +712,7 @@ workspaceService.onChange.subscribe(event => {
         const uniqDestFolderIds = destFolderIds.filter((elem, pos, arr) => arr.indexOf(elem) == pos);
         const destFolders = workspaceService._cacheFolders.filter(folder => uniqDestFolderIds.indexOf(folder._id) > -1);
         //
-        if (destFolders.length==0) {
+        if (destFolders.length == 0) {
             workspaceService.notifyContrib(null, elts, true)
         } else {
             destFolders.forEach(dest => {
