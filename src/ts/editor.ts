@@ -753,7 +753,12 @@ export let RTE = {
                             blob.name = 'image';
                             $(item).attr('src', 'http://loading');
                             const doc = new Document();
-                            const file = await doc.upload(blob)
+
+                            var visibility: 'protected' | 'public' = 'protected';
+                            if (editorInstance.visibility === 'public') {
+                                visibility = 'public';
+                            }
+                            const file = await doc.upload(blob, visibility);
                             $(item).attr('src', '/workspace/document/' + doc._id);
                             notify.info('editor.b64.uploaded');
                             editorInstance.trigger('contentupdated');
