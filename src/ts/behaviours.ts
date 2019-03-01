@@ -188,6 +188,7 @@ export var Behaviours = (function(){
                         err.cb();
                     }
                 });
+				Behaviours.applicationsBehaviours[serviceName] = {failed: true};
             });
 
 			return actions;
