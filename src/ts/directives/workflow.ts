@@ -15,9 +15,9 @@ export let workflow = ng.directive('workflow', ['$compile', function($compile){
                     await Behaviours.load(auth[0]);
                 }
 				let right = model.me && model.me.workflow;
+				const workflow = !!(right && right[auth[0]]);
 				const content = element.children();
-
-				if(!right){
+				if(!right || !workflow){
 					content.remove();
 					element.hide();
 					return;
