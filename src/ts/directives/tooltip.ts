@@ -41,6 +41,9 @@ function tooltipLink($compile: any, scope: any, element: any, attributes: { [nam
             if (timeout) {
                 if (attributes.tooltipTemplate) {
                     let templatePath = template.getPath(attributes.tooltipTemplate);
+                    tip && tip.fadeOut(200, function () {
+                        $(this).remove();
+                    })
                     tip = $('<div />')
                         .addClass('tooltip')
                         .html($compile('<div ng-include=\'\"' + templatePath + '\"\'></div>')(scope))
@@ -72,6 +75,9 @@ function tooltipLink($compile: any, scope: any, element: any, attributes: { [nam
                     if ($(window).width() < ui.breakpoints.tablette || !attributes[tooltipType] || !tooltipCheck || attributes[tooltipType] === 'undefined') {
                         return;
                     }
+                    tip && tip.fadeOut(200, function () {
+                        $(this).remove();
+                    })
                     tip = $('<div />')
                         .addClass('tooltip')
                         .html($compile('<div class="arrow"></div><div class="content">' + idiom.translate(attributes[tooltipType]) + '</div> ')(scope))
