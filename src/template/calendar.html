@@ -30,7 +30,7 @@
 		[[moment(calendar.firstDay).format('MMMM YYYY')]]
 	</span>
 </div>
-<div class="week-switcher">
+<div class="week-switcher" ng-if="display.mode !== 'month'">
     <date-picker-icon ng-model="calendar.firstDay" ng-change="updateCalendarDate()" class="cell"></date-picker-icon>
 </div>
 <div class="schedule" drawing-zone ng-if="display.mode !== 'month'">
