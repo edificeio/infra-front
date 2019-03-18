@@ -105,12 +105,13 @@ export let calendarComponent = ng.directive('calendar', function () {
                     model.calendar.days.sync();
                     refreshCalendar();
                 };
-
-                $scope.openMorePopup = function(items) {
-                    $scope.morePopupItems = items;
-                    $scope.display.moreItems = true;
-                };
             };
+
+            $scope.optionalDisplay = function(day){
+                return (!(!$scope.display.saturday && day.name == 'saturday')
+                    && !(!$scope.display.sunday && day.name == 'sunday'));
+            };
+
             $scope.getMonthDayOffset = function(day) {
                 return (day.date.day() || 7) - 1; // sunday is 0, so set it to 7
             };

@@ -41,7 +41,7 @@
     </legend>
     <div class="days">
         <button class="previous-timeslots" ng-click="previousTimeslots()" ng-disabled="calendar.timeSlots.first().beginning === 0"></button>
-        <div ng-if="display.mode !== 'week' || (!(!display.saturday && day.name == 'saturday') && !(!display.sunday && day.name == 'sunday'))"
+        <div ng-if="display.mode !== 'week' || optionalDisplay(day)"
              ng-repeat="day in calendar.days.all" class="day"
              ng-class="{
                 single: display.mode === 'day',
@@ -90,26 +90,30 @@
     </div>
     <div class="row"></div>
 </div>
-<div class="schedule schedule-month" ng-if="display.mode === 'month'">
+<div class="schedule schedule-month"
+     ng-if="display.mode === 'month'"
+     ng-class="{
+                sixDays: ( (display.saturday && !display.sunday) || (!display.saturday && display.sunday) ),
+                fiveDays: (!display.saturday && !display.sunday),
+             }"
+>
     <div class="legend">
         <div class="month-day offset-0">[[ moment().day(1).format('dddd') ]]</div>
         <div class="month-day">[[ moment().day(2).format('dddd') ]]</div>
         <div class="month-day">[[ moment().day(3).format('dddd') ]]</div>
         <div class="month-day">[[ moment().day(4).format('dddd') ]]</div>
         <div class="month-day">[[ moment().day(5).format('dddd') ]]</div>
-        <div class="month-day">[[ moment().day(6).format('dddd') ]]</div>
-        <div class="month-day">[[ moment().day(7).format('dddd') ]]</div>
+        <div ng-if="display.saturday" class="month-day">[[ moment().day(6).format('dddd') ]]</div>
+        <div ng-if="display.sunday" class="month-day">[[ moment().day(7).format('dddd') ]]</div>
     </div>
     <div class="grid">
         <div ng-repeat="day in calendar.days.all"
              class="month-day offset-{{ getMonthDayOffset(day) }}"
+             ng-if="optionalDisplay(day)"
         >
             <span class="day-number" ng-click="createItem(day)">[[ day.date.format('D') ]]</span>
-            <span class="n-more" ng-if="day.scheduleItems.all.length > 3"
-                  ng-click="openMorePopup(day.scheduleItems.all.slice(3))"
-            >+{{day.scheduleItems.all.length - 3}}</span>
             <div class="schedule-items">
-                <div ng-repeat="item in day.scheduleItems.all | limitTo:3"
+                <div ng-repeat="item in day.scheduleItems.all"
                      class="item"
                      tooltip
                      tooltip-template="{{ itemTooltipTemplate }}"
