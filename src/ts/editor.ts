@@ -143,7 +143,7 @@ function removeComments(root: HTMLElement): HTMLElement {
     return root;
 }
 
-export function convertToEditorFormat(html: string): string {
+export function convertHTMLToEditorFormat(html: string): string {
     const container = document.createElement('div');
     container.innerHTML = html;
     removeNodes('xml, title, meta, style', container);
@@ -179,12 +179,31 @@ export function convertToEditorFormat(html: string): string {
     return container.innerHTML;
 }
 
+export function convertTextToEditorFormat(text: string): string {
+    return text.split('\n').map((content, index) => {
+        if (index === 0) {
+            return content;
+        } else {
+            if (content.length === 0) {
+                return '<div>\u200b</div>';
+            } else {
+                return `<div>${content}</div>`;
+            }
+        }
+    }).join('');
+}
 
-export function tryToConvertClipboardToEditorFormat(e: ClipboardEvent, convertClipboardToEditorFormat: (html: string) => string) {
+
+export function tryToConvertClipboardToEditorFormat(e: ClipboardEvent,
+                                                    convertHTMLClipboardToEditorFormat: (html: string) => string,
+                                                    convertTextClipboardToEditorFormat: (text: string) => string) {
     // when it's possible, catch the paste event and convert the clipboard data, else let's the browser handles the paste (IE11)
     if (e.clipboardData && e.clipboardData.types.indexOf('text/html') >= 0) {
         e.preventDefault();
-        document.execCommand('insertHTML', false, convertClipboardToEditorFormat(e.clipboardData.getData('text/html')));
+        document.execCommand('insertHTML', false, convertHTMLClipboardToEditorFormat(e.clipboardData.getData('text/html')));
+    } else if (e.clipboardData && e.clipboardData.types.indexOf('text/plain') >= 0) {
+        e.preventDefault();
+        document.execCommand('insertHTML', false, convertTextClipboardToEditorFormat(e.clipboardData.getData('text/plain')));
     }
 }
 
@@ -303,7 +322,7 @@ export let RTE = {
             this.editZone.html(
                 this.compile(this.states[this.stateIndex - 1].html)(this.scope)
             );
-            
+
             if (this.states[this.stateIndex - 1].range) {
                 var sel = window.getSelection();
                 sel.removeAllRanges();
@@ -446,7 +465,7 @@ export let RTE = {
                             element.find('editor-toolbar').removeClass('opened');
                         }
                     });
-                    
+
                     element.find('.editor-toolbar-opener').on('touchstart', function(e){
                         e.preventDefault();
                         if(!$(this).hasClass('active')){
@@ -463,7 +482,7 @@ export let RTE = {
                             sel.addRange(editorInstance.selection.range);
                         }, 100);
                     });
-                    
+
                     document.execCommand("enableObjectResizing", false, false);
                     document.execCommand("enableInlineTableEditing", null, false);
                     document.execCommand("insertBrOnReturn", false, true);
@@ -483,7 +502,7 @@ export let RTE = {
                     if(attributes.toolbarConf){
                         toolbarConf = scope.$eval(attributes.toolbarConf);
                     }
-                    
+
                     var editorInstance;
                     var instance = $parse(attributes.instance);
                     if(!instance(scope)){
@@ -504,7 +523,7 @@ export let RTE = {
                     setTimeout(() => {
                         editorInstance.addState(editorInstance.editZone.html());
                     }, 500);
-                    
+
                     var ngModel = $parse(attributes.ngModel);
                     if(!ngModel(scope)){
                         ngModel.assign(scope, '');
@@ -587,7 +606,7 @@ export let RTE = {
                                 top: topDistance + $('.height-marker').height() + 10
                             });
                         }
-                        
+
                         setTimeout(function () {
                             highlightZone.offset({ top: htmlZone.offset().top });
                         }, 100);
@@ -709,11 +728,11 @@ export let RTE = {
                     editorInstance.on('change', function(){
                         editorInstance.trigger('contentupdated');
                         setTimeout(function(){
-                            
+
                             if(attributes.onChange){
                                 scope.$eval(attributes.onChange);
                             }
-                            
+
                             scope.$apply();
                         }, 10);
                     });
@@ -881,7 +900,7 @@ export let RTE = {
                     var editingTimer;
 
                     editZone.on('paste', function (e) {
-                        tryToConvertClipboardToEditorFormat(e.originalEvent, convertToEditorFormat);
+                        tryToConvertClipboardToEditorFormat(e.originalEvent, convertHTMLToEditorFormat, convertTextToEditorFormat);
                         setTimeout(function(){
                             editorInstance.editZone.find('[resizable]').removeAttr('resizable').css('cursor', 'initial');
                             editorInstance.editZone.find('[bind-html]').removeAttr('bind-html');
@@ -910,11 +929,11 @@ export let RTE = {
                         clearTimeout(typingTimer);
                         clearTimeout(editingTimer);
                         typingTimer = setTimeout(wrapFirstLine, 10);
-                        
+
                         var sel = window.getSelection();
                         if (sel.rangeCount > 0) {
                             var range = sel.getRangeAt(0);
-                            if (range.startContainer.nodeType !== 1 && e.which > 64 && e.which < 91 && range.startContainer.parentNode !== null) {     
+                            if (range.startContainer.nodeType !== 1 && e.which > 64 && e.which < 91 && range.startContainer.parentNode !== null) {
                                 var currentTextNode = range.startContainer;
                                 var initialOffset = range.startOffset;
                                 if (initialOffset === currentTextNode.textContent.length) {
@@ -922,7 +941,7 @@ export let RTE = {
                                 }
                                 if (range.startContainer.parentNode.innerHTML === '&#8203;' && range.startOffset === 1) {
                                     var node = range.startContainer.parentNode;
-                                    
+
                                     setTimeout(function () {
                                         node.innerHTML = node.innerHTML.substring(7);
                                         setTimeout(function () {
@@ -935,7 +954,7 @@ export let RTE = {
                                             sel.addRange(range);
                                         }, 1);
                                     }, 1);
-                                    
+
                                 }
                             }
                         }
@@ -1139,7 +1158,7 @@ export let RTE = {
                         let script = $('<script></script>')
                             .attr('src', '/infra/public/mathjax/MathJax.js')
                             .appendTo('head');
-                            
+
                             script[0].async = false;
                             window.MathJax.Hub.Config({
                                 messageStyle: 'none',
