@@ -3,6 +3,7 @@ import http from 'axios';
 import { Eventer } from 'entcore-toolkit';
 import { idiom } from './idiom';
 import { $ } from "./entcore";
+import { notify } from './notify';
 
 export class Me{
     static preferences: any;
@@ -52,6 +53,25 @@ export class Me{
                 resolve(this.preferences[app]);
             }
         });
+    }
+    static async revalidateTerms() {
+        try {
+            await http.put("/auth/cgu/revalidate");
+            Me.session.needRevalidateTerms = false;
+        } catch (e) {
+            notify.error(idiom.translate("cgu.revalidate.failed"))
+        }
+    }
+    static shouldRevalidate() {
+        return new Promise((resolve, reject) => {
+            if (model.me && model.me.userId) {
+                resolve(Me.session.needRevalidateTerms);
+            } else {
+                model.one("userinfo-loaded", _ => {
+                    resolve(Me.session.needRevalidateTerms);
+                })
+            }
+        })
     }
 }
 

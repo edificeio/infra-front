@@ -103,6 +103,7 @@ var defaultDiacriticsRemovalMap = [
 ];
 
 export var idiom = {
+    promises: {},
     translate: function(key){
         if(key === undefined){
             key = '';
@@ -112,7 +113,25 @@ export var idiom = {
         }
         return bundle[key] === undefined ? key : bundle[key];
     },
+    addBundlePromise: function (path) {
+        this.addBundle(path);
+        return idiom.promises[path];
+    },
     addBundle: function(path, callback?){
+        // load bundle only once
+        const oldPromise = idiom.promises[path];
+        if (oldPromise) {
+            if (callback) {
+                oldPromise.then(callback).catch(callback);
+            }
+            return;
+        }
+        let _resolve = null, _reject = null;
+        idiom.promises[path] = new Promise((resolve, reject) => {
+            _resolve = resolve;
+            _reject = reject;
+        })
+        //
         var request = new XMLHttpRequest();
         request.open('GET', path);
         if(xsrfCookie){
@@ -129,11 +148,13 @@ export var idiom = {
                 if(typeof callback === "function"){
                     callback();
                 }
+                _resolve();
             }
             catch(e){
                 if(typeof callback === "function"){
                     callback();
                 }
+                _reject();
             } 
         };
 

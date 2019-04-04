@@ -630,6 +630,7 @@ export function bootstrap(func) {
 				model.trigger('preferences-updated');
 			}
 		};
+		model.trigger("userinfo-loaded")
 		model.trigger('preferences-updated');
 
 		model.me.hasWorkflow = function(workflow){

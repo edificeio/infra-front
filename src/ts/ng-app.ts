@@ -30,6 +30,9 @@ import { angular } from './libs/angular/angular';
 import { notify, skin, RTE } from './entcore';
 import { ng } from './ng-start';
 import * as directives from './directives';
+import { Me } from './me';
+import httpAxios from 'axios';
+
 
 var module = angular.module('app', ['ngSanitize', 'ngRoute'], ['$interpolateProvider', function($interpolateProvider) {
 		$interpolateProvider.startSymbol('[[');
@@ -2236,3 +2239,64 @@ module.controller('SearchPortal', ['$scope', function($scope) {
 		}
 	};
 }]);
+//===angular injector
+export function injectIntoSelector(selector: string, domString: string) {
+	$(document).ready(function () {
+		const parent = angular.element(selector);
+		parent.injector().invoke(['$compile', function ($compile) {
+			const scope = parent.scope();
+			const compiled = $compile(domString)(scope);
+			parent.append(compiled);
+		}]);
+	})
+}
+//=== ensure User has validated terms
+module.directive('cguLightbox', [function () {
+	return {
+		restrict: 'E',
+		scope: true,
+		templateUrl: `${template.viewPath}entcore/cgu-lightbox.html`,
+		link: async function (scope, element, attributes) {
+			scope.show = false;
+			if (Me.session.needRevalidateTerms && !Me.session.deletePending) {
+				// we need to wait portal bundle
+				await Promise.all([
+					idiom.addBundlePromise("/i18n"),
+					idiom.addBundlePromise("/auth/i18n")
+				]);
+				//create lightbox
+				scope.model={
+					accept:false
+				}
+				const logout = '/auth/logout?callback=' + skin.logoutCallback;
+				scope.title = idiom.translate("cgu.revalidate.title");
+				scope.content = idiom.translate("cgu.revalidate.content");
+				scope.linkUrl = idiom.translate("auth.charter");
+				scope.linkText = idiom.translate("cgu.revalidate.link.text");
+				scope.link = idiom.translate("cgu.revalidate.accept").replace("[[linkStart]]", `<a href="${scope.linkUrl}" target="_blank">`).replace("[[linkEnd]]", "</a>")
+				scope.actionText = idiom.translate("cgu.revalidate.action");
+				scope.show = true;
+				scope.isDisabled = function () {
+					return !scope.model.accept;
+				}
+				scope.logout = function () {
+					window.location.href = logout;
+				}
+				scope.validate = async function () {
+					await Me.revalidateTerms();
+					scope.show = false;
+					scope.$apply();
+				}
+				scope.$apply();
+			} else {
+				scope.show = false;
+			}
+		}
+	}
+}]);
+model.one("bootstrap", async () => {
+	const shouldRevalidate = await Me.shouldRevalidate();
+	if (shouldRevalidate) {
+		injectIntoSelector("body", "<cgu-lightbox></cgu-lightbox>");
+	}
+})
