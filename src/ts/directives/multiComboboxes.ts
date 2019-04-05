@@ -4,14 +4,21 @@ import { ng, _, idiom as lang, $ } from '../entcore';
  * @description Filter with multiple checkboxes.
  * @param ngModel An array of strings containing all the types selected (null if all selected).
  * @param options An array of all the possible option to check. Each option must contain a label and type field.
- * @param titleAll A string representing what should be displayed when all the options are selected.
- * @param title A string reprensenting the begining of what to display when several options are selected.
+ * @param titleAll [attr] A string representing what should be displayed when all the options are selected.
+ * @param title [attr] A string reprensenting the begining of what to display when several options are selected.
+ * @param titleDisabled A string representing the label when the combobox is disabled
+ * @param order Default order is label.
+ * @param check Function to call when an option is checked
  * @example
  *  <multi-comboboxes 
         ng-model="<ngModel>"
         options="<options>"
         title-all="<titleAll>"
-        title="<title>">
+        title="<title>"
+        titleDisabled="<string>"
+        order="<order>"
+        check="<function>"
+        >
     </multi-comboboxes>
  */
 
@@ -21,8 +28,9 @@ export const multiComboboxes = ng.directive('multiComboboxes', () => {
         template: `
             <div class="fluid row">
                 <button type="button" class="select-button left-text low-text row" ng-class="{ selected : showOptions }" ng-disabled="ngDisabled">
-                    <span ng-if="ngModel.length === 0" class="block cell-ellipsis right-spacing">[[ titleAll ]]</span>
+                    <span ng-if="ngModel.length === 0 && !ngDisabled" class="block cell-ellipsis right-spacing">[[ titleAll ]]</span>
                     <span ng-if="ngModel.length > 0" class="block cell-ellipsis right-spacing active">[[ title ]]: [[ ngModel.length ]] <i18n>portal.selected</i18n></span> <i class="sort horizontal-margin top-spacing absolute-magnet"/>
+                    <span ng-if="ngDisabled" class="block cell-ellipsis right-spacing">[[ titleDisabled || title ]]</span>
                 </button>
                 <article class="absolute-w">
                     <div class="search-pagination flex-row align-center">
@@ -36,8 +44,8 @@ export const multiComboboxes = ng.directive('multiComboboxes', () => {
                         <a class="text-underline-hover" ng-click="selectNone()"><i18n>portal.none</i18n></a> <span class="horizontal-margin-small">|</span> <a class="text-underline-hover" ng-click="selectAll()"><i18n>portal.all</i18n></a>
                     </div>
                     <div class="top-spacing-twice left-text scroll-seven-checks" bottom-scroll="updatingMaxItems()">
-                        <div class="flex-row top-spacing" ng-repeat="option in options | orderBy:'label' | filter:filterByLabel" 
-                            ng-click="check(option, !option.checked)"
+                        <div class="flex-row top-spacing" ng-repeat="option in options | orderBy:order | filter:filterByLabel" 
+                            ng-click="onCheck(option, !option.checked)"
                             ng-disabled="option.available ? !option.available() : false">
                             <label class="cell wrapping-checkbox" ng-disabled="option.available ? !option.available() : false">
                                 <input type="checkbox" ng-model="option.checked" disabled="disabled" />
@@ -55,12 +63,20 @@ export const multiComboboxes = ng.directive('multiComboboxes', () => {
         scope: {
             ngModel: '=',
             ngDisabled: '=',
-            options: '='
+            options: '=',
+            check: '&',
+            order: '=?',
+            titleDisabled: '@?'
         },
 
         link: (scope, element, attributes) => {
             scope.titleAll = attributes.titleAll;
             scope.title = attributes.title;
+            scope.titleDisabled = attributes.titleDisabled;
+            if(!scope.order) {
+                scope.order = 'label';
+            }
+            
             scope.maxItems = 20;
             scope.showOptions = false;
             scope.firstShow = true;
@@ -72,20 +88,25 @@ export const multiComboboxes = ng.directive('multiComboboxes', () => {
 
             // When options are available, run !
             scope.$watchCollection("options", function(newValue) {
-                scope.options.forEach(option => {
-                    option.checked = scope.ngModel ? scope.ngModel.indexOf(option.type) !== -1 : true;
+                if(scope.options) {
+                    scope.options.forEach(option => {
+                        option.checked = scope.ngModel ? scope.ngModel.indexOf(option.type) !== -1 : true;
 
-                    scope.$watch(function() { return option; }, function(newValue, oldValue) {
-                        if (newValue !== oldValue && newValue.checked !== oldValue.checked) {
-                            if (newValue.checked) {
-                                    scope.ngModel.push(newValue.type);
+                        scope.$watch(function() { return option; }, function(newValue, oldValue) {
+                            if (newValue !== oldValue && newValue.checked !== oldValue.checked) {
+                                if (newValue.checked && scope.ngModel.find(val => val == newValue.type)) {
+                                    return;
+                                }
+                                if (newValue.checked) {
+                                        scope.ngModel.push(newValue.type);
+                                }
+                                else {
+                                    scope.ngModel = scope.ngModel.filter(x => x != newValue.type);
+                                }
                             }
-                            else {
-                                scope.ngModel.splice(scope.ngModel.indexOf(newValue.type), 1);
-                            }
-                        }
-                    }, true);                 
-                });
+                        }, true);                 
+                    });
+                }
             });
 
             scope.searchField = "";
@@ -128,16 +149,19 @@ export const multiComboboxes = ng.directive('multiComboboxes', () => {
             };
 
             // Check
-            scope.check = (option, checked) => {
+            scope.onCheck = (option, checked) => {
                 if (!option.available || option.available()) {
                     option.checked = checked;
                 }
+
+                // bubble check event
+                scope.check({option: option, checked: checked});
             } 
 
             // Select none / all
             scope.select = (checked) => {
                 scope.options.forEach(option => {
-                    scope.check(option, checked);
+                    scope.onCheck(option, checked);
                 });
                 scope.searchField = "";
             };
