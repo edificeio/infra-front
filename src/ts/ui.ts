@@ -980,12 +980,12 @@ export const ui = {
                         }
                         element.unbind("click");
                         element.data('dragging', true);
+                        $('#audioWrapper').css({'display':''});
                         mouse = {
                             y: f.clientY || f.originalEvent.touches[0].clientY,
                             x: f.clientX || f.originalEvent.touches[0].clientX
                         };
                     });
-
                     $('body').on('touchend.drag touchleave.drag mouseup.drag', function (e) {
                         $('body').css({
                             '-webkit-user-select': 'initial',
@@ -1003,6 +1003,7 @@ export const ui = {
                             if (element.data('dragging')) {
                                 element.trigger('stopDrag');
                                 element.data('dragging', false);
+                                $('#audioWrapper').css({'display':'none'});
                                 if (params && typeof params.mouseUp === 'function' && moved) {
                                     params.mouseUp(e);
                                 }
