@@ -403,9 +403,9 @@ export const workspaceService = {
 
         return childString(tree).split("_").filter(path => path != tree.name).join("_");
     },
-    downloadFiles(els: workspaceModel.Element[]) {
+    downloadFiles(els: workspaceModel.Element[], includeDeleted:boolean=false) {
         const ids = els.map(d => d._id).join(",");
-        window.open(`/workspace/document/archive/${ids}`)
+        window.open(`/workspace/document/archive/${ids}?${includeDeleted?"deleted=true":""}`)
     },
     moveAll(els: workspaceModel.Element[], dest: workspaceModel.Element): Promise<{ nbFiles: number, nbFolders: number }> {
         const ids = els.map(e => e._id);
