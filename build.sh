@@ -39,7 +39,8 @@ watch () {
 }
 
 publish () {
-  docker-compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "npm publish"
+  LOCAL_BRANCH=`echo $GIT_BRANCH | sed -e "s|origin/||g"`
+  docker-compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "npm publish --tag $LOCAL_BRANCH"
 }
 
 for param in "$@"
