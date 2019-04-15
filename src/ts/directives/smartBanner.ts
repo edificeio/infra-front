@@ -1,6 +1,6 @@
-import { ng, _, idiom } from '../entcore';
-import { model } from '../modelDefinitions';
+import { ng, _, idiom, skin} from '../entcore';
 import http from 'axios';
+import { model } from '../modelDefinitions';
 
 export const smartBanner = ng.directive('smartBanner', () => {
     return {
@@ -85,13 +85,13 @@ export const smartBanner = ng.directive('smartBanner', () => {
             </style>
             <div class="smartbanner-container">
                 <a ng-click="closeBanner()" class="smartbanner-close">&times;</a>
-                <img class="smartbanner-icon" ng-src="[[banner.icon]]">
+                <img class="smartbanner-icon" ng-src="[[icon]]">
                 <div class="smartbanner-info">
-                    <div class="smartbanner-title">[[banner.name]]</div>
-                    <div>[[banner.description]]</div>
+                    <div class="smartbanner-title"><i18n>smartbanner.name</i18n></div>
+                    <div><i18n>smartbanner.description</i18n></div>
                 </div>
                 <a href="[[appRef]]" target="_blank" class="smartbanner-button">
-                    <span class="smartbanner-button-text"><i18n>View</i18n></span>
+                    <span class="smartbanner-button-text"><i18n>smartbanner.action</i18n></span>
                 </a>
             </div>
         </div>
@@ -132,21 +132,31 @@ export const smartBanner = ng.directive('smartBanner', () => {
             scope.showBanner = false
 
             scope.init = async function () {
-                scope.banner = await http.get('/conf/smartBanner');
-                if(model.me.hasApp && model.me.type != "ELEVE" && scope.banner != null) {
-                    scope.banner = scope.banner.data
-                    scope.showBanner = scope.getCookie() == null;
-                    if (scope.showBanner) {
-                        if (/Android/i.test(navigator.userAgent)) {
-                            scope.store = "Google Play"
-                            scope.appRef = scope.banner.android
-                        } else if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
-                            scope.store = "App Store"
-                            scope.appRef = scope.banner.ios;
-                        } else {
-                            scope.showBanner = false;
+                try{
+                    const res = await http.get('/conf/smartBanner');
+                    //if 200 ok=> display banner
+                    if(res.data != null) {
+                        scope.banner = res.data;
+                        const excludedTypes = scope.banner[`excludeUserTypes-${skin.skin}`] || [];
+                        if(excludedTypes.indexOf(model.me.type) != -1){
+                            return;
+                        }
+                        scope.showBanner = scope.getCookie() == null;
+                        scope.icon = idiom.translate("smartbanner.icon.uri");
+                        if (scope.showBanner) {
+                            if (/Android/i.test(navigator.userAgent)) {
+                                scope.store = idiom.translate("smartbanner.android.store")
+                                scope.appRef = idiom.translate("smartbanner.android.uri")
+                            } else if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+                                scope.store = idiom.translate("smartbanner.ios.store")
+                                scope.appRef = idiom.translate("smartbanner.ios.uri")
+                            } else {
+                                scope.showBanner = false;
+                            }
                         }
                     }
+                }catch(e){
+                    //dont display smart banner
                 }
             }
 
