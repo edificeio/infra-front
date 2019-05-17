@@ -20,6 +20,7 @@ export * from './foldingList';
 export * from './groupsUsersSelector';
 export * from './imageCompression';
 export * from './imageEditor';
+export * from './imageLazyLoad';
 export * from './imageSelect';
 export * from './infotip';
 export * from './inputdate';
