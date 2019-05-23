@@ -33,6 +33,7 @@ export interface SharePanelScope {
         actions?: ShareAction[]
     }
     varyingRights: boolean
+    varyingRightsI18nKey: string;
     editResources: Shareable[]
     sharingModel: ShareInfos & { edited: any[], editedInherited: any[], changed?: boolean, sharebookmarks?: any }
     appPrefix: string
@@ -306,6 +307,10 @@ export const sharePanel = ng.directive('sharePanel', ['$rootScope', ($rootScope)
                             if (differentRights(editResource, $scope.sharingModel) || differentRights($scope.sharingModel, editResource)) {
                                 $scope.varyingRights = true;
                                 $scope.sharingModel.edited = [];
+                                $scope.varyingRightsI18nKey =
+                                    idiom.translate(`${currentApp}.share.varyingrights`) === `${currentApp}.share.varyingrights`
+                                    ? "share.varyingrights"
+                                    : `${currentApp}.share.varyingrights`
                             }
                         }
                         initModel = false;
