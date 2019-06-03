@@ -10,7 +10,20 @@ import * as editorOptions from './editor/options';
 import { onPressEnter } from './editor/onPressEnter';
 import { onDropFromDesktop } from './editor/onDropFromDesktop';
 import { onPressDelete } from "./editor/onPressDelete";
+import { Subject } from "rxjs";
 
+export type LinkerEventBody = {
+    link: string,
+    appPrefix: string,
+    externalLink: string,
+    target: string,
+    tooltip: string,
+    id: string
+}
+export class EditorEvents{
+    onLinkerAdd = new Subject<LinkerEventBody>();
+}
+export const editorEvents = new EditorEvents;
 declare let Prism: any;
 
 interface StyleProperties {
@@ -1194,3 +1207,4 @@ if(!window.entcore){
 }
 
 window.entcore.RTE = RTE;
+window.entcore.editorEvents = editorEvents;

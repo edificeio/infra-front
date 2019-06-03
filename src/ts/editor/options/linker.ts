@@ -6,6 +6,7 @@ import { http } from "../../http";
 import { _ } from '../../libs/underscore/underscore';
 import { model } from "../../modelDefinitions";
 import { appPrefix } from "../../globals";
+import { editorEvents } from "../../editor";
 
 export const linker = {
     name: 'linker',
@@ -186,6 +187,10 @@ export const linker = {
                             linkNode.removeAttr('tooltip');
                             linkNode.off('mouseover');
                         }
+                        editorEvents.onLinkerAdd.next({
+                            externalLink: scope.linker.externalLink,
+                            ...scope.linker.params
+                        })
                     }
 
                     if (selectedNode && selectedNode.nodeName === 'A') {
