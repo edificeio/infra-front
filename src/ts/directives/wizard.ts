@@ -9,6 +9,7 @@ export let wizard = ng.directive('wizard', () => {
 		restrict: 'E',
 		templateUrl: '/' + appPrefix + '/public/template/entcore/wizard.html',
 		scope: {
+			gotoStep: '=',
 			onCancel: '&',
 			onFinish: '&',
 			finishCondition: '&'
@@ -28,7 +29,12 @@ export let wizard = ng.directive('wizard', () => {
                         }
                     }
 				});
-
+				scope.$watch("gotoStep", ()=>{
+					if(scope.currentStep!=scope.gotoStep){
+						scope.currentStep = scope.gotoStep;
+						displayCurrentStep();
+					}
+				})
 				element.find('div.steps').hide();
 				scope.currentStep = 0;
 
