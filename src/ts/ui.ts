@@ -748,6 +748,7 @@ export const ui = {
             startDrag?: any,
             mouseMove?: any,
             mouseUp?: any
+            noScroll?: boolean // prevent window scrolling when dragging
         }) {
             if (!params) {
                 params = {};
@@ -844,12 +845,14 @@ export const ui = {
                             left: parseInt(mouse.x - elementDistance.x)
                         };
 
-                        if (mouse.y < 30) {
-                            window.scrollTo(0, (window.scrollY || window.pageYOffset) - 10);
-                        }
+                        if (!params.noScroll) {
+                            if (mouse.y < 30) {
+                                window.scrollTo(0, (window.scrollY || window.pageYOffset) - 10);
+                            }
 
-                        if (mouse.y > $(window).height() - 30) {
-                            window.scrollTo(0, (window.scrollY || window.pageYOffset) + 10);
+                            if (mouse.y > $(window).height() - 30) {
+                                window.scrollTo(0, (window.scrollY || window.pageYOffset) + 10);
+                            }
                         }
 
                         if (mouse.x < boundaries.left + elementDistance.x && elementWidth < parentWidth) {
@@ -965,7 +968,7 @@ export const ui = {
                                 '-moz-user-select': 'none',
                                 'user-select': 'none'
                             });
-                            if(devices.isiOS()){
+                            if(params.noScroll || devices.isiOS()){
                                 $('body').css({ overflow: 'hidden' });
                             }
                             if (element.css('position') === 'relative') {
@@ -1002,6 +1005,9 @@ export const ui = {
                             cancelDefault = false;
                             if (element.data('dragging')) {
                                 element.trigger('stopDrag');
+                                if(params.noScroll || devices.isiOS()){
+                                    $('body').css({ overflow: "" });
+                                }
                                 element.data('dragging', false);
                                 $('#audioWrapper').css({'display':'none'});
                                 if (params && typeof params.mouseUp === 'function' && moved) {

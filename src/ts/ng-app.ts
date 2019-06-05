@@ -874,6 +874,11 @@ module.directive('resizable', function(){
 	}
 });
 
+/**
+ * Make an element draggable with mouse drag or touch events
+ * Use `draggable-prevent-scroll` attribute in addition to this directive to prevent the window be scrolled
+ * when dragging near an edge.
+ */
 module.directive('draggable', function(){
 	return {
 		restrict: 'A',
@@ -886,7 +891,8 @@ module.directive('draggable', function(){
 					element.on('click', function(){
 						scope.$parent.$eval(attributes.ngClick);
 					});
-				}
+				},
+				noScroll: attributes.draggablePreventScroll !== undefined
 			});
 		}
 	}
