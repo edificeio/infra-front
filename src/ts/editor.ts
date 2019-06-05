@@ -837,11 +837,7 @@ export let RTE = {
                         }
                     }
 
-                    element.parents().on('resizing', placeToolbar)
-                    element.on('click', function(e){
-                        if(e.target === element.find('.close-focus')[0] || element.hasClass('focus')){
-                            return;
-                        }
+                    const focus = () => {
                         element.trigger('editor-focus');
                         element.addClass('focus');
                         placeToolbar();
@@ -857,6 +853,25 @@ export let RTE = {
                                 sel.removeAllRanges();
                                 sel.addRange(r);
                             }, 600);
+                        }
+                    };
+
+                    element.parents().on('resizing', placeToolbar)
+                    element.on('click', function(e){
+                        if(e.target === element.find('.close-focus')[0] || element.hasClass('focus')){
+                            return;
+                        }
+                        if(attributes.confirmFocus) {
+                            return;
+                        }
+                        focus();
+                    });
+                    element.on('dblclick', function(e){
+                        if(e.target === element.find('.close-focus')[0] || element.hasClass('focus')){
+                            return;
+                        }
+                        if(attributes.confirmFocus) {
+                            focus();
                         }
                     });
 
