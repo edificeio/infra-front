@@ -49,7 +49,10 @@ export const placedBlock = ng.directive('placedBlock', function(){
 				}
 			};
 
-			element.on('startDrag', toTop);
+			element.on('startDrag', () => {
+				toTop();
+				element.addClass("placed-block--dragging");
+			});
 			element.on('startResize', function(){
 				scope.w = element.width();
 				scope.$apply('w');
@@ -65,7 +68,10 @@ export const placedBlock = ng.directive('placedBlock', function(){
 				scope.$apply('y');
             }
 
-			element.on('stopDrag', () => applyPosition());
+			element.on('stopDrag', () => {
+				applyPosition();
+				element.removeClass("placed-block--dragging");
+			});
 
 			scope.$watch('z', function(newVal){
 				element.css({ 'z-index': scope.z })
