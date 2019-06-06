@@ -443,7 +443,8 @@ export let RTE = {
                     '</popover>' +
                     '<div><div contenteditable="true"></div></div>' +
                     '<textarea></textarea>' +
-                    '<code class="language-html"></code>',
+                    '<code class="language-html"></code>' +
+                    '<button type="button" class="editor-edit-action" style="z-index:10"><i18n>editor.edit</i18n></button>',
                 link: function (scope, element, attributes) {
                     if (navigator.userAgent.indexOf('Trident') !== -1 || navigator.userAgent.indexOf('Edge') !== -1) {
                         element.find('code').hide();
@@ -840,6 +841,7 @@ export let RTE = {
                     const focus = () => {
                         element.trigger('editor-focus');
                         element.addClass('focus');
+                        element.find('button.editor-edit-action').css({ display: 'none' });
                         placeToolbar();
                         element.parent().data('lock', true);
                         element.parents('grid-cell').data('lock', true);
@@ -861,7 +863,10 @@ export let RTE = {
                         if(e.target === element.find('.close-focus')[0] || element.hasClass('focus')){
                             return;
                         }
-                        if(attributes.confirmFocus) {
+                        console.log("confirmFocus", attributes.confirmFocus);
+                        if(attributes.confirmFocus !== undefined) {
+                            editZone.blur();
+                            // editorInstance.trigger('blur');
                             return;
                         }
                         focus();
@@ -870,10 +875,24 @@ export let RTE = {
                         if(e.target === element.find('.close-focus')[0] || element.hasClass('focus')){
                             return;
                         }
-                        if(attributes.confirmFocus) {
+                        console.log("confirmFocus", attributes.confirmFocus);
+                        if(attributes.confirmFocus !== undefined) {
                             focus();
                         }
                     });
+                    element.find('button.editor-edit-action').on('click', function(e) {
+                        console.log("confirmFocus with button", attributes.confirmFocus);
+                        focus();
+                        editZone.focus();
+                        editorInstance.selection.moveCaret(editZone.html().length);
+                        e.stopPropagation();
+                    });
+                    element.find('button.editor-edit-action').on('mousedown.resize touchstart.resize', function(e) {
+                        e.stopPropagation();
+                    })
+                    if(attributes.confirmFocus === undefined) {
+                        element.find('button.editor-edit-action').css({ display: 'none' });
+                    }
 
                     $('body').on('mousedown', function(e){
                         if(e.target !== element.find('.editor-toolbar-opener')[0] && element.find('editor-toolbar, .editor-toolbar-opener').find(e.target).length === 0){
@@ -893,6 +912,9 @@ export let RTE = {
                             element.parent().data('lock', false);
                             element.parents('grid-cell').data('lock', false);
                             element.find('code').attr('style', '');
+                            if(attributes.confirmFocus !== undefined) {
+                                element.find('button.editor-edit-action').css({ display: '' });
+                            }
 
                             if(attributes.inline !== undefined){
                                 element.css({
