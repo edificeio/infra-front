@@ -35,12 +35,13 @@
 </div>
 <div class="schedule" drawing-zone ng-if="display.mode !== 'month'">
     <legend class="timeslots">
-        <div ng-repeat="timeslot in calendar.timeSlots.all" class="timeslot">
-            [[timeslot.beginning]]h00 - [[timeslot.end]]h00
+        <div ng-repeat="timeslot in calendar.timeSlots.all" class="timeslot"
+             tooltip="[[timeslot.displayTime]]">
+            [[timeslot.name]]
         </div>
     </legend>
     <div class="days">
-        <button class="previous-timeslots" ng-click="previousTimeslots()" ng-disabled="calendar.timeSlots.first().beginning === 0"></button>
+        <button class="previous-timeslots" ng-click="previousTimeslots()" ng-disabled="calendar.timeSlots.first().start == timeOfDay.start"></button>
         <div ng-if="display.mode !== 'week' || optionalDisplay(day)"
              ng-repeat="day in calendar.days.all" class="day"
              ng-class="{
@@ -86,7 +87,7 @@
                 + [[day.scheduleItems.afterCalendar()]]
             </div>
         </div>
-        <button class="next-timeslots" ng-click="nextTimeslots()"  ng-disabled="calendar.timeSlots.last().end === 24"></button>
+        <button class="next-timeslots" ng-click="nextTimeslots()"  ng-disabled="calendar.timeSlots.last().end == timeOfDay.end"></button>
     </div>
     <div class="row"></div>
 </div>
