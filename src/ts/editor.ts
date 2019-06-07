@@ -884,7 +884,7 @@ export let RTE = {
                         console.log("confirmFocus with button", attributes.confirmFocus);
                         focus();
                         editZone.focus();
-                        editorInstance.selection.moveCaret(editZone.html().length);
+                        editorInstance.selection.moveCaret(editZone.children(':last').get(0), editZone.children(':last').text().length);
                         e.stopPropagation();
                     });
                     element.find('button.editor-edit-action').on('mousedown.resize touchstart.resize', function(e) {
