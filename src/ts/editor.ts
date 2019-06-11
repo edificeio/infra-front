@@ -840,6 +840,7 @@ export let RTE = {
 
                     const focus = () => {
                         element.trigger('editor-focus');
+                        scope.$emit('editor-focus', { target: element.get(0) });
                         element.addClass('focus');
                         element.find('button.editor-edit-action').css({ display: 'none' });
                         placeToolbar();
@@ -884,7 +885,7 @@ export let RTE = {
                         console.log("confirmFocus with button", attributes.confirmFocus);
                         focus();
                         editZone.focus();
-                        editorInstance.selection.moveCaret(editZone.children(':last').get(0), editZone.children(':last').text().length);
+                        editorInstance.selection.moveCaret(editZone.children(':last').get(0), editZone.children(':last').get(0).textContent.length);
                         e.stopPropagation();
                     });
                     element.find('button.editor-edit-action').on('mousedown.resize touchstart.resize', function(e) {
