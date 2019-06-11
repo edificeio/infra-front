@@ -19,14 +19,14 @@ export const placedBlock = ng.directive('placedBlock', function(){
 			scope.$watch('x', function(newVal){
 				element.offset({
 					top: element.offset().top,
-					left: parseInt(newVal) + element.parent().offset().left
+					left: parseInt(newVal) + element.parents('.drawing-zone').offset().left
 				});
 			});
 
 			scope.$watch('y', function(newVal){
 				element.offset({
 					left: element.offset().left,
-					top: parseInt(newVal) + element.parent().offset().top
+					top: parseInt(newVal) + element.parents('.drawing-zone').offset().top
 				});
 			});
 
