@@ -11,7 +11,7 @@ export const placedBlock = ng.directive('placedBlock', function(){
 			y: '=',
 			z: '=',
 			h: '=',
-			w: '='
+			w: '=',
 		},
 		template: '<article ng-transclude ng-style="{\'z-index\': z }"></article>',
 		link: function(scope, element){

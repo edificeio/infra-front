@@ -869,7 +869,7 @@ module.directive('resizable', function(){
 					horizontal: element.attr('horizontal-resize-lock'),
 					vertical: element.attr('vertical-resize-lock')
 				},
-				thickness: element.attr('resize-thickness') ? parseInt(element.attr('resize-thickness')) : undefined
+				thickness: attributes.resizeThickness ? parseInt(attributes.resizeThickness) : undefined
 			});
 		}
 	}
