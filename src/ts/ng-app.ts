@@ -868,7 +868,8 @@ module.directive('resizable', function(){
 				lock: {
 					horizontal: element.attr('horizontal-resize-lock'),
 					vertical: element.attr('vertical-resize-lock')
-				}
+				},
+				thickness: element.attr('resize-thickness') ? parseInt(element.attr('resize-thickness')) : undefined
 			});
 		}
 	}

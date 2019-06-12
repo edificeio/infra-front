@@ -379,7 +379,8 @@ export interface ResizeParams{
     extendParent?: {
         right?: boolean,
         bottom?: boolean
-    }
+    },
+    thickness?: number
 }
 
 export const ui = {
@@ -435,6 +436,10 @@ export const ui = {
                 return;
             }
 
+            if (!params.thickness) {
+                params.thickness = 20;
+            }
+
             //cursor styles to indicate resizing possibilities
             element.on('mouseover', function (e) {
                 element.on('mousemove', function (e) {
@@ -443,16 +448,16 @@ export const ui = {
                     }
                     var mouse = { x: e.pageX, y: e.pageY };
                     var resizeLimits = {
-                        horizontalRight: element.offset().left + element.outerWidth() + 20 > mouse.x && mouse.x > element.offset().left + element.outerWidth() - 20
+                        horizontalRight: element.offset().left + element.outerWidth() + params.thickness > mouse.x && mouse.x > element.offset().left + element.outerWidth() - params.thickness
                         && params.lock.horizontal === undefined && params.lock.right === undefined,
 
-                        horizontalLeft: element.offset().left + 20 > mouse.x && mouse.x > element.offset().left - 20
+                        horizontalLeft: element.offset().left + params.thickness > mouse.x && mouse.x > element.offset().left - params.thickness
                         && params.lock.horizontal === undefined && params.lock.left === undefined,
 
-                        verticalTop: element.offset().top + 20 > mouse.y && mouse.y > element.offset().top - 20
+                        verticalTop: element.offset().top + params.thickness > mouse.y && mouse.y > element.offset().top - params.thickness
                         && params.lock.vertical === undefined && params.lock.top === undefined,
 
-                        verticalBottom: element.offset().top + element.outerHeight() + 20 > mouse.y && mouse.y > element.offset().top + element.outerHeight() - 20
+                        verticalBottom: element.offset().top + element.outerHeight() + params.thickness > mouse.y && mouse.y > element.offset().top + element.outerHeight() - params.thickness
                         && params.lock.vertical === undefined && params.lock.bottom === undefined
                     };
 
@@ -554,16 +559,16 @@ export const ui = {
                     x: e.pageX || e.originalEvent.touches[0].pageX
                 };
                 const resizeLimits = {
-                    horizontalRight: element.offset().left + element.outerWidth() + 20 > mouse.x && mouse.x > element.offset().left + element.outerWidth() - 20
+                    horizontalRight: element.offset().left + element.outerWidth() + params.thickness > mouse.x && mouse.x > element.offset().left + element.outerWidth() - params.thickness
                     && params.lock.horizontal === undefined && params.lock.right === undefined,
 
-                    horizontalLeft: element.offset().left + 20 > mouse.x && mouse.x > element.offset().left - 20
+                    horizontalLeft: element.offset().left + params.thickness > mouse.x && mouse.x > element.offset().left - params.thickness
                     && params.lock.horizontal === undefined && params.lock.left === undefined,
 
-                    verticalTop: element.offset().top + 20 > mouse.y && mouse.y > element.offset().top - 20
+                    verticalTop: element.offset().top + params.thickness > mouse.y && mouse.y > element.offset().top - params.thickness
                     && params.lock.vertical === undefined && params.lock.top === undefined,
 
-                    verticalBottom: element.offset().top + element.outerHeight() + 20 > mouse.y && mouse.y > element.offset().top + element.outerHeight() - 20
+                    verticalBottom: element.offset().top + element.outerHeight() + params.thickness > mouse.y && mouse.y > element.offset().top + element.outerHeight() - params.thickness
                     && params.lock.vertical === undefined && params.lock.bottom === undefined
                 };
 
@@ -616,7 +621,7 @@ export const ui = {
                     if(devices.isiOS()){
                         $('body').css({ overflow: 'hidden' });
                     }
-                    
+
                     element.css({ 'transition': 'none' });
 
                     $(window).unbind('mousemove.drag touchmove.start');
