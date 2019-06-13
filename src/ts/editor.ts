@@ -466,6 +466,7 @@ export let RTE = {
                         element.parent().data('lock', false);
                         element.parents('grid-cell').data('lock', false);
                         element.trigger('editor-blur');
+                        scope.$emit('editor-blur', { target: element.get(0) });
                         $('body').css({ overflow: 'auto' });
                     });
 
@@ -907,6 +908,7 @@ export let RTE = {
                             let content = editZone.html();
                             ngModel.assign(scope, content);
                             element.trigger('editor-blur');
+                            scope.$emit('editor-blur', { target: element.get(0) });
                             editorInstance.trigger('change');
                             editorInstance.trigger('blur');
                             $('body').css({ overflow: 'auto' });
