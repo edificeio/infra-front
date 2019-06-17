@@ -613,7 +613,7 @@ export const ui = {
                     e.preventDefault();
                     e.stopPropagation();
                     cancelDefault = true;
-                    console.log('starting resizing');
+                    // console.log('starting resizing');
                     element.data('resizing', true);
                     $('.main').css({
                         'cursor': element.css('cursor')
@@ -798,7 +798,7 @@ export const ui = {
             }
 
             catcher.on('touchstart mousedown', (e) => {
-                console.log(element.data('resizing'));
+                // console.log(element.data('resizing'));
                 if (element.data('lock') === true || (e.target.tagName === 'INPUT' && $(e.target).attr('type') === 'text') || (e.target.tagName === 'TEXTAREA' && $(e.target).is(':focus'))) {
                     return;
                 }

@@ -86,6 +86,15 @@ export const placedBlock = ng.directive('placedBlock', function(){
 				element.removeClass("placed-block--dragging");
 			});
 
+			element.on('resizing', (e: Event) => {
+				// console.log("on resizing ", e);
+				scope.$emit('resizing', {
+					target: element.get(0),
+					w: element.width(),
+					h: element.height()
+				});
+			});
+
 			scope.$watch('z', function(newVal){
 				element.css({ 'z-index': scope.z })
 			});

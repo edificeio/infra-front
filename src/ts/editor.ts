@@ -865,7 +865,6 @@ export let RTE = {
                         if(e.target === element.find('.close-focus')[0] || element.hasClass('focus')){
                             return;
                         }
-                        console.log("confirmFocus", attributes.confirmFocus);
                         if(attributes.confirmFocus !== undefined) {
                             editZone.blur();
                             // editorInstance.trigger('blur');
@@ -877,13 +876,11 @@ export let RTE = {
                         if(e.target === element.find('.close-focus')[0] || element.hasClass('focus')){
                             return;
                         }
-                        console.log("confirmFocus", attributes.confirmFocus);
                         if(attributes.confirmFocus !== undefined) {
                             focus();
                         }
                     });
                     element.find('button.editor-edit-action').on('click', function(e) {
-                        console.log("confirmFocus with button", attributes.confirmFocus);
                         focus();
                         editZone.focus();
                         editorInstance.selection.moveCaret(editZone.children(':last').get(0), editZone.children(':last').get(0).textContent.length);
