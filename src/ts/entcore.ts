@@ -16,6 +16,7 @@ export * from './ng-start';
 export * from './widget';
 export * from './me';
 export * from './libs';
+export * from './toasts';
 //interfaces
 export { FolderTreeProps } from "./directives/folderTree"
 export { FolderPickerProps, FolderPickerSource, FolderPickerSourceBlob, FolderPickerSourceFile } from "./directives/folderPicker"
