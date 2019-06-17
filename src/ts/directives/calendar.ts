@@ -14,6 +14,11 @@ export let calendarComponent = ng.directive('calendar', function () {
         scope: true,
         templateUrl: '/' + appPrefix + '/public/template/entcore/calendar.html',
         controller: ['$scope', '$timeout', function ($scope, $timeout) {
+            $scope.timeOfDay = {
+                start: 0,
+                end: 24
+            };
+
             var refreshCalendar = function () {
                 model.calendar.clearScheduleItems();
                 $scope.items = _.where(_.map($scope.items, function (item) {
@@ -29,7 +34,6 @@ export let calendarComponent = ng.directive('calendar', function () {
                 $scope.display.editItem = false;
                 $scope.display.createItem = false;
                 $scope.appPrefix = appPrefix;
-
                 let calendarOptions = {
                     displayQuarterHours:false,
                     displaySaturday: false,
@@ -74,10 +78,10 @@ export let calendarComponent = ng.directive('calendar', function () {
                             end: calendar.endOfDay
                         }
                     }
-                    $scope.newItem.beginning = moment().utc().year(year).dayOfYear(day.index).hour(timeslot.start);
-                    $scope.newItem.end = moment().utc().year(year).dayOfYear(day.index).hour(timeslot.end);
+                    $scope.newItem.beginning = moment().utc().year(year).dayOfYear(day.index).hour(timeslot.start).minute(timeslot.startMinutes);
+                    $scope.newItem.end = moment().utc().year(year).dayOfYear(day.index).hour(timeslot.end).minute(timeslot.endMinutes);
                     model.calendar.newItem = $scope.newItem;
-                    model.calendar.eventer.trigger('calendar.create-item');
+                    model.calendar.eventer.trigger('calendar.create-item', timeslot);
                     $scope.onCreateOpen();
                 };
 
@@ -91,6 +95,7 @@ export let calendarComponent = ng.directive('calendar', function () {
                 };
 
                 $scope.previousTimeslots = function () {
+                    if (calendar.startOfDay === calendar.firstHour) return;
                     calendar.startOfDay--;
                     calendar.endOfDay--;
                     model.calendar.initTimeSlots();
@@ -99,6 +104,7 @@ export let calendarComponent = ng.directive('calendar', function () {
                 };
 
                 $scope.nextTimeslots = function () {
+                    if (calendar.endOfDay === calendar.lastHour) return;
                     calendar.startOfDay++;
                     calendar.endOfDay++;
                     model.calendar.initTimeSlots();
@@ -131,6 +137,17 @@ export let calendarComponent = ng.directive('calendar', function () {
                 model.calendar.setIncrement($scope.display.mode);
                 refreshCalendar();
             });
+
+            $scope.$watchCollection('slots', (newVal, oldVal) => {
+                if (newVal !== oldVal) {
+                    model.calendar.setTimeslots(newVal);
+                    $scope.timeOfDay = {
+                        start: calendar.firstHour,
+                        end: calendar.lastHour
+                    };
+                    $scope.$apply();
+                }
+            })
         }],
         link: function (scope, element, attributes) {
             var allowCreate;
@@ -172,6 +189,7 @@ export let calendarComponent = ng.directive('calendar', function () {
             });
 
             scope.items = scope.$eval(attributes.items);
+            scope.slots = scope.$eval(attributes.slots);
             scope.onCreateOpen = function () {
                 if (!allowCreate) {
                     return;
@@ -187,6 +205,11 @@ export let calendarComponent = ng.directive('calendar', function () {
             }, function (newVal) {
                 scope.items = newVal;
             });
+
+            scope.$watch(
+                () => scope.$eval(attributes.slots),
+                (newVal) => scope.slots = newVal
+            )
 
         }
     }
