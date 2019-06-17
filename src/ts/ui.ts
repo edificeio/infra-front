@@ -551,7 +551,7 @@ export const ui = {
                 }
 
                 const borderWidth:number = parseInt(element.css('border-width'));
-                const ratio = element.height() / element.width();
+                const ratio = element.height() / element.width(); // CAUTION ratio is inverted
                 
                 var interrupt = false;
                 var mouse = {
@@ -664,6 +664,15 @@ export const ui = {
                                 }
                                 newWidth = distance;
                             }
+                            // Prevent height to be under the bottom frontier of the container
+                            if (params.preserveRatio) {
+                                const posTopLayerInPage = initial.pos.top - parent.offset().top;
+                                const newHeight = newWidth * ratio;
+                                if (posTopLayerInPage + newHeight > parentData.size.height) {
+                                    newWidth = (parentData.size.height - posTopLayerInPage) / ratio;
+                                }
+                            }
+                            // Apply new width and new height if ratio is preserved
                             if (newWidth > 0) {
                                 element.width(newWidth);
                                 if(params.preserveRatio){
@@ -699,6 +708,14 @@ export const ui = {
                                     distance = (parentData.pos.top + parentData.size.height) - element.offset().top - borderWidth * 2;
                                 }
                                 newHeight = distance;
+                            }
+                            // Prevent width to be over the right frontier of the container
+                            if (params.preserveRatio) {
+                                const posLeftLayerInPage = initial.pos.left - parent.offset().left;
+                                const newWidth = newHeight / ratio;
+                                if (posLeftLayerInPage + newWidth > parentData.size.width) {
+                                    newHeight = (parentData.size.width - posLeftLayerInPage) * ratio;
+                                }
                             }
                             if (newHeight > 0) {
                                 element.height(newHeight);
