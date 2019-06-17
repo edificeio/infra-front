@@ -869,7 +869,8 @@ module.directive('resizable', function(){
 					horizontal: element.attr('horizontal-resize-lock'),
 					vertical: element.attr('vertical-resize-lock')
 				},
-				thickness: attributes.resizeThickness ? parseInt(attributes.resizeThickness) : undefined
+				thickness: attributes.resizeThickness ? parseInt(attributes.resizeThickness) : undefined,
+				preserveRatio: attributes.preserveRatio === undefined ? false : true
 			});
 		}
 	}

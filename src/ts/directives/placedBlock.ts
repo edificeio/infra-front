@@ -12,9 +12,22 @@ export const placedBlock = ng.directive('placedBlock', function(){
 			z: '=',
 			h: '=',
 			w: '=',
+			ratio: '@' // W/H ratio that will be preserved when resized.
 		},
 		template: '<article ng-transclude ng-style="{\'z-index\': z }"></article>',
 		link: function(scope, element){
+			scope.$safeApply = function (fn?) {
+                const phase = this.$root && this.$root.$$phase;
+                if (phase == '$apply' || phase == '$digest') {
+                    if (fn && (typeof (fn) === 'function')) {
+                        fn();
+                    }
+                } else {
+                    this.$apply(fn);
+                }
+            };
+
+
 			element.css({ 'position': 'absolute' });
 			scope.$watch('x', function(newVal){
 				element.offset({
@@ -77,9 +90,6 @@ export const placedBlock = ng.directive('placedBlock', function(){
 				element.css({ 'z-index': scope.z })
 			});
 
-			scope.$watch('w', function(newVal){
-				element.width(newVal);
-			});
 			element.on('stopResize', function(){
 				scope.w = element.width();
 				scope.$apply('w');
@@ -88,8 +98,25 @@ export const placedBlock = ng.directive('placedBlock', function(){
                 applyPosition();
 			});
 
+			scope.$watch('w', function(newVal){
+				element.width(newVal);
+				if (scope.ratio) {
+					scope.h = scope.w / scope.ratio;
+					scope.$safeApply('h');
+				}
+			});
+
 			scope.$watch('h', function(newVal){
 				element.height(newVal);
+				if (scope.ratio) {
+					scope.w = scope.h * scope.ratio;
+					scope.$safeApply('w');
+				}
+			});
+
+			scope.$watch('ratio', function(newVal){
+				console.log("new ratio", newVal);
+				scope.h = scope.w / newVal;
 			});
 		}
 	}
