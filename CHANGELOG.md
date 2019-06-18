@@ -1,4 +1,50 @@
-# [3.4.0](https://github.com/entcore/entcore/compare/3.3.6...3.4.0) (2019-03-04)
+
+# [3.5.0](https://github.com/opendigitaleducation/infra-front/compare/3.4.3...3.5.0) (2019-04-29)
+
+
+### Bug Fixes
+
+* Directory:
+    * fix performance issue when retrieving filtered classes
+* Workspace:
+    * enable downloading trashed documents
+
+
+### Features
+
+* enable forcing a user to revalidate terms and conditions
+
+
+## [3.4.3](https://github.com/opendigitaleducation/infra-front/compare/3.4.2...3.4.3) (2019-04-16)
+
+
+### Bug Fixes
+
+* Smart banner:
+    * enable i18n for smart banner and overrides per theme. Also adds profile exclusion per theme.
+
+
+## [3.4.2](https://github.com/opendigitaleducation/infra-front/compare/3.4.1...3.4.2) (2019-04-09)
+
+
+### Bug Fixes
+
+* Editor:
+    * fix a bug with a plain text pasting. Now it converts the text to editor model.
+* Miscellaneous:
+    * chrome 73+ handles differently click target when selecting, fix the target detection on checkTool
+
+
+## [3.4.1](https://github.com/opendigitaleducation/infra-front/compare/3.4.0...3.4.1) (2019-03-25)
+
+
+### Features
+
+* Calendar:
+    * hide week switcher on month display
+
+
+# [3.4.0](https://github.com/opendigitaleducation/infra-front/compare/3.3.6...3.4.0) (2019-03-04)
 
 
 ### Bug Fixes
@@ -29,7 +75,7 @@
 
 
 
-## [3.3.6](https://github.com/entcore/entcore/compare/3.3.5...3.3.6) (2019-02-18)
+## [3.3.6](https://github.com/opendigitaleducation/infra-front/compare/3.3.5...3.3.6) (2019-02-18)
 
 
 ### Bug Fixes
@@ -39,7 +85,7 @@
     * fix cycle in the document hierarchy (document should not be able to move (or copy) into self or descendant)
 
 
-## [3.3.5](https://github.com/entcore/entcore/compare/3.3.4...3.3.5) (2019-02-12)
+## [3.3.5](https://github.com/opendigitaleducation/infra-front/compare/3.3.4...3.3.5) (2019-02-12)
 
 
 ### Bug Fixes
@@ -49,7 +95,7 @@
 
 
 
-## [3.3.4](https://github.com/entcore/entcore/compare/3.3.2...3.3.4) (2019-01-22)
+## [3.3.4](https://github.com/opendigitaleducation/infra-front/compare/3.3.2...3.3.4) (2019-01-22)
 
 
 ### Bug Fixes
@@ -60,7 +106,7 @@
 
 
 
-## [3.3.2](https://github.com/entcore/entcore/compare/3.3.1...3.3.2) (2019-01-10)
+## [3.3.2](https://github.com/opendigitaleducation/infra-front/compare/3.3.1...3.3.2) (2019-01-10)
 
 
 ### Bug Fixes
@@ -69,7 +115,7 @@
     * renamed button class
 
 
-## [3.3.1](https://github.com/entcore/entcore/compare/3.3.0...3.3.1) (2019-01-07)
+## [3.3.1](https://github.com/opendigitaleducation/infra-front/compare/3.3.0...3.3.1) (2019-01-07)
 
 
 ### Bug Fixes
@@ -78,7 +124,7 @@
     * include hash's theme when building ts
 
 
-# [3.3.0](https://github.com/entcore/entcore/compare/2.3.3...3.3.0) (2018-12-26)
+# [3.3.0](https://github.com/opendigitaleducation/infra-front/compare/2.3.3...3.3.0) (2018-12-26)
 
 
 ### Bug Fixes

@@ -59,12 +59,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/entcore/entcore.git"
+    "url": "https://github.com/opendigitaleducation/infra-front.git"
   },
   "author": "",
   "license": "AGPL-3.0",
   "bugs": {
-    "url": "https://github.com/entcore/entcore/issues"
+    "url": "https://github.com/opendigitaleducation/infra-front/issues"
   },
-  "homepage": "https://github.com/entcore/entcore"
+  "homepage": "https://github.com/opendigitaleducation/infra-front"
 }
