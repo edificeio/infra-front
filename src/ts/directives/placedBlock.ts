@@ -104,7 +104,7 @@ export const placedBlock = ng.directive('placedBlock', function(){
 				scope.$apply('w');
 				scope.h = element.height();
 				scope.$apply('h');
-                applyPosition();
+				applyPosition();
 			});
 
 			scope.$watch('w', function(newVal){
@@ -124,8 +124,11 @@ export const placedBlock = ng.directive('placedBlock', function(){
 			});
 
 			scope.$watch('ratio', function(newVal){
-				console.log("new ratio", newVal);
-				scope.h = scope.w / newVal;
+				if (newVal) { // Can be NaN
+					console.log("new ratio", newVal);
+					scope.h = scope.w / newVal;
+					scope.$safeApply('h');
+				}
 			});
 		}
 	}
