@@ -878,12 +878,15 @@ export let RTE = {
                         }
                         if(attributes.confirmFocus !== undefined) {
                             focus();
+                            editZone.focus();
                         }
                     });
                     element.find('button.editor-edit-action').on('click', function(e) {
                         focus();
                         editZone.focus();
-                        editorInstance.selection.moveCaret(editZone.children(':last').get(0), editZone.children(':last').get(0).textContent.length);
+                        if (editZone.children(':last').get(0)) {
+                            editorInstance.selection.moveCaret(editZone.children(':last').get(0), editZone.children(':last').get(0).textContent.length);
+                        }
                         e.stopPropagation();
                     });
                     element.find('button.editor-edit-action').on('mousedown.resize touchstart.resize', function(e) {
