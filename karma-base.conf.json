@@ -21,6 +21,7 @@
     "src/ts/workspace/*.ts",
     "src/ts/behaviours.ts",
     "src/ts/rights.ts",
+    "src/ts/toasts.ts",
     "src/ts/entcore.ts",
     "src/ts/sniplets.ts",
     "src/ts/template.ts",
