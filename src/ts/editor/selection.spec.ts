@@ -157,6 +157,13 @@ describe('Selection', () => {
                     expect(applyCss(`<div><span><span style="color: rgb(1, 2, 3);">test2</span></span><span>↦test1↤</span></div>`, {color: 'blue'}))
                         .toBeStyledAs('<div><span style="color: rgb(1, 2, 3);">test2</span><span style="color: blue;">↦test1↤</span></div>');
                 });
+
+                describe(`issue #24772`, () => {
+                    it(`should not delete image tag in span`, () => {
+                        expect(applyCss(`<div>↦test↤</div><div>\u200b<div><span><div><div><span class="image-container">\u200b<img src="https://image.com"></span>&nbsp;&nbsp;<br></div></div></span></div></div>`, {color: 'blue'}))
+                            .toBeStyledAs('<div><span style="color: blue;">↦test↤</span></div><div>\u200b<div><span><div><div><span class="image-container">\u200b<img src="https://image.com"></span>&nbsp;&nbsp;<br></div></div></span></div></div>');
+                    });
+                });
             });
         });
 
