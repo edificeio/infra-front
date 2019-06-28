@@ -20,3 +20,4 @@ export * from './linker';
 export * from './smileys';
 export * from './table';
 export * from './templates';
+export * from "./edumedia";

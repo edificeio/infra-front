@@ -3,6 +3,7 @@ import { ui } from './ui';
 import { model } from './modelDefinitions';
 import { _ } from './libs/underscore/underscore';
 
+let _skinResolve, _skinReject = null;
 export var skin = {
 	addDirectives: undefined as any,
 	templateMapping: {},
@@ -11,6 +12,10 @@ export var skin = {
 	portalTemplate: '/assets/themes/raw/portal.html',
 	basePath: '',
 	logoutCallback: '/',
+	onSkinReady: new Promise((_resolve, _reject) => {
+		_skinResolve = _resolve;
+		_skinReject = _reject;
+	}),
 	loadDisconnected: async function(): Promise<any>{
 		return new Promise((resolve, reject) => {
 			var rand = Math.random();
@@ -18,13 +23,15 @@ export var skin = {
 				this.skin = data.skin;
 				this.theme = '/assets/themes/' + data.skin + '/skins/default/';
 				this.basePath = this.theme + '../../';
-
+				_skinResolve();
 				http().get('/assets/themes/' + data.skin + '/template/override.json', { token: rand }, { disableNotifications: true }).done((override) => {
 					this.templateMapping = override;
 					resolve();
 				})
 				.e404(() => resolve());
-			}).e404(() => {});
+			}).e404(() => {
+				_skinReject();
+			});
 		});
 	},
 	listThemes: function(cb){
@@ -104,8 +111,8 @@ export var skin = {
 		});
 	},
 	loadConnected: async function(): Promise<any>{
-		var rand = Math.random();
-		var that = this;
+		const rand = Math.random();
+		const that = this;
 		return new Promise((resolve, reject) => {
 			http().get('/theme').done(function(data){
 				that.theme = data.skin;
@@ -113,7 +120,7 @@ export var skin = {
 				that.skin = that.theme.split('/assets/themes/')[1].split('/')[0];
 				that.portalTemplate = '/assets/themes/' + that.skin + '/portal.html';
 				that.logoutCallback = data.logoutCallback;
-
+				_skinResolve();
 				http().get('/assets/themes/' + that.skin + '/template/override.json', { token: rand }).done(function(override){
 					that.templateMapping = override;
 					if (window.entcore.template) {
@@ -123,6 +130,7 @@ export var skin = {
 				})
 				.e404(() => { 
 					resolve(); 
+					_skinReject();
 				});
 			});
 		});

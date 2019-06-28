@@ -285,6 +285,7 @@ export class MediaLibrary {
     static myDocuments = new MyDocuments();
     static sharedDocuments = new SharedDocuments();
     static appDocuments = new AppDocuments();
+    static externalDocuments = new AppDocuments();
     static publicDocuments = new PublicDocuments();
     static trashDocuments = new Folder("trash");
     static eventer = new Eventer();
@@ -313,6 +314,9 @@ export class MediaLibrary {
                         break;
                     case 'trash':
                         MediaLibrary.trashDocuments.setChildren(tree.children);
+                        break;
+                    case 'external':
+                        MediaLibrary.externalDocuments.setChildren(tree.children);
                         break;
                 }
             }

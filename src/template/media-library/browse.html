@@ -60,6 +60,11 @@
 					</ul>
 				</div>
 			</li>
+			<li ng-if="isExternalVisible()">
+				<a ng-click="listFrom('externalDocuments')" ng-class="{ selected: display.listFrom === 'externalDocuments' }">
+					<i18n>workspace.externalDocs</i18n>
+				</a>
+			</li>
 			<li workflow="workspace.create">
 				<a ng-click="listFrom('appDocuments')" ng-class="{ selected: display.listFrom === 'appDocuments' }">
 					<i18n>workspace.appDocuments</i18n>
@@ -95,7 +100,7 @@
 				 doc-id="[[document._id]]">
 					<div class="img container" ng-if="document.role() === 'img'">
 						<div class="clip">
-							<img ng-src="/workspace/document/[[document._id]]?thumbnail=120x120" />
+							<img ng-src="[[document.thumbUrl]]" />
 							<div class="absolute" ng-if="display.loading && display.loading.indexOf(document) !== -1">
 								<img skin-src="/img/illustrations/loading.gif" />
 							</div>

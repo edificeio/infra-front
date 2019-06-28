@@ -6,12 +6,20 @@ import { template } from '../template';
 import { model } from '../modelDefinitions';
 import { idiom } from '../idiom';
 import http from 'axios';
-
-type LIST_TYPE = "myDocuments" | "appDocuments" | "publicDocuments" | "sharedDocuments" | "trashDocuments";
+import { timeInterval } from 'rxjs/operator/timeInterval';
+export type Header = { template: string, worflowKey: string, i18Key: string, visible: () => boolean };
+type LIST_TYPE = "myDocuments" | "appDocuments" | "publicDocuments" | "sharedDocuments" | "trashDocuments" | "externalDocuments";
+export interface MediaLibraryDelegate {
+	title?:string
+	visit?($scope: MediaLibraryScope);
+	augmentHeaders?(headers: Header[]): Header[];
+	filterDocumentRole?(element: Document): boolean
+	handleShow?($scope: MediaLibraryScope, args: { cancelAll: () => void, displayHighLights: () => void, showTemplate: (h: Header) => void }): boolean;
+}
 export interface MediaLibraryScope {
 	template: any
 	multiple: boolean
-	visibility: "public" | "protected"
+	visibility: "public" | "protected" | "external"
 	display: {
 		search: string,
 		limit: number,
@@ -34,6 +42,8 @@ export interface MediaLibraryScope {
 	folders: Folder[]
 	folder: Folder
 	fileFormat: string
+	delegate?: MediaLibraryDelegate
+	title():string
 	updateSearch()
 	editImage()
 	insertRecord()
@@ -42,8 +52,11 @@ export interface MediaLibraryScope {
 	selectDocuments();
 	openFolder(folder: Folder)
 	isListFrom(listName: LIST_TYPE): boolean
-	listFrom(listName: string)
-	show(tab: string)
+	listFrom(listName: LIST_TYPE)
+	headers(): Header[];
+	showHeader(tab: Header)
+	showHeaderByI18Key(tab: string)
+	isSelectedHeader(header: Header): boolean;
 	isEditedFirst(): boolean
 	isEditedLast(): boolean
 	nextImage(): void
@@ -55,6 +68,7 @@ export interface MediaLibraryScope {
 	abortOrDelete(doc: Document)
 	confirmImport()
 	cancelUpload()
+	isExternalVisible(): boolean
 	//angular
 	ngModel: Document | Document[]
 	ngChange()
@@ -67,6 +81,7 @@ export const mediaLibrary = ng.directive('mediaLibrary', ['$timeout', function (
 	return {
 		restrict: 'E',
 		scope: {
+			delegate: "=",
 			ngModel: '=',
 			ngChange: '&',
 			multiple: '=',
@@ -74,10 +89,50 @@ export const mediaLibrary = ng.directive('mediaLibrary', ['$timeout', function (
 		},
 		templateUrl: '/' + appPrefix + '/public/template/entcore/media-library/main.html',
 		link: function (scope: MediaLibraryScope, element, attributes) {
-			template
+			//=== Call visitors
+			scope.delegate && scope.delegate.visit && scope.delegate.visit(scope);
+			//
+			const MAIN_CONTAINER = 'entcore/media-library/main';
+			const TEMPLATE_LOADING = 'entcore/media-library/loading';
+			//=== Headers
+			const HEADER_BROWSE: Header = {
+				i18Key: "library.header.browse",
+				template: "entcore/media-library/browse",
+				visible: () => true,
+				worflowKey: null
+			}
+			const HEADER_UPLOAD: Header = {
+				i18Key: "library.header.upload",
+				template: "entcore/media-library/upload",
+				visible: () => true,
+				worflowKey: "workspace.create"
+			}
+			const HEADER_RECORD: Header = {
+				i18Key: "library.header.record",
+				template: "entcore/media-library/record",
+				visible: () => scope.fileFormat === 'audio',
+				worflowKey: "workspace.record"
+			}
 			scope.template = template;
+			//
+			let header: Header = HEADER_BROWSE;
+			const showTemplate = (h: Header) => {
+				header = h;
+				template.open(MAIN_CONTAINER, h.template);
+			}
+			scope.headers = function () {
+				const headers = [HEADER_RECORD, HEADER_UPLOAD, HEADER_BROWSE]
+				return scope.delegate && scope.delegate.augmentHeaders ? scope.delegate.augmentHeaders(headers) : headers;
+			}
+			scope.title = () => {
+				if(scope.delegate && scope.delegate.title){
+					return scope.delegate.title;
+				}else{
+					return idiom.translate("medialibrary.title");
+				}
+			}
 			//prefetch screen to avoid lock
-			template.open("entcore/media-library/cache","entcore/media-library/loading");
+			template.open("entcore/media-library/cache", TEMPLATE_LOADING);
 			if (!(window as any).toBlobPolyfillLoaded) {
 				http.get('/infra/public/js/toBlob-polyfill.js').then((response) => {
 					eval(response.data);
@@ -132,7 +187,7 @@ export const mediaLibrary = ng.directive('mediaLibrary', ['$timeout', function (
 			element.on('drop', async (e) => {
 				element.find('.drop-zone').removeClass('dragover');
 				e.preventDefault();
-				template.open('entcore/media-library/main', 'entcore/media-library/loading');
+				template.open(MAIN_CONTAINER, TEMPLATE_LOADING);
 				const files = e.originalEvent.dataTransfer.files;
 				scope.importFiles(e.originalEvent.dataTransfer.files);
 				scope.$apply();
@@ -146,7 +201,7 @@ export const mediaLibrary = ng.directive('mediaLibrary', ['$timeout', function (
 				scope.upload.documents = [];
 			});
 
-			template.open('entcore/media-library/main', 'entcore/media-library/browse');
+			showTemplate(HEADER_BROWSE);
 
 			scope.myDocuments = MediaLibrary.myDocuments;
 			scope.sharedDocuments = MediaLibrary.sharedDocuments;
@@ -178,11 +233,7 @@ export const mediaLibrary = ng.directive('mediaLibrary', ['$timeout', function (
 			scope.isEditedLast = () => !nextImage();
 			scope.nextImage = () => scope.display.editedDocument = nextImage();
 			scope.previousImage = () => scope.display.editedDocument = previousImage();
-
-			scope.show = (tab) => {
-				template.open('entcore/media-library/main', 'entcore/media-library/' + tab);
-				cancelAll();
-				scope.upload.loading = [];
+			const displayHighLights = () => {
 				setTimeout(() => {
 					scope.upload.highlights.forEach((doc: Document) => {
 						element.find('explorer').each((index, item) => {
@@ -206,7 +257,27 @@ export const mediaLibrary = ng.directive('mediaLibrary', ['$timeout', function (
 						}, 720);
 					}, 30);
 				}, 100);
-			};
+			}
+			//
+			scope.showHeaderByI18Key = function (key: string) {
+				const tab = scope.headers().find(h => h.i18Key == key);
+				tab && scope.showHeader(tab);
+			}
+			scope.showHeader = function (tab: Header) {
+				if (scope.delegate && scope.delegate.handleShow) {
+					const hasHandled = scope.delegate.handleShow(scope, { cancelAll, displayHighLights, showTemplate });
+					if (hasHandled) return;
+				}
+				showTemplate(tab);
+				cancelAll();
+				displayHighLights();
+			}
+			scope.isExternalVisible = function () {
+				return scope.visibility == "external";
+			}
+			scope.isSelectedHeader = function (h: Header): boolean {
+				return header && h && header.i18Key == h.i18Key;
+			}
 			scope.isListFrom = function (listName: LIST_TYPE) {
 				return scope.display.listFrom == listName;
 			}
@@ -239,7 +310,9 @@ export const mediaLibrary = ng.directive('mediaLibrary', ['$timeout', function (
 			};
 
 			scope.$watch('visibility', function (newVal) {
-				if (model.me && model.me.workflow.workspace.create) {
+				if (scope.visibility == "external") {
+					scope.listFrom("externalDocuments")
+				} else if (model.me && model.me.workflow.workspace.create) {
 					if (scope.visibility === 'public') {
 						scope.listFrom("publicDocuments")
 					}
@@ -256,16 +329,16 @@ export const mediaLibrary = ng.directive('mediaLibrary', ['$timeout', function (
 					}
 
 					if (newVal === 'audio') {
-						template.open('entcore/media-library/main', 'entcore/media-library/record');
+						showTemplate(HEADER_RECORD);
 						element.parents('lightbox').on('lightboxvisible', () => {
-							template.open('entcore/media-library/main', 'entcore/media-library/record');
+							showTemplate(HEADER_RECORD);
 							scope.$apply();
 						});
 					}
 					else {
-						template.open('entcore/media-library/main', 'entcore/media-library/browse');
+						showTemplate(HEADER_BROWSE);
 						element.parents('lightbox').on('lightboxvisible', () => {
-							template.open('entcore/media-library/main', 'entcore/media-library/browse');
+							showTemplate(HEADER_BROWSE);
 							scope.$apply();
 						});
 					}
@@ -283,7 +356,9 @@ export const mediaLibrary = ng.directive('mediaLibrary', ['$timeout', function (
 			}
 			function filteredDocuments(source: Folder) {
 				return source.documents.filter(function (doc: Document) {
-					const filetypeOk = (doc.role() === scope.fileFormat || scope.fileFormat === 'any');
+					const hasDelegateRoleFilter = scope.delegate && scope.delegate.filterDocumentRole;
+					const hasValidRole = (doc.role() === scope.fileFormat || scope.fileFormat === 'any');
+					const filetypeOk = hasDelegateRoleFilter ? scope.delegate.filterDocumentRole(doc) : hasValidRole;
 					const filenameOk = matchSearch(doc.metadata.filename);
 					const nameOk = matchSearch(doc.name);
 					return filetypeOk && (filenameOk || nameOk);
@@ -301,7 +376,7 @@ export const mediaLibrary = ng.directive('mediaLibrary', ['$timeout', function (
 
 			scope.insertRecord = async () => {
 				await MediaLibrary.appDocuments.sync();
-				template.open('entcore/media-library/main', 'entcore/media-library/browse');
+				showTemplate(HEADER_BROWSE);
 				scope.listFrom('appDocuments');
 			};
 
@@ -313,7 +388,8 @@ export const mediaLibrary = ng.directive('mediaLibrary', ['$timeout', function (
 			}
 			scope.selectDocuments = async () => {
 				const selectedDocuments = scope.selectedDocuments();
-				if ((scope.openedFolder.filter == "protected" && scope.visibility === 'protected') ||
+				if (scope.visibility === 'external' ||
+					(scope.openedFolder.filter == "protected" && scope.visibility === 'protected') ||
 					(scope.openedFolder.filter == "public" && scope.visibility === 'public')) {
 					if (scope.multiple) {
 						scope.ngModel = selectedDocuments;
@@ -369,6 +445,7 @@ export const mediaLibrary = ng.directive('mediaLibrary', ['$timeout', function (
 					}
 				});
 				scope.upload.documents = [];
+				scope.upload.loading = [];
 			}
 
 			scope.abortOrDelete = (doc: Document) => {
@@ -381,7 +458,7 @@ export const mediaLibrary = ng.directive('mediaLibrary', ['$timeout', function (
 				const index = scope.upload.documents.indexOf(doc);
 				scope.upload.documents.splice(index, 1);
 				if (!scope.upload.documents.length) {
-					template.open('entcore/media-library/main', 'entcore/media-library/upload');
+					showTemplate(HEADER_UPLOAD);
 				}
 				if (doc === scope.display.editedDocument) {
 					scope.display.editedDocument = undefined;
@@ -403,12 +480,12 @@ export const mediaLibrary = ng.directive('mediaLibrary', ['$timeout', function (
 				}
 				else
 					await scope.listFrom('appDocuments');
-				scope.show('browse');
+				scope.showHeader(HEADER_BROWSE);
 				scope.$apply();
 			}
 
 			scope.cancelUpload = () => {
-				template.open('entcore/media-library/main', 'entcore/media-library/upload');
+				showTemplate(HEADER_UPLOAD);
 				cancelAll();
 			};
 
@@ -419,10 +496,11 @@ export const mediaLibrary = ng.directive('mediaLibrary', ['$timeout', function (
 				for (var i = 0; i < files.length; i++) {
 					let doc = new Document();
 					scope.upload.documents.push(doc);
-					doc.upload(files[i], scope.visibility).then(() => scope.$apply());
+					const visibility = scope.visibility == "external" ? "protected" : scope.visibility;
+					doc.upload(files[i], visibility).then(() => scope.$apply());
 				}
 				scope.upload.files = undefined;
-				template.open('entcore/media-library/main', 'entcore/media-library/loading');
+				template.open(MAIN_CONTAINER, TEMPLATE_LOADING);
 			};
 
 			scope.updateSearch = function () {

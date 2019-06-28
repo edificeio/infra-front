@@ -22,7 +22,7 @@ import * as moment from 'moment';
 import { Selectable, Eventer } from 'entcore-toolkit';
 
 export const MEDIALIB_APPNAME = "media-library";
-export type TREE_NAME = "owner" | "shared" | "protected" | "public" | "trash" | "all";
+export type TREE_NAME = "owner" | "shared" | "protected" | "public" | "trash" | "all" | "external";
 export const FOLDER_TYPE = "folder";
 export const FILE_TYPE = "file";
 
@@ -35,6 +35,7 @@ export interface Node {
 export interface Tree extends Node {
     name: string
     children: Element[]
+    hidden?: boolean
     filter?: TREE_NAME
     hierarchical?: boolean
     helpbox?: string
@@ -54,6 +55,13 @@ export interface Revision {
     _id?: string
     documentId: string
 }
+
+export type ContentTypeToRoleMapper = (contentType: string, previewRole:boolean) => string | undefined;
+export type ElementToThumbMapper = (element: Element) => string | undefined;
+export const ROLES = {
+    IMG: "img",
+    HTML: "html"
+}
 //file or folder
 export class Element extends Model implements Node, Shareable, Selectable {
     _id?: string;
@@ -66,6 +74,7 @@ export class Element extends Model implements Node, Shareable, Selectable {
     children: Element[] = [];
     created: moment.Moment
     trasher?: string
+    externalId?:string;
     //shared
     _shared: any[];
     inheritedShares?: any[];
@@ -87,7 +96,7 @@ export class Element extends Model implements Node, Shareable, Selectable {
     hiddenBlob?: Blob
     eventer = new Eventer();
     //
-    ancestors:string[];
+    ancestors: string[];
     //
     newName?: string
     newProperties?: {
@@ -118,6 +127,35 @@ export class Element extends Model implements Node, Shareable, Selectable {
         this.revisions = [];
         this.fromJSON(data);
         this.rights = new Rights(this);
+    }
+    get isExternal() {
+        return this._id && this._id.indexOf("external_") == 0;
+    }
+    static createExternalFolder({ externalId, name }: { name: string, externalId: string }): Element {
+        const edumediaFolder = new Element;
+        edumediaFolder.eType = FOLDER_TYPE;
+        edumediaFolder.name = name;
+        edumediaFolder.externalId = externalId;
+        edumediaFolder.owner = {
+            get displayName(){
+                return model.me.displayName;
+            },
+            get userId(){
+               return model.me.userId;
+            }
+        }
+        return edumediaFolder;
+    }
+    private static roleMappers: ContentTypeToRoleMapper[] = [];
+    private static thumbMappers: ElementToThumbMapper[] = [];
+    static registerContentTypeToRoleMapper(mapper: ContentTypeToRoleMapper) {
+        this.roleMappers.push(mapper);
+    }
+    static registerThumbUrlMapper(mapper: ElementToThumbMapper) {
+        this.thumbMappers.push(mapper);
+    }
+    get contentType() {
+        return this.metadata && this.metadata["content-type"];
     }
     fromJSON(data) {
         if (!data) {
@@ -200,18 +238,18 @@ export class Element extends Model implements Node, Shareable, Selectable {
         return ids.map(id => this.idEquals(id)).reduce((a1, a2) => a1 || a2, false);
     }
     anyAncestors(ids: string[]) {
-        for(let id of ids){
-            if(this.ancestors.indexOf(id)>-1){
+        for (let id of ids) {
+            if (this.ancestors.indexOf(id) > -1) {
                 return true;
             }
         }
         return false;
     }
-    anyParent(ids: string[]){
-        return ids.indexOf(this.eParent)>-1;
+    anyParent(ids: string[]) {
+        return ids.indexOf(this.eParent) > -1;
     }
-    anySelf(ids: string[]){
-        return ids.indexOf(this._id)>-1;
+    anySelf(ids: string[]) {
+        return ids.indexOf(this._id) > -1;
     }
     canCopyFileIdsInto(ids: string[]) {
         //cannot copy or move an element if has no right
@@ -286,11 +324,29 @@ export class Element extends Model implements Node, Shareable, Selectable {
         return this.metadata && Element.role(this.metadata['content-type']);
     }
 
-    static role(fileType: string) {
+    previewRole() {
+        return this.metadata && Element.role(this.metadata['content-type'],true);
+    }
+
+    get thumbUrl() {
+        for (let thumbMapper of Element.thumbMappers) {
+            const thumbUri = thumbMapper(this);
+            if (thumbUri) {
+                return thumbUri;
+            }
+        }
+        return `/workspace/document/${this._id}?thumbnail=120x120`;
+    }
+    static role(fileType: string, previewRole: boolean = false) {
         if (!fileType)
             return 'unknown'
-
-        var types = {
+        for (let roleMapper of this.roleMappers) {
+            const role = roleMapper(fileType,previewRole);
+            if (role) {
+                return role;
+            }
+        }
+        const types = {
             'doc': function (type) {
                 return type.indexOf('document') !== -1 && type.indexOf('wordprocessing') !== -1;
             },

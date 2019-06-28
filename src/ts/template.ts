@@ -32,11 +32,15 @@ export var template = {
 		this.containers['portal'] = {};
 		this.containers.portal['conversationUnread'] = this.getCompletePath('conversation-unread', true);
 	},
-	open: function(name, view?){
+	open: function(name:string, view?:string){
 		if(!view){
 			view = name;
 		}
-		this.containers[name] = this.getCompletePath(view);
+		if(view && view.startsWith("local:")){
+			this.containers[name] = view.replace("local:", "");
+		}else{
+			this.containers[name] = this.getCompletePath(view);
+		}
 
 		if(this.callbacks && this.callbacks[name]){
 			this.callbacks[name].forEach(function(cb){

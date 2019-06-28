@@ -22,24 +22,11 @@
 	<image-editor document="display.editedDocument" show="display.editDocument" inline></image-editor>
 </div>
 <div ng-if="!display.editDocument">
-	<h2><i18n>medialibrary.title</i18n></h2>
+	<h2>[[title()]]</h2>
 	<section class="row media-library">
 		<section class="twelve cell tabs row">
-			<header ng-class="{ selected: template.contains('entcore/media-library/main', 'entcore/media-library/record') }"
-					ng-click="show('record')"
-					workflow="workspace.create"
-					ng-if="fileFormat === 'audio'">
-					<i18n>library.header.record</i18n>
-			</header>
-			<header ng-class="{ selected: template.contains('entcore/media-library/main', 'entcore/media-library/upload') || template.contains('entcore/media-library/main', 'entcore/media-library/loading') }"
-					ng-click="show('upload')"
-					workflow="workspace.create">
-					<i18n>library.header.upload</i18n>
-			</header>
-			<header
-				ng-class="{ selected: template.contains('entcore/media-library/main', 'entcore/media-library/browse') }"
-				ng-click="show('browse')">
-				<i18n>library.header.browse</i18n>
+			<header ng-repeat="header in headers()" ng-class="{'selected':isSelectedHeader(header)}" ng-click="showHeader(header)" workflow="[[header.worflowKey]]" ng-if="header.visible">
+				<span translate content="[[header.i18Key]]"></span>
 			</header>
 			<section class="medium-text">
 				<container template="entcore/media-library/main"></container>

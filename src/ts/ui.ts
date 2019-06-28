@@ -14,7 +14,7 @@
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-
+import axios from 'axios';
 import { skin } from './skin';
 import { devices } from './globals';
 
@@ -384,6 +384,24 @@ export interface ResizeParams{
 }
 
 export const ui = {
+    getConf: async function (): Promise<any> {
+        const res = await axios({
+            url: "/assets/theme-conf.js",
+            method: 'get',
+            transformResponse: [data => data]
+        });
+        const text: string = res.data;
+        var temp = null;
+        const js = "temp" + text.substring(text.indexOf("=")).trim();
+        eval(js);
+        return temp;
+    },
+    getCurrentThemeConf: async function (): Promise<any> {
+        await skin.onSkinReady;
+        const conf = await ui.getConf();
+        const currentTheme = conf.overriding.find(t => t.child === skin.skin);
+        return currentTheme;
+    },
     extendElement: {
         touchEvents: function (element, params?) {
             if (!params) {
@@ -553,6 +571,12 @@ export const ui = {
                 const borderWidth:number = parseInt(element.css('border-width'));
                 const ratio = element.height() / element.width(); // CAUTION ratio is inverted
                 
+                $('body').css({
+                    '-webkit-user-select': 'none',
+                    '-moz-user-select': 'none',
+                    'user-select': 'none'
+                });
+
                 var interrupt = false;
                 var mouse = {
                     y: e.pageY || e.originalEvent.touches[0].pageY,

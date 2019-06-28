@@ -51,3 +51,4 @@ export * from './userRole';
 export * from './widgets';
 export * from './wizard';
 export * from './workflow';
+export * from "./edumedia";

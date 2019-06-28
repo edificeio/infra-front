@@ -15,6 +15,7 @@ export interface ElementQuery {
     search?: string
     includeall?: boolean
     ancestorId?: string
+    application?: string
 }
 
 export interface WorkspaceEvent {
@@ -46,12 +47,84 @@ export interface WorkspacePreference {
     view?: WorkspacePreferenceView
     quickstart?: "viewed" | "notviewed"
 }
+export type DocumentActionType = "comment" | "download" | "move" | "copy" | "share" | "history"
+export type DocumentFilter = (element: workspaceModel.Element, query: ElementQuery) => boolean
+export type DocumentActionFilter = (element: workspaceModel.Element, type:DocumentActionType) => boolean
+export type FullScreenRenderer = (element: workspaceModel.Element) => { close() } | false
 export type WorkspacePreferenceView = "list" | "icons" | "carousel";
 export const workspaceService = {
+    _externalFullScreen: [] as FullScreenRenderer[],
+    _externalActionFilter: [] as DocumentActionFilter[],
+    _externalDocumentFilters: [] as DocumentFilter[],
+    _externalFolders: [] as Promise<workspaceModel.Element | null>[],
     _cacheFolders: [] as workspaceModel.Element[],
     onChange: new Subject<WorkspaceEvent>(),
     onImportFiles: new Subject<FileList>(),
     onConfirmImport: new Subject<workspaceModel.Element[]>(),
+    hasExternalFolders(){
+        return workspaceService._externalFolders.length>0;
+    },
+    async getExternalFolders(){
+        const folders = await Promise.all(workspaceService._externalFolders);
+        return folders.filter(f=>f!=null);
+    },
+    async getExternalFolderFor({externalId}:{externalId:string}){
+        const folders = await workspaceService.getExternalFolders();
+        const find = folders.find(f=>f.externalId==externalId);
+        return {
+            exists: !!find,
+            folder:find
+        }
+    },
+    addExternalFolder(infoPromise: Promise<{ externalId: string, name: string }|null>) {
+        const promise = infoPromise.then(info=>{
+            //create external folder if not exists
+            if(info == null){
+                return null;
+            }
+            const extFolder = workspaceModel.Element.createExternalFolder(info);
+            return workspaceService.createFolder(extFolder);
+        }).then(folder =>{
+            //cast result
+            if(folder!=null && folder instanceof workspaceModel.Element){
+                return folder;
+            }
+            return null;
+        });
+        workspaceService._externalFolders.push(promise);
+        workspaceService.onChange.next({
+            action: "tree-change",
+            treeDest: "external"
+        })
+    },
+    registerExternalDocumentFilter(filter: DocumentFilter) {
+        workspaceService._externalDocumentFilters.push(filter);
+    },
+    registerExternalActionFilter(filter: DocumentActionFilter) {
+        workspaceService._externalActionFilter.push(filter);
+    },
+    registerExternalFullScreenRenderer(renderer: FullScreenRenderer) {
+        workspaceService._externalFullScreen.push(renderer);
+    },
+    renderFullScreen(element: workspaceModel.Element) {
+        for (let rend of workspaceService._externalFullScreen) {
+            const res = rend(element);
+            if(res!=false){
+                return res;
+            }
+        }
+        return false;
+    },
+    isActionAvailable(type:DocumentActionType,elts:workspaceModel.Element[]){
+        for(let elt of elts){
+            for(let filter of workspaceService._externalActionFilter){
+                if(filter(elt,type)===false){
+                    return false;
+                }
+            }
+        }
+        return true;
+    },
     async getPreference(): Promise<WorkspacePreference> {
         if (preferences) {
             return preferences;
@@ -72,9 +145,14 @@ export const workspaceService = {
         preferences = current;
         return preferences;
     },
+    fetchFolders(params: ElementQuery, sort: "name" | "created" = "name"): Promise<workspaceModel.Element[]> {
+        return http<workspaceModel.Element[]>().get('/workspace/folders/list', params)
+    },
     async fetchTrees(params: ElementQuery, sort: "name" | "created" = "name"): Promise<workspaceModel.Tree[]> {
         let folders: workspaceModel.Element[] = await http<workspaceModel.Element[]>().get('/workspace/folders/list', params);
-        //
+        //skip external folders
+        folders = folders.filter(f=>!f.externalId);
+        //cache folders
         workspaceService._cacheFolders = folders;
         //create models
         folders = folders.map(f => {
@@ -123,10 +201,19 @@ export const workspaceService = {
             } as workspaceModel.Tree;
         }
         const trees: workspaceModel.Tree[] = [];
+        //
         trees.push(buildTree("shared", el => el.isShared && !el.deleted))
         trees.push(buildTree("trash", el => el.deleted))
         trees.push(buildTree("protected", el => el.protected));
         trees.push(buildTree("owner", _ => true));//all others
+        //add external folders if exists
+        if (workspaceService.hasExternalFolders()) {
+            const children = await workspaceService.getExternalFolders();
+            trees.push({
+                filter: "external",
+                children
+            } as workspaceModel.Tree);
+        }
         // filter by trasher
         const tree = trees.find(tree => tree.filter == "trash");
         if (tree) {
@@ -152,7 +239,11 @@ export const workspaceService = {
         return trees;
     },
     async fetchDocuments(params: ElementQuery, sort: "name" | "created" = "name"): Promise<Document[]> {
-        let filesO: workspaceModel.Element[] = await http<workspaceModel.Element[]>().get('/workspace/documents', params);
+        let filesO: workspaceModel.Element[] = [];
+        const skip = params.filter == "external" && !params.parentId;
+        if (!skip) {
+            filesO = await http<workspaceModel.Element[]>().get('/workspace/documents', params);
+        }
         //filter by trasherid
         const accept = function (current: workspaceModel.Node) {
             const currentElement = current as workspaceModel.Element;
@@ -517,6 +608,15 @@ export const workspaceService = {
             return Promise.resolve();
         }
     },
+    async createExternalDocument(file: File | Blob, document: Document, externalId:string, params?: { visibility?: "public" | "protected", application?: string }): Promise<Document> {
+        const parent = await workspaceService.getExternalFolderFor({externalId});
+        if(!parent.exists){
+            notify.error(lang.translate("worksapce.external.folder.notfound"))
+            console.warn("[WorkspaceService] Could not found external folder: ", externalId, workspaceService, workspaceService._externalFolders)
+            return;
+        }
+        return workspaceService.createDocument(file,document,parent.folder,params);
+    },
     async createDocument(file: File | Blob, document: Document, parent?: workspaceModel.Element, params?: { visibility?: "public" | "protected", application?: string }): Promise<Document> {
         document.eType = workspaceModel.FILE_TYPE;
         document.eParent = parent ? parent._id : null;
@@ -637,7 +737,8 @@ export const workspaceService = {
     async createFolder(folder: workspaceModel.Element, parent?: workspaceModel.Element): Promise<{ error?: string } | workspaceModel.Element> {
         const name = folder.name;
         const parentFolderId = parent ? parent._id : null;
-        const p = http().post('/workspace/folder', { name, parentFolderId, shared: folder.shared });
+        const externalId = folder.externalId ? folder.externalId : null;
+        const p = http().post('/workspace/folder', { name, parentFolderId, shared: folder.shared, externalId});
         let error = null;
         let copy: workspaceModel.Element = null;
         p.e400((e) => {
