@@ -78,8 +78,11 @@ export class Me{
             if (model.me && model.me.userId) {
                 resolve(model.me);
             } else {
-                model.one("userinfo-loaded", _ => {
-                    resolve(model.me);
+                //wait for model to be built?
+                setTimeout(()=>{
+                    model.one("userinfo-loaded", _ => {
+                        resolve(model.me);
+                    })
                 })
             }
         })
