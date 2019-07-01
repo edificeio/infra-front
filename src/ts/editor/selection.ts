@@ -54,7 +54,7 @@ function tryToRemoveOrMergeTextElementOutOfRange(currentNode: Node, ranges: Arra
     if (!isHTMLBlockElement(currentNode)) {
         if (ranges.every(r => !isNodeInRange(currentNode, r))) {
             if (currentNode.textContent === '' || currentNode.textContent === '\u200b') {
-                if (!(isHTMLBlockElement(currentNode.parentNode) && currentNode.parentNode.childNodes.length === 1) && containsOnlyTextNode(currentNode)) {
+                if (!(isHTMLBlockElement(currentNode.parentNode) && currentNode.parentNode.childNodes.length === 1) && containsOnlyTextNodes(currentNode)) {
                     currentNode.parentNode.removeChild(currentNode);
                 }
             } else if (currentNode.previousSibling && ranges.every(r => !isNodeInRange(currentNode.previousSibling, r))) {
@@ -73,12 +73,8 @@ function tryToRemoveOrMergeTextElementOutOfRange(currentNode: Node, ranges: Arra
     return currentNode;
 }
 
-function isHTMLTextElement(node: Node): boolean {
-    return node && isHTMLElement(node) && (textNodes.indexOf(node.nodeName) >= 0);
-}
-
-function containsOnlyTextNode(node: Node): boolean {
-    return Array.from(node.childNodes).every((node) => node.nodeType === Node.TEXT_NODE || isHTMLTextElement(node));
+function containsOnlyTextNodes(node: Node): boolean {
+    return Array.from(node.childNodes).every(node => node.nodeType === Node.TEXT_NODE);
 }
 
 export function isHTMLElement(node: Node): node is HTMLElement {
