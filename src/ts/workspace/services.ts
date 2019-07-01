@@ -16,6 +16,7 @@ export interface ElementQuery {
     includeall?: boolean
     ancestorId?: string
     application?: string
+    directShared?: boolean
 }
 
 export interface WorkspaceEvent {
@@ -238,9 +239,14 @@ export const workspaceService = {
         //
         return trees;
     },
-    async fetchDocuments(params: ElementQuery, sort: "name" | "created" = "name"): Promise<Document[]> {
+    async fetchDocuments(params: ElementQuery, sort: "name" | "created" = "name", args:{directlyShared:boolean} = {directlyShared:false}): Promise<Document[]> {
         let filesO: workspaceModel.Element[] = [];
         const skip = params.filter == "external" && !params.parentId;
+        if(args){
+            if(args.directlyShared){
+                params.directShared = true;
+            }
+        }
         if (!skip) {
             filesO = await http<workspaceModel.Element[]>().get('/workspace/documents', params);
         }
@@ -249,6 +255,13 @@ export const workspaceService = {
             const currentElement = current as workspaceModel.Element;
             if (currentElement.deleted && currentElement.trasher) {
                 return model.me.userId == currentElement.trasher;
+            }
+            //in case of directShared document => hide doc that are visible inside a folder
+            if(params.directShared && currentElement.eParent){
+                const isParentVisible = workspaceService._cacheFolders.find(folder => folder._id == currentElement.eParent);
+                if(isParentVisible){
+                    return false;
+                }
             }
             return true;
         }
