@@ -92,7 +92,7 @@ export const edumediaService = {
         });
     },
     hasEdumediaContentType(element: Element) {
-        return element.contentType.indexOf(EDU_MEDIA_CONTENT_TYPE) > -1;
+        return element.contentType && element.contentType.indexOf(EDU_MEDIA_CONTENT_TYPE) > -1;
     },
     getUrl(): Promise<string> {
         const inner = async () => {
@@ -258,7 +258,7 @@ export const edumediaService = {
 // === Register thumb mapper and role mapper
 function initWorkspaceConfig() {
     Element.registerContentTypeToRoleMapper((contentType, preview) => {
-        if (contentType.indexOf(EDU_MEDIA_CONTENT_TYPE) > -1) {
+        if (contentType && contentType.indexOf(EDU_MEDIA_CONTENT_TYPE) > -1) {
             if (preview) {
                 return ROLES.HTML;
             }
@@ -266,7 +266,7 @@ function initWorkspaceConfig() {
         }
     });
     Element.registerThumbUrlMapper((element) => {
-        if (element.contentType.indexOf(EDU_MEDIA_CONTENT_TYPE) > -1) {
+        if (element.contentType && element.contentType.indexOf(EDU_MEDIA_CONTENT_TYPE) > -1) {
             const url = edumediaService.getThumbFromContentType(element.contentType);
             return url;
         }
@@ -284,7 +284,7 @@ function initWorkspaceConfig() {
     workspaceService.addExternalFolder(initFolder());
     //register fullscreen renderer
     workspaceService.registerExternalFullScreenRenderer((element) => {
-        if (element.contentType.indexOf(EDU_MEDIA_CONTENT_TYPE) > -1) {
+        if (element.contentType && element.contentType.indexOf(EDU_MEDIA_CONTENT_TYPE) > -1) {
             const mediaId = edumediaService.getIdFromContentType(element.contentType);
             edumediaService.makeFullscreen(`edumedia_${mediaId}`);
             return {
@@ -297,7 +297,7 @@ function initWorkspaceConfig() {
     })
     //register action type filter
     workspaceService.registerExternalActionFilter((element, type) => {
-        if (element.contentType.indexOf(EDU_MEDIA_CONTENT_TYPE) > -1) {
+        if (element.contentType && element.contentType.indexOf(EDU_MEDIA_CONTENT_TYPE) > -1) {
             switch (type) {
                 case "comment":
                 case "copy":
