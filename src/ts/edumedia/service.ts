@@ -5,6 +5,7 @@ import { Document } from "../workspace/workspace-v1";
 import { workspaceService } from '../workspace/services';
 import { model } from '../modelDefinitions';
 import { MD5 } from "./utils";
+import { Me } from '../me';
 
 const EXTERNAL_ID = "edumedia";
 const CONTENT_TYPE = "edumedia";
@@ -63,8 +64,9 @@ export const edumediaService = {
     cacheBaseUrl: null,
     cacheConfig: null,
     async isEdumediaEnabled() {
+        await Me.onSessionReady();
         const conf = await edumediaService.getEdumediaConfig();
-        const hasEdumedia = (model.me.optionEnabled || []).indexOf("EDUMEDIA") > -1;
+        const hasEdumedia = model.me && (model.me.optionEnabled || []).indexOf("EDUMEDIA") > -1;
         return !!conf && hasEdumedia;
     },
     async getEdumediaConfig(): Promise<EdumediaConfig> {

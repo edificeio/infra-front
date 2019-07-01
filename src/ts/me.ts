@@ -73,6 +73,17 @@ export class Me{
             }
         })
     }
+    static onSessionReady(){
+        return new Promise((resolve, reject) => {
+            if (model.me && model.me.userId) {
+                resolve(model.me);
+            } else {
+                model.one("userinfo-loaded", _ => {
+                    resolve(model.me);
+                })
+            }
+        })
+    }
 }
 
 if(!(window as any).entcore){
