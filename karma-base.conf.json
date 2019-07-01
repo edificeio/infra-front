@@ -19,6 +19,7 @@
     "src/ts/globals.ts",
     "src/ts/notify.ts",
     "src/ts/workspace/*.ts",
+    "src/ts/edumedia/*.ts",
     "src/ts/behaviours.ts",
     "src/ts/rights.ts",
     "src/ts/toasts.ts",
