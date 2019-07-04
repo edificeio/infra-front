@@ -5,6 +5,7 @@ var rename = require('gulp-rename');
 var argv = require('yargs').argv;
 var rimraf = require("rimraf");
 var gap = require('gulp-append-prepend');
+var pjson = require('./package.json');
 
 let springboardPath = '../springboard-open-ent';
 if (argv.springboard) {
@@ -25,6 +26,7 @@ gulp.task("do-build", ["clean:types"], function () {
 gulp.task("build", ["do-build"], function () {
     return gulp.src('./bundle/ng-app.js')
     .pipe(gap.prependText('window.springboardBuildDate="'+new Date().toISOString()+'";\n'))
+    .pipe(gap.prependText('window.infrafrontVersion="'+pjson.version+'";\n'))
     .pipe(gulp.dest("./bundle/"));
 });
 
