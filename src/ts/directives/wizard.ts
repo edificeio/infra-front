@@ -30,7 +30,7 @@ export let wizard = ng.directive('wizard', () => {
                     }
 				});
 				scope.$watch("gotoStep", ()=>{
-					if(scope.currentStep!=scope.gotoStep){
+					if(scope.gotoStep && scope.currentStep!=scope.gotoStep){
 						scope.currentStep = scope.gotoStep;
 						displayCurrentStep();
 					}
