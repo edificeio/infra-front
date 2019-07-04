@@ -111,7 +111,7 @@ export const mediaLibrary = ng.directive('mediaLibrary', ['$timeout', function (
 				i18Key: "library.header.record",
 				template: "entcore/media-library/record",
 				visible: () => scope.fileFormat === 'audio',
-				worflowKey: "workspace.record"
+				worflowKey: "workspace.create"
 			}
 			scope.template = template;
 			//
