@@ -2,6 +2,18 @@
 import { ui } from '../ui';
 import { $ } from '../libs/jquery/jquery';
 
+//=== utils
+function isTouchDevice() {
+    try{
+        return (('ontouchstart' in window)
+         || ((navigator as any).MaxTouchPoints > 0)
+         || (navigator.msMaxTouchPoints > 0));
+    }catch(e){
+        return false;
+    }
+}
+
+//===directive
 export let explorer = ng.directive('explorer', () => {
     return {
         restrict: 'E',
@@ -14,7 +26,23 @@ export let explorer = ng.directive('explorer', () => {
         },
         template: '<div class="explorer" ng-transclude></div>',
         link: function (scope, element, attributes) {
-
+            if(isTouchDevice()){
+                //double tap
+                element.bind('touchstart', function preventZoom(e) {
+                    const t2 = e.timeStamp
+                        , t1 = element.data('lastTouch') || t2
+                        , dt = t2 - t1
+                        , fingers = e.originalEvent.touches.length;
+                        element.data('lastTouch', t2);
+                    //not a double tap
+                    if (!dt || dt > 500 || fingers > 1) 
+                        return;
+                    //double tap
+                    e.preventDefault(); 
+                    element.trigger('dblclick');
+                });     
+            }
+            //
             function select(e) {
                 scope.ngModel = !scope.ngModel;
                 scope.$apply('ngModel');
