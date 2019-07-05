@@ -3,7 +3,7 @@ import { ui } from './ui';
 import { model } from './modelDefinitions';
 import { _ } from './libs/underscore/underscore';
 
-let _skinResolve, _skinReject = null;
+let _skinResolved, _skinRejected = null;
 export var skin = {
 	addDirectives: undefined as any,
 	templateMapping: {},
@@ -13,11 +13,21 @@ export var skin = {
 	basePath: '',
 	logoutCallback: '/',
 	_onSkinReady:null,
+	get skinResolveFunc(){
+		//load func
+		skin.onSkinReady;
+		return _skinResolved;
+	},
+	get skinRejectedFunc(){
+		//load func
+		skin.onSkinReady;
+		return _skinRejected;
+	},
 	get onSkinReady(){
 		if(skin._onSkinReady == null){
 			skin._onSkinReady = new Promise((_resolve, _reject) => {
-				_skinResolve = _resolve;
-				_skinReject = _reject;
+				_skinResolved = _resolve;
+				_skinRejected = _reject;
 			})
 		}
 		return skin._onSkinReady;
@@ -29,14 +39,14 @@ export var skin = {
 				this.skin = data.skin;
 				this.theme = '/assets/themes/' + data.skin + '/skins/default/';
 				this.basePath = this.theme + '../../';
-				_skinResolve();
+				skin.skinResolveFunc();
 				http().get('/assets/themes/' + data.skin + '/template/override.json', { token: rand }, { disableNotifications: true }).done((override) => {
 					this.templateMapping = override;
 					resolve();
 				})
 				.e404(() => resolve());
 			}).e404(() => {
-				_skinReject();
+				skin.skinRejectedFunc();
 			});
 		});
 	},
@@ -126,7 +136,7 @@ export var skin = {
 				that.skin = that.theme.split('/assets/themes/')[1].split('/')[0];
 				that.portalTemplate = '/assets/themes/' + that.skin + '/portal.html';
 				that.logoutCallback = data.logoutCallback;
-				_skinResolve();
+				skin.skinResolveFunc();
 				http().get('/assets/themes/' + that.skin + '/template/override.json', { token: rand }).done(function(override){
 					that.templateMapping = override;
 					if (window.entcore.template) {
@@ -136,7 +146,7 @@ export var skin = {
 				})
 				.e404(() => { 
 					resolve(); 
-					_skinReject();
+					skin.skinRejectedFunc();
 				});
 			});
 		});
