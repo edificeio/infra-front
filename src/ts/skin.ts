@@ -12,10 +12,16 @@ export var skin = {
 	portalTemplate: '/assets/themes/raw/portal.html',
 	basePath: '',
 	logoutCallback: '/',
-	onSkinReady: new Promise((_resolve, _reject) => {
-		_skinResolve = _resolve;
-		_skinReject = _reject;
-	}),
+	_onSkinReady:null,
+	get onSkinReady(){
+		if(skin._onSkinReady == null){
+			skin._onSkinReady = new Promise((_resolve, _reject) => {
+				_skinResolve = _resolve;
+				_skinReject = _reject;
+			})
+		}
+		return skin._onSkinReady;
+	},
 	loadDisconnected: async function(): Promise<any>{
 		return new Promise((resolve, reject) => {
 			var rand = Math.random();
