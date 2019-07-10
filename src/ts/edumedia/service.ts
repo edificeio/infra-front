@@ -15,6 +15,7 @@ declare var $: any;
 export interface EdumediaConfig {
     uri: string
     pattern: string
+    ignoreSubjects?:string[]
 }
 export interface EdumediaMedia {
     id: string
@@ -180,7 +181,12 @@ export const edumediaService = {
             url: `${url}/tree-item/n-root`,
             method: 'get'
         });
-        return res.data;
+        const conf = await edumediaService.getEdumediaConfig();
+        let subjects:EdumediaTree = res.data;
+        if(conf.ignoreSubjects){
+            subjects.children = subjects.children.filter(s=>conf.ignoreSubjects.indexOf(s.id)==-1);
+        }
+        return subjects;
     },
     async fetchChildren(item: EdumediaTreeItem): Promise<EdumediaTree> {
         const res = await axios({
