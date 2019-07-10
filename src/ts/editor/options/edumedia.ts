@@ -27,7 +27,7 @@ export const edumedia = {
     run: function (instance) {
         return {
             template: `
-            <i ng-click="open()" ng-if="isVisible" tooltip="editor.option.edumedia">E</i>
+            <i class="ic-edumedia" ng-click="open()" ng-if="isVisible" tooltip="editor.option.edumedia"></i>
             <div ng-if="edumediaOptions.display.pickMedia">
                 <lightbox show="edumediaOptions.display.pickMedia" on-close="cancel()">
                     <script type="text/ng-template" id="edumedia_explorer">

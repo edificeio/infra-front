@@ -217,9 +217,9 @@ export const edumediaService = {
         return `
             <div style="position:relative">
                 <iframe id="edumedia_${media.id}" title="${media.title}" width="${media.width}" height="${media.height}" src="${media.frameURL}">
-                </iframe>  
-                <h6 edumedia-fullscreen-jquery="edumedia_${media.id}">Afficher en plein écran</h6>
-            </div>  
+                </iframe>
+                <h6 edumedia-fullscreen-jquery="edumedia_${media.id}">Afficher en plein écran <i class="fullscreen-on"></i></h6>
+            </div>
         `
     },
     async saveIntoWorkspace(media: EdumediaMediaDetails) {
