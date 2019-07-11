@@ -621,7 +621,8 @@ export const ui = {
                         width: element.width(),
                         height: element.height()
                     },
-                    bodyScroll: $('body').css('overflow')
+                    bodyScrollX: $('body').css('overflow-x'),
+                    bodyScrollY: $('body').css('overflow-y')
                 };
                 var parent = element.parents('.drawing-zone');
                 var parentData = {
@@ -643,6 +644,7 @@ export const ui = {
                         'cursor': element.css('cursor')
                     });
                     if(devices.isiOS()){
+                        console.log("HIDDEN risize");
                         $('body').css({ overflow: 'hidden' });
                     }
 
@@ -759,7 +761,9 @@ export const ui = {
                         interrupt = true;
                         element.removeClass(element.css('cursor'));
                         setTimeout(function () {
-                            $('body').css({ overflow: initial.bodyScroll });
+                            console.log("inital.bodyscroll", initial.bodyScrollX, initial.bodyScrollY);
+                            $('body').css({ 'overflow-x': initial.bodyScrollX });
+                            $('body').css({ 'overflow-y': initial.bodyScrollY });
                             element.css({ 'transition': '' });
                             element.data('resizing', false);
                             element.trigger('stopResize');
@@ -1015,6 +1019,7 @@ export const ui = {
                                 'user-select': 'none'
                             });
                             if(params.noScroll || devices.isiOS()){
+                                console.log("HIDDEN drag");
                                 $('body').css({ overflow: 'hidden' });
                             }
                             if (element.css('position') === 'relative') {
@@ -1052,7 +1057,7 @@ export const ui = {
                             if (element.data('dragging')) {
                                 element.trigger('stopDrag');
                                 if(params.noScroll || devices.isiOS()){
-                                    $('body').css({ overflow: "" });
+                                    $('body').css({ overflow: "visible" });
                                 }
                                 element.data('dragging', false);
                                 $('#audioWrapper').css({'display':'none'});
