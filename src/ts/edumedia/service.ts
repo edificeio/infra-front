@@ -6,6 +6,7 @@ import { workspaceService } from '../workspace/services';
 import { model } from '../modelDefinitions';
 import { MD5 } from "./utils";
 import { Me } from '../me';
+import { idiom } from '../idiom';
 
 const EXTERNAL_ID = "edumedia";
 const CONTENT_TYPE = "edumedia";
@@ -224,7 +225,7 @@ export const edumediaService = {
             <div style="position:relative">
                 <iframe id="edumedia_${media.id}" title="${media.title}" width="${media.width}" height="${media.height}" src="${media.frameURL}">
                 </iframe>
-                <h6 edumedia-fullscreen-jquery="edumedia_${media.id}">Afficher en plein écran <i class="fullscreen-on"></i></h6>
+                <h6 edumedia-fullscreen-jquery="edumedia_${media.id}">${idiom.translate("edumedia.fullscreen")} <i class="fullscreen-on"></i></h6>
             </div>
         `
     },
