@@ -155,6 +155,7 @@ export interface EdumediaExplorerScope {
     items: EdumediaElement[]
     stack: EdumediaElementStack[]
     addProcessing: boolean;
+    isSearching():boolean
     getCss(item: EdumediaElement): string
     canAdd(): boolean
     onOpen(item: EdumediaElement);
@@ -179,7 +180,7 @@ export const edumediaExplorer = ng.directive('edumediaExplorer', ['$timeout', fu
             <div>
                 <edumedia-explorer-media ng-if="displayMedia()" media="currentMedia" notify-add="onAdd(currentMedia)" notify-back="onMediaBack()"></edumedia-explorer-media>
                 <edumedia-header ng-if="displayExplorer()" can-add="canAdd()" notify-search="onSearch($text)" notify-add="onAdd()" notify-go-to="onGoTo($stack)" stack="stack" class="row"></edumedia-header>
-                <div ng-if="displayExplorer()" class="edumedia-scrollable-area">
+                <div ng-if="displayExplorer()" class="edumedia-scrollable-area" ng-class="{'edumedia-search':isSearching()}">
                     <edumedia-explorer-element ng-class="getCss(item)" ng-repeat="item in items" item="item" open="onOpen(item)" select="onSelect(item)" selected="isSelected(item)"></edumedia-explorer-element>
                 </div>
             </div>
@@ -227,6 +228,7 @@ export const edumediaExplorer = ng.directive('edumediaExplorer', ['$timeout', fu
             scope.displayMedia = () => visible == "media";
             scope.displayExplorer = () => visible == "explorer";
             scope.canAdd = () => selected.length > 0 && !scope.addProcessing;
+            scope.isSearching = ()=>searching;
             scope.onSearch = async function (text) {
                 if (text) {
                     searching = true;
