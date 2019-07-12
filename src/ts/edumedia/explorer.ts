@@ -144,6 +144,10 @@ const initFullscreenHandlers = () => {
         const id = jQuery(e.target).attr("edumedia-fullscreen-jquery");
         edumediaService.makeFullscreen(id);
     });
+    jQuery(document).on("click", "*[edumedia-delete-jquery]", (e) => {
+        const id = jQuery(e.target).attr("edumedia-delete-jquery");
+        edumediaService.removeContent(id);
+    });
 }
 initFullscreenHandlers();
 ///

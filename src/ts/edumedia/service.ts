@@ -222,10 +222,13 @@ export const edumediaService = {
     },
     toHtml(media: EdumediaMediaDetails) {
         return `
-            <div style="position:relative">
+            <div style="position:relative" edumedia-content-jquery="edumedia_${media.id}">
+                <div class="edumedia-content-header">
+                    <a edumedia-fullscreen-jquery="edumedia_${media.id}">${idiom.translate("edumedia.fullscreen")}&nbsp;&nbsp;<i class="fullscreen-on"></i></a>
+                    <i class="close-2x" edumedia-delete-jquery="edumedia_${media.id}"></i>
+                </div>
                 <iframe id="edumedia_${media.id}" title="${media.title}" width="${media.width}" height="${media.height}" src="${media.frameURL}">
                 </iframe>
-                <h6 edumedia-fullscreen-jquery="edumedia_${media.id}">${idiom.translate("edumedia.fullscreen")} <i class="fullscreen-on"></i></h6>
             </div>
         `
     },
@@ -238,6 +241,11 @@ export const edumediaService = {
             visibility: "protected",
             application: EXTERNAL_ID
         })
+    },
+    removeContent(id) {
+        const temp = jQuery(`[edumedia-content-jquery="${id}"]`);
+        temp.parent(".edumedia-container").remove();
+        temp.remove()
     },
     closeFullScreen() {
         jQuery("#edumedia-fullscreen-lightbox").remove();
