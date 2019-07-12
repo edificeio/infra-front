@@ -227,13 +227,17 @@ export const edumediaExplorer = ng.directive('edumediaExplorer', ['$timeout', fu
                 }
             }
             scope.getCss = function (item: EdumediaElement) {
-                return `${kind} ${scope.isSelected(item) ? "selected" : ""}`;
+                const realKind = (item as EdumediaMedia).media?"media":kind;
+                return `${realKind} ${scope.isSelected(item) ? "selected" : ""}`;
             }
             scope.displayMedia = () => visible == "media";
             scope.displayExplorer = () => visible == "explorer";
             scope.canAdd = () => selected.length > 0 && !scope.addProcessing;
             scope.isSearching = ()=>searching;
             scope.onSearch = async function (text) {
+                $timeout(() => {
+                    selected = [];//reset selection
+                })
                 if (text) {
                     searching = true;
                     const res = await edumediaService.search(text);
@@ -241,8 +245,10 @@ export const edumediaExplorer = ng.directive('edumediaExplorer', ['$timeout', fu
                         scope.items = res.medias;
                     })
                 } else if (searching) {
-                    setLast();
-                    searching = false;
+                    $timeout(() => {
+                        setLast();
+                        searching = false;
+                    });
                 }
             }
             scope.onGoTo = function (stack: EdumediaElementStack[]) {

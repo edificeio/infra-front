@@ -7,6 +7,7 @@ export interface EdumediaHeaderScope {
     stack: EdumediaElementStack[];
     display: { search: string }
     canAdd: boolean;
+    canShowAdd():boolean;
     isNotEmptyStack(): boolean
     currentTitle(): string;
     onSearchChange(): void
@@ -33,12 +34,12 @@ export const edumediaHeader = ng.directive('edumediaHeader', [function () {
         },
         template:
             `
-        <div class="edumedia-header-stack" ng-if="isNotEmptyStack()">	
-            <nav>
+        <div class="edumedia-header-stack" ng-if="isNotEmptyStack() || canShowAdd()">	
+            <nav ng-style="{'visibility': isNotEmptyStack() ? 'visible' : 'hidden'}">
                 <header><span ng-click="goTo(null)"><i18n>edumedia.theme</i18n></span>/</header>
                 <header ng-repeat="item in stack"><span ng-click="goTo(item)">[[item.title]]</span>[[$last?"":" / "]]</header>
             </nav>
-            <button type="button" class="right-magnet" ng-disabled="!canAdd" ng-click="add()" ng-if="isNotEmptyStack()">
+            <button type="button" class="right-magnet" ng-disabled="!canAdd" ng-click="add()" ng-if="canShowAdd()">
                 <i18n>add</i18n>
             </button>
         </div>
@@ -67,6 +68,9 @@ export const edumediaHeader = ng.directive('edumediaHeader', [function () {
                     return idiom.translate("edumedia.choose");
                 }
             }
+            scope.canShowAdd = () =>{
+                return scope.isNotEmptyStack() || scope.canAdd;
+            }
             scope.onSearchChange = function () {
                 searchSubject.next(scope.display.search);
             }
@@ -74,6 +78,10 @@ export const edumediaHeader = ng.directive('edumediaHeader', [function () {
                 scope.notifyAdd();
             }
             scope.goTo = (item) => {
+                //reset search
+                scope.display.search = "";
+                scope.onSearchChange();
+                //
                 const index = scope.stack.findIndex((value) => value === item);
                 if (index == -1) {
                     scope.stack = [];

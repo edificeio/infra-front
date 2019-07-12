@@ -174,7 +174,9 @@ export const edumediaService = {
             url: `${url}/search?q=${search}&max=${max}`,
             method: 'get'
         });
-        return res.data;
+        const resSearch:EdumediaSearchResult = res.data;
+        resSearch.medias.forEach(m=>m.media=true)
+        return resSearch;
     },
     async fetchSubjects(): Promise<EdumediaTree> {
         const url = await edumediaService.getUrl();
