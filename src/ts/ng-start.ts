@@ -1,4 +1,3 @@
-
 export class Controller {
     name: string;
     contents: any[];
@@ -16,7 +15,7 @@ export class Directive {
     constructor(name: string, contents: any) {
         this.name = name;
         this.contents = contents;
-        if(this.contents.templateUrl){
+        if (this.contents.templateUrl) {
             const split = document.getElementById('context').getAttribute('src').split('-');
             const hash = split[split.length - 1].split('.')[0];
             this.contents.templateUrl += '?hash=' + hash;
@@ -44,11 +43,31 @@ export class Service {
     }
 }
 
+export class Provider {
+    name: string;
+    contents: any;
+
+    constructor(name: string, contents: any) {
+        this.name = name;
+        this.contents = contents;
+    }
+}
+
+export class Config {
+    contents: any;
+
+    constructor(contents: any) {
+        this.contents = contents;
+    }
+}
+
 export class Ng {
     controllers: Controller[];
     directives: Directive[];
     filters: Filter[];
     services: Service[];
+    providers: Provider[];
+    configs: Config[];
     requiredModules: string[];
     cb: ((module) => void)[];
 
@@ -57,6 +76,8 @@ export class Ng {
         this.directives = [];
         this.filters = [];
         this.services = [];
+        this.providers = [];
+        this.configs = [];
         this.requiredModules = [];
         this.cb = [];
     }
@@ -74,6 +95,12 @@ export class Ng {
         this.services.forEach((s) => {
             module.service(s.name, s.contents);
         });
+        this.providers.forEach((s) => {
+            module.provider(s.name, s.contents);
+        });
+        this.configs.forEach((s) => {
+            module.config(s.contents);
+        });
         this.requiredModules.forEach((m) => {
             module.requires.push(m);
         });
@@ -85,11 +112,15 @@ export class Ng {
         return new Directive(name, contents);
     }
 
-    service(name: string, contents: any): Directive {
+    service(name: string, contents: any): Service {
         return new Service(name, contents);
     }
 
-    controller (name: string, contents: any): Controller {
+    provider(name: string, contents: any): Provider {
+        return new Provider(name, contents);
+    }
+
+    controller(name: string, contents: any): Controller {
         return new Controller(name, contents);
     }
 
@@ -97,11 +128,15 @@ export class Ng {
         return new Filter(name, contents);
     }
 
+    config(contents: any): Config {
+        return new Config(contents);
+    }
+
     addRequiredModule(moduleName: string) {
         this.requiredModules.push(moduleName);
     }
 
-    onInit(cb: (module) => void){
+    onInit(cb: (module) => void) {
         this.cb.push(cb);
     }
 };
