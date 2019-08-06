@@ -1,3 +1,2 @@
-import { libraryDirective } from "../library/library.directive";
-
-export { libraryDirective };
+import { libraryPublishDirective, libraryRootDirective, libraryResourceDirective } from '../library/library.directives';
+export { libraryPublishDirective, libraryRootDirective, libraryResourceDirective };

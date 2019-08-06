@@ -31,6 +31,7 @@
     "src/ts/editor.ts",
     "src/ts/editor.spec.ts",
     "src/ts/editor/**/*.ts",
+    "src/ts/library/*.ts",
     "src/ts/directives/userRole.ts",
     "src/ts/directives/userRole.spec.ts"
   ],
