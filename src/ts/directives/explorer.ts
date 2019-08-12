@@ -58,7 +58,8 @@ export let explorer = ng.directive('explorer', () => {
 
             $('body').on('click.explorer', function (e) {
                 if ($(e.target).parents('explorer, .toggle, .lightbox').length === 0
-                    && e.target.nodeName !== "EXPLORER"
+                    && !$(e.target).is('.lightbox') 
+					&& e.target.nodeName !== "EXPLORER"
                     && ($(e.target).parents('body').length || e.target.nodeName === 'BODY')
                 ) {
                     scope.ngModel = false;
