@@ -141,7 +141,7 @@ export const libraryPublishDirective: Directive = ng.directive('libraryPublish',
 <lightbox show="libraryPublishController.show">
     <h2>Publier dans la bibliothèque</h2>
     <div class="row">
-    <p class="medium-importance">La bibliothèque est un espace privé de partage d'activité numériques entre enseignants qui utilisent les mêmes outils. <a href="">En savoir plus</a></p>
+    <p class="medium-importance">La Bibliothèque est un espace privé de partage d'activités et de ressources numériques mutualisées entre enseignants. <a href="">En savoir plus</a></p>
     <p class="small-text italic-text medium-importance">Tous les champs suivis d'une étoile (*) sont obligatoires.</p>
     </div>
     <div class="row">
@@ -167,12 +167,14 @@ export const libraryPublishDirective: Directive = ng.directive('libraryPublish',
         <div class="row top-spacing-twice">
           <label class="cell five bold" for="">Type d'activité :</label>
           <div class="cell five">
-            <select multiple ng-options="activityType for activityType in libraryPublishController.allActivityTypes" ng-model="libraryPublishController.publication.activityType"></select>
+            <select class="twelve" multiple ng-options="activityType for activityType in libraryPublishController.allActivityTypes" ng-model="libraryPublishController.publication.activityType"></select>
           </div>
         </div>
         <div class="row top-spacing-twice">
           <label class="cell five bold"for="">Discipline :</label>
-          <select multiple ng-options="subjectArea for subjectArea in libraryPublishController.allSubjectAreas" ng-model="libraryPublishController.publication.subjectArea" required class="cell five"></select>
+          <div class="cell five">
+            <select class="twelve" multiple ng-options="subjectArea for subjectArea in libraryPublishController.allSubjectAreas" ng-model="libraryPublishController.publication.subjectArea" required></select>
+          </div>
         </div>
         <div class="row top-spacing-twice">
           <label class="cell five bold" for="">Âge des élèves :</label>
@@ -186,18 +188,21 @@ export const libraryPublishDirective: Directive = ng.directive('libraryPublish',
         </div>
         <div class="row top-spacing-twice">
           <label class="cell twelve bold" for="">Description et contexte de l'activité :</label>
-          <textarea ng-model="libraryPublishController.publication.description" name="name" rows="8" cols="80" placeholder="Décrivez-nous la ressource et les objectifs pédagogiques que vous essayez d'atteindre."></textarea>
+          <textarea ng-model="libraryPublishController.publication.description" name="name" rows="8" cols="80" placeholder="Quels sont les thèmes abordés dans votre activité? Quelles objectifs pédagogiques souhaitez-vous atteindre?"></textarea>
         </div>
         <div class="row top-spacing-twice">
           <label class="bold" for="">Recherchez et ajoutez des mots clés (5 maximum) :</label>
-          <recipient-list>
+          <recipient-list
+                 ng-model="libraryPublishController.publication.keyWords"
+                 ng-change="<function>()"
+                 update-found-items="<function>(search, model, founds)">
           </recipient-list>
         </div>
         <div class="row top-spacing-twice">
           <input type="checkbox" name="" value="">
           <label for="">Je suis d'accord pour publier le sujet en Creative Commons
             <a href="https://creativecommons.org/licenses/by/4.0/deed.fr">
-              <img height="16px" src="https://mirrors.creativecommons.org/presskit/buttons/88x31/svg/by.svg" alt="Creative Commons BY">
+              <img height="16px" src="assets/themes/entcore-css-lib/images/cc-by.svg" alt="Logo Creative Commons BY">
             </a>
           </label>
         </div>
@@ -207,6 +212,7 @@ export const libraryPublishDirective: Directive = ng.directive('libraryPublish',
               Besoin d'aide? Consulter l'aide en ligne ou contactez-nous via l'application Assistance ENT
             </p>
             <!-- Le bouton "publier" reste griser tant que la personne n'a pas coché la case pour la licence -->
+            <!-- Il faut rajouter la class .loading quand ça charge -->
             <button type="submit" ng-click="libraryPublishController.publish()" class="right-magnet"><i18n>publish</i18n></button>
             <button type="button" ng-click="libraryPublishController.close()" class="cancel right-magnet"><i18n>cancel</i18n></button>
         </div>
