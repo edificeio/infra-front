@@ -1,18 +1,19 @@
-import { LibraryPublication, LibraryService, libraryServiceProvider, LibraryServiceProvider } from './library.service';
 import { module } from 'angular';
+import { LibraryService, libraryServiceProvider, LibraryServiceProvider } from './library.service';
+import { MockedModel } from './library.directives.spec';
 
 const testingModule = 'libraryServiceTestingModule';
 
 describe('libraryService', function () {
     let $compile,
         $rootScope,
-        libraryService: LibraryService;
+        libraryService: LibraryService<MockedModel>;
 
     describe('getResourceInformationFromResource', () => {
         it(`should throw error 'invokableResourceInformationGetterFromResource not defined' when not configured`, () => {
             new TestModuleBuilder().module();
             expect(() => {
-                libraryService.getResourceInformationFromResource('id1')
+                libraryService.getResourceInformationFromResource({_id: 'id1', icon: 'icon1', name: 'name1'})
             }).toThrowError('invokableResourceInformationGetterFromResource not defined');
         });
 
@@ -24,8 +25,12 @@ describe('libraryService', function () {
                     return invokableResourceInformationGetterFromResource;
                 });
             }).module();
-            libraryService.getResourceInformationFromResource({_id: 'id1', name: 'title1'});
-            expect(invokableResourceInformationGetterFromResource).toHaveBeenCalledWith({_id: 'id1', name: 'title1'});
+            libraryService.getResourceInformationFromResource({_id: 'id1', icon: 'icon1', name: 'name1'});
+            expect(invokableResourceInformationGetterFromResource).toHaveBeenCalledWith({
+                _id: 'id1',
+                icon: 'icon1',
+                name: 'name1'
+            });
         });
     });
 
@@ -33,7 +38,17 @@ describe('libraryService', function () {
         it(` should throw error 'publishUrlGetterFromId not defined' when not configured`, () => {
             new TestModuleBuilder().module();
             expect(() => {
-                libraryService.publish('id1', {title: 'title1', cover: null, keyWords: [], description: '', activityType: [], teachingContext: '', language: 'fr-FR', subjectArea: [], age: [3, 16]})
+                libraryService.publish('id1', {
+                    title: 'title1',
+                    cover: null,
+                    keyWords: [],
+                    description: '',
+                    activityType: [],
+                    teachingContext: '',
+                    language: 'fr-FR',
+                    subjectArea: [],
+                    age: [3, 16]
+                })
             }).toThrowError('publishUrlGetterFromId not defined');
         });
 
@@ -42,7 +57,17 @@ describe('libraryService', function () {
             new TestModuleBuilder().config((libraryServiceProvider: LibraryServiceProvider<{}>) => {
                 libraryServiceProvider.setPublishUrlGetterFromId(publishUrlGetterFromId);
             }).module();
-            libraryService.publish('id1', {title: 'title1', cover: null, keyWords: [], description: '', activityType: [], teachingContext: '', language: 'fr-FR', subjectArea: [], age: [3, 16]});
+            libraryService.publish('id1', {
+                title: 'title1',
+                cover: null,
+                keyWords: [],
+                description: '',
+                activityType: [],
+                teachingContext: '',
+                language: 'fr-FR',
+                subjectArea: [],
+                age: [3, 16]
+            });
             expect(publishUrlGetterFromId).toHaveBeenCalledWith('id1');
         });
     });

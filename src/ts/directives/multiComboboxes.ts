@@ -1,11 +1,11 @@
-import { ng, _, idiom as lang, $ } from '../entcore';
+import { ng, _, idiom as lang, $, Directive } from '../entcore';
 
 /**
  * @description Filter with multiple checkboxes.
  * @param ngModel An array of strings containing all the types selected (null if all selected).
  * @param options An array of all the possible option to check. Each option must contain a label and type field.
  * @param titleAll [attr] A string representing what should be displayed when all the options are selected.
- * @param title [attr] A string reprensenting the begining of what to display when several options are selected.
+ * @param title [attr] A string representing the beginning of what to display when several options are selected.
  * @param titleDisabled A string representing the label when the combobox is disabled
  * @param order Default order is label.
  * @param check Function to call when an option is checked
@@ -22,7 +22,7 @@ import { ng, _, idiom as lang, $ } from '../entcore';
     </multi-comboboxes>
  */
 
-export const multiComboboxes = ng.directive('multiComboboxes', () => {
+export const multiComboboxes: Directive = ng.directive('multiComboboxes', () => {
     return {
         restrict: 'E',
         template: `
@@ -90,7 +90,7 @@ export const multiComboboxes = ng.directive('multiComboboxes', () => {
             scope.$watchCollection("options", function(newValue) {
                 if(scope.options) {
                     scope.options.forEach(option => {
-                        option.checked = scope.ngModel ? scope.ngModel.indexOf(option.type) !== -1 : true;
+                        option.checked = !!scope.ngModel ? scope.ngModel.indexOf(option.type) !== -1 : true;
 
                         scope.$watch(function() { return option; }, function(newValue, oldValue) {
                             if (newValue !== oldValue && newValue.checked !== oldValue.checked) {

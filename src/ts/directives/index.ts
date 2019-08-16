@@ -53,3 +53,4 @@ export * from './wizard';
 export * from './workflow';
 export * from "./edumedia";
 export * from "./library";
+export * from "./noUiSlider";
