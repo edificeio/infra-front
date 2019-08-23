@@ -6,7 +6,7 @@ import { Directive, ng } from '../ng-start';
 
 const noUiSlider = require('nouislider');
 
-export const noUiSliderDirective: Directive = ng.directive('noUiSlider', ($timeout, $q, $log) => ({
+export const noUiSliderDirective: Directive = ng.directive('noUiSlider', ['$timeout', '$q', '$log',($timeout, $q, $log) => ({
     restrict: 'AE',
     require: '?ngModel',
     scope: {
@@ -149,4 +149,4 @@ export const noUiSliderDirective: Directive = ng.directive('noUiSlider', ($timeo
             })
             .catch($log.error);
     },
-}));
+})]);

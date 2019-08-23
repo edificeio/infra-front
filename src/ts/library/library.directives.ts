@@ -125,7 +125,7 @@ export class LibraryPublishController<R> {
                 cover: null,
                 description: '',
                 keyWords: [],
-                language: 'fr-FR',
+                language: 'Français',
                 subjectArea: [],
                 teachingContext: ''
             };
@@ -178,12 +178,12 @@ export const libraryPublishDirective: Directive = ng.directive('libraryPublish',
         <div class="row">
           <form ng-submit="libraryPublishController.publish()" name="libraryPublishController.publishForm">
             <div class="row top-spacing-four">
-              <label class="cell twelve bold" for="">Titre (maximum XX caractères) :</label>
+              <label class="cell twelve bold" for="">Titre* (maximum XX caractères) :</label>
               <input class="cell twelve top-spacing-twice" required name="title" ng-model="libraryPublishController.publication.title" type="text" placeholder="Veuillez entrer le nom de votre activité">
             </div>
             <div class="row top-spacing-twice">
               <div class="cell ten">
-                <label class="bold" for="">Vignette de l'activité :</label>
+                <label class="bold" for="">Vignette de l'activité* :</label>
                 <div class="vertical-spacing-twice horizontal-spacing-twice ">
                   <file-picker-list files="libraryPublishController.publication.cover"></file-picker-list>
                 </div>
@@ -196,33 +196,43 @@ export const libraryPublishDirective: Directive = ng.directive('libraryPublish',
               </div>
             </div>
             <div class="row top-spacing-twice">
-              <label class="cell five bold" for="">Type d'activité :</label>
-              <multi-comboboxes 
-                ng-model="libraryPublishController.publication.activityType"
-                name="activityType"
-                required
-                options="libraryPublishController.allActivityTypes"
-                title-all="tous les types d'activités"
-                title="type d'activité"
-                titleDisabled="désactivé"
-                >
-                </multi-comboboxes>
+              <label class="cell five bold" for="">Type d'activité* :</label>
+                <div class="cell five">
+                    <multi-comboboxes 
+                        ng-model="libraryPublishController.publication.activityType"
+                        name="activityType"
+                        required
+                        options="libraryPublishController.allActivityTypes"
+                        title-all="tous les types d'activités"
+                        title="type d'activité"
+                        titleDisabled="désactivé"
+                    >
+                    </multi-comboboxes>
+                </div>
             </div>
             <div class="row top-spacing-twice">
-              <label class="cell five bold"for="">Discipline :</label>
-              <multi-comboboxes 
-                ng-model="libraryPublishController.publication.subjectArea"
-                name="subjectArea"
-                required
-                options="libraryPublishController.allSubjectAreas"
-                title-all="toutes les disciplines"
-                title="discipline"
-                titleDisabled="désactivé"
-                >
-                </multi-comboboxes>
+              <label class="cell five bold"for="">Discipline* :</label>
+                  <div class="cell five">
+                      <multi-comboboxes 
+                            ng-model="libraryPublishController.publication.subjectArea"
+                            name="subjectArea"
+                            required
+                            options="libraryPublishController.allSubjectAreas"
+                            title-all="toutes les disciplines"
+                            title="discipline"
+                            titleDisabled="désactivé"
+                        >
+                        </multi-comboboxes>
+                    </div>
             </div>
             <div class="row top-spacing-twice">
-              <label class="cell five bold" for="">Âge des élèves :</label>
+              <label class="cell five bold"for=""></label>
+                  <div class="cell five">
+                      <button ng-repeat=""></button>
+                    </div>
+            </div>
+            <div class="row top-spacing-twice">
+              <label class="cell five bold" for="">Âge des élèves* :</label>
             </div>
             <div class="row top-spacing-twice">
               <div no-ui-slider
@@ -232,11 +242,11 @@ export const libraryPublishDirective: Directive = ng.directive('libraryPublish',
                  required></div>
             </div>
             <div class="row top-spacing-twice">
-              <label class="cell five bold" for="">Langue :</label>
+              <label class="cell five bold" for="">Langue* :</label>
               <select ng-options="language for language in libraryPublishController.allLanguages" required name="language" ng-model="libraryPublishController.publication.language" class="cell five"></select>
             </div>
             <div class="row top-spacing-twice">
-              <label class="cell twelve bold" for="">Description et contexte de l'activité :</label>
+              <label class="cell twelve bold" for="">Description et contexte de l'activité* :</label>
               <textarea ng-model="libraryPublishController.publication.description" required name="description" rows="8" cols="80" placeholder="Quels sont les thèmes abordés dans votre activité? Quelles objectifs pédagogiques souhaitez-vous atteindre?"></textarea>
             </div>
             <div class="row top-spacing-twice">

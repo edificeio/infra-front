@@ -28,8 +28,8 @@ export const multiComboboxes: Directive = ng.directive('multiComboboxes', () => 
         template: `
             <div class="fluid row">
                 <button type="button" class="select-button left-text low-text row" ng-class="{ selected : showOptions }" ng-disabled="ngDisabled">
-                    <span ng-if="ngModel.length === 0 && !ngDisabled" class="block cell-ellipsis right-spacing">[[ titleAll ]]</span>
-                    <span ng-if="ngModel.length > 0" class="block cell-ellipsis right-spacing active">[[ title ]]: [[ ngModel.length ]] <i18n>portal.selected</i18n></span> <i class="sort horizontal-margin top-spacing absolute-magnet"/>
+                    <span ng-if="!ngModel && !ngDisabled" class="block cell-ellipsis right-spacing">[[ titleAll ]]</span>
+                    <span ng-if="ngModel.length >= 0 && !ngDisabled" class="block cell-ellipsis right-spacing active">[[ title ]]: [[ ngModel.length ]] <i18n>portal.selected</i18n></span> <i class="sort horizontal-margin top-spacing absolute-magnet"/>
                     <span ng-if="ngDisabled" class="block cell-ellipsis right-spacing">[[ titleDisabled || title ]]</span>
                 </button>
                 <article class="absolute-w">
@@ -156,7 +156,7 @@ export const multiComboboxes: Directive = ng.directive('multiComboboxes', () => 
 
                 // bubble check event
                 scope.check({option: option, checked: checked});
-            } 
+            };
 
             // Select none / all
             scope.select = (checked) => {

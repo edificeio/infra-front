@@ -16,7 +16,7 @@ export interface LibraryResourceInformation {
     cover: string;
 }
 
-export type ActivityType =
+export type SubjectArea =
     "Activités artistiques" |
     "Allemand" |
     "Anglais" |
@@ -51,9 +51,9 @@ export type ActivityType =
     "Technologie" |
     "Autre";
 
-export const allActivityTypes: ActivityType[] = ["Activités artistiques", "Allemand", "Anglais", "Apprentissage de la lecture", "Autre", "Chimie", "Droit", "Découverte du monde", "Economie", "Education aux médias", "Education musicale", "Education physique et sportive", "Enseignement civique", "Espagnol", "Français", "Géographie", "Histoire", "Histoire des arts", "Informatique", "Italien", "Langues", "Langues anciennes", "Littérature", "Mathématiques", "Orientation", "Philosophie", "Physique", "Portugais", "Sciences politiques", "Sociologie", "SVT - Biologie", "SVT - Géologie", "Technologie"];
+export const allSubjectAreas: SubjectArea[] = ["Activités artistiques", "Allemand", "Anglais", "Apprentissage de la lecture", "Autre", "Chimie", "Droit", "Découverte du monde", "Economie", "Education aux médias", "Education musicale", "Education physique et sportive", "Enseignement civique", "Espagnol", "Français", "Géographie", "Histoire", "Histoire des arts", "Informatique", "Italien", "Langues", "Langues anciennes", "Littérature", "Mathématiques", "Orientation", "Philosophie", "Physique", "Portugais", "Sciences politiques", "Sociologie", "SVT - Biologie", "SVT - Géologie", "Technologie"];
 
-export type SubjectArea =
+export type ActivityType =
     "Activité en classe" |
     "Activité à la maison" |
     "Activité individuelle" |
@@ -63,11 +63,22 @@ export type SubjectArea =
     "Exercice" |
     "Autre";
 
-export const allSubjectAreas: SubjectArea[] = ["Autre", "Activité en classe", "Activité en groupe", "Activité individuelle", "Activité à la maison", "Exercice", "Parcours pédagogique", "Élément de cours"];
+export const allActivityTypes: ActivityType[] = ["Autre", "Activité en classe", "Activité en groupe", "Activité individuelle", "Activité à la maison", "Exercice", "Parcours pédagogique", "Élément de cours"];
 
-export type Langage = "fr-FR" | "en-EN" | "en-US";
+export type Langage =
+    "Allemand" |
+    "Anglais" |
+    "Arabe" |
+    "Espagnol" |
+    "Français" |
+    "Italien" |
+    "Japonais" |
+    "Mandarin" |
+    "Portugais" |
+    "Russe" |
+    "Autre";
 
-export const allLangages: Langage[] = ["fr-FR", "en-EN", "en-US"];
+export const allLangages: Langage[] = ["Allemand", "Anglais", "Arabe", "Espagnol", "Français", "Italien", "Japonais", "Mandarin", "Portugais", "Russe", "Autre"];
 
 export interface LibraryPublication {
     title: string;
