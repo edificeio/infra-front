@@ -17,6 +17,8 @@ export interface ElementQuery {
     ancestorId?: string
     application?: string
     directShared?: boolean
+    limit?: number;
+    skip?: number;
 }
 
 export interface WorkspaceEvent {
