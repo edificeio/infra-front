@@ -152,7 +152,10 @@ export var http = (function(){
 				resolve(loadedScripts[url]);
 				return;
 			}
-			this.get(url).done(() => resolve());
+			this.get(url).done(() => {
+				loadedScripts[url] = true;
+				resolve();
+			});
 		});
 	}
 
