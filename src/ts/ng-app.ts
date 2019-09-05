@@ -32,6 +32,7 @@ import { ng } from './ng-start';
 import * as directives from './directives';
 import { Me } from './me';
 import httpAxios from 'axios';
+import { NgModelExtend } from './directives';
 
 
 var module = angular.module('app', ['ngSanitize', 'ngRoute'], ['$interpolateProvider', function($interpolateProvider) {
@@ -935,7 +936,14 @@ module.directive('progressBar', function(){
 		}
 	}
 });
-
+const getDatePickerFormat = ():string => {
+	const keyFormat = "datepicker.format";
+	const DEFAULT_FORMAT = "dd/mm/yyyy";
+	return lang.translate(keyFormat) == keyFormat ? DEFAULT_FORMAT : lang.translate(keyFormat);
+}
+const getDatePickerMomentFormat = ():string=>{
+	return getDatePickerFormat().toUpperCase();
+}
 module.directive('datePicker', ['$compile','$timeout',function($compile, $timeout){
 	return {
 		scope: {
@@ -946,50 +954,82 @@ module.directive('datePicker', ['$compile','$timeout',function($compile, $timeou
 		transclude: true,
 		replace: true,
 		restrict: 'E',
-		template: '<input ng-transclude type="text" data-date-format="dd/mm/yyyy" ng-readonly="isreadonly" />',
-		link: function(scope, element, attributes){
+        require: "ngModel",
+		template: '<input ng-transclude type="text" ng-readonly="isreadonly"/>',
+		link: function(scope, element, attributes, ngModel){
+			const format = getDatePickerFormat();
+			const momentFormat = getDatePickerMomentFormat();
 			scope.isreadonly = !!attributes.readonly;
-			scope.$watch('ngModel', function(newVal){
+			//string to moment
+			const stringModelToMoment = (value:string) => {
 				//parse strictly
-				const parsed = moment(scope.ngModel,["DD/MM/YYYY","YYYY-MM-DD","YYYY-MM-DD[T]HH:mm:ss.SSS[Z]","YYYY-MM-DD[T]HH:mm:ss.SSS"],true);
-				const formatted = parsed.format("DD/MM/YYYY");
-				//change date only if value match format (when typing the value does not match)
-				if(parsed.isValid()){
-					element.val(formatted);
-                	if(element.datepicker)
-						element.datepicker('setValue', formatted);
-				}
-			});
-
-			if(scope.minDate){
-				scope.$watch('minDate', function(newVal){
-					setNewDate();
-				});
+				const parsed = moment(value,["DD/MM/YYYY","YYYY-MM-DD","YYYY-MM-DD[T]HH:mm:ss.SSS[Z]","YYYY-MM-DD[T]HH:mm:ss.SSS","YYYY-MM-DD[T]HH:mm:ss"],true);
+				return parsed;
 			}
-
-			function setNewDate(){
+			//model to view
+			ngModel.$formatters.push((value)=>{
+				const inner = (value) => {
+					if(typeof value == "string")return stringModelToMoment(value);
+					else if(value instanceof Date) return moment(value);
+					else if(typeof value=="object" && value.isValid) return value;//moment
+					else return null;
+				}
+				const momResult = inner(value);
+				if(momResult && momResult.isValid && momResult.isValid()){
+					setDatepickerValue(momResult);
+					return momResult.format(momentFormat);
+				}
+				return "";
+			});
+			//view to model => if invalid return current model value
+			ngModel.$parsers.push((value)=>{
+				const inner = (value) => {//parse from locale or from iso format
+					if(value) return  moment(value,[momentFormat,"YYYY-MM-DD"],true);
+					else return null;
+				}
+				const momResult = inner(value);
+				if(momResult && momResult.isValid && momResult.isValid()){
+					setDatepickerValue(momResult);
+					return momResult.toDate();
+				}
+				return ngModel.$modelValue;
+			});
+			// set picker value
+			const setDatepickerValue = (momentDate) => {
+				if(momentDate && momentDate.isValid && momentDate.isValid()){
+					const formatted = momentDate.format(momentFormat);
+					if(element.datepicker) element.datepicker('setValue', formatted);
+				}
+			}
+			//
+			ngModel.$viewChangeListeners.push(()=>{
 				const minDate = scope.minDate;
-				const dateStr = element.val();
-				const parsed = moment(dateStr,["DD/MM/YYYY","YYYY-MM-DD"],true);
-				//update model only if valid
-				if(parsed.isValid()){
-					scope.ngModel = parsed.toDate();
-	
-					if(scope.ngModel < minDate){
-						scope.ngModel = minDate;
-						element.val(moment(minDate).format('DD/MM/YYYY'));
-					}
-	
-					$timeout(function() {
-						scope.$apply('ngModel');
+				(minDate) && minDate.setHours(0,0,0,0);
+				if(minDate && ngModel.$modelValue < minDate){
+					setTimeout(()=>{
+						ngModel.$setViewValue(moment(minDate).format(momentFormat));
+					});
+				} else{
+					setTimeout(()=>{
 						scope.$parent.$eval(scope.ngChange);
 						scope.$parent.$apply();
-					});
+					})
 				}
+			})
+			//
+			const triggerDateUpdate = ()=>{
+				ngModel.$setViewValue(element.val());
+			}
+			//
+			if(scope.minDate){
+				scope.$watch('minDate', function(newVal){
+					triggerDateUpdate();
+				});
 			}
 
 			http().loadScript('/' + infraPrefix + '/public/js/bootstrap-datepicker.js').then(function(){
 				element.datepicker({
+						format: format,
 						dates: {
 							months: moment.months(),
 							monthsShort: moment.monthsShort(),
@@ -999,14 +1039,13 @@ module.directive('datePicker', ['$compile','$timeout',function($compile, $timeou
 						}
 					})
 					.on('changeDate', function(){
-						setTimeout(setNewDate, 10);
-
+						triggerDateUpdate();
 						$(this).datepicker('hide');
 					});
 				element.datepicker('hide');
 			});
 
-			var hideFunction = function(e){
+			const hideFunction = function(e){
 				if(e.originalEvent && (element[0] === e.originalEvent.target || $('.datepicker').find(e.originalEvent.target).length !== 0)){
 					return;
 				}
@@ -1016,14 +1055,12 @@ module.directive('datePicker', ['$compile','$timeout',function($compile, $timeou
 			$('body, lightbox').on('focusin', hideFunction);
 
 			element.on('focus', function(){
-				var that = this;
+				const that = this;
 				$(this).parents('form').on('submit', function(){
 					$(that).datepicker('hide');
 				});
 				element.datepicker('show');
 			});
-			
-			element.on('change', setNewDate);
 
 			element.on('$destroy', function(){
 				if(element.datepicker){
@@ -1042,13 +1079,16 @@ module.directive('datePickerIcon', function(){
 		},
 		replace: true,
 		restrict: 'E',
-		template: '<div class="date-picker-icon"> <input type="text" class="hiddendatepickerform" style="visibility: hidden; width: 0px; height: 0px; float: inherit" data-date-format="dd/mm/yyyy"/> <a ng-click="openDatepicker()"><i class="calendar"/></a> </div>',
+		template: '<div class="date-picker-icon"> <input type="text" class="hiddendatepickerform" style="visibility: hidden; width: 0px; height: 0px; float: inherit"/> <a ng-click="openDatepicker()"><i class="calendar"/></a> </div>',
 		link: function($scope, $element, $attributes){
 			http().loadScript('/' + infraPrefix + '/public/js/bootstrap-datepicker.js').then(() => {
-				var input_element   = $element.find('.hiddendatepickerform')
-				input_element.value = moment(new Date()).format('DD/MM/YYYY')
-
+				const format = getDatePickerFormat();
+				const momentFormat = getDatePickerMomentFormat();
+				//
+				const input_element   = $element.find('.hiddendatepickerform')
+				input_element.value = moment(new Date()).format(momentFormat);
 				input_element.datepicker({
+					format: format,
 					dates: {
 						months: moment.months(),
 						monthsShort: moment.monthsShort(),
