@@ -45,7 +45,7 @@ describe('libraryService', function () {
                     description: '',
                     activityType: [],
                     teachingContext: '',
-                    language: 'fr-FR',
+                    language: 'Français',
                     subjectArea: [],
                     age: [3, 16]
                 })
@@ -64,7 +64,7 @@ describe('libraryService', function () {
                 description: '',
                 activityType: [],
                 teachingContext: '',
-                language: 'fr-FR',
+                language: 'Français',
                 subjectArea: [],
                 age: [3, 16]
             });
