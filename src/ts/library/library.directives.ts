@@ -169,7 +169,7 @@ export const libraryPublishDirective: Directive = ng.directive('libraryPublish',
         },
         template: `
 <div ng-if="libraryPublishController.show">
-    <lightbox show="libraryPublishController.show">
+    <lightbox class="bpr" show="libraryPublishController.show">
         <h2>Publier dans la bibliothèque</h2>
         <div class="row">
         <p class="medium-importance">La Bibliothèque est un espace privé de partage d'activités et de ressources numériques mutualisées entre enseignants. <a href="">En savoir plus</a></p>
@@ -196,9 +196,9 @@ export const libraryPublishDirective: Directive = ng.directive('libraryPublish',
               </div>
             </div>
             <div class="row top-spacing-twice">
-              <label class="cell five bold" for="">Type d'activité* :</label>
-                <div class="cell five">
-                    <multi-comboboxes 
+              <label class="cell three bold" for="">Type d'activité* :</label>
+                <div class="cell seven">
+                    <multi-comboboxes
                         ng-model="libraryPublishController.publication.activityType"
                         name="activityType"
                         required
@@ -211,9 +211,9 @@ export const libraryPublishDirective: Directive = ng.directive('libraryPublish',
                 </div>
             </div>
             <div class="row top-spacing-twice">
-              <label class="cell five bold"for="">Discipline* :</label>
-                  <div class="cell five">
-                      <multi-comboboxes 
+              <label class="cell three bold"for="">Discipline* :</label>
+                  <div class="cell seven">
+                      <multi-comboboxes
                             ng-model="libraryPublishController.publication.subjectArea"
                             name="subjectArea"
                             required
@@ -232,18 +232,18 @@ export const libraryPublishDirective: Directive = ng.directive('libraryPublish',
                     </div>
             </div>
             <div class="row top-spacing-twice">
-              <label class="cell five bold" for="">Âge des élèves* :</label>
+              <label class="cell three bold" for="">Langue* :</label>
+              <select ng-options="language for language in libraryPublishController.allLanguages" required name="language" ng-model="libraryPublishController.publication.language" class="cell seven"></select>
             </div>
             <div class="row top-spacing-twice">
+              <label class="cell three bold" for="">Âge des élèves* :</label>
+              <div class="cell seven top-spacing-twice">
               <div no-ui-slider
-                 slider-options="libraryPublishController.sliderOptions"
-                 ng-model="libraryPublishController.publication.age"
-                 name="age"
-                 required></div>
-            </div>
-            <div class="row top-spacing-twice">
-              <label class="cell five bold" for="">Langue* :</label>
-              <select ng-options="language for language in libraryPublishController.allLanguages" required name="language" ng-model="libraryPublishController.publication.language" class="cell five"></select>
+              slider-options="libraryPublishController.sliderOptions"
+              ng-model="libraryPublishController.publication.age"
+              name="age"
+              required></div>
+              </div>
             </div>
             <div class="row top-spacing-twice">
               <label class="cell twelve bold" for="">Description et contexte de l'activité* :</label>
