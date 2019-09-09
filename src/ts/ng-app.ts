@@ -944,6 +944,31 @@ const getDatePickerFormat = ():string => {
 const getDatePickerMomentFormat = ():string=>{
 	return getDatePickerFormat().toUpperCase();
 }
+class DatepickerController{
+	private _started = false;
+	constructor(private element){}
+	init(options:any){
+		if(this.element.datepicker){
+			const result = this.element.datepicker(options);
+			this._started = true;
+			return result;
+		}
+		throw "[DatepickerController.init] datepicker plugin is not ready";
+	}
+	hide(){
+		if(this._started)this.element.datepicker('hide');
+	}
+	show(){
+		if(this._started) this.element.datepicker('show');
+	}
+	setValue(formatted:string){
+		if(this._started)this.element.datepicker('setValue', formatted)
+	}
+	destroy(){
+		if(this._started)this.element.datepicker('destroy');
+		this._started = false;
+	}
+}
 module.directive('datePicker', ['$compile','$timeout',function($compile, $timeout){
 	return {
 		scope: {
@@ -960,6 +985,8 @@ module.directive('datePicker', ['$compile','$timeout',function($compile, $timeou
 			const format = getDatePickerFormat();
 			const momentFormat = getDatePickerMomentFormat();
 			scope.isreadonly = !!attributes.readonly;
+			//
+			const controller = new DatepickerController(element);
 			//string to moment
 			const stringModelToMoment = (value:string) => {
 				//parse strictly
@@ -998,7 +1025,7 @@ module.directive('datePicker', ['$compile','$timeout',function($compile, $timeou
 			const setDatepickerValue = (momentDate) => {
 				if(momentDate && momentDate.isValid && momentDate.isValid()){
 					const formatted = momentDate.format(momentFormat);
-					if(element.datepicker) element.datepicker('setValue', formatted);
+					controller.setValue(formatted);
 				}
 			}
 			//
@@ -1028,44 +1055,43 @@ module.directive('datePicker', ['$compile','$timeout',function($compile, $timeou
 			}
 
 			http().loadScript('/' + infraPrefix + '/public/js/bootstrap-datepicker.js').then(function(){
-				element.datepicker({
+				const firstDay = moment.weekdays().indexOf(moment.weekdays(true)[0]);
+				controller.init({
 						format: format,
+						weekStart: firstDay,
 						dates: {
 							months: moment.months(),
 							monthsShort: moment.monthsShort(),
-							days: moment.weekdays(true),
-							daysShort: moment.weekdaysShort(true),
-							daysMin: moment.weekdaysMin(true)
+							days: moment.weekdays(),
+							daysShort: moment.weekdaysShort(),
+							daysMin: moment.weekdaysMin()
 						}
 					})
 					.on('changeDate', function(){
 						triggerDateUpdate();
-						$(this).datepicker('hide');
+						controller.hide();
 					});
-				element.datepicker('hide');
+				controller.hide();
 			});
 
 			const hideFunction = function(e){
 				if(e.originalEvent && (element[0] === e.originalEvent.target || $('.datepicker').find(e.originalEvent.target).length !== 0)){
 					return;
 				}
-				element.datepicker('hide');
+				controller.hide();
 			};
 			$('body, lightbox').on('click', hideFunction);
 			$('body, lightbox').on('focusin', hideFunction);
 
 			element.on('focus', function(){
-				const that = this;
 				$(this).parents('form').on('submit', function(){
-					$(that).datepicker('hide');
+					controller.hide();
 				});
-				element.datepicker('show');
+				controller.show();
 			});
 
 			element.on('$destroy', function(){
-				if(element.datepicker){
-					element.datepicker('hide');
-				}
+				controller.hide();
 			});
 		}
 	}
@@ -1087,14 +1113,16 @@ module.directive('datePickerIcon', function(){
 				//
 				const input_element   = $element.find('.hiddendatepickerform')
 				input_element.value = moment(new Date()).format(momentFormat);
+				const firstDay = moment.weekdays().indexOf(moment.weekdays(true)[0]);
 				input_element.datepicker({
 					format: format,
+					weekStart: firstDay,
 					dates: {
 						months: moment.months(),
 						monthsShort: moment.monthsShort(),
-						days: moment.weekdays(true),
-						daysShort: moment.weekdaysShort(true),
-						daysMin: moment.weekdaysMin(true)
+						days: moment.weekdays(),
+						daysShort: moment.weekdaysShort(),
+						daysMin: moment.weekdaysMin()
 					}
 				})
 				.on('changeDate', function(event){
