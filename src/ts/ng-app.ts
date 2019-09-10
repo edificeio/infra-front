@@ -944,6 +944,11 @@ const getDatePickerFormat = ():string => {
 const getDatePickerMomentFormat = ():string=>{
 	return getDatePickerFormat().toUpperCase();
 }
+export interface DatepickerDelegate{
+	onInit?:(args:{ngModel:any})=>void;
+	onDestroy?:(args:{ngModel:any})=>void;
+	onValidationChange?:(args:{valid:boolean})=>void;
+}
 class DatepickerController{
 	private _started = false;
 	constructor(private element){}
@@ -974,7 +979,8 @@ module.directive('datePicker', ['$compile','$timeout',function($compile, $timeou
 		scope: {
 			minDate: '=',
 			ngModel: '=',
-			ngChange: '&'
+			ngChange: '&',
+			datePickerDelegate: '='
 		},
 		transclude: true,
 		replace: true,
@@ -982,6 +988,18 @@ module.directive('datePicker', ['$compile','$timeout',function($compile, $timeou
         require: "ngModel",
 		template: '<input ng-transclude type="text" ng-readonly="isreadonly"/>',
 		link: function(scope, element, attributes, ngModel){
+			//
+			scope.modelCtrl = ngModel;
+			const getDelegate = ()=>scope.datePickerDelegate as DatepickerDelegate;
+			const onValidationChanged=()=>{
+				getDelegate() && getDelegate().onValidationChange && getDelegate().onValidationChange({valid:ngModel.$valid})
+			}
+			scope.$watch('modelCtrl.$valid', () => onValidationChanged())
+			scope.$on('$destroy', function() {
+				getDelegate() && getDelegate().onDestroy && getDelegate().onDestroy({ngModel});
+			});
+			getDelegate() && getDelegate().onInit && getDelegate().onInit({ngModel});
+			//
 			const format = getDatePickerFormat();
 			const momentFormat = getDatePickerMomentFormat();
 			scope.isreadonly = !!attributes.readonly;
@@ -1009,18 +1027,24 @@ module.directive('datePicker', ['$compile','$timeout',function($compile, $timeou
 				return "";
 			});
 			//view to model => if invalid return current model value
+			const viewToMoment = (value:string) => {//parse from locale or from iso format
+				if(value) return  moment(value,[momentFormat,"YYYY-MM-DD"],true);
+				else return null;
+			}
 			ngModel.$parsers.push((value)=>{
-				const inner = (value) => {//parse from locale or from iso format
-					if(value) return  moment(value,[momentFormat,"YYYY-MM-DD"],true);
-					else return null;
-				}
-				const momResult = inner(value);
+				const momResult = viewToMoment(value);
 				if(momResult && momResult.isValid && momResult.isValid()){
 					setDatepickerValue(momResult);
 					return momResult.toDate();
 				}
 				return ngModel.$modelValue;
 			});
+			//validators
+			ngModel.$validators.validDateMoment = function(modelValue, viewValue) {
+				const momResult = viewToMoment(viewValue);
+				if(!momResult || !momResult.isValid) return true;
+				return momResult.isValid();
+			}
 			// set picker value
 			const setDatepickerValue = (momentDate) => {
 				if(momentDate && momentDate.isValid && momentDate.isValid()){

@@ -18,5 +18,6 @@ export * from './me';
 export * from './libs';
 export * from './toasts';
 //interfaces
+export { DatepickerDelegate } from "./ng-app";
 export { FolderTreeProps } from "./directives/folderTree"
 export { FolderPickerProps, FolderPickerSource, FolderPickerSourceBlob, FolderPickerSourceFile } from "./directives/folderPicker"
