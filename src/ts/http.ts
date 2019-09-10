@@ -146,13 +146,13 @@ export var http = (function(){
 		return this.put(url, data, params)
 	};
 
-	Http.prototype.loadScript = function(url): Promise<any> {
+	Http.prototype.loadScript = function(url, data?:any, params?:any, requestName?:string): Promise<any> {
 		return new Promise((resolve, reject) => {
 			if(loadedScripts[url]){
 				resolve(loadedScripts[url]);
 				return;
 			}
-			this.get(url).done(() => {
+			this.get(url, data, params, requestName).done(() => {
 				loadedScripts[url] = true;
 				resolve();
 			});

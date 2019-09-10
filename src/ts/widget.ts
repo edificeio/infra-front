@@ -76,11 +76,11 @@ function WidgetModel(){
 						if (widget.i18n) {
 							lang.addTranslations(widget.i18n, function(){
 								that.push(widget)
-								http().loadScript(widget.js)
+								http().loadScript(widget.js,undefined,{disableNotifications:true})
 							})
 						} else {
 							that.push(widget)
-							http().loadScript(widget.js)
+							http().loadScript(widget.js,undefined,{disableNotifications:true})
 						}
 					})(widget)
                 }
