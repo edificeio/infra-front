@@ -125,19 +125,26 @@ export class LibraryServiceProvider<R> {
             publicationAsFormData.append("language", publication.language);
             publicationAsFormData.append("teachingContext", publication.teachingContext);
             publication.activityType.forEach(activityType => {
-                publicationAsFormData.append("activityType", activityType);
+                publicationAsFormData.append("activityType[]", activityType);
             });
             publication.subjectArea.forEach(subjectArea => {
-                publicationAsFormData.append("subjectArea", subjectArea);
+                publicationAsFormData.append("subjectArea[]", subjectArea);
             });
             publication.age.forEach(age => {
-                publicationAsFormData.append("age", age.toString());
+                publicationAsFormData.append("age[]", age.toString());
             });
             publicationAsFormData.append("description", publication.description);
             publication.keyWords.forEach(keyWord => {
-                publicationAsFormData.append("keyWords", keyWord);
+                publicationAsFormData.append("keyWords[]", keyWord);
             });
-            return $http.post(this.publishUrlGetterFromId(id), publicationAsFormData, {
+            //TODO
+            publicationAsFormData.append("teacherCity", "Le Creusot");
+            publicationAsFormData.append("application", "Blog");
+            publicationAsFormData.append("licence", "CC BY");
+            publicationAsFormData.append("coverName", "cover.png");
+            publicationAsFormData.append("coverType", "image/png");
+            publicationAsFormData.append("pdfUri", "http://localhost:8090/blog/print/blog#/print/22f4fb68-c249-4805-951c-f60acec732ad?comments=true");
+            return $http.post("/appregistry/library/resource", publicationAsFormData, {
                 transformRequest: angular.identity,
                 headers: {'Content-Type': undefined}
             });
