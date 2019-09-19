@@ -47,7 +47,9 @@ describe('libraryService', function () {
                     teachingContext: '',
                     language: 'Français',
                     subjectArea: [],
-                    age: [3, 16]
+                    age: [3, 16],
+                    application: "Test",
+                    pdfUri: "https://google.fr"
                 })
             }).toThrowError('publishUrlGetterFromId not defined');
         });
@@ -55,7 +57,6 @@ describe('libraryService', function () {
         it(`should call the given publishUrlGetterFromId`, () => {
             let publishUrlGetterFromId = jasmine.createSpy('publishUrlGetterFromId');
             new TestModuleBuilder().config((libraryServiceProvider: LibraryServiceProvider<{}>) => {
-                libraryServiceProvider.setPublishUrlGetterFromId(publishUrlGetterFromId);
             }).module();
             libraryService.publish('id1', {
                 title: 'title1',
@@ -66,7 +67,9 @@ describe('libraryService', function () {
                 teachingContext: '',
                 language: 'Français',
                 subjectArea: [],
-                age: [3, 16]
+                age: [3, 16],
+                application: "Test",
+                pdfUri: "https://google.fr"
             });
             expect(publishUrlGetterFromId).toHaveBeenCalledWith('id1');
         });

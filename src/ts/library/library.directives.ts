@@ -105,6 +105,8 @@ export class LibraryPublishController<R> {
 
     open(id: string, resourceInformation: LibraryResourceInformation): Promise<void> {
         const blobDeferred = this.$q.defer();
+        const baseUri = `${window.location.protocol}//${window.location.host}`
+        const pdfUri = `${baseUri}${resourceInformation.pdfUri}`;
         if (resourceInformation.cover) {
             this.$http({url: resourceInformation.cover, responseType: 'blob', method: 'GET'})
                 .then(function (response) {
@@ -127,9 +129,11 @@ export class LibraryPublishController<R> {
                 keyWords: [],
                 language: 'Français',
                 subjectArea: [],
-                teachingContext: ''
+                teachingContext: '',
+                application: "",
+                pdfUri: "",
             };
-            this.publication = Object.assign({}, defaultPublication, {title: resourceInformation.title, cover});
+            this.publication = Object.assign({}, defaultPublication, {...resourceInformation, cover, pdfUri});
         });
     }
 

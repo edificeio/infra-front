@@ -14,6 +14,8 @@ export interface LibraryService<R> {
 export interface LibraryResourceInformation {
     title: string;
     cover: string;
+    application: string;
+    pdfUri: string;
 }
 
 export type SubjectArea =
@@ -90,6 +92,8 @@ export interface LibraryPublication {
     age: [number, number];
     description: string;
     keyWords: string[];
+    pdfUri: string;
+    application: string;
 }
 
 export interface IdAndLibraryResourceInformation {
@@ -106,10 +110,6 @@ export class LibraryServiceProvider<R> {
         return function (resource: R): IdAndLibraryResourceInformation {
             throw new Error('invokableResourceInformationGetterFromResource not defined');
         }
-    };
-
-    setPublishUrlGetterFromId(_publishUrlGetterFromId: (id: string) => string) {
-        this.publishUrlGetterFromId = _publishUrlGetterFromId;
     };
 
     setInvokableResourceInformationGetterFromResource(_invokableResourceInformationGetterFromResource: (...args: any[]) => ((resource: R) => IdAndLibraryResourceInformation)) {
@@ -139,11 +139,11 @@ export class LibraryServiceProvider<R> {
             });
             //TODO
             publicationAsFormData.append("teacherCity", "Le Creusot");
-            publicationAsFormData.append("application", "Blog");
             publicationAsFormData.append("licence", "CC BY");
             publicationAsFormData.append("coverName", "cover.png");
             publicationAsFormData.append("coverType", "image/png");
-            publicationAsFormData.append("pdfUri", "http://localhost:8090/blog/print/blog#/print/22f4fb68-c249-4805-951c-f60acec732ad?comments=true");
+            publicationAsFormData.append("pdfUri", publication.pdfUri);
+            publicationAsFormData.append("application", publication.application);
             return $http.post("/appregistry/library/resource", publicationAsFormData, {
                 transformRequest: angular.identity,
                 headers: {'Content-Type': undefined}

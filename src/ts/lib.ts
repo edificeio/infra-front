@@ -7,6 +7,7 @@ import { calendar } from './calendar';
 import { currentLanguage, appPrefix, infraPrefix } from './globals';
 import { Collection, Model, model } from './modelDefinitions';
 import { skin } from './skin';
+import axios from "axios";
 
 var _ = require('underscore');
 var moment = require('moment');
@@ -606,7 +607,7 @@ Model.prototype.sync = function(){
 	}
 }());
 
-export function bootstrap(func) {
+export async function bootstrap(func) {
    if(window.notLoggedIn){
 		Behaviours.loadBehaviours(appPrefix, async function(){
 			await skin.loadDisconnected();
@@ -618,7 +619,29 @@ export function bootstrap(func) {
 		});
 		return;
 	}
-	http().get('/auth/oauth2/userinfo').done(async (data): Promise<void> => {
+	try{
+		let request = obj => {
+		return new Promise((resolve, reject) => {
+			let xhr = new XMLHttpRequest();
+			xhr.open(obj.method || "GET", obj.url);
+			if (obj.headers) {
+				Object.keys(obj.headers).forEach(key => {
+					xhr.setRequestHeader(key, obj.headers[key]);
+				});
+			}
+			xhr.onload = () => {
+				if (xhr.status >= 200 && xhr.status < 300) {
+					resolve(JSON.parse(xhr.response));
+				} else {
+					reject(xhr.statusText);
+				}
+			};
+			xhr.onerror = () => reject(xhr.statusText);
+			xhr.send(obj.body);
+		});
+	};
+		const res = await request({url:'/auth/oauth2/userinfo', method: 'get'})
+		const data = res;
 		await skin.loadConnected();
 		model.me = data;
 		model.me.preferences = {
@@ -690,8 +713,7 @@ export function bootstrap(func) {
 		calendar.init();
 		await skin.loadBookmarks();
 		func();
-	})
-	.e404(function(){
+	}catch(e){
 		func();
-	});
+	}
 }

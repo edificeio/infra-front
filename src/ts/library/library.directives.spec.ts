@@ -18,7 +18,7 @@ describe('libraryDirectives', function () {
     beforeEach(() => {
         const resourceInformation: IdAndLibraryResourceInformation = {
             id: 'id1',
-            resourceInformation: {title: 'title1', cover: null}
+            resourceInformation: {title: 'title1', cover: null, application: "test", pdfUri:"http://google.fr"}
         };
 
         module(testingModule, [])

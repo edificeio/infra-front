@@ -94,7 +94,7 @@ if(!(window as any).entcore){
 }
 (window as any).entcore.Me = Me;
 
-if(!(XMLHttpRequest.prototype as any).baseSend){
+if(!(XMLHttpRequest.prototype as any).baseSend && !(window as any).pupetterMode){
     (XMLHttpRequest.prototype as any).baseSend = XMLHttpRequest.prototype.send;
     XMLHttpRequest.prototype.send = function(data){
         if(document.cookie.indexOf('authenticated=true') === -1 && window.location.href.indexOf('/auth') === -1 && !window.notLoggedIn){
