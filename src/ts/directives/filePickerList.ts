@@ -2,7 +2,7 @@ import { ng, template, Document, $ } from '../entcore';
 
 /**
  * @description This directive is based on the mediaLibrary import. What it does:
- * - displays a file picker,
+ * - displays a file picker and draggable zone,
  * - displays picked files list,
  * - stores picked files in files attribute
  * 
@@ -20,7 +20,8 @@ export const filePickerList = ng.directive('filePickerList', () => {
         restrict: 'E',
 		scope: {
 			files: '=',
-			multiple: '@'
+			multiple: '@',
+			hideList: '@?'
 		},
 		template: `
 			<div class="file-picker-list" show="display.listFiles">
@@ -59,7 +60,9 @@ export const filePickerList = ng.directive('filePickerList', () => {
 				element.find('.drop-zone').removeClass('dragover');
 				e.preventDefault();
 				scope.listFiles(e.originalEvent.dataTransfer.files);
-				scope.display.listFiles = true;
+				if (!scope.hideList) {
+					scope.display.listFiles = true;
+				}
 				scope.$apply();
 			}
 			
@@ -69,7 +72,11 @@ export const filePickerList = ng.directive('filePickerList', () => {
 				}
 				scope.filesArray = Array.from(files);
 				scope.files = scope.filesArray;
-				template.open('pick', 'entcore/file-picker-list/list');
+				if (!scope.hideList) {
+					template.open('pick', 'entcore/file-picker-list/list');
+				} else {
+					scope.$apply();
+				}
 			}
 
 			$('body').on('drop', '.icons-view', dropFiles);

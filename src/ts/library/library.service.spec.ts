@@ -41,7 +41,7 @@ describe('libraryService', function () {
                 libraryService.publish('id1', {
                     title: 'title1',
                     cover: null,
-                    keyWords: [],
+                    keyWords: '',
                     description: '',
                     activityType: [],
                     teachingContext: '',
@@ -49,7 +49,8 @@ describe('libraryService', function () {
                     subjectArea: [],
                     age: [3, 16],
                     application: "Test",
-                    pdfUri: "https://google.fr"
+                    pdfUri: "https://google.fr",
+                    licence: 'CC BY'
                 })
             }).toThrowError('publishUrlGetterFromId not defined');
         });
@@ -61,7 +62,7 @@ describe('libraryService', function () {
             libraryService.publish('id1', {
                 title: 'title1',
                 cover: null,
-                keyWords: [],
+                keyWords: '',
                 description: '',
                 activityType: [],
                 teachingContext: '',
@@ -69,7 +70,8 @@ describe('libraryService', function () {
                 subjectArea: [],
                 age: [3, 16],
                 application: "Test",
-                pdfUri: "https://google.fr"
+                pdfUri: "https://google.fr",
+                licence: 'CC BY'
             });
             expect(publishUrlGetterFromId).toHaveBeenCalledWith('id1');
         });

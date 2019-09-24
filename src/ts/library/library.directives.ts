@@ -11,6 +11,7 @@ import {
     libraryServiceProvider,
     SubjectArea
 } from './library.service';
+import { idiom } from '../idiom';
 
 ng.providers.push(libraryServiceProvider);
 
@@ -70,15 +71,11 @@ export class LibraryPublishController<R> {
     public revocableUrl: string;
     public loading = false;
     public licence: 'CC-BY' | 'none' = 'none';
-    public sliderOptions: { connect: boolean, range: { min: number, max: number }, step: number, pips: any, format: any } = {
+    public sliderOptions: { connect: boolean, range: { min: number, max: number }, step: number, pips?: any, tooltips: any, format: any } = {
         connect: true,
         range: {min: 1, max: 20},
         step: 1,
-        pips: {
-            mode: 'steps',
-            stepped: true,
-            density: 5
-        },
+        tooltips: [true, true],
         format: {
             to: (value) => Math.floor(value).toString(),
             from: (value) => parseInt(value)
@@ -126,12 +123,13 @@ export class LibraryPublishController<R> {
                 age: [3, 16],
                 cover: null,
                 description: '',
-                keyWords: [],
+                keyWords: '',
                 language: 'Français',
                 subjectArea: [],
                 teachingContext: '',
-                application: "",
-                pdfUri: "",
+                application: '',
+                pdfUri: '',
+                licence: ''
             };
             this.publication = Object.assign({}, defaultPublication, {...resourceInformation, cover, pdfUri});
         });
@@ -142,6 +140,15 @@ export class LibraryPublishController<R> {
         this.publication = undefined;
         this.id = undefined;
         this.$scope.$apply();
+    }
+
+    invalidFormFields(): boolean {
+        return !this.publication.title
+            || !this.publication.cover
+            || !this.publication.description
+            || this.publication.activityType.length == 0 
+            || this.publication.subjectArea.length == 0
+            || !this.publication.language;
     }
 
     publish(): Promise<any> {
@@ -170,118 +177,156 @@ export const libraryPublishDirective: Directive = ng.directive('libraryPublish',
             const libraryRootController: LibraryRootController<R> = controllers[0];
             const libraryPublishController: LibraryPublishController<R> = controllers[1];
             libraryRootController.registerPublishController(libraryPublishController);
+            scope.translate = idiom.translate;
         },
         template: `
-<div ng-if="libraryPublishController.show">
-    <lightbox class="bpr" show="libraryPublishController.show">
-        <h2>Publier dans la bibliothèque</h2>
-        <div class="row">
-        <p class="medium-importance">La Bibliothèque est un espace privé de partage d'activités et de ressources numériques mutualisées entre enseignants. <a href="">En savoir plus</a></p>
-        <p class="small-text italic-text medium-importance">Tous les champs suivis d'une étoile (*) sont obligatoires.</p>
-        </div>
-        <div class="row">
-          <form ng-submit="libraryPublishController.publish()" name="libraryPublishController.publishForm">
-            <div class="row top-spacing-four">
-              <label class="cell twelve bold" for="">Titre* (maximum XX caractères) :</label>
-              <input class="cell twelve top-spacing-twice" required name="title" ng-model="libraryPublishController.publication.title" type="text" placeholder="Veuillez entrer le nom de votre activité">
-            </div>
-            <div class="row top-spacing-twice">
-              <div class="cell ten">
-                <label class="bold" for="">Vignette de l'activité* :</label>
-                <div class="vertical-spacing-twice horizontal-spacing-twice ">
-                  <file-picker-list files="libraryPublishController.publication.cover"></file-picker-list>
-                </div>
-              </div>
-              <div class="cell two right-magnet">
-                <label class="bold" for="">Aperçu :</label>
-                <div class="vertical-spacing-twice">
-                  <img ng-if="libraryPublishController.revocableUrl" ng-src="[[libraryPublishController.revocableUrl]]" alt="">
-                </div>
-              </div>
-            </div>
-            <div class="row top-spacing-twice">
-              <label class="cell three bold" for="">Type d'activité* :</label>
-                <div class="cell seven">
-                    <multi-comboboxes
-                        ng-model="libraryPublishController.publication.activityType"
-                        name="activityType"
-                        required
-                        options="libraryPublishController.allActivityTypes"
-                        title-all="tous les types d'activités"
-                        title="type d'activité"
-                        titleDisabled="désactivé"
-                    >
-                    </multi-comboboxes>
-                </div>
-            </div>
-            <div class="row top-spacing-twice">
-              <label class="cell three bold"for="">Discipline* :</label>
-                  <div class="cell seven">
-                      <multi-comboboxes
-                            ng-model="libraryPublishController.publication.subjectArea"
-                            name="subjectArea"
-                            required
-                            options="libraryPublishController.allSubjectAreas"
-                            title-all="toutes les disciplines"
-                            title="discipline"
-                            titleDisabled="désactivé"
-                        >
-                        </multi-comboboxes>
+            <div ng-if="libraryPublishController.show">
+                <lightbox class="bpr" show="libraryPublishController.show">
+                    <div class="flex-row align-center">
+                        <h2><i18n>bpr.form.header</i18n></h2>
+                        <span class="tipbox">
+                            <div class="tipbox-content bot">
+                                <span class="small-text">
+                                    <i18n>bpr.form.tip</i18n>
+                                </span>
+                            </div>
+                            <div>
+                                <i class="help sticker square-medium"></i>
+                            </div>
+                        </span>
                     </div>
-            </div>
-            <div class="row top-spacing-twice">
-              <label class="cell five bold"for=""></label>
-                  <div class="cell five">
-                      <button ng-repeat=""></button>
+                    <div class="row">
+                        <form ng-submit="libraryPublishController.publish()" 
+                            name="libraryPublishController.publishForm"
+                            novalidate>
+                            <div class="row top-spacing-four">
+                                <label class="cell three bold" for="">
+                                    <i18n>bpr.form.publication.title</i18n> * :
+                                </label>
+                                <input class="cell nine" 
+                                    type="text"
+                                    name="title" 
+                                    ng-model="libraryPublishController.publication.title" 
+                                    placeholder="[[translate('bpr.form.publication.title.placeholder')]]" />
+                            </div>
+                            <div class="row top-spacing-twice">
+                                <label class="cell three bold" for="">
+                                    <i18n>bpr.form.publication.cover.upload</i18n> * :
+                                </label>
+                                <file-picker-list 
+                                    class="cell seven"
+                                    files="libraryPublishController.publication.cover" 
+                                    multiple="false"
+                                    hide-list="true">
+                                </file-picker-list>
+                                <img 
+                                    class="cell two file-picker_preview"
+                                    ng-if="libraryPublishController.revocableUrl" 
+                                    ng-src="[[libraryPublishController.revocableUrl]]" 
+                                    alt="" />
+                                <i class="file-image cell two"
+                                    ng-if="!libraryPublishController.revocableUrl"/>
+                            </div>
+                            <div class="row top-spacing-twice">
+                                <label class="cell three bold" for="">
+                                    <i18n>bpr.form.publication.description</i18n> * :
+                                </label>
+                                <textarea class="cell nine"
+                                    ng-model="libraryPublishController.publication.description"  
+                                    name="description" 
+                                    rows="8" 
+                                    cols="80" 
+                                    placeholder="[[translate('bpr.form.publication.description.placeholder')]]">
+                                </textarea>
+                            </div>
+                            <div class="row top-spacing-twice">
+                                <label class="cell three bold" for="">
+                                    <i18n>bpr.form.publication.type</i18n> * :
+                                </label>
+                                <div class="cell nine">
+                                    <multi-comboboxes
+                                        ng-model="libraryPublishController.publication.activityType"
+                                        name="activityType"
+                                        options="libraryPublishController.allActivityTypes">
+                                    </multi-comboboxes>
+                                </div>
+                            </div>
+                            <div class="row top-spacing-twice">
+                                <label class="cell three bold"for="">
+                                    <i18n>bpr.form.publication.discipline</i18n> * :
+                                </label>
+                                <div class="cell nine">
+                                    <multi-comboboxes
+                                        ng-model="libraryPublishController.publication.subjectArea"
+                                        name="subjectArea"
+                                        options="libraryPublishController.allSubjectAreas">
+                                    </multi-comboboxes>
+                                </div>
+                            </div>
+                            <div class="row top-spacing-twice">
+                                <label class="cell three bold" for="">
+                                    <i18n>bpr.form.publication.language</i18n> * :
+                                </label>
+                                <select ng-model="libraryPublishController.publication.language" 
+                                    name="language" 
+                                    ng-options="language for language in libraryPublishController.allLanguages" 
+                                    class="cell nine">
+                                </select>
+                            </div>
+                            <div class="row top-spacing-four">
+                                <label class="cell three bold" for="">
+                                    <i18n>bpr.form.publication.age</i18n> * :
+                                </label>
+                                <div class="cell four top-spacing-twice">
+                                    <div no-ui-slider
+                                        slider-options="libraryPublishController.sliderOptions"
+                                        ng-model="libraryPublishController.publication.age"
+                                        name="age">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row top-spacing-twice">
+                                <label class="cell three bold" for="">
+                                    <i18n>bpr.form.publication.keywords</i18n> :
+                                </label>
+                                <input class="cell nine" 
+                                    type="text"
+                                    name="title" 
+                                    ng-model="libraryPublishController.publication.keyWords" 
+                                    placeholder="[[ translate('bpr.form.publication.keywords.placeholder') ]]" />
+                            </div>
+                            <div class="row top-spacing-twice">
+                                <div class="flex-row align-center">
+                                    <i class="info-pic right-spacing bottom-spacing"></i>
+                                    <span class="small-text"><i18n>bpr.form.publication.licence.text</i18n></span>
+                                    <a href="https://creativecommons.org/licenses/by/4.0/deed.fr"
+                                        target="_blank"
+                                        class="left-spacing top-spacing">
+                                        <img class="licence_image"
+                                            src="assets/themes/entcore-css-lib/images/cc-by.svg" 
+                                            alt="[[translate('bpr.form.publication.licence.image.alt')]]" />
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="row top-spacing-four">
+                                <div class="cell twelve">
+                                    <button type="submit" 
+                                        class="right-magnet" 
+                                        ng-disabled="libraryPublishController.invalidFormFields()">
+                                        <i18n ng-if="!libraryPublishController.loading">publish</i18n>
+                                        <i ng-if="libraryPublishController.loading" class="loading"></i>
+                                    </button>
+                                    <button type="button" 
+                                        ng-click="libraryPublishController.close()" 
+                                        ng-if="!libraryPublishController.loading" 
+                                        class="cancel right-magnet">
+                                        <i18n>cancel</i18n>
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
                     </div>
-            </div>
-            <div class="row top-spacing-twice">
-              <label class="cell three bold" for="">Langue* :</label>
-              <select ng-options="language for language in libraryPublishController.allLanguages" required name="language" ng-model="libraryPublishController.publication.language" class="cell seven"></select>
-            </div>
-            <div class="row top-spacing-twice">
-              <label class="cell three bold" for="">Âge des élèves* :</label>
-              <div class="cell seven top-spacing-twice">
-              <div no-ui-slider
-              slider-options="libraryPublishController.sliderOptions"
-              ng-model="libraryPublishController.publication.age"
-              name="age"
-              required></div>
-              </div>
-            </div>
-            <div class="row top-spacing-twice">
-              <label class="cell twelve bold" for="">Description et contexte de l'activité* :</label>
-              <textarea ng-model="libraryPublishController.publication.description" required name="description" rows="8" cols="80" placeholder="Quels sont les thèmes abordés dans votre activité? Quelles objectifs pédagogiques souhaitez-vous atteindre?"></textarea>
-            </div>
-            <div class="row top-spacing-twice">
-              <label class="bold" for="">Recherchez et ajoutez des mots clés (5 maximum) :</label>
-              <recipient-list ng-model="libraryPublishController.publication.keyWords">
-              </recipient-list>
-            </div>
-            <div class="row top-spacing-twice">
-              <input type="checkbox" name="" value="">
-              <label for="" ng-model="libraryPublishController.licence" name="licence" required ng-true-value="'CC-BY'" ng-false-value="'none'">Je suis d'accord pour publier le sujet en Creative Commons
-                <a href="https://creativecommons.org/licenses/by/4.0/deed.fr">
-                  <img height="16px" src="assets/themes/entcore-css-lib/images/cc-by.svg" alt="Logo Creative Commons BY">
-                </a>
-              </label>
-            </div>
-            <div class="row top-spacing-ten">
-                <p class="cell seven medium-importance small-text bottom-magnet">
-                  <i class="help"></i>
-                  Besoin d'aide? Consulter l'aide en ligne ou contactez-nous via l'application Assistance ENT
-                </p>
-                <!-- Le bouton "publier" reste griser tant que la personne n'a pas coché la case pour la licence -->
-                <button type="submit" class="right-magnet" ng-disabled="libraryPublishController.formPublish.$invalid">
-                    <i18n ng-if="!libraryPublishController.loading">publish</i18n>
-                    <i ng-if="libraryPublishController.loading" class="loading"></i>
-                </button>
-                <button type="button" ng-click="libraryPublishController.close()" ng-if="!libraryPublishController.loading" class="cancel right-magnet"><i18n>cancel</i18n></button>
-            </div>
-          </form>
-        </div>
-    </lightbox>
-</div>
-`
+                </lightbox>
+            </div>`
     };
 });

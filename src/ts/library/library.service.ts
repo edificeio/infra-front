@@ -91,9 +91,10 @@ export interface LibraryPublication {
     subjectArea: SubjectArea[];
     age: [number, number];
     description: string;
-    keyWords: string[];
+    keyWords: string;
     pdfUri: string;
     application: string;
+    licence: string;
 }
 
 export interface IdAndLibraryResourceInformation {
@@ -119,9 +120,10 @@ export class LibraryServiceProvider<R> {
     $get = ['$http', '$injector', ($http, $injector): LibraryService<R> => {
         const publish = (id: string, publication: LibraryPublication): Promise<any> => {
             const publicationAsFormData = new FormData();
-
             publicationAsFormData.append("title", publication.title);
             publicationAsFormData.append("cover", publication.cover);
+            publicationAsFormData.append("coverName", publication.cover.name);
+            publicationAsFormData.append("coverType", publication.cover.type);
             publicationAsFormData.append("language", publication.language);
             publicationAsFormData.append("teachingContext", publication.teachingContext);
             publication.activityType.forEach(activityType => {
@@ -134,14 +136,14 @@ export class LibraryServiceProvider<R> {
                 publicationAsFormData.append("age[]", age.toString());
             });
             publicationAsFormData.append("description", publication.description);
-            publication.keyWords.forEach(keyWord => {
-                publicationAsFormData.append("keyWords[]", keyWord);
+            let keyWordsArray = publication.keyWords.split(',')
+            keyWordsArray.forEach(keyWord => {
+                publicationAsFormData.append("keyWords[]", keyWord.trim());
             });
+            publicationAsFormData.append("licence", publication.licence);
+
             //TODO
-            publicationAsFormData.append("teacherCity", "Le Creusot");
-            publicationAsFormData.append("licence", "CC BY");
-            publicationAsFormData.append("coverName", "cover.png");
-            publicationAsFormData.append("coverType", "image/png");
+            publicationAsFormData.append("teacherCity", "");
             publicationAsFormData.append("pdfUri", publication.pdfUri);
             publicationAsFormData.append("application", publication.application);
             return $http.post("/appregistry/library/resource", publicationAsFormData, {
