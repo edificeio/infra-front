@@ -140,12 +140,12 @@ export class LibraryServiceProvider<R> {
             keyWordsArray.forEach(keyWord => {
                 publicationAsFormData.append("keyWords[]", keyWord.trim());
             });
-            publicationAsFormData.append("licence", publication.licence);
-
-            //TODO
-            publicationAsFormData.append("teacherCity", "");
+            publicationAsFormData.append("licence", 'CC-BY');
             publicationAsFormData.append("pdfUri", publication.pdfUri);
             publicationAsFormData.append("application", publication.application);
+
+            // TODO remove teacherCity
+            publicationAsFormData.append("teacherCity", "test");
             return $http.post("/appregistry/library/resource", publicationAsFormData, {
                 transformRequest: angular.identity,
                 headers: {'Content-Type': undefined}
