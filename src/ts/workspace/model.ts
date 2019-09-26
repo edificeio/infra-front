@@ -20,6 +20,7 @@ import { Rights, Shareable } from '../rights';
 import * as moment from 'moment';
 
 import { Selectable, Eventer } from 'entcore-toolkit';
+import { MimeTypeUtils } from './mimeUtils';
 
 export const MEDIALIB_APPNAME = "media-library";
 export type TREE_NAME = "owner" | "shared" | "protected" | "public" | "trash" | "all" | "external";
@@ -337,6 +338,11 @@ export class Element extends Model implements Node, Shareable, Selectable {
         }
         return `/workspace/document/${this._id}?thumbnail=120x120`;
     }
+
+    get previewUrl(){
+        return `/workspace/document/preview/${this._id}`;
+    }
+
     static role(fileType: string, previewRole: boolean = false) {
         if (!fileType)
             return 'unknown'
@@ -348,9 +354,15 @@ export class Element extends Model implements Node, Shareable, Selectable {
         }
         const types = {
             'doc': function (type) {
+                if(MimeTypeUtils.INSTANCE.isWordLike(type)){
+                    return true;
+                }
                 return type.indexOf('document') !== -1 && type.indexOf('wordprocessing') !== -1;
             },
             'xls': function (type) {
+                if(MimeTypeUtils.INSTANCE.isExcelLike(type)){
+                    return true;
+                }
                 return (type.indexOf('document') !== -1 && type.indexOf('spreadsheet') !== -1) || (type.indexOf('ms-excel') !== -1);
             },
             'img': function (type) {
@@ -360,6 +372,9 @@ export class Element extends Model implements Node, Shareable, Selectable {
                 return type.indexOf('pdf') !== -1 || type === 'application/x-download';
             },
             'ppt': function (type) {
+                if(MimeTypeUtils.INSTANCE.isPowerpointLike(type)){
+                    return true;
+                }
                 return (type.indexOf('document') !== -1 && type.indexOf('presentation') !== -1) || type.indexOf('powerpoint') !== -1;
             },
             'video': function (type) {
