@@ -231,11 +231,11 @@ export const libraryPublishDirective: Directive = ng.directive('libraryPublish',
                                 <label class="cell three bold" for="">
                                     <i18n>bpr.form.publication.description</i18n> * :
                                 </label>
-                                <textarea class="cell nine"
-                                    ng-model="libraryPublishController.publication.description"  
-                                    name="description" 
-                                    rows="8" 
-                                    cols="80" 
+                                <textarea class="cell nine description"
+                                    ng-model="libraryPublishController.publication.description"
+                                    name="description"
+                                    rows="8"
+                                    cols="80"
                                     placeholder="[[translate('bpr.form.publication.description.placeholder')]]">
                                 </textarea>
                             </div>
@@ -267,10 +267,10 @@ export const libraryPublishDirective: Directive = ng.directive('libraryPublish',
                                 <label class="cell three bold" for="">
                                     <i18n>bpr.form.publication.language</i18n> * :
                                 </label>
-                                <select ng-model="libraryPublishController.publication.language" 
-                                    name="language" 
-                                    ng-options="language for language in libraryPublishController.allLanguages" 
-                                    class="cell nine">
+                                <select ng-model="libraryPublishController.publication.language"
+                                    name="language"
+                                    ng-options="language for language in libraryPublishController.allLanguages"
+                                    class="cell nine language">
                                 </select>
                             </div>
                             <div class="row top-spacing-four">
@@ -289,36 +289,36 @@ export const libraryPublishDirective: Directive = ng.directive('libraryPublish',
                                 <label class="cell three bold" for="">
                                     <i18n>bpr.form.publication.keywords</i18n> :
                                 </label>
-                                <input class="cell nine" 
+                                <input class="cell nine"
                                     type="text"
-                                    name="title" 
-                                    ng-model="libraryPublishController.publication.keyWords" 
+                                    name="title"
+                                    ng-model="libraryPublishController.publication.keyWords"
                                     placeholder="[[ translate('bpr.form.publication.keywords.placeholder') ]]" />
                             </div>
                             <div class="row top-spacing-twice">
                                 <div class="flex-row align-center">
                                     <i class="info-pic right-spacing bottom-spacing"></i>
-                                    <span class="small-text"><i18n>bpr.form.publication.licence.text</i18n></span>
+                                    <span class="small-text licence-condition"><i18n>bpr.form.publication.licence.text</i18n></span>
                                     <a href="https://creativecommons.org/licenses/by/4.0/deed.fr"
                                         target="_blank"
                                         class="left-spacing top-spacing">
                                         <img class="licence_image"
-                                            src="assets/themes/entcore-css-lib/images/cc-by.svg" 
+                                            src="assets/themes/entcore-css-lib/images/cc-by.svg"
                                             alt="[[translate('bpr.form.publication.licence.image.alt')]]" />
                                     </a>
                                 </div>
                             </div>
                             <div class="row top-spacing-four">
                                 <div class="cell twelve">
-                                    <button type="submit" 
-                                        class="right-magnet" 
+                                    <button type="submit"
+                                        class="right-magnet"
                                         ng-disabled="libraryPublishController.invalidFormFields()">
                                         <i18n ng-if="!libraryPublishController.loading">publish</i18n>
                                         <i ng-if="libraryPublishController.loading" class="loading"></i>
                                     </button>
-                                    <button type="button" 
-                                        ng-click="libraryPublishController.close()" 
-                                        ng-if="!libraryPublishController.loading" 
+                                    <button type="button"
+                                        ng-click="libraryPublishController.close()"
+                                        ng-if="!libraryPublishController.loading"
                                         class="cancel right-magnet">
                                         <i18n>cancel</i18n>
                                     </button>
