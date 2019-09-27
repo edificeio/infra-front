@@ -296,9 +296,9 @@ export const libraryPublishDirective: Directive = ng.directive('libraryPublish',
                                     placeholder="[[ translate('bpr.form.publication.keywords.placeholder') ]]" />
                             </div>
                             <div class="row top-spacing-twice">
-                                <div class="flex-row align-center">
+                                <div class="flex-row align-center licence-condition">
                                     <i class="info-pic right-spacing bottom-spacing"></i>
-                                    <span class="small-text licence-condition"><i18n>bpr.form.publication.licence.text</i18n></span>
+                                    <span class="small-text"><i18n>bpr.form.publication.licence.text</i18n></span>
                                     <a href="https://creativecommons.org/licenses/by/4.0/deed.fr"
                                         target="_blank"
                                         class="left-spacing top-spacing">
