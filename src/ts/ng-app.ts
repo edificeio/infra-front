@@ -390,6 +390,7 @@ module.directive('filesInputChange', function(){
 				$scope.file = $element[0].files;
 				$scope.$apply();
 				$scope.filesInputChange();
+				$element[0].value = "";
 				$scope.$apply();
 			})
 		}
