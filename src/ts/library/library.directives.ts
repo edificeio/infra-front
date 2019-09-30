@@ -9,7 +9,8 @@ import {
     LibraryResourceInformation,
     LibraryService,
     libraryServiceProvider,
-    SubjectArea
+    SubjectArea,
+    LibraryPublicationResponse
 } from './library.service';
 import { idiom } from '../idiom';
 
@@ -59,6 +60,8 @@ export const libraryRootDirective: Directive = ng.directive('libraryRoot', funct
 export class LibraryPublishController<R> {
     public show = false;
     public publication: LibraryPublication;
+    public publicationResponse: LibraryPublicationResponse;
+    public showLightboxResponse: boolean;
     public allActivityTypes: { label: string, type: ActivityType }[] = allActivityTypes.map(activityType => ({
         label: activityType,
         type: activityType
@@ -135,12 +138,15 @@ export class LibraryPublishController<R> {
         });
     }
 
-    close() {
+    closePublishLightbox() {
         this.show = false;
         this.publication = undefined;
         this.id = undefined;
-        this.$scope.$apply();
     }
+    closePublishLightboxAndApply() {
+        this.closePublishLightbox();
+        this.$scope.$apply();
+    } 
 
     invalidFormFields(): boolean {
         return !this.publication.title
@@ -154,12 +160,25 @@ export class LibraryPublishController<R> {
     publish(): Promise<any> {
         if (!this.loading) {
             this.loading = true;
+            this.publicationResponse = {} as LibraryPublicationResponse;
             return this.libraryService.publish(this.id, this.publication)
-                .then(() => {
+                .then(res => {
                     this.loading = false;
-                    this.close();
-                }, () => {
+                    this.closePublishLightbox();
+                    let resData: LibraryPublicationResponse = res.data;
+                    this.publicationResponse.success = resData.success;
+                    this.publicationResponse.message = resData.message;
+                    this.publicationResponse.reason = resData.reason;
+                    this.publicationResponse.details = resData.details;
+                    this.showLightboxResponse = true;
+                    this.$scope.$apply();
+                }, err => {
                     this.loading = false;
+                    this.closePublishLightbox();
+                    this.publicationResponse.success = false;
+                    this.publicationResponse.message = err;
+                    this.showLightboxResponse = true;
+                    this.$scope.$apply();
                 });
         }
     }
@@ -316,15 +335,40 @@ export const libraryPublishDirective: Directive = ng.directive('libraryPublish',
                                         <i18n ng-if="!libraryPublishController.loading">publish</i18n>
                                         <i ng-if="libraryPublishController.loading" class="loading"></i>
                                     </button>
-                                    <button type="button"
-                                        ng-click="libraryPublishController.close()"
-                                        ng-if="!libraryPublishController.loading"
+                                    <button type="button" 
+                                        ng-click="libraryPublishController.closePublishLightboxAndApply()" 
+                                        ng-if="!libraryPublishController.loading" 
                                         class="cancel right-magnet">
                                         <i18n>cancel</i18n>
                                     </button>
                                 </div>
                             </div>
                         </form>
+                    </div>
+                </lightbox>
+            </div>
+            <div ng-if="libraryPublishController.showLightboxResponse">
+                <lightbox show="libraryPublishController.showLightboxResponse">
+                    <div ng-if="libraryPublishController.publicationResponse.success">
+                        <h2><i18n>bpr.form.publication.response.success.title</i18n></h2>
+                        <i class="congrats"></i>
+                        <p>
+                            <i18n>bpr.form.publication.response.success.content.1</i18n>
+                        </p>
+                        <p>
+                            <i18n>bpr.form.publication.response.success.content.2</i18n>
+                        </p>
+                        <button ng-if="libraryPublishController.publicationResponse.details && libraryPublishController.publicationResponse.details.resource_url" 
+                            class="right-magnet" 
+                            ng-href="[[libraryPublishController.publicationResponse.details.resource_url]]">
+                            <i18n>bpr.form.publication.response.success.button</i18n>
+                        </button>
+                    </div>
+
+                    <div ng-if="!libraryPublishController.publicationResponse.success">
+                        <h2><i18n>bpr.form.publication.response.error.title</i18n></h2>
+                        <p>[[libraryPublishController.publicationResponse.message]]</p>
+                        <p><strong><i18n>bpr.form.publication.response.error.content</i18n></strong></p>
                     </div>
                 </lightbox>
             </div>`

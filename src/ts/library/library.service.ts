@@ -102,6 +102,76 @@ export interface IdAndLibraryResourceInformation {
     resourceInformation: LibraryResourceInformation;
 }
 
+export interface LibraryPublicationResponse {
+    details: {
+        activities: string[],
+        activity_types: string[],
+        age: string[],
+        age_range: {
+            gte: string, 
+            lte: string
+        },
+        application: string,
+        archive: string,
+        counter: {
+            count: number, 
+            countable_id: string,
+            countable_type: string
+        },
+        cover: string,
+        created_at: string,
+        description: string,
+        id: string,
+        keyWords: string[],
+        language: string,
+        licence: string,
+        media: any[],
+        pdfExport: string,
+        resource_url: string,
+        subject_areas: string[],
+        subjects: string[],
+        thumb_url: string,
+        title: string,
+        updated_at: string,
+        user: {
+            api_token: any,
+            avatar_thumb_url: boolean,
+            city: string,
+            counter: {
+                id: number, 
+                count: number, 
+                countable_id: string,
+                countable_type: string,
+                created_at: string,
+                updated_at: string,
+            },
+            count: number,
+            countable_id: string,
+            countable_type: string,
+            created_at: string,
+            id: number,
+            updated_at: string,
+            country: string,
+            district: string,
+            email: string,
+            email_verified_at: string,
+            first_name: string,
+            full_name: string,
+            last_name: string,
+            media: any[],
+            platform_url: string,
+            platform_user_id: string,
+            school: string,
+            username: string,
+        },
+        user_id: string,
+        views: number
+    };
+    message: string;
+    reason: string;
+    success: boolean;
+}
+
 export class LibraryServiceProvider<R> {
     publishUrlGetterFromId = function (id: string): string {
         throw new Error('publishUrlGetterFromId not defined');
@@ -146,6 +216,7 @@ export class LibraryServiceProvider<R> {
 
             // TODO remove teacherCity
             publicationAsFormData.append("teacherCity", "test");
+
             return $http.post("/appregistry/library/resource", publicationAsFormData, {
                 transformRequest: angular.identity,
                 headers: {'Content-Type': undefined}

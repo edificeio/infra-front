@@ -1,6 +1,10 @@
 {
   "name": "entcore",
+<<<<<<< HEAD
   "version": "3.7.0-dev.7",
+=======
+  "version": "3.7.0-bpr.30",
+>>>>>>> dfec5eb... feat(bpr): #25026, confirm lightbox
   "description": "",
   "main": "gulpfile.js",
   "types": "./types/src/ts/entcore.d.ts",
