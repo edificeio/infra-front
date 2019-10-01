@@ -73,7 +73,6 @@ export interface LibraryPublication {
     title: string;
     cover: Blob;
     language: Langage;
-    teachingContext: string;
     activityType: ActivityType[];
     subjectArea: SubjectArea[];
     age: [number, number];

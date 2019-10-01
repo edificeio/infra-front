@@ -32,7 +32,6 @@ export class LibraryServiceProvider<R> {
             publicationAsFormData.append("coverName", publication.cover.name);
             publicationAsFormData.append("coverType", publication.cover.type);
             publicationAsFormData.append("language", publication.language);
-            publicationAsFormData.append("teachingContext", publication.teachingContext);
             publication.activityType.forEach(activityType => {
                 publicationAsFormData.append("activityType[]", activityType);
             });

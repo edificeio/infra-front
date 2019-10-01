@@ -79,8 +79,7 @@ describe('libraryDirectives', function () {
             description: '',
             keyWords: [],
             language: 'fr-FR',
-            subjectArea: [],
-            teachingContext: ''
+            subjectArea: []
         });
     });
 });
