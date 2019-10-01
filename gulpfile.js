@@ -7,7 +7,7 @@ var rimraf = require("rimraf");
 var gap = require('gulp-append-prepend');
 var pjson = require('./package.json');
 
-let springboardPath = '../springboard-open-ent';
+let springboardPath = '../recette';
 if (argv.springboard) {
     springboardPath = argv.springboard;
     console.log('Using springboard at ' + springboardPath);
