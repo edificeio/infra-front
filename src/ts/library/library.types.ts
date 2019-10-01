@@ -81,6 +81,7 @@ export interface LibraryPublication {
     pdfUri: string;
     application: string;
     licence: string;
+    teacherAvatar: Blob;
 }
 
 export interface IdAndLibraryResourceInformation {

@@ -1,6 +1,7 @@
 import { ng, Provider } from '../ng-start';
 import { LibraryRootController } from './library.directives';
-import { LibraryPublication, LibraryResourceInformation, IdAndLibraryResourceInformation } from './library.types'
+import { LibraryPublication, LibraryResourceInformation, IdAndLibraryResourceInformation } from './library.types';
+import { model } from '../modelDefinitions';
 
 export interface LibraryService<R> {
     publish(id: string, publication: LibraryPublication): Promise<any>;
@@ -25,12 +26,17 @@ export class LibraryServiceProvider<R> {
     }
 
     $get = ['$http', '$injector', ($http, $injector): LibraryService<R> => {
-        const publish = (id: string, publication: LibraryPublication): Promise<any> => {
+        const publish = async (id: string, publication: LibraryPublication): Promise<any> => {
+            let resAvatar = await $http.get(`/userbook/avatar/${model.me.userId}?thumbnail=48x48`, {responseType: "blob"});
+            let teacherAvatar: Blob = resAvatar.data;
             const publicationAsFormData = new FormData();
             publicationAsFormData.append("title", publication.title);
             publicationAsFormData.append("cover", publication.cover);
             publicationAsFormData.append("coverName", publication.cover.name);
             publicationAsFormData.append("coverType", publication.cover.type);
+            publicationAsFormData.append("teacherAvatar", teacherAvatar);
+            publicationAsFormData.append("teacherAvatarName", teacherAvatar.name || `teacherAvatar_${model.me.userId}`);
+            publicationAsFormData.append("teacherAvatarType", teacherAvatar.type);
             publicationAsFormData.append("language", publication.language);
             publication.activityType.forEach(activityType => {
                 publicationAsFormData.append("activityType[]", activityType);

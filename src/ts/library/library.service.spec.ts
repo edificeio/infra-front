@@ -49,7 +49,8 @@ describe('libraryService', function () {
                     age: [3, 16],
                     application: "Test",
                     pdfUri: "https://google.fr",
-                    licence: 'CC BY'
+                    licence: 'CC BY',
+                    teacherAvatar: null
                 })
             }).toThrowError('publishUrlGetterFromId not defined');
         });
@@ -69,7 +70,8 @@ describe('libraryService', function () {
                 age: [3, 16],
                 application: "Test",
                 pdfUri: "https://google.fr",
-                licence: 'CC BY'
+                licence: 'CC BY',
+                teacherAvatar: null
             });
             expect(publishUrlGetterFromId).toHaveBeenCalledWith('id1');
         });

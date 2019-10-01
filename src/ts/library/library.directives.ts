@@ -129,7 +129,8 @@ export class LibraryPublishController<R> {
                 subjectArea: [],
                 application: '',
                 pdfUri: '',
-                licence: ''
+                licence: '',
+                teacherAvatar: null
             };
             this.publication = Object.assign({}, defaultPublication, {...resourceInformation, cover, pdfUri});
         });
