@@ -59,6 +59,7 @@ export class LibraryPublishController<R> {
     public show = false;
     public publication: LibraryPublication;
     public publicationResponse: LibraryPublicationResponse;
+    public responseBprFullURL: string;
     public showLightboxResponse: boolean;
     public allActivityTypes: { label: string, type: ActivityType }[] = allActivityTypes.map(activityType => ({
         label: activityType,
@@ -84,9 +85,9 @@ export class LibraryPublishController<R> {
     };
     private id: string;
 
-    static $inject = ['$scope', '$q', '$http', 'libraryService'];
+    static $inject = ['$scope', '$q', '$http', '$location', 'libraryService'];
 
-    constructor(private $scope, private $q, private $http, private libraryService: LibraryService<R>) {
+    constructor(private $scope, private $q, private $http, private $location, private libraryService: LibraryService<R>) {
         $scope.$watch(() => this.publication ? this.publication.cover : undefined, () => {
             if (this.revocableUrl) {
                 URL.revokeObjectURL(this.revocableUrl);
@@ -168,6 +169,7 @@ export class LibraryPublishController<R> {
                     this.publicationResponse.message = resData.message;
                     this.publicationResponse.reason = resData.reason;
                     this.publicationResponse.details = resData.details;
+                    this.responseBprFullURL = `${resData.details.resource_url}?platformURL=${encodeURIComponent(this.$location.host())}`;
                     this.showLightboxResponse = true;
                     this.$scope.$apply();
                 }, err => {
@@ -356,16 +358,16 @@ export const libraryPublishDirective: Directive = ng.directive('libraryPublish',
                         <p>
                             <i18n>bpr.form.publication.response.success.content.2</i18n>
                         </p>
-                        <button ng-if="libraryPublishController.publicationResponse.details && libraryPublishController.publicationResponse.details.resource_url" 
-                            class="right-magnet" 
-                            ng-href="[[libraryPublishController.publicationResponse.details.resource_url]]">
+                        <a ng-if="libraryPublishController.publicationResponse.details && libraryPublishController.publicationResponse.details.resource_url" 
+                            class="button right-magnet" 
+                            ng-href="libraryPublishController.responseBprFullURL"
+                            target="_blank">
                             <i18n>bpr.form.publication.response.success.button</i18n>
-                        </button>
+                        </a>
                     </div>
 
                     <div ng-if="!libraryPublishController.publicationResponse.success">
                         <h2><i18n>bpr.form.publication.response.error.title</i18n></h2>
-                        <p>[[libraryPublishController.publicationResponse.message]]</p>
                         <p><strong><i18n>bpr.form.publication.response.error.content</i18n></strong></p>
                     </div>
                 </lightbox>
