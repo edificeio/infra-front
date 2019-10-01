@@ -1,17 +1,15 @@
 import { Directive, ng } from '../ng-start';
-import {
-    ActivityType,
+import { LibraryService, libraryServiceProvider } from './library.service';
+import { ActivityType,
     allActivityTypes,
     allLangages,
     allSubjectAreas,
     Langage,
     LibraryPublication,
     LibraryResourceInformation,
-    LibraryService,
-    libraryServiceProvider,
     SubjectArea,
     LibraryPublicationResponse
-} from './library.service';
+} from './library.types';
 import { idiom } from '../idiom';
 
 ng.providers.push(libraryServiceProvider);

@@ -1,6 +1,7 @@
 import { module } from 'angular';
 import { libraryPublishDirective, libraryResourceDirective, libraryRootDirective } from './library.directives';
-import { IdAndLibraryResourceInformation, LibraryService } from './library.service';
+import { IdAndLibraryResourceInformation } from './library.types';
+import { LibraryService } from './library.service';
 
 const testingModule = 'libraryDirectivesTestingModule';
 
