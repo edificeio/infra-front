@@ -360,7 +360,7 @@ export const libraryPublishDirective: Directive = ng.directive('libraryPublish',
                         </p>
                         <a ng-if="libraryPublishController.publicationResponse.details && libraryPublishController.publicationResponse.details.resource_url" 
                             class="button right-magnet" 
-                            ng-href="libraryPublishController.responseBprFullURL"
+                            ng-href="[[libraryPublishController.responseBprFullURL]]"
                             target="_blank">
                             <i18n>bpr.form.publication.response.success.button</i18n>
                         </a>
