@@ -215,33 +215,34 @@ export const libraryPublishDirective: Directive = ng.directive('libraryPublish',
                         </span>
                     </div>
                     <div class="row">
-                        <form ng-submit="libraryPublishController.publish()" 
+                        <form ng-submit="libraryPublishController.publish()"
                             name="libraryPublishController.publishForm"
                             novalidate>
                             <div class="row top-spacing-four">
                                 <label class="cell three bold" for="">
                                     <i18n>bpr.form.publication.title</i18n> * :
                                 </label>
-                                <input class="cell nine" 
+                                <input class="cell nine"
                                     type="text"
-                                    name="title" 
-                                    ng-model="libraryPublishController.publication.title" 
+                                    name="title"
+                                    ng-model="libraryPublishController.publication.title"
                                     placeholder="[[translate('bpr.form.publication.title.placeholder')]]" />
                             </div>
                             <div class="row top-spacing-twice">
                                 <label class="cell three bold" for="">
                                     <i18n>bpr.form.publication.cover.upload</i18n> * :
+                                    <small><i18n>bpr.form.publication.format</i18n> JPG, PNG</small>
                                 </label>
-                                <file-picker-list 
+                                <file-picker-list
                                     class="cell seven"
-                                    files="libraryPublishController.publication.cover" 
+                                    files="libraryPublishController.publication.cover"
                                     multiple="false"
                                     hide-list="true">
                                 </file-picker-list>
-                                <img 
+                                <img
                                     class="cell two file-picker_preview"
-                                    ng-if="libraryPublishController.revocableUrl" 
-                                    ng-src="[[libraryPublishController.revocableUrl]]" 
+                                    ng-if="libraryPublishController.revocableUrl"
+                                    ng-src="[[libraryPublishController.revocableUrl]]"
                                     alt="" />
                                 <i class="file-image cell two"
                                     ng-if="!libraryPublishController.revocableUrl"/>
