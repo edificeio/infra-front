@@ -4,6 +4,7 @@ export class MimeTypeUtils {
     private excelExtensions = new Set<string>();
     private pptExtensions = new Set<string>();
     private fileExtensionMap = new Map<string, string>();
+    private csvContentType = new Set<string>();
     public PDF = "application/pdf";
 
     constructor() {
@@ -87,6 +88,10 @@ export class MimeTypeUtils {
         this.fileExtensionMap.set("odb", "application/vnd.oasis.opendocument.database");
         this.fileExtensionMap.set("odi", "application/vnd.oasis.opendocument.image");
         this.fileExtensionMap.set("oxt", "application/vnd.openofficeorg.extension");
+        // CSV
+        this.csvContentType.add("text/comma-separated-values");
+        this.csvContentType.add("text/csv");
+        this.csvContentType.add("application/csv");
     }
 
     getContentTypeForExtension(extension: string): string | null {
@@ -120,6 +125,10 @@ export class MimeTypeUtils {
             return this.excelExtensions.has(extension);
         }
         return false;
+    }
+
+    isCsvLike(contentType: string): boolean {
+        return this.csvContentType.has(contentType);
     }
 
     isPowerpointLike(contentType: string): boolean {

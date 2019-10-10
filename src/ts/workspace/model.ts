@@ -353,6 +353,12 @@ export class Element extends Model implements Node, Shareable, Selectable {
             }
         }
         const types = {
+            'csv': function (type) {
+                if(MimeTypeUtils.INSTANCE.isCsvLike(type)){
+                    return true;
+                }
+                return false;
+            },
             'doc': function (type) {
                 if(MimeTypeUtils.INSTANCE.isWordLike(type)){
                     return true;

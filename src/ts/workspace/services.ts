@@ -724,6 +724,21 @@ export const workspaceService = {
             xhr.send();
         })
     },
+    async getPreviewBlob(id: string): Promise<Blob> {
+        return new Promise<Blob>((resolve, reject) => {
+            const xhr = new XMLHttpRequest();
+            xhr.open('GET', `/workspace/document/preview/${id}`, true);
+            xhr.responseType = 'blob';
+            xhr.onload = function (e) {
+                if (xhr.status == 200) {
+                    resolve(xhr.response);
+                } else {
+                    reject("Failed with status code: " + xhr.status);
+                }
+            }
+            xhr.send();
+        })
+    },
     async copyDocumentWithVisibility(source: workspaceModel.Element, args: { visibility: "public" | "protected", application: string }, parent?: workspaceModel.Element) {
         const blob = await workspaceService.getDocumentBlob(source._id);
         const clone = new Document;
