@@ -69,7 +69,9 @@ function tooltipLink($compile: any, scope: any, element: any, attributes: { [nam
                         }
                     }
 
-                    tip.css('left', window.innerWidth >= left + tip.outerWidth() ? left : window.innerWidth - tip.outerWidth() - 1);
+                    // console.log("left:", left + tip.outerWidth(), document.body.clientWidth);
+
+                    tip.css('left', document.body.clientWidth >= left + tip.outerWidth() ? left : document.body.clientWidth - tip.outerWidth() - 1);
                     tip.css('top', top);
                 } else {
                     if ($(window).width() < ui.breakpoints.tablette || !attributes[tooltipType] || !tooltipCheck || attributes[tooltipType] === 'undefined') {
@@ -93,9 +95,11 @@ function tooltipLink($compile: any, scope: any, element: any, attributes: { [nam
                         left = 5;
                     }
 
+                    // console.log("left:", left + tip.outerWidth(), document.body.clientWidth);
+
                     tip.offset({
                         top: top,
-                        left: window.innerWidth >= left + tip.outerWidth() ? left : window.innerWidth - tip.outerWidth() - 1
+                        left: document.body.clientWidth >= left + tip.outerWidth() ? left : document.body.clientWidth - tip.outerWidth() - 1
                     });
                     if (tooltipDisplayCondition(element)) {
                         tip.fadeIn();
