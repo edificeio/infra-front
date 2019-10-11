@@ -182,7 +182,7 @@ export class Element extends Model implements Node, Shareable, Selectable {
         }
         //
         if (data.metadata) {
-            const dotSplit = data.metadata.filename.split('.');
+            const dotSplit = (data.metadata.filename || "").split('.');
             this.metadata.extension = dotSplit.length > 1 ? dotSplit[dotSplit.length - 1] : "";
             if (dotSplit.length > 1) {
                 dotSplit.length = dotSplit.length - 1;
