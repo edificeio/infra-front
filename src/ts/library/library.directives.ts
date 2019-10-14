@@ -1,13 +1,11 @@
 import { Directive, ng } from '../ng-start';
 import { LibraryService, libraryServiceProvider } from './library.service';
-import { ActivityType,
+import { 
     allActivityTypes,
     allLangages,
     allSubjectAreas,
-    Langage,
     LibraryPublication,
     LibraryResourceInformation,
-    SubjectArea,
     LibraryPublicationResponse
 } from './library.types';
 import { idiom } from '../idiom';
@@ -61,15 +59,15 @@ export class LibraryPublishController<R> {
     public publicationResponse: LibraryPublicationResponse;
     public responseBprFullURL: string;
     public showLightboxResponse: boolean;
-    public allActivityTypes: { label: string, type: ActivityType }[] = allActivityTypes.map(activityType => ({
-        label: activityType,
+    public allActivityTypes: { label: string, type: string }[] = allActivityTypes.map(activityType => ({
+        label: idiom.translate(activityType),
         type: activityType
     }));
-    public allSubjectAreas: { label: string, type: SubjectArea }[] = allSubjectAreas.map(subjectArea => ({
-        label: subjectArea,
+    public allSubjectAreas: { label: string, type: string }[] = allSubjectAreas.map(subjectArea => ({
+        label: idiom.translate(subjectArea),
         type: subjectArea
     }));
-    public allLanguages: Langage[] = allLangages;
+    public allLanguages: string[] = allLangages;
     public revocableUrl: string;
     public loading = false;
     public licence: 'CC-BY' | 'none' = 'none';
@@ -289,7 +287,7 @@ export const libraryPublishDirective: Directive = ng.directive('libraryPublish',
                                 </label>
                                 <select ng-model="libraryPublishController.publication.language"
                                     name="language"
-                                    ng-options="language for language in libraryPublishController.allLanguages"
+                                    ng-options="translate(language) for language in libraryPublishController.allLanguages"
                                     class="cell nine language">
                                 </select>
                             </div>

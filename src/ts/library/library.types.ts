@@ -5,76 +5,73 @@ export interface LibraryResourceInformation {
     pdfUri: string;
 }
 
-export type SubjectArea =
-    "Activités artistiques" |
-    "Allemand" |
-    "Anglais" |
-    "Apprentissage de la lecture" |
-    "Chimie" |
-    "Découverte du monde" |
-    "Droit" |
-    "Economie" |
-    "Education aux médias" |
-    "Education musicale" |
-    "Education physique et sportive" |
-    "Enseignement civique" |
-    "Espagnol" |
-    "Français" |
-    "Géographie" |
-    "Histoire" |
-    "Histoire des arts" |
-    "Informatique" |
-    "Italien" |
-    "Langues" |
-    "Langues anciennes" |
-    "Littérature" |
-    "Mathématiques" |
-    "Orientation" |
-    "Philosophie" |
-    "Physique" |
-    "Portugais" |
-    "Sciences politiques" |
-    "Sociologie" |
-    "SVT - Biologie" |
-    "SVT - Géologie" |
-    "Technologie" |
-    "Autre";
+export const allSubjectAreas: string[] =  [
+    "bpr.subjectArea.artActivity", 
+    "bpr.subjectArea.readLearning", 
+    "bpr.subjectArea.chemistry", 
+    "bpr.subjectArea.law", 
+    "bpr.subjectArea.worldDiscovery", 
+    "bpr.subjectArea.economy", 
+    "bpr.subjectArea.mediaEducation", 
+    "bpr.subjectArea.musicEducation", 
+    "bpr.subjectArea.sportEducation", 
+    "bpr.subjectArea.citizenshipEducation", 
+    "bpr.subjectArea.geography", 
+    "bpr.subjectArea.history", 
+    "bpr.subjectArea.artHistory", 
+    "bpr.subjectArea.ComputerScience", 
+    "bpr.subjectArea.languages", 
+    "bpr.lang.italian",
+    "bpr.lang.spanish", 
+    "bpr.lang.frensh", 
+    "bpr.lang.german", 
+    "bpr.lang.english", 
+    "bpr.subjectArea.ancientLanguages", 
+    "bpr.subjectArea.literature", 
+    "bpr.subjectArea.mathematics", 
+    "bpr.subjectArea.vocationalGuidance", 
+    "bpr.subjectArea.philosohppy", 
+    "bpr.subjectArea.physics", 
+    "bpr.subjectArea.politicalSscience", 
+    "bpr.subjectArea.sociology", 
+    "bpr.subjectArea.biology", 
+    "bpr.subjectArea.geology", 
+    "bpr.subjectArea.technology",
+    "bpr.label.other"
+];
 
-export const allSubjectAreas: SubjectArea[] = ["Activités artistiques", "Allemand", "Anglais", "Apprentissage de la lecture", "Autre", "Chimie", "Droit", "Découverte du monde", "Economie", "Education aux médias", "Education musicale", "Education physique et sportive", "Enseignement civique", "Espagnol", "Français", "Géographie", "Histoire", "Histoire des arts", "Informatique", "Italien", "Langues", "Langues anciennes", "Littérature", "Mathématiques", "Orientation", "Philosophie", "Physique", "Portugais", "Sciences politiques", "Sociologie", "SVT - Biologie", "SVT - Géologie", "Technologie"];
+export const allActivityTypes: string[] = [
+    "bpr.label.other", 
+    "bpr.activityType.classroomActivity", 
+    "bpr.activityType.groupActivity", 
+    "bpr.activityType.personalActivity", 
+    "bpr.activityType.homework", 
+    "bpr.activityType.exercize",
+    "bpr.activityType.learningPath",
+    "bpr.activityType.courseElement",
+];
 
-export type ActivityType =
-    "Activité en classe" |
-    "Activité à la maison" |
-    "Activité individuelle" |
-    "Activité en groupe" |
-    "Parcours pédagogique" |
-    "Élément de cours" |
-    "Exercice" |
-    "Autre";
 
-export const allActivityTypes: ActivityType[] = ["Autre", "Activité en classe", "Activité en groupe", "Activité individuelle", "Activité à la maison", "Exercice", "Parcours pédagogique", "Élément de cours"];
-
-export type Langage =
-    "Allemand" |
-    "Anglais" |
-    "Arabe" |
-    "Espagnol" |
-    "Français" |
-    "Italien" |
-    "Japonais" |
-    "Mandarin" |
-    "Portugais" |
-    "Russe" |
-    "Autre";
-
-export const allLangages: Langage[] = ["Allemand", "Anglais", "Arabe", "Espagnol", "Français", "Italien", "Japonais", "Mandarin", "Portugais", "Russe", "Autre"];
+export const allLangages: string[] = [
+    "bpr.lang.german", 
+    "bpr.lang.english", 
+    "bpr.lang.arabian", 
+    "bpr.lang.spanish", 
+    "bpr.lang.french", 
+    "bpr.lang.italian", 
+    "bpr.lang.japanese", 
+    "bpr.lang.mandarinChinese", 
+    "bpr.lang.portuguese", 
+    "bpr.lang.russian", 
+    "bpr.other"
+];
 
 export interface LibraryPublication {
     title: string;
     cover: Blob;
-    language: Langage;
-    activityType: ActivityType[];
-    subjectArea: SubjectArea[];
+    language: string;
+    activityType: string[];
+    subjectArea: string[];
     age: [number, number];
     description: string;
     keyWords: string;
