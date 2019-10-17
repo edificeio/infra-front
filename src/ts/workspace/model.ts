@@ -384,6 +384,9 @@ export class Element extends Model implements Node, Shareable, Selectable {
                 }
                 return (type.indexOf('document') !== -1 && type.indexOf('presentation') !== -1) || type.indexOf('powerpoint') !== -1;
             },
+            'txt': function (type) {
+                return (MimeTypeUtils.INSTANCE.isTxtLike(type, extension));
+            },
             'video': function (type) {
                 return type.indexOf('video') !== -1;
             },

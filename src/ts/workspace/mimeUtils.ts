@@ -6,10 +6,13 @@ export class MimeTypeUtils {
     private fileExtensionMap = new Map<string, string>();
     private csvContentType = new Set<string>();
     private csvExtensions = new Set<string>();
+    private txtExtensions = new Set<string>();
     public PDF = "application/pdf";
     public OCTET_STREAM = "application/octet-stream";
 
     constructor() {
+        //txt
+        this.txtExtensions.add("txt");
         //word extensions
         this.wordExtensions.add("doc");
         this.wordExtensions.add("dot");
@@ -92,6 +95,8 @@ export class MimeTypeUtils {
         this.fileExtensionMap.set("odb", "application/vnd.oasis.opendocument.database");
         this.fileExtensionMap.set("odi", "application/vnd.oasis.opendocument.image");
         this.fileExtensionMap.set("oxt", "application/vnd.openofficeorg.extension");
+        //
+        this.fileExtensionMap.set("txt", "text/plain");
         // CSV
         this.csvContentType.add("text/comma-separated-values");
         this.csvContentType.add("text/csv");
@@ -115,48 +120,59 @@ export class MimeTypeUtils {
         return null;
     }
 
-    isWordLike(contentType: string, originalExt?:string): boolean {
+    isWordLike(contentType: string, originalExt?: string): boolean {
         const extension = this.getExtensionForContentType(contentType);
         if (extension) {
             return this.wordExtensions.has(extension);
         }
-        if(contentType == this.OCTET_STREAM && originalExt){
+        if (contentType == this.OCTET_STREAM && originalExt) {
             return this.wordExtensions.has(originalExt);
         }
         return false;
     }
 
-    isExcelLike(contentType: string, originalExt?:string): boolean {
+    isExcelLike(contentType: string, originalExt?: string): boolean {
         const extension = this.getExtensionForContentType(contentType);
         if (extension) {
             return this.excelExtensions.has(extension);
         }
-        if(contentType == this.OCTET_STREAM && originalExt){
+        if (contentType == this.OCTET_STREAM && originalExt) {
             return this.excelExtensions.has(originalExt);
         }
         return false;
     }
 
-    isCsvLike(contentType: string, originalExt?:string): boolean {
+    isCsvLike(contentType: string, originalExt?: string): boolean {
         const isCsv = this.csvContentType.has(contentType);
-        if(isCsv){
+        if (isCsv) {
             return true;
         }
-        if(contentType == this.OCTET_STREAM && originalExt){
+        if (contentType == this.OCTET_STREAM && originalExt) {
             return this.csvContentType.has(originalExt);
         }
         return false;
     }
 
-    isPowerpointLike(contentType: string, originalExt?:string): boolean {
+    isPowerpointLike(contentType: string, originalExt?: string): boolean {
         const extension = this.getExtensionForContentType(contentType);
         if (extension) {
             return this.pptExtensions.has(extension);
         }
-        if(contentType == this.OCTET_STREAM && originalExt){
+        if (contentType == this.OCTET_STREAM && originalExt) {
             return this.pptExtensions.has(originalExt);
         }
         return false;
     }
-    
+
+    isTxtLike(contentType: string, originalExt?: string): boolean {
+        const extension = this.getExtensionForContentType(contentType);
+        if (extension) {
+            return this.txtExtensions.has(extension);
+        }
+        if (contentType == this.OCTET_STREAM && originalExt) {
+            return this.txtExtensions.has(originalExt);
+        }
+        return false;
+    }
+
 }
