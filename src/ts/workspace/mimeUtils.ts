@@ -148,7 +148,7 @@ export class MimeTypeUtils {
             return true;
         }
         if (contentType == this.OCTET_STREAM && originalExt) {
-            return this.csvContentType.has(originalExt);
+            return this.csvExtensions.has(originalExt);
         }
         return false;
     }
