@@ -5,6 +5,7 @@ export class MimeTypeUtils {
     private pptExtensions = new Set<string>();
     private fileExtensionMap = new Map<string, string>();
     private csvContentType = new Set<string>();
+    private csvExtensions = new Set<string>();
     public PDF = "application/pdf";
     public OCTET_STREAM = "application/octet-stream";
 
@@ -46,6 +47,8 @@ export class MimeTypeUtils {
         this.pptExtensions.add("ppsm");
         this.pptExtensions.add("odp");
         this.pptExtensions.add("otp");
+        //csv extensions
+        this.csvExtensions.add("csv");
         // MS Office
         this.fileExtensionMap.set("doc", "application/msword");
         this.fileExtensionMap.set("dot", "application/msword");
