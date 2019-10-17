@@ -322,11 +322,11 @@ export class Element extends Model implements Node, Shareable, Selectable {
     }
 
     role() {
-        return this.metadata && Element.role(this.metadata['content-type']);
+        return this.metadata && Element.role(this.metadata['content-type'], false, this.metadata["extension"]);
     }
 
     previewRole() {
-        return this.metadata && Element.role(this.metadata['content-type'],true);
+        return this.metadata && Element.role(this.metadata['content-type'],true, this.metadata["extension"]);
     }
 
     get thumbUrl() {
@@ -343,7 +343,8 @@ export class Element extends Model implements Node, Shareable, Selectable {
         return `/workspace/document/preview/${this._id}`;
     }
 
-    static role(fileType: string, previewRole: boolean = false) {
+    static role(fileType: string, previewRole: boolean = false, extension?: string) {
+        extension && (extension = extension.trim());
         if (!fileType)
             return 'unknown'
         for (let roleMapper of this.roleMappers) {
@@ -354,19 +355,19 @@ export class Element extends Model implements Node, Shareable, Selectable {
         }
         const types = {
             'csv': function (type) {
-                if(MimeTypeUtils.INSTANCE.isCsvLike(type)){
+                if(MimeTypeUtils.INSTANCE.isCsvLike(type, extension)){
                     return true;
                 }
                 return false;
             },
             'doc': function (type) {
-                if(MimeTypeUtils.INSTANCE.isWordLike(type)){
+                if(MimeTypeUtils.INSTANCE.isWordLike(type, extension)){
                     return true;
                 }
                 return type.indexOf('document') !== -1 && type.indexOf('wordprocessing') !== -1;
             },
             'xls': function (type) {
-                if(MimeTypeUtils.INSTANCE.isExcelLike(type)){
+                if(MimeTypeUtils.INSTANCE.isExcelLike(type, extension)){
                     return true;
                 }
                 return (type.indexOf('document') !== -1 && type.indexOf('spreadsheet') !== -1) || (type.indexOf('ms-excel') !== -1);
@@ -378,7 +379,7 @@ export class Element extends Model implements Node, Shareable, Selectable {
                 return type.indexOf('pdf') !== -1 || type === 'application/x-download';
             },
             'ppt': function (type) {
-                if(MimeTypeUtils.INSTANCE.isPowerpointLike(type)){
+                if(MimeTypeUtils.INSTANCE.isPowerpointLike(type, extension)){
                     return true;
                 }
                 return (type.indexOf('document') !== -1 && type.indexOf('presentation') !== -1) || type.indexOf('powerpoint') !== -1;

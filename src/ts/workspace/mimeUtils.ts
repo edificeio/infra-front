@@ -6,6 +6,7 @@ export class MimeTypeUtils {
     private fileExtensionMap = new Map<string, string>();
     private csvContentType = new Set<string>();
     public PDF = "application/pdf";
+    public OCTET_STREAM = "application/octet-stream";
 
     constructor() {
         //word extensions
@@ -111,31 +112,48 @@ export class MimeTypeUtils {
         return null;
     }
 
-    isWordLike(contentType: string): boolean {
+    isWordLike(contentType: string, originalExt?:string): boolean {
         const extension = this.getExtensionForContentType(contentType);
         if (extension) {
             return this.wordExtensions.has(extension);
         }
+        if(contentType == this.OCTET_STREAM && originalExt){
+            return this.wordExtensions.has(originalExt);
+        }
         return false;
     }
 
-    isExcelLike(contentType: string): boolean {
+    isExcelLike(contentType: string, originalExt?:string): boolean {
         const extension = this.getExtensionForContentType(contentType);
         if (extension) {
             return this.excelExtensions.has(extension);
         }
+        if(contentType == this.OCTET_STREAM && originalExt){
+            return this.excelExtensions.has(originalExt);
+        }
         return false;
     }
 
-    isCsvLike(contentType: string): boolean {
-        return this.csvContentType.has(contentType);
+    isCsvLike(contentType: string, originalExt?:string): boolean {
+        const isCsv = this.csvContentType.has(contentType);
+        if(isCsv){
+            return true;
+        }
+        if(contentType == this.OCTET_STREAM && originalExt){
+            return this.csvContentType.has(originalExt);
+        }
+        return false;
     }
 
-    isPowerpointLike(contentType: string): boolean {
+    isPowerpointLike(contentType: string, originalExt?:string): boolean {
         const extension = this.getExtensionForContentType(contentType);
         if (extension) {
             return this.pptExtensions.has(extension);
         }
+        if(contentType == this.OCTET_STREAM && originalExt){
+            return this.pptExtensions.has(originalExt);
+        }
         return false;
     }
+    
 }
