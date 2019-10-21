@@ -21,11 +21,11 @@ export const allSubjectAreas: string[] =  [
     "bpr.subjectArea.artHistory", 
     "bpr.subjectArea.ComputerScience", 
     "bpr.subjectArea.languages", 
-    "bpr.lang.italian",
-    "bpr.lang.spanish", 
-    "bpr.lang.frensh", 
-    "bpr.lang.german", 
-    "bpr.lang.english", 
+    "bpr.subjectArea.italian",
+    "bpr.subjectArea.spanish",
+    "bpr.subjectArea.frensh",
+    "bpr.subjectArea.german",
+    "bpr.subjectArea.english",
     "bpr.subjectArea.ancientLanguages", 
     "bpr.subjectArea.literature", 
     "bpr.subjectArea.mathematics", 
@@ -37,11 +37,11 @@ export const allSubjectAreas: string[] =  [
     "bpr.subjectArea.biology", 
     "bpr.subjectArea.geology", 
     "bpr.subjectArea.technology",
-    "bpr.label.other"
+    "bpr.other"
 ];
 
 export const allActivityTypes: string[] = [
-    "bpr.label.other", 
+    "bpr.other",
     "bpr.activityType.classroomActivity", 
     "bpr.activityType.groupActivity", 
     "bpr.activityType.personalActivity", 
@@ -53,16 +53,16 @@ export const allActivityTypes: string[] = [
 
 
 export const allLangages: string[] = [
-    "bpr.lang.german", 
-    "bpr.lang.english", 
-    "bpr.lang.arabian", 
-    "bpr.lang.spanish", 
-    "bpr.lang.french", 
-    "bpr.lang.italian", 
-    "bpr.lang.japanese", 
-    "bpr.lang.mandarinChinese", 
-    "bpr.lang.portuguese", 
-    "bpr.lang.russian", 
+    "de_DE",
+    "en_EN",
+    "ar_DZ",
+    "es_ES",
+    "fr_FR",
+    "it_IT",
+    "ja_JP",
+    "zh_CN",
+    "pt_PT",
+    "ru_RU",
     "bpr.other"
 ];
 
