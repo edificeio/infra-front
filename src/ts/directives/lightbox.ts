@@ -8,11 +8,12 @@ export let lightbox = ng.directive('lightbox', () => {
 		transclude: true,
 		scope: {
 			show: '=',
+			tiny: '=',
 			onShow: '&?',
 			onClose: '&',
 			delegateClose: '&?'
 		},
-		template: '<section class="lightbox">' +
+		template: '<section class="lightbox" ng-class="{\'lightbox\': !tiny, \'tiny-lightbox\': tiny}">' +
 						'<div class="background"></div>' +
 						'<div class="content">' +
 							'<div class="twelve cell" ng-transclude></div>'+
