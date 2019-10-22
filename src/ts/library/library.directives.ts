@@ -315,8 +315,10 @@ export const libraryPublishDirective: Directive = ng.directive('libraryPublish',
                             </div>
                             <div class="row top-spacing-twice">
                                 <div class="licence-condition">
+                                    <h4>
                                     <i class="info-pic right-spacing bottom-spacing"></i>
-                                    <h4><i18n>bpr.form.publication.licence.text</i18n></h4>
+                                    <i18n>bpr.form.publication.licence.text</i18n>
+                                    </h4>
                                     <ul>
                                       <li class="small-text">
                                         bpr.form.publication.licence.text.1
