@@ -314,16 +314,22 @@ export const libraryPublishDirective: Directive = ng.directive('libraryPublish',
                                     placeholder="[[ translate('bpr.form.publication.keywords.placeholder') ]]" />
                             </div>
                             <div class="row top-spacing-twice">
-                                <div class="flex-row align-center licence-condition">
+                                <div class="licence-condition">
                                     <i class="info-pic right-spacing bottom-spacing"></i>
-                                    <span class="small-text"><i18n>bpr.form.publication.licence.text</i18n></span>
-                                    <a href="https://creativecommons.org/licenses/by/4.0/deed.fr"
-                                        target="_blank"
-                                        class="left-spacing top-spacing">
-                                        <img class="licence_image"
-                                            src="assets/themes/entcore-css-lib/images/cc-by.svg"
-                                            alt="[[translate('bpr.form.publication.licence.image.alt')]]" />
-                                    </a>
+                                    <h4><i18n>bpr.form.publication.licence.text</i18n></h4>
+                                    <ul>
+                                      <li class="small-text">
+                                        bpr.form.publication.licence.text.1
+                                        <a href="https://creativecommons.org/licenses/by/4.0/deed.fr"
+                                            target="_blank"
+                                            class="left-spacing top-spacing">
+                                            <img class="licence_image"
+                                                src="assets/themes/entcore-css-lib/images/cc-by.svg"
+                                                alt="[[translate('bpr.form.publication.licence.image.alt')]]" />
+                                        </a>
+                                      </li>
+                                      <li class="small-text">bpr.form.publication.licence.text.2</li>
+                                    </ul>
                                 </div>
                             </div>
                             <div class="row top-spacing-four">
