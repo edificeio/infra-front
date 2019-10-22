@@ -162,19 +162,15 @@ export class LibraryPublishController<R> {
                 .then(res => {
                     this.loading = false;
                     this.closePublishLightbox();
-                    let resData: LibraryPublicationResponse = res.data;
-                    this.publicationResponse.success = resData.success;
-                    this.publicationResponse.message = resData.message;
-                    this.publicationResponse.reason = resData.reason;
-                    this.publicationResponse.details = resData.details;
-                    this.responseBprFullURL = `${resData.details.resource_url}?platformURL=${encodeURIComponent(this.$location.host())}`;
+                    this.publicationResponse = res.data;
+                    this.responseBprFullURL = `${this.publicationResponse.details.front_url}?platformURL=${encodeURIComponent(this.$location.host())}`;
                     this.showLightboxResponse = true;
                     this.$scope.$apply();
                 }, err => {
                     this.loading = false;
                     this.closePublishLightbox();
                     this.publicationResponse.success = false;
-                    this.publicationResponse.message = err;
+                    this.publicationResponse.message = err.data.message;
                     this.showLightboxResponse = true;
                     this.$scope.$apply();
                 });
