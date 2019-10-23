@@ -351,7 +351,7 @@ export const libraryPublishDirective: Directive = ng.directive('libraryPublish',
                 </lightbox>
             </div>
             <div ng-if="libraryPublishController.showLightboxResponse">
-                <lightbox show="libraryPublishController.showLightboxResponse" tiny="true">
+                <lightbox class="bpr" show="libraryPublishController.showLightboxResponse" tiny="true">
                     <div ng-if="libraryPublishController.publicationResponse.success">
                         <h2><i18n>bpr.form.publication.response.success.title</i18n></h2>
                         <i class="congrats"></i>
