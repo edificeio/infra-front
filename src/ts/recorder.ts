@@ -1,9 +1,16 @@
 import { moment } from './libs/moment/moment';
 import { idiom as lang } from './idiom';
-import { http } from './http';
+import { http, httpPromisy } from './http';
 import { notify } from './notify';
 declare const Zlib: any;
 
+let _zlib = null;
+async function getZlib(){
+	if(!_zlib){
+		_zlib = await httpPromisy().get('/infra/public/js/zlib.min.js');
+	}
+	return _zlib;
+}
 export var recorder = (function(){
 	//vendor prefixes
 	navigator.mediaDevices.getUserMedia = navigator.mediaDevices.getUserMedia || (navigator as any).webkitGetUserMedia ||
@@ -32,6 +39,12 @@ export var recorder = (function(){
             var r = Math.random()*16|0, v = c == 'x' ? r : (r&0x3|0x8);
             return v.toString(16);
         });
+	}
+
+	function getUrl(sampleRate:number){
+		const protocol = window.location.protocol === "https:" ? "wss": "ws";
+		const base = protocol + "://" + window.location.host
+		return `${base}/audio/${uuid()}?sampleRate=${sampleRate}`;
 	}
 
 	function sendWavChunk() {
@@ -89,6 +102,7 @@ export var recorder = (function(){
 				audio: true
 			}).then(mediaStream => {
 				context = new AudioContext();
+				encoder.postMessage(["init", context.sampleRate])
 				var audioInput = context.createMediaStreamSource(mediaStream);
 				gainNode = context.createGain();
 				audioInput.connect(gainNode);
@@ -143,9 +157,12 @@ export var recorder = (function(){
 			rightChannel = [];
 			notifyFollowers(this.status);
 		},
-		record: function(){
+		record: async function(){
 			player.pause();
 			var that = this;
+			if(that.status=='preparing')return;
+			that.status = 'preparing';
+			await getZlib();
 			if (ws) {
 				that.status = 'recording';
 				notifyFollowers(that.status);
@@ -153,8 +170,7 @@ export var recorder = (function(){
 					that.loadComponents();
 				}
 			} else {
-				ws = new WebSocket((window.location.protocol === "https:" ? "wss": "ws") + "://" +
-						window.location.host + "/audio/" + uuid());
+				ws = new WebSocket(getUrl(new AudioContext().sampleRate));
 				ws.onopen = function () {
 					if(player.currentTime > 0){
 						player.currentTime = 0;
@@ -166,9 +182,7 @@ export var recorder = (function(){
 						ws.send('rawdata');
 					}
 					if(!loaded){
-						http().get('/infra/public/js/zlib.min.js').done(function(){
-							that.loadComponents();
-						}.bind(this));
+						that.loadComponents();
 					}
 				};
 				ws.onerror = function (event: ErrorEvent) {
