@@ -317,7 +317,7 @@ export const libraryPublishDirective: Directive = ng.directive('libraryPublish',
                                     </h4>
                                     <ul>
                                       <li class="small-text">
-                                        bpr.form.publication.licence.text.1
+                                        <i18n>bpr.form.publication.licence.text.1</i18n>
                                         <a href="https://creativecommons.org/licenses/by/4.0/deed.fr"
                                             target="_blank"
                                             class="left-spacing top-spacing">
@@ -326,7 +326,7 @@ export const libraryPublishDirective: Directive = ng.directive('libraryPublish',
                                                 alt="[[translate('bpr.form.publication.licence.image.alt')]]" />
                                         </a>
                                       </li>
-                                      <li class="small-text">bpr.form.publication.licence.text.2</li>
+                                      <li class="small-text"><i18n>bpr.form.publication.licence.text.2</i18n></li>
                                     </ul>
                                 </div>
                             </div>
