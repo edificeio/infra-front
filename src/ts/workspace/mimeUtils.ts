@@ -113,7 +113,7 @@ export class MimeTypeUtils {
     getExtensionForContentType(contentType: string): string | null {
         for (const key of Array.from(this.fileExtensionMap.keys())) {
             const value = this.fileExtensionMap.get(key);
-            if (value.toLowerCase() == (contentType || "").toLowerCase()) {
+            if ((value || "").toLowerCase() == (contentType || "").toLowerCase()) {
                 return key;
             }
         }
