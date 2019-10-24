@@ -13,7 +13,7 @@ async function getZlib(){
 }
 export var recorder = (function(){
 	//vendor prefixes
-	navigator.mediaDevices.getUserMedia = navigator.mediaDevices.getUserMedia || (navigator as any).webkitGetUserMedia ||
+	navigator.getUserMedia = navigator.getUserMedia || (navigator as any).webkitGetUserMedia ||
 		(navigator as any).mozGetUserMedia || (navigator as any).msGetUserMedia;
 	(window as any).AudioContext = (window as any).AudioContext || (window as any).webkitAudioContext;
 
@@ -97,10 +97,10 @@ export var recorder = (function(){
 		loadComponents: function () {
 		    this.title = lang.translate('recorder.filename') + moment().format('DD/MM/YYYY');
 			loaded = true;
-
-			navigator.mediaDevices.getUserMedia({
-				audio: true
-			}).then(mediaStream => {
+			
+			navigator.getUserMedia({
+			audio: true
+			}, function(mediaStream){
 				context = new AudioContext();
 				encoder.postMessage(["init", context.sampleRate])
 				var audioInput = context.createMediaStreamSource(mediaStream);
@@ -129,13 +129,13 @@ export var recorder = (function(){
 				gainNode.connect (recorder);
 				recorder.connect (context.destination);
 
-			}).catch(err => {
+			}.bind(this), function(err){
 
 			});
-
+			
 		},
 		isCompatible: function(){
-			return navigator.mediaDevices.getUserMedia !== undefined && (window as any).AudioContext !==undefined;
+			return navigator.getUserMedia !== undefined && (window as any).AudioContext !==undefined;
 		},
 		stop: function(){
 			if (ws) {
@@ -249,8 +249,6 @@ export var recorder = (function(){
 		}
 	}
 }());
-
-console.log("SDFGHJKLJHGFTYJHGFDGHJHVCDFGHJBVCFGHJ");
 
 if(!(window as any).entcore){
 	(window as any).entcore = {};
