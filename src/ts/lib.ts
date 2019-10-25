@@ -669,7 +669,7 @@ export async function bootstrap(func) {
 			let rightName = right.right || right;
 
 			var currentSharedRights = _.filter(resource.shared, function(sharedRight){
-				return model.me.groupsIds.indexOf(sharedRight.groupId) !== -1
+				return (model.me.groupsIds || []).indexOf(sharedRight.groupId) !== -1
 					|| sharedRight.userId === model.me.userId;
 			});
 
