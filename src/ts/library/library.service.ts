@@ -55,7 +55,7 @@ export class LibraryServiceProvider<R> {
             publicationAsFormData.append("licence", 'CC-BY');
             publicationAsFormData.append("pdfUri", publication.pdfUri);
             publicationAsFormData.append("application", publication.application);
-
+            publicationAsFormData.append("resourceId", publication.resourceId);
             // TODO remove teacherCity
             publicationAsFormData.append("teacherCity", "test");
 

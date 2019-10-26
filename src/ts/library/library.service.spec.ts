@@ -50,7 +50,8 @@ describe('libraryService', function () {
                     application: "Test",
                     pdfUri: "https://google.fr",
                     licence: 'CC BY',
-                    teacherAvatar: null
+                    teacherAvatar: null,
+                    resourceId: 'id1'
                 })
             }).toThrowError('publishUrlGetterFromId not defined');
         });
@@ -71,7 +72,8 @@ describe('libraryService', function () {
                 application: "Test",
                 pdfUri: "https://google.fr",
                 licence: 'CC BY',
-                teacherAvatar: null
+                teacherAvatar: null,
+                resourceId: 'id1'
             });
             expect(publishUrlGetterFromId).toHaveBeenCalledWith('id1');
         });

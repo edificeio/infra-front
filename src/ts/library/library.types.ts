@@ -79,6 +79,7 @@ export interface LibraryPublication {
     application: string;
     licence: string;
     teacherAvatar: Blob;
+    resourceId: string;
 }
 
 export interface IdAndLibraryResourceInformation {
