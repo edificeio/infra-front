@@ -327,7 +327,7 @@ export const libraryPublishDirective: Directive = ng.directive('libraryPublish',
                                             target="_blank"
                                             class="left-spacing top-spacing">
                                             <img class="licence_image"
-                                                src="assets/themes/entcore-css-lib/images/cc-by.svg"
+                                                src="assets/themes/entcore-css-lib/images/cc-by-nc-sa.svg"
                                                 alt="[[translate('bpr.form.publication.licence.image.alt')]]" />
                                         </a>
                                       </li>
