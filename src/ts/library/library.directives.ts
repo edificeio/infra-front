@@ -61,10 +61,12 @@ export class LibraryPublishController<R> {
     public showLightboxResponse: boolean;
     public allActivityTypes: { label: string, type: string }[] = allActivityTypes.map(activityType => ({
         label: idiom.translate(activityType),
+        customSort: "bpr.other" == activityType? "~" : idiom.translate(activityType).normalize("NFD"),
         type: activityType
     }));
     public allSubjectAreas: { label: string, type: string }[] = allSubjectAreas.map(subjectArea => ({
         label: idiom.translate(subjectArea),
+        customSort: "bpr.other" == subjectArea? "~" : idiom.translate(subjectArea).normalize("NFD"),
         type: subjectArea
     }));
     public allLanguages: string[] = allLangages;
@@ -192,6 +194,8 @@ export const libraryPublishDirective: Directive = ng.directive('libraryPublish',
             const libraryPublishController: LibraryPublishController<R> = controllers[1];
             libraryRootController.registerPublishController(libraryPublishController);
             scope.translate = idiom.translate;
+            scope.orderAllSubjectAreas = "customSort";
+            scope.orderAllActivity = "customSort";
         },
         template: `
             <div ng-if="libraryPublishController.show">
@@ -261,7 +265,7 @@ export const libraryPublishDirective: Directive = ng.directive('libraryPublish',
                                 <div class="cell nine">
                                     <multi-comboboxes
                                         ng-model="libraryPublishController.publication.activityType"
-                                        name="activityType"
+                                        name="activityType" order="orderAllActivity"
                                         options="libraryPublishController.allActivityTypes">
                                     </multi-comboboxes>
                                 </div>
@@ -273,7 +277,7 @@ export const libraryPublishDirective: Directive = ng.directive('libraryPublish',
                                 <div class="cell nine">
                                     <multi-comboboxes
                                         ng-model="libraryPublishController.publication.subjectArea"
-                                        name="subjectArea"
+                                        name="subjectArea" order="orderAllSubjectAreas"
                                         options="libraryPublishController.allSubjectAreas">
                                     </multi-comboboxes>
                                 </div>
