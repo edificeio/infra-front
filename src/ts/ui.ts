@@ -386,7 +386,7 @@ export interface ResizeParams{
 export const ui = {
     getConf: async function (): Promise<any> {
         const res = await axios({
-            url: "/assets/theme-conf.js",
+            url: `/assets/theme-conf.js?v=${window['infrafrontVersion']}`,
             method: 'get',
             transformResponse: [data => data]
         });
