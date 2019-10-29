@@ -17,7 +17,9 @@ export * from './widget';
 export * from './me';
 export * from './libs';
 export * from './toasts';
+export * from "./embedder";
 //interfaces
+export { Embedder } from "./embedder";
 export { DatepickerDelegate } from "./ng-app";
 export { FolderTreeProps } from "./directives/folderTree"
 export { FolderPickerProps, FolderPickerSource, FolderPickerSourceBlob, FolderPickerSourceFile } from "./directives/folderPicker"
