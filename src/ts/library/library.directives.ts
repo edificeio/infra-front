@@ -9,6 +9,7 @@ import {
     LibraryPublicationResponse
 } from './library.types';
 import { idiom } from '../idiom';
+import { notify } from '../notify';
 
 ng.providers.push(libraryServiceProvider);
 
@@ -135,6 +136,8 @@ export class LibraryPublishController<R> {
                 resourceId: this.id
             };
             this.publication = Object.assign({}, defaultPublication, {...resourceInformation, cover, pdfUri});
+        }).catch(err => {
+            notify.error('bpr.cover.notfound');
         });
     }
 
