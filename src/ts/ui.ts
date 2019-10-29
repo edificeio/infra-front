@@ -297,7 +297,11 @@ let touchEvents = {
     },
     swipeElement: function (element, params) {
         //swipes
-        element.on('touchstart', function (e) {
+        element.on('touchstart', function (e)
+        {
+            if(e.originalEvent == null)
+                return;
+
             var initialMouse: any = {};
             var mouse = {
                 y: e.originalEvent.touches[0].clientY,
