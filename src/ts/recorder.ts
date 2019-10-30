@@ -147,13 +147,13 @@ export var recorder = (function () {
 				console.log("getUserMedia");
 				resolvedNavigatorModules.getUserMedia({ audio: true })
 					.then(handleMediaStream)
-					.catch(err => {})
+					.catch(err => { console.log("err:", err) })
 			} else if (resolvedNavigatorModules.getUserMediaLegacy !== undefined) {
 				console.log("getUserMediaLegacy");
 				// Legacy. To be working in that motherfu**ing IE 💩
 				resolvedNavigatorModules.getUserMediaLegacy({ audio: true },
 					handleMediaStream,
-					function (err) {}
+					function (err) { console.log("err:", err) }
 				)
 			}
 
