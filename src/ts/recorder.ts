@@ -25,6 +25,8 @@ const resolvedNavigatorModules = {
 
 export var recorder = (function () {
 
+	console.log("BIDULE");
+
 	var context,
 		ws = null,
 		intervalId,
@@ -110,7 +112,7 @@ export var recorder = (function () {
 
 			const handleMediaStream = mediaStream => {
 				console.log("handleMediaStream");
-				context = new AudioContext();
+				context = new (resolvedNavigatorModules.AudioContext)();
 				encoder.postMessage(["init", context.sampleRate])
 				var audioInput = context.createMediaStreamSource(mediaStream);
 				gainNode = context.createGain();
@@ -184,6 +186,7 @@ export var recorder = (function () {
 			notifyFollowers(this.status);
 		},
 		record: async function () {
+			console.log("record");
 			player.pause();
 			var that = this;
 			if (that.status == 'preparing') return;
@@ -196,8 +199,10 @@ export var recorder = (function () {
 					that.loadComponents();
 				}
 			} else {
-				ws = new WebSocket(getUrl(new AudioContext().sampleRate));
+				console.log("creating ws", );
+				ws = new WebSocket(getUrl(new (resolvedNavigatorModules.AudioContext)().sampleRate));
 				ws.onopen = function () {
+					console.log("ws created");
 					if (player.currentTime > 0) {
 						player.currentTime = 0;
 					}
