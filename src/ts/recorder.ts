@@ -199,7 +199,7 @@ export var recorder = (function () {
 					that.loadComponents();
 				}
 			} else {
-				console.log("creating ws", );
+				console.log("creating ws", resolvedNavigatorModules);
 				ws = new WebSocket(getUrl(new (resolvedNavigatorModules.AudioContext)().sampleRate));
 				ws.onopen = function () {
 					console.log("ws created");
