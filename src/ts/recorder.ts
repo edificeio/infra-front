@@ -5,17 +5,25 @@ import { notify } from './notify';
 declare const Zlib: any;
 
 let _zlib = null;
-async function getZlib(){
-	if(!_zlib){
+async function getZlib() {
+	if (!_zlib) {
 		_zlib = await httpPromisy().get('/infra/public/js/zlib.min.js');
 	}
 	return _zlib;
 }
-export var recorder = (function(){
-	//vendor prefixes
-	navigator.getUserMedia = navigator.getUserMedia || (navigator as any).webkitGetUserMedia ||
-		(navigator as any).mozGetUserMedia || (navigator as any).msGetUserMedia;
-	(window as any).AudioContext = (window as any).AudioContext || (window as any).webkitAudioContext;
+
+console.log("Use new recorder module");
+
+const resolvedNavigatorModules = {
+	getUserMediaLegacy: navigator.getUserMedia
+		|| (navigator as any).webkitGetUserMedia
+		|| (navigator as any).mozGetUserMedia
+		|| (navigator as any).msGetUserMedia,
+	getUserMedia: navigator.mediaDevices && navigator.mediaDevices.getUserMedia,
+	AudioContext: (window as any).AudioContext || (window as any).webkitAudioContext,
+}
+
+export var recorder = (function () {
 
 	var context,
 		ws = null,
@@ -35,24 +43,24 @@ export var recorder = (function(){
 		followers = [];
 
 	function uuid() {
-		return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-            var r = Math.random()*16|0, v = c == 'x' ? r : (r&0x3|0x8);
-            return v.toString(16);
-        });
+		return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+			var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+			return v.toString(16);
+		});
 	}
 
-	function getUrl(sampleRate:number){
-		const protocol = window.location.protocol === "https:" ? "wss": "ws";
+	function getUrl(sampleRate: number) {
+		const protocol = window.location.protocol === "https:" ? "wss" : "ws";
 		const base = protocol + "://" + window.location.host
 		return `${base}/audio/${uuid()}?sampleRate=${sampleRate}`;
 	}
 
 	function sendWavChunk() {
-		var	index = rightChannel.length;
+		var index = rightChannel.length;
 		if (!(index > lastIndex)) return;
 		encoder.postMessage(['chunk', leftChannel.slice(lastIndex, index), rightChannel.slice(lastIndex, index), (index - lastIndex) * bufferSize]);
-		encoder.onmessage = function(e) {
-			if(!compress){
+		encoder.onmessage = function (e) {
+			if (!compress) {
 				ws.send(e.data);
 				return;
 			}
@@ -60,7 +68,7 @@ export var recorder = (function(){
 			var deflate = new Zlib.Deflate(e.data);
 			ws.send(deflate.compress());
 			const endTime = parseInt(performance.now());
-			if(endTime - initialTime > 50){
+			if (endTime - initialTime > 50) {
 				compress = false;
 				ws.send('rawdata');
 			}
@@ -74,19 +82,19 @@ export var recorder = (function(){
 				ws.close()
 			}
 		}
-        clearWs();
+		clearWs();
 	}
 
 	function clearWs() {
 		ws = null;
-        leftChannel = [];
+		leftChannel = [];
 		rightChannel = [];
 		lastIndex = 0;
 	}
 
-	function notifyFollowers(status, data?){
-		followers.forEach(function(follower){
-			if(typeof follower === 'function'){
+	function notifyFollowers(status, data?) {
+		followers.forEach(function (follower) {
+			if (typeof follower === 'function') {
 				follower(status, data);
 			}
 		})
@@ -95,12 +103,10 @@ export var recorder = (function(){
 	return {
 		elapsedTime: 0,
 		loadComponents: function () {
-		    this.title = lang.translate('recorder.filename') + moment().format('DD/MM/YYYY');
+			this.title = lang.translate('recorder.filename') + moment().format('DD/MM/YYYY');
 			loaded = true;
-			
-			navigator.getUserMedia({
-			audio: true
-			}, function(mediaStream){
+
+			const handleMediaStream = mediaStream => {
 				context = new AudioContext();
 				encoder.postMessage(["init", context.sampleRate])
 				var audioInput = context.createMediaStreamSource(mediaStream);
@@ -108,14 +114,14 @@ export var recorder = (function(){
 				audioInput.connect(gainNode);
 
 				recorder = context.createScriptProcessor(bufferSize, 2, 2);
-				recorder.onaudioprocess = function(e){
-					if(this.status !== 'recording'){
+				recorder.onaudioprocess = function (e) {
+					if (this.status !== 'recording') {
 						return;
 					}
-					var left = new Float32Array(e.inputBuffer.getChannelData (0));
-					leftChannel.push (left);
-					var right = new Float32Array(e.inputBuffer.getChannelData (1));
-					rightChannel.push (right);
+					var left = new Float32Array(e.inputBuffer.getChannelData(0));
+					leftChannel.push(left);
+					var right = new Float32Array(e.inputBuffer.getChannelData(1));
+					rightChannel.push(right);
 
 					recordingLength += bufferSize;
 
@@ -126,131 +132,143 @@ export var recorder = (function(){
 					notifyFollowers(this.status);
 				}.bind(this);
 
-				gainNode.connect (recorder);
-				recorder.connect (context.destination);
+				gainNode.connect(recorder);
+				recorder.connect(context.destination);
+			}
 
-			}.bind(this), function(err){
+			if (resolvedNavigatorModules.getUserMedia !== undefined) {
+				resolvedNavigatorModules.getUserMedia({ audio: true })
+					.then(handleMediaStream)
+					.catch(err => {})
+			} else if (resolvedNavigatorModules.getUserMediaLegacy !== undefined) {
+				// Legacy. To be working in that motherfu**ing IE 💩
+				resolvedNavigatorModules.getUserMediaLegacy({ audio: true },
+					handleMediaStream,
+					function (err) {}
+				)
+			}
 
-			});
-			
 		},
-		isCompatible: function(){
-			return navigator.getUserMedia !== undefined && (window as any).AudioContext !==undefined;
+		isCompatible: function () {
+			return resolvedNavigatorModules.AudioContext !== undefined
+				&& (resolvedNavigatorModules.getUserMedia !== undefined
+					|| resolvedNavigatorModules.getUserMediaLegacy !== undefined
+				)
 		},
-		stop: function(){
+		stop: function () {
 			if (ws) {
 				ws.send("cancel");
 			}
 			this.status = 'idle';
 			player.pause();
-			if(player.currentTime > 0){
+			if (player.currentTime > 0) {
 				player.currentTime = 0;
 			}
 			leftChannel = [];
 			rightChannel = [];
 			notifyFollowers(this.status);
 		},
-		flush: function(){
+		flush: function () {
 			this.stop();
 			this.elapsedTime = 0;
 			leftChannel = [];
 			rightChannel = [];
 			notifyFollowers(this.status);
 		},
-		record: async function(){
+		record: async function () {
 			player.pause();
 			var that = this;
-			if(that.status=='preparing')return;
+			if (that.status == 'preparing') return;
 			that.status = 'preparing';
 			await getZlib();
 			if (ws) {
 				that.status = 'recording';
 				notifyFollowers(that.status);
-				if(!loaded){
+				if (!loaded) {
 					that.loadComponents();
 				}
 			} else {
 				ws = new WebSocket(getUrl(new AudioContext().sampleRate));
 				ws.onopen = function () {
-					if(player.currentTime > 0){
+					if (player.currentTime > 0) {
 						player.currentTime = 0;
 					}
 
 					that.status = 'recording';
 					notifyFollowers(that.status);
-					if(!compress){
+					if (!compress) {
 						ws.send('rawdata');
 					}
-					if(!loaded){
+					if (!loaded) {
 						that.loadComponents();
 					}
 				};
 				ws.onerror = function (event: ErrorEvent) {
 					console.log(event);
 					that.status = 'stop';
-                    notifyFollowers(that.status);
-                    closeWs();
-                    notify.error(event.error);
+					notifyFollowers(that.status);
+					closeWs();
+					notify.error(event.error);
 				}
-                ws.onmessage = (event) => {
-                	if (event.data && event.data.indexOf("error") !== -1) {
-                		console.log(event.data);
+				ws.onmessage = (event) => {
+					if (event.data && event.data.indexOf("error") !== -1) {
+						console.log(event.data);
 						closeWs();
 						notify.error(event.data);
-                	} else if (event.data && event.data === "ok" && this.status === "encoding") {
-                		closeWs();
-                		notify.info("recorder.saved");
+					} else if (event.data && event.data === "ok" && this.status === "encoding") {
+						closeWs();
+						notify.info("recorder.saved");
 						notifyFollowers('saved');
 						this.elapsedTime = 0;
-                	}
+					}
 
-                }
-                ws.onclose = function (event) {
-                	that.status = 'stop';
-                    notifyFollowers(that.status);
-                    clearWs();
-                }
+				}
+				ws.onclose = function (event) {
+					that.status = 'stop';
+					notifyFollowers(that.status);
+					clearWs();
+				}
 			}
 		},
-		pause: function(){
+		pause: function () {
 			this.status = 'paused';
 			player.pause();
 			notifyFollowers(this.status);
 		},
-		play: function(){
+		play: function () {
 			this.pause();
 			this.status = 'playing';
 			var encoder = new Worker('/infra/public/js/audioEncoder.js');
 			encoder.postMessage(['wav', rightChannel, leftChannel, recordingLength]);
-			encoder.onmessage = function(e) {
+			encoder.onmessage = function (e) {
 				player.src = window.URL.createObjectURL(e.data);
 				player.play();
 			};
 			notifyFollowers(this.status);
 		},
-		state: function(callback){
+		state: function (callback) {
 			followers.push(callback);
 		},
 		title: "",
 		status: 'idle',
-		save: function(){
+		save: function () {
 			sendWavChunk();
-			ws.send("save-" +  this.title);
+			ws.send("save-" + this.title);
 			this.status = 'encoding';
 			notifyFollowers(this.status);
 		},
-		mute: function(mute){
-			if(mute){
+		mute: function (mute) {
+			if (mute) {
 				gainNode.gain.value = 0;
 			}
-			else{
+			else {
 				gainNode.gain.value = 1;
 			}
 		}
 	}
 }());
 
-if(!(window as any).entcore){
+if (!(window as any).entcore) {
 	(window as any).entcore = {};
 }
 (window as any).entcore.recorder = recorder;
