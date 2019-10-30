@@ -12,7 +12,7 @@ async function getZlib() {
 	return _zlib;
 }
 
-console.log("Use new recorder module");
+// console.log("Use new recorder module");
 
 const resolvedNavigatorModules = {
 	getUserMediaLegacy: navigator.getUserMedia
@@ -24,8 +24,6 @@ const resolvedNavigatorModules = {
 }
 
 export var recorder = (function () {
-
-	console.log("BIDULE");
 
 	var context,
 		ws = null,
@@ -108,10 +106,7 @@ export var recorder = (function () {
 			this.title = lang.translate('recorder.filename') + moment().format('DD/MM/YYYY');
 			loaded = true;
 
-			console.log("RECORDER");
-
 			const handleMediaStream = mediaStream => {
-				console.log("handleMediaStream");
 				context = new (resolvedNavigatorModules.AudioContext)();
 				encoder.postMessage(["init", context.sampleRate])
 				var audioInput = context.createMediaStreamSource(mediaStream);
@@ -141,15 +136,11 @@ export var recorder = (function () {
 				recorder.connect(context.destination);
 			}
 
-			console.log("resolved :", resolvedNavigatorModules);
-
 			if (resolvedNavigatorModules.getUserMedia !== undefined) {
-				console.log("getUserMedia");
 				resolvedNavigatorModules.getUserMedia.call(navigator.mediaDevices, { audio: true })
 					.then(handleMediaStream)
 					.catch(err => { console.log("err:", err) })
 			} else if (resolvedNavigatorModules.getUserMediaLegacy !== undefined) {
-				console.log("getUserMediaLegacy");
 				// Legacy. Prevent crash in that motherfu**ing IE 💩
 				resolvedNavigatorModules.getUserMediaLegacy({ audio: true },
 					handleMediaStream,
@@ -159,7 +150,6 @@ export var recorder = (function () {
 
 		},
 		isCompatible: function () {
-			console.log("isCompatible ?");
 			return resolvedNavigatorModules.AudioContext !== undefined
 				&& (resolvedNavigatorModules.getUserMedia !== undefined
 					|| resolvedNavigatorModules.getUserMediaLegacy !== undefined
@@ -186,7 +176,6 @@ export var recorder = (function () {
 			notifyFollowers(this.status);
 		},
 		record: async function () {
-			console.log("record");
 			player.pause();
 			var that = this;
 			if (that.status == 'preparing') return;
@@ -199,10 +188,8 @@ export var recorder = (function () {
 					that.loadComponents();
 				}
 			} else {
-				console.log("creating ws", resolvedNavigatorModules);
 				ws = new WebSocket(getUrl(new (resolvedNavigatorModules.AudioContext)().sampleRate));
 				ws.onopen = function () {
-					console.log("ws created");
 					if (player.currentTime > 0) {
 						player.currentTime = 0;
 					}
