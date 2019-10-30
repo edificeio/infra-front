@@ -106,6 +106,8 @@ export var recorder = (function () {
 			this.title = lang.translate('recorder.filename') + moment().format('DD/MM/YYYY');
 			loaded = true;
 
+			console.log("RECORDER");
+
 			const handleMediaStream = mediaStream => {
 				console.log("handleMediaStream");
 				context = new AudioContext();
@@ -136,6 +138,8 @@ export var recorder = (function () {
 				gainNode.connect(recorder);
 				recorder.connect(context.destination);
 			}
+
+			console.log("resolved :", resolvedNavigatorModules);
 
 			if (resolvedNavigatorModules.getUserMedia !== undefined) {
 				console.log("getUserMedia");
