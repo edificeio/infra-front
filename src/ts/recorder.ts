@@ -107,6 +107,7 @@ export var recorder = (function () {
 			loaded = true;
 
 			const handleMediaStream = mediaStream => {
+				console.log("handleMediaStream");
 				context = new AudioContext();
 				encoder.postMessage(["init", context.sampleRate])
 				var audioInput = context.createMediaStreamSource(mediaStream);
@@ -137,10 +138,12 @@ export var recorder = (function () {
 			}
 
 			if (resolvedNavigatorModules.getUserMedia !== undefined) {
+				console.log("getUserMedia");
 				resolvedNavigatorModules.getUserMedia({ audio: true })
 					.then(handleMediaStream)
 					.catch(err => {})
 			} else if (resolvedNavigatorModules.getUserMediaLegacy !== undefined) {
+				console.log("getUserMediaLegacy");
 				// Legacy. To be working in that motherfu**ing IE 💩
 				resolvedNavigatorModules.getUserMediaLegacy({ audio: true },
 					handleMediaStream,
@@ -150,6 +153,7 @@ export var recorder = (function () {
 
 		},
 		isCompatible: function () {
+			console.log("isCompatible ?");
 			return resolvedNavigatorModules.AudioContext !== undefined
 				&& (resolvedNavigatorModules.getUserMedia !== undefined
 					|| resolvedNavigatorModules.getUserMediaLegacy !== undefined
