@@ -32,6 +32,7 @@ export const navigationGuardService = {
         }
         listener.start();
         const sub = listener.onChange.subscribe((navigation) => {
+            console.log("CHANGE");
             navigationGuardService.tryNavigate(navigation);
         });
         navigationGuardService._listeners.set(listener, sub);
@@ -82,12 +83,14 @@ export class InputGuard<T> implements INavigationGuard {
 //=== Listeners
 export class AngularJSRouteChangeListener implements INavigationListener {
     private static _instance: AngularJSRouteChangeListener = null;
-    private subscription: () => void;
+    private subscription: () => void = null;
     onChange = new Subject<INavigationInfo>();
     constructor(private $rootScope: any) { }
     start() {
         if (this.subscription) return;
         this.subscription = this.$rootScope.$on("$locationChangeStart", (event, next, current) => {
+            console.log("LCS");
+            console.log(event, next, current);
             //should be synchronous
             this.onChange.next({
                 accept() { },
@@ -113,23 +116,27 @@ export class DOMRouteChangeListener implements INavigationListener {
     private static _instance: DOMRouteChangeListener = null;
     onChange = new Subject<INavigationInfo>();
     private callback() {
-        let result = true;
+        let result = null;
         //should be synchronous
         this.onChange.next({
             accept() {
                 result = true;
             },
             reject() {
+                event.preventDefault();
+                event.returnValue = false;
                 result = false;
             }
         })
         return result;
     }
+    private boundCallback = null;
     start() {
-        window.addEventListener("beforeunload", this.callback, false);
+        this.boundCallback = this.callback.bind(this);
+        window.addEventListener("beforeunload", this.boundCallback, false);
     }
     stop() {
-        window.removeEventListener("beforeunload", this.callback);
+        window.removeEventListener("beforeunload", this.boundCallback);
     }
 
     static getInstance() {
@@ -137,5 +144,19 @@ export class DOMRouteChangeListener implements INavigationListener {
             DOMRouteChangeListener._instance = new DOMRouteChangeListener();
         }
         return DOMRouteChangeListener._instance;
+    }
+}
+
+export class TemplateRouteChangeListener implements INavigationListener {
+    private static _instance: TemplateRouteChangeListener = null;
+    onChange = new Subject<INavigationInfo>();
+    start() {}
+    stop() {}
+
+    static getInstance() {
+        if (TemplateRouteChangeListener._instance == null) {
+            TemplateRouteChangeListener._instance = new TemplateRouteChangeListener();
+        }
+        return TemplateRouteChangeListener._instance;
     }
 }
