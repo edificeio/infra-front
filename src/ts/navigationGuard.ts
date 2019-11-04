@@ -13,12 +13,19 @@ export interface INavigationListener {
 }
 
 export interface INavigationGuard {
+    reset(): void;
     canNavigate(): boolean;
 }
 
 export const navigationGuardService = {
     _listeners: new Map<INavigationListener, Subscription>(),
-    _guards: new Array<INavigationGuard>(),
+    _guards: new Set<INavigationGuard>(),
+    registerGuard(guard: INavigationGuard) {
+        navigationGuardService._guards.add(guard);
+    },
+    unregisterGuard(guard: INavigationGuard) {
+        navigationGuardService._guards.delete(guard);
+    },
     registerListener(listener: INavigationListener) {
         if (navigationGuardService._listeners.has(listener)) {
             return;
@@ -38,7 +45,7 @@ export const navigationGuardService = {
         }
     },
     tryNavigate(navigation: INavigationInfo) {
-        for (const guard of navigationGuardService._guards) {
+        for (const guard of Array.from(navigationGuardService._guards.values())) {
             if (!guard.canNavigate()) {
                 const can = confirm(idiom.translate("navigation.guard.text"));
                 if (can) {
@@ -50,26 +57,30 @@ export const navigationGuardService = {
             }
         }
         navigation.accept();
+    },
+    reset() {
+        for (const guard of Array.from(navigationGuardService._guards)) {
+            guard.reset();
+        }
     }
 }
 
 //=== Guards
-class InputTextGuard<T> implements INavigationGuard {
+export class InputGuard<T> implements INavigationGuard {
     reference: T;
-    currentValue: T;
-    constructor(private comparator: (a: T, b: T) => boolean = (a: T, b: T) => {
+    constructor(private currentValue: () => T, private resetter: () => T, private comparator: (a: T, b: T) => boolean = (a: T, b: T) => {
         return a == b;
     }) { }
-    reset(ref) {
-        this.reference = ref;
+    reset() {
+        this.reference = this.resetter();
     }
     canNavigate(): boolean {
-        return this.comparator(this.reference, this.currentValue);
+        return this.comparator(this.reference, this.currentValue());
     }
 }
 
 //=== Listeners
-class AngularJSRouteChangeListener implements INavigationListener {
+export class AngularJSRouteChangeListener implements INavigationListener {
     private static _instance: AngularJSRouteChangeListener = null;
     private subscription: () => void;
     onChange = new Subject<INavigationInfo>();
@@ -98,7 +109,7 @@ class AngularJSRouteChangeListener implements INavigationListener {
     }
 }
 
-class DOMRouteChangeListener implements INavigationListener {
+export class DOMRouteChangeListener implements INavigationListener {
     private static _instance: DOMRouteChangeListener = null;
     onChange = new Subject<INavigationInfo>();
     private callback() {
