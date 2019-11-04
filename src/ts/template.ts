@@ -1,12 +1,15 @@
 import { appPrefix } from './globals';
 import { skin } from './skin';
 import { $ } from "./libs/jquery/jquery";
+import { navigationGuardService, TemplateRouteChangeListener, INavigationInfo } from './navigationGuard';
 
 let appFolder = appPrefix;
 if(appFolder === 'userbook'){
 	appFolder = 'directory';
 }
 
+let navGuardListener: TemplateRouteChangeListener = new TemplateRouteChangeListener();
+navigationGuardService.registerListener(navGuardListener);
 
 export var template = {
 	viewPath: '/' + appFolder + '/public/template/',
@@ -32,7 +35,20 @@ export var template = {
 		this.containers['portal'] = {};
 		this.containers.portal['conversationUnread'] = this.getCompletePath('conversation-unread', true);
 	},
-	open: function(name:string, view?:string){
+	open: function(name: string, view?: string)
+	{
+		navGuardListener.onChange.next({
+			accept: function()
+			{
+				template._open(name, view);
+			},
+			reject: function()
+			{
+				// Do nothing
+			}
+		});
+	},
+	_open: function(name:string, view?:string){
 		if(!view){
 			view = name;
 		}
