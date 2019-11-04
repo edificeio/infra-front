@@ -27,6 +27,7 @@ export * from './inputdate';
 export * from './inputPassword';
 export * from './mediaLibrary';
 export * from './multiComboboxes';
+export * from "./navigationGuard";
 export * from './ngmodelextend';
 export * from './pastilles';
 export * from './searchUser';
