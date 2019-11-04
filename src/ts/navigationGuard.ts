@@ -54,14 +54,17 @@ export const navigationGuardService = {
 }
 
 //=== Guards
-class InputTextGuard implements INavigationGuard {
-    value: string;
-    reset() {
-        this.value = "";
+class InputTextGuard<T> implements INavigationGuard {
+    reference: T;
+    currentValue: T;
+    constructor(private comparator: (a: T, b: T) => boolean = (a: T, b: T) => {
+        return a == b;
+    }) { }
+    reset(ref) {
+        this.reference = ref;
     }
     canNavigate(): boolean {
-        const hasText = (this.value && this.value.trim().length > 0);
-        return !hasText;
+        return this.comparator(this.reference, this.currentValue);
     }
 }
 
