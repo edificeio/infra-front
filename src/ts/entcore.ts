@@ -10,6 +10,7 @@ export * from './workspace/index';
 export * from './skin';
 export * from './editor';
 export * from './modelDefinitions';
+export * from './navigationGuard';
 export * from './sniplets';
 export * from './rights';
 export * from './ng-start';
