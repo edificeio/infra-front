@@ -1,6 +1,12 @@
 import { Subject, Subscription } from "rxjs";
 import { idiom } from "./idiom";
 
+
+function setToArray<T>(s: Set<T>): T[] {
+    const res = [];
+    s.forEach(g => res.push(g));
+    return res;
+}
 export interface INavigationInfo {
     accept(): void;
     reject(): void;
@@ -18,6 +24,9 @@ export interface INavigationGuard {
 }
 
 export const navigationGuardService = {
+    debounceMs: 1000, //1000ms
+    _lastTime: null,
+    _lastResponse: null,
     _listeners: new Map<INavigationListener, Subscription>(),
     _guards: new Set<INavigationGuard>(),
     registerGuard(guard: INavigationGuard) {
@@ -32,7 +41,6 @@ export const navigationGuardService = {
         }
         listener.start();
         const sub = listener.onChange.subscribe((navigation) => {
-            console.log("CHANGE");
             navigationGuardService.tryNavigate(navigation);
         });
         navigationGuardService._listeners.set(listener, sub);
@@ -46,9 +54,24 @@ export const navigationGuardService = {
         }
     },
     tryNavigate(navigation: INavigationInfo) {
-        for (const guard of Array.from(navigationGuardService._guards.values())) {
+        //debounce
+        const lastTime = navigationGuardService._lastTime || 0;
+        const currentTime = new Date().getTime();
+        const duration = currentTime - lastTime;
+        const lastResponse = navigationGuardService._lastResponse;
+        if (lastResponse != null && duration < navigationGuardService.debounceMs) {
+            console.log("reuse response: ", lastResponse);
+            if (lastResponse) navigation.accept();
+            else navigation.reject();
+            return;
+        }
+        //try navigate
+        const guards = setToArray(navigationGuardService._guards);
+        for (const guard of guards) {
             if (!guard.canNavigate()) {
                 const can = confirm(idiom.translate("navigation.guard.text"));
+                navigationGuardService._lastTime = new Date().getTime();
+                navigationGuardService._lastResponse = can;
                 if (can) {
                     navigation.accept();
                 } else {
@@ -60,7 +83,8 @@ export const navigationGuardService = {
         navigation.accept();
     },
     reset() {
-        for (const guard of Array.from(navigationGuardService._guards)) {
+        const guards = setToArray(navigationGuardService._guards);
+        for (const guard of guards) {
             guard.reset();
         }
     }
@@ -89,8 +113,6 @@ export class AngularJSRouteChangeListener implements INavigationListener {
     start() {
         if (this.subscription) return;
         this.subscription = this.$rootScope.$on("$locationChangeStart", (event, next, current) => {
-            console.log("LCS");
-            console.log(event, next, current);
             //should be synchronous
             this.onChange.next({
                 accept() { },
@@ -150,8 +172,8 @@ export class DOMRouteChangeListener implements INavigationListener {
 export class TemplateRouteChangeListener implements INavigationListener {
     private static _instance: TemplateRouteChangeListener = null;
     onChange = new Subject<INavigationInfo>();
-    start() {}
-    stop() {}
+    start() { }
+    stop() { }
 
     static getInstance() {
         if (TemplateRouteChangeListener._instance == null) {
@@ -160,3 +182,8 @@ export class TemplateRouteChangeListener implements INavigationListener {
         return TemplateRouteChangeListener._instance;
     }
 }
+
+if (!window.entcore) {
+    window.entcore = {};
+}
+window.entcore.navigationGuardService = navigationGuardService;
