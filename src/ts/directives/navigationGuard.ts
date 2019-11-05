@@ -3,14 +3,44 @@ import { INavigationGuard, InputGuard, navigationGuardService, AngularJSRouteCha
 import { Element } from "../workspace/model";
 
 
-export const guardRootDirective: Directive = ng.directive('guardRoot', () => {
+export const guardRootDirective: Directive = ng.directive('guardRoot', () =>
+{
     return {
         restrict: 'A',
-        link: function (scope, element, attrs, ngModel) {
-            navigationGuardService.registerListener(new AngularJSRouteChangeListener(scope.$root));
-            navigationGuardService.registerListener(new DOMRouteChangeListener());
+        controller: ["$scope", "$attrs", function ($scope, $attrs)
+        {
 
-        }
+            let rootID: string;
+            if($attrs.guardRoot != null && $attrs.guardRoot != "")
+                rootID = $attrs.guardRoot;
+            else
+                rootID = navigationGuardService.generateID();
+
+            let angularRCL = AngularJSRouteChangeListener.getInstance($scope.$root);
+            navigationGuardService.registerListener(angularRCL);
+            navigationGuardService.registerListener(DOMRouteChangeListener.getInstance());
+
+            $scope.$on("$destroy", function()
+            {
+                navigationGuardService.unregisterListener(angularRCL);
+                navigationGuardService.unregisterRoot(rootID);
+            });
+
+            this.registerGuard = function(guard: INavigationGuard)
+            {
+                navigationGuardService.registerGuard(rootID, guard);
+            };
+
+            this.unregisterGuard = function(guard: INavigationGuard)
+            {
+                navigationGuardService.unregisterGuard(rootID, guard);
+            };
+
+            this.reset = function()
+            {
+                navigationGuardService.reset(rootID);
+            };
+        }],
     }
 });
 
@@ -19,27 +49,64 @@ function generateGuardDirective(directiveName: string, guardFactory: (scope, ele
     return ng.directive(directiveName, () =>
     {
         return {
-            require: 'ngModel',
+            require: [ 'ngModel', '?^^guardRoot' ],
             restrict: 'A',
-            link: function(scope, element, attrs, ngModel)
+            link: function(scope, element, attrs, requires)
             {
+                let ngModel = requires[0];
+                let root = requires[1];
                 const guard = guardFactory(scope, element, attrs, ngModel);
 
                 if(guard != null)
                 {
-                    navigationGuardService.registerGuard(guard);
-                    scope.$on("$destroy", function()
+                    if(root != null)
                     {
-                        navigationGuardService.unregisterGuard(guard);
-                    });   
+                        root.registerGuard(guard);
+                        scope.$on("$destroy", function()
+                        {
+                            root.unregisterGuard(guard);
+                        });
+                    }
+                    else
+                    {
+                        let id: string = navigationGuardService.registerIndependantGuard(guard);
+                        scope.$on("$destroy", function()
+                        {
+                            navigationGuardService.unregisterIndependantGuard(id);
+                        });
+                    }
                 }
             },
         };
     });
 };
 
-export const resetGuardDirective: Directive = generateGuardDirective('resetGuard', () => {
-    return null;
+export const resetGuardDirective: Directive = ng.directive('resetGuard', () =>
+{
+    return {
+        require: '?^^guardRoot',
+        restrict: 'A',
+        link: function(scope, element, attrs, root)
+        {
+            let resetID = attrs.resetGuard;
+            element.on("click", function()
+            {
+                if(resetID != null && resetID != "")
+                {
+                    navigationGuardService.reset(resetID);
+                }
+                else if(root != null)
+                {
+                    root.reset();
+                }
+                else
+                {
+                    console.warn("A reset directive has no root, resetting all guards...");
+                    navigationGuardService.resetAll();
+                }
+            });
+        }
+    };
 });
 
 export const inputGuardDirective: Directive = generateGuardDirective('inputGuard', (scope, element, attrs, ngModel) => {
