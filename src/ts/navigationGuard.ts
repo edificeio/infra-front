@@ -28,13 +28,50 @@ export const navigationGuardService = {
     _lastTime: null,
     _lastResponse: null,
     _listeners: new Map<INavigationListener, Subscription>(),
-    _guards: new Set<INavigationGuard>(),
-    registerGuard(guard: INavigationGuard) {
-        navigationGuardService._guards.add(guard);
+    _guards: new Map<string, Set<INavigationGuard>>(),
+
+    _id_counter: 0,
+    generateID(): string
+    {
+        return "__auto_guard_id_" + (navigationGuardService._id_counter++);
     },
-    unregisterGuard(guard: INavigationGuard) {
-        navigationGuardService._guards.delete(guard);
+
+    _getGuardsMapByID(rootID: string): Set<INavigationGuard>
+    {
+        let res = navigationGuardService._guards.get(rootID);
+        return res != null ? res : new Set<INavigationGuard>();
     },
+
+    registerGuard(rootID: string, guard: INavigationGuard)
+    {
+        let gmap = navigationGuardService._getGuardsMapByID(rootID);
+        gmap.add(guard);
+        navigationGuardService._guards.set(rootID, gmap);
+    },
+    unregisterGuard(rootID: string, guard: INavigationGuard)
+    {
+        let gmap = navigationGuardService._getGuardsMapByID(rootID);
+        gmap.delete(guard);
+        if(gmap.size == 0)
+            navigationGuardService.unregisterRoot(rootID);
+    },
+    unregisterRoot(rootID: string)
+    {
+        navigationGuardService._guards.delete(rootID);
+    },
+
+    registerIndependantGuard(guard: INavigationGuard): string
+    {
+        let fakeRoot: string = navigationGuardService.generateID();
+        navigationGuardService.registerGuard(fakeRoot, guard);
+        return fakeRoot;
+    },
+
+    unregisterIndependantGuard(guardID: string): void
+    {
+        navigationGuardService.unregisterRoot(guardID);
+    },
+
     registerListener(listener: INavigationListener) {
         if (navigationGuardService._listeners.has(listener)) {
             return;
@@ -53,7 +90,8 @@ export const navigationGuardService = {
             navigationGuardService._listeners.delete(listener);
         }
     },
-    tryNavigate(navigation: INavigationInfo) {
+    tryNavigate(navigation: INavigationInfo)
+    {
         //debounce
         const lastTime = navigationGuardService._lastTime || 0;
         const currentTime = new Date().getTime();
@@ -66,27 +104,36 @@ export const navigationGuardService = {
             return;
         }
         //try navigate
-        const guards = setToArray(navigationGuardService._guards);
-        for (const guard of guards) {
-            if (!guard.canNavigate()) {
-                const can = confirm(idiom.translate("navigation.guard.text"));
-                navigationGuardService._lastTime = new Date().getTime();
-                navigationGuardService._lastResponse = can;
-                if (can) {
-                    navigation.accept();
-                } else {
-                    navigation.reject();
+        for(const root of Array.from(navigationGuardService._guards.values()))
+        {
+            for (const guard of setToArray(root))
+            {
+                if (!guard.canNavigate()) {
+                    const can = confirm(idiom.translate("navigation.guard.text"));
+                    navigationGuardService._lastTime = new Date().getTime();
+                    navigationGuardService._lastResponse = can;
+                    if (can) {
+                        navigation.accept();
+                    } else {
+                        navigation.reject();
+                    }
+                    return;
                 }
-                return;
             }
         }
         navigation.accept();
     },
-    reset() {
-        const guards = setToArray(navigationGuardService._guards);
+    reset(rootID: string)
+    {
+        const guards = setToArray(navigationGuardService._getGuardsMapByID(rootID));
         for (const guard of guards) {
             guard.reset();
         }
+    },
+    resetAll()
+    {
+        for(const id of Array.from(navigationGuardService._guards.keys()))
+            navigationGuardService.reset(id);
     }
 }
 
@@ -109,7 +156,14 @@ export class AngularJSRouteChangeListener implements INavigationListener {
     private static _instance: AngularJSRouteChangeListener = null;
     private subscription: () => void = null;
     onChange = new Subject<INavigationInfo>();
-    constructor(private $rootScope: any) { }
+    constructor(private $rootScope: any)
+    {
+        let self = this;
+        $rootScope.$on("$destroy", function()
+        {
+            navigationGuardService.unregisterListener(self);
+        });
+    }
     start() {
         if (this.subscription) return;
         this.subscription = this.$rootScope.$on("$locationChangeStart", (event, next, current) => {
