@@ -127,7 +127,7 @@ export class LibraryPublishController<R> {
                 cover: null,
                 description: '',
                 keyWords: '',
-                language: 'Français',
+                language: 'fr_FR',
                 subjectArea: [],
                 application: '',
                 pdfUri: '',
