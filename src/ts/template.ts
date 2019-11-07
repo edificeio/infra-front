@@ -8,12 +8,15 @@ if(appFolder === 'userbook'){
 	appFolder = 'directory';
 }
 
-let navGuardListener: TemplateRouteChangeListener = new TemplateRouteChangeListener();
+let navGuardListener: TemplateRouteChangeListener = TemplateRouteChangeListener.getInstance();
 navigationGuardService.registerListener(navGuardListener);
 
 export var template = {
 	viewPath: '/' + appFolder + '/public/template/',
 	containers: {} as any,
+	callbacks: {},
+	_guardIgnores: [],
+
 	getCompletePath(view:string, isPortal?:boolean):string {
 		const split = $('#context').attr('src').split('-');
 		const hash = split[split.length - 1].split('.')[0];
@@ -37,6 +40,14 @@ export var template = {
 	},
 	open: function(name: string, view?: string)
 	{
+		for(let i = this._guardIgnores.length; i-- > 0;)
+		{
+			if(this._guardIgnores[i] == name)
+			{
+				template._open(name, view);
+				return;
+			}
+		}
 		navGuardListener.onChange.next({
 			accept: function()
 			{
@@ -96,7 +107,30 @@ export var template = {
 			this.callbacks[container] = [];
 		}
 		this.callbacks[container].push(fn);
-	}
+	},
+	unwatch: function(container, fn)
+	{
+		if(typeof fn !== 'function'){
+			throw TypeError('template.unwatch(string, function) called with wrong parameters');
+		}
+		if(this.callbacks != null && this.callbacks[container] != null)
+		{
+			let cbCont = this.callbacks[container];
+			for(let i = cbCont.length; i-- > 0;)
+				if(cbCont[i] == fn)
+					cbCont.splice(i, 1);
+		}
+	},
+	addIgnoreGuard: function(name)
+	{
+		this._guardIgnores.push(name);
+	},
+	removeIgnoreGuard: function(name)
+	{
+		for(let i = this._guardIgnores.length; i-- > 0;)
+			if(this._guardIgnores[i] == name)
+				this._guardIgnores.splice(i, 1);
+	},
 };
 
 
