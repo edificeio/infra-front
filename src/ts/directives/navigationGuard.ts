@@ -1,3 +1,4 @@
+import { template } from "../template";
 import { Directive, ng } from "../ng-start";
 import { INavigationGuard, InputGuard, navigationGuardService, AngularJSRouteChangeListener, DOMRouteChangeListener, ObjectGuard } from "../navigationGuard";
 import { Element } from "../workspace/model";
@@ -108,13 +109,33 @@ export const resetGuardDirective: Directive = ng.directive('resetGuard', () => {
     };
 });
 
+export const guardIgnoreTemplate: Directive = ng.directive('guardIgnoreTemplate', function()
+{
+    return {
+        require: "container",
+        restrict: "A",
+        link: function(scope, element, attrs, container)
+        {
+            let templateName = container.template;
+
+            if(templateName == null)
+                console.error("Container directive doesn't have a template attribute. Did its implementation change ?");
+            else
+            {
+                template.addIgnoreGuard(templateName);
+                scope.$on("$destroy", function() { template.removeIgnoreGuard(templateName); });
+            }
+        }
+    };
+});
+
 export const inputGuardDirective: Directive = generateGuardDirective('inputGuard', (scope, element, attrs, ngModel) => {
     return new InputGuard<any>(() => ngModel.$viewValue, () => ngModel.$viewValue);
 });
 
 export const documentGuardDirective: Directive = generateGuardDirective('documentGuard', (scope, element, attrs, ngModel) => {
-    return new InputGuard<Element>(() => ngModel.$modelValue && ngModel.$modelValue.id,
-        () => ngModel.$modelValue ? ngModel.$modelValue.id : undefined,
+    return new InputGuard<Element>(() => typeof ngModel.$modelValue == "object" ? ngModel.$modelValue && ngModel.$modelValue.id : ngModel.$modelValue,
+        () => typeof ngModel.$modelValue == "object" ? ngModel.$modelValue ? ngModel.$modelValue.id : undefined : ngModel.$modelValue,
         (a, b) => {
             if (a && b) {
                 return a._id == b._id;

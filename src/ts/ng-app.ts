@@ -168,23 +168,29 @@ module.directive('container', ['$timeout', function($timeout){
 		restrict: 'E',
 		scope: true,
 		template: '<div ng-include="templateContainer"></div>',
-		link: function(scope, element, attributes){
+		controller: ["$scope", "$attrs", function(scope, attributes){
 			scope.tpl = template;
 
-			template.watch(attributes.template, function(){
+			let attrTemplate = attributes.template;
+			this.template = attrTemplate;
+
+			let fct: () => void = function(){
 				//use timeout to force reload template (like a scope.apply)
 				$timeout(function(){
-					scope.templateContainer = template.containers[attributes.template];
+					scope.templateContainer = template.containers[attrTemplate];
 					if(scope.templateContainer === 'empty'){
 						scope.templateContainer = undefined;
 					}
 				},0)
-			});
+			};
 
-			if(attributes.template){
-				scope.templateContainer = template.containers[attributes.template];
+			template.watch(attrTemplate, fct);
+			scope.$on("$destroy", function() { console.log("SCOPE: " + attrTemplate); template.unwatch(attrTemplate, fct); });
+
+			if(attrTemplate){
+				scope.templateContainer = template.containers[attrTemplate];
 			}
-		}
+		}]
 	}
 }]);
 
