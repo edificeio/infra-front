@@ -31,44 +31,37 @@ export const navigationGuardService = {
     _guards: new Map<string, Set<INavigationGuard>>(),
 
     _id_counter: 0,
-    generateID(): string
-    {
+    generateID(): string {
         return "__auto_guard_id_" + (navigationGuardService._id_counter++);
     },
 
-    _getGuardsMapByID(rootID: string): Set<INavigationGuard>
-    {
+    _getGuardsMapByID(rootID: string): Set<INavigationGuard> {
         let res = navigationGuardService._guards.get(rootID);
         return res != null ? res : new Set<INavigationGuard>();
     },
 
-    registerGuard(rootID: string, guard: INavigationGuard)
-    {
+    registerGuard(rootID: string, guard: INavigationGuard) {
         let gmap = navigationGuardService._getGuardsMapByID(rootID);
         gmap.add(guard);
         navigationGuardService._guards.set(rootID, gmap);
     },
-    unregisterGuard(rootID: string, guard: INavigationGuard)
-    {
+    unregisterGuard(rootID: string, guard: INavigationGuard) {
         let gmap = navigationGuardService._getGuardsMapByID(rootID);
         gmap.delete(guard);
-        if(gmap.size == 0)
+        if (gmap.size == 0)
             navigationGuardService.unregisterRoot(rootID);
     },
-    unregisterRoot(rootID: string)
-    {
+    unregisterRoot(rootID: string) {
         navigationGuardService._guards.delete(rootID);
     },
 
-    registerIndependantGuard(guard: INavigationGuard): string
-    {
+    registerIndependantGuard(guard: INavigationGuard): string {
         let fakeRoot: string = navigationGuardService.generateID();
         navigationGuardService.registerGuard(fakeRoot, guard);
         return fakeRoot;
     },
 
-    unregisterIndependantGuard(guardID: string): void
-    {
+    unregisterIndependantGuard(guardID: string): void {
         navigationGuardService.unregisterRoot(guardID);
     },
 
@@ -90,8 +83,7 @@ export const navigationGuardService = {
             navigationGuardService._listeners.delete(listener);
         }
     },
-    tryNavigate(navigation: INavigationInfo)
-    {
+    tryNavigate(navigation: INavigationInfo) {
         //debounce
         const lastTime = navigationGuardService._lastTime || 0;
         const currentTime = new Date().getTime();
@@ -104,10 +96,8 @@ export const navigationGuardService = {
             return;
         }
         //try navigate
-        for(const root of Array.from(navigationGuardService._guards.values()))
-        {
-            for (const guard of setToArray(root))
-            {
+        for (const root of Array.from(navigationGuardService._guards.values())) {
+            for (const guard of setToArray(root)) {
                 if (!guard.canNavigate()) {
                     const can = confirm(idiom.translate("navigation.guard.text"));
                     navigationGuardService._lastTime = new Date().getTime();
@@ -123,16 +113,14 @@ export const navigationGuardService = {
         }
         navigation.accept();
     },
-    reset(rootID: string)
-    {
+    reset(rootID: string) {
         const guards = setToArray(navigationGuardService._getGuardsMapByID(rootID));
         for (const guard of guards) {
             guard.reset();
         }
     },
-    resetAll()
-    {
-        for(const id of Array.from(navigationGuardService._guards.keys()))
+    resetAll() {
+        for (const id of Array.from(navigationGuardService._guards.keys()))
             navigationGuardService.reset(id);
     }
 }
@@ -151,16 +139,29 @@ export class InputGuard<T> implements INavigationGuard {
     }
 }
 
+export interface IObjectGuardDelegate {
+    guardObjectIsDirty(): boolean;
+    guardObjectReset(): void;
+}
+
+export class ObjectGuard implements INavigationGuard {
+    constructor(private currentValue: () => IObjectGuardDelegate) { }
+    reset() {
+        this.currentValue().guardObjectReset();
+    }
+    canNavigate(): boolean {
+        return !this.currentValue().guardObjectIsDirty();
+    }
+}
+
 //=== Listeners
 export class AngularJSRouteChangeListener implements INavigationListener {
     private static _instance: AngularJSRouteChangeListener = null;
     private subscription: () => void = null;
     onChange = new Subject<INavigationInfo>();
-    constructor(private $rootScope: any)
-    {
+    constructor(private $rootScope: any) {
         let self = this;
-        $rootScope.$on("$destroy", function()
-        {
+        $rootScope.$on("$destroy", function () {
             navigationGuardService.unregisterListener(self);
         });
     }
