@@ -50,6 +50,7 @@ function generateGuardDirective(directiveName: string, guardFactory: (scope, ele
                 const guard = guardFactory(scope, element, attrs, ngModel);
 
                 if (guard != null) {
+                    guard.reset();
                     if (root != null) {
                         root.registerGuard(guard);
                         scope.$on("$destroy", function () {
@@ -109,33 +110,30 @@ export const resetGuardDirective: Directive = ng.directive('resetGuard', () => {
     };
 });
 
-export const guardIgnoreTemplate: Directive = ng.directive('guardIgnoreTemplate', function()
-{
+export const guardIgnoreTemplate: Directive = ng.directive('guardIgnoreTemplate', function () {
     return {
         require: "container",
         restrict: "A",
-        link: function(scope, element, attrs, container)
-        {
+        link: function (scope, element, attrs, container) {
             let templateName = container.template;
 
-            if(templateName == null)
+            if (templateName == null)
                 console.error("Container directive doesn't have a template attribute. Did its implementation change ?");
-            else
-            {
+            else {
                 template.addIgnoreGuard(templateName);
-                scope.$on("$destroy", function() { template.removeIgnoreGuard(templateName); });
+                scope.$on("$destroy", function () { template.removeIgnoreGuard(templateName); });
             }
         }
     };
 });
 
 export const inputGuardDirective: Directive = generateGuardDirective('inputGuard', (scope, element, attrs, ngModel) => {
-    return new InputGuard<any>(() => ngModel.$viewValue, () => ngModel.$viewValue);
+    return new InputGuard<any>(() => ngModel.$viewValue || "", () => ngModel.$viewValue || "");
 });
 
 export const documentGuardDirective: Directive = generateGuardDirective('documentGuard', (scope, element, attrs, ngModel) => {
-    return new InputGuard<Element>(() => typeof ngModel.$modelValue == "object" ? ngModel.$modelValue && ngModel.$modelValue.id : ngModel.$modelValue,
-        () => typeof ngModel.$modelValue == "object" ? ngModel.$modelValue ? ngModel.$modelValue.id : undefined : ngModel.$modelValue,
+    return new InputGuard<Element>(() => typeof ngModel.$modelValue == "object" ? ngModel.$modelValue.id || "" : "",
+        () => typeof ngModel.$modelValue == "object" ? ngModel.$modelValue.id || "" : "",
         (a, b) => {
             if (a && b) {
                 return a._id == b._id;
