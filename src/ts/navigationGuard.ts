@@ -7,6 +7,16 @@ function setToArray<T>(s: Set<T>): T[] {
     s.forEach(g => res.push(g));
     return res;
 }
+function mapValuesToArray<KEY, T>(s: Map<KEY, T>): T[] {
+    const res: T[] = [];
+    s.forEach((value, _) => res.push(value));
+    return res;
+}
+function mapKeysToArray<KEY, T>(s: Map<KEY, T>): KEY[] {
+    const res: KEY[] = [];
+    s.forEach((_, key) => res.push(key));
+    return res;
+}
 export interface INavigationInfo {
     accept(): void;
     reject(): void;
@@ -96,7 +106,7 @@ export const navigationGuardService = {
             return;
         }
         //try navigate
-        for (const root of Array.from(navigationGuardService._guards.values())) {
+        for (const root of mapValuesToArray(navigationGuardService._guards)) {
             for (const guard of setToArray(root)) {
                 if (!guard.canNavigate()) {
                     const can = confirm(idiom.translate("navigation.guard.text"));
@@ -120,7 +130,7 @@ export const navigationGuardService = {
         }
     },
     resetAll() {
-        for (const id of Array.from(navigationGuardService._guards.keys()))
+        for (const id of mapKeysToArray(navigationGuardService._guards))
             navigationGuardService.reset(id);
     }
 }
