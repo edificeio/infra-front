@@ -18,14 +18,14 @@
  ~
  -->
 
-<div ng-if="display.editDocument">
+<div ng-show="display.editDocument">
 	<image-editor document="display.editedDocument" show="display.editDocument" inline></image-editor>
 </div>
-<div ng-if="!display.editDocument">
+<div ng-show="!display.editDocument">
 	<h2>[[title()]]</h2>
 	<section class="row media-library">
 		<section class="twelve cell tabs row">
-			<header ng-repeat="header in headers()" ng-class="{'selected':isSelectedHeader(header)}" ng-click="showHeader(header)" workflow="[[header.worflowKey]]" ng-if="header.visible()">
+			<header ng-repeat="header in headers()" ng-class="{'selected':isSelectedHeader(header)}" ng-click="showHeader(header)" workflow="[[header.worflowKey]]" ng-show="header.visible()">
 				<span translate content="[[header.i18Key]]"></span>
 			</header>
 			<section class="medium-text">

@@ -185,7 +185,7 @@ module.directive('container', ['$timeout', function($timeout){
 			};
 
 			template.watch(attrTemplate, fct);
-			scope.$on("$destroy", function() { console.log("SCOPE: " + attrTemplate); template.unwatch(attrTemplate, fct); });
+			scope.$on("$destroy", function() { template.unwatch(attrTemplate, fct); });
 
 			if(attrTemplate){
 				scope.templateContainer = template.containers[attrTemplate];
