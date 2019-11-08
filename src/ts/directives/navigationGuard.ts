@@ -81,7 +81,7 @@ function generateGuardDirective(directiveName: string, guardFactory: (scope, ele
 
 export const resetGuardDirective: Directive = ng.directive('resetGuard', () => {
     return {
-        require: '?^^guardRoot',
+        require: '?^guardRoot',
         restrict: 'A',
         link: function (scope, element, attrs, root) {
             let resetID = attrs.resetGuardId;
