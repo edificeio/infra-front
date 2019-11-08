@@ -100,7 +100,6 @@ export const navigationGuardService = {
         const duration = currentTime - lastTime;
         const lastResponse = navigationGuardService._lastResponse;
         if (lastResponse != null && duration < navigationGuardService.debounceMs) {
-            console.log("reuse response: ", lastResponse);
             if (lastResponse) navigation.accept();
             else navigation.reject();
             return;
@@ -139,15 +138,12 @@ export const navigationGuardService = {
 export class InputGuard<T> implements INavigationGuard {
     reference: T;
     constructor(private currentValue: () => T, private resetter: () => T, private comparator: (a: T, b: T) => boolean = (a: T, b: T) => {
-        console.log("a,b, ", a, b)
-        if (isNaN(a as any) && isNaN(b as any)) return true;
         return a == b;
     }) { }
     reset() {
         this.reference = this.resetter();
     }
     canNavigate(): boolean {
-        console.log(this, this.reference, this.currentValue())
         return this.comparator(this.reference, this.currentValue());
     }
 }
