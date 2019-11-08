@@ -139,12 +139,15 @@ export class InputGuard<T> implements INavigationGuard {
     reference: T;
     constructor(private currentValue: () => T, private resetter: () => T, private comparator: (a: T, b: T) => boolean = (a: T, b: T) => {
         return a == b;
-    }) { }
+    }) { this.reset(); }
+    unNaN(val) {
+        return typeof val == "number" && isNaN(val) == true ? null : val;
+    }
     reset() {
         this.reference = this.resetter();
     }
     canNavigate(): boolean {
-        return this.comparator(this.reference, this.currentValue());
+        return this.comparator(this.unNaN(this.reference), this.unNaN(this.currentValue()));
     }
 }
 
