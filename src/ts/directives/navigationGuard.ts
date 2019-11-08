@@ -1,6 +1,6 @@
 import { template } from "../template";
 import { Directive, ng } from "../ng-start";
-import { INavigationGuard, InputGuard, navigationGuardService, AngularJSRouteChangeListener, DOMRouteChangeListener, ObjectGuard } from "../navigationGuard";
+import { INavigationGuard, InputGuard, navigationGuardService, AngularJSRouteChangeListener, DOMRouteChangeListener, ObjectGuard, ManualChangeListener } from "../navigationGuard";
 import { Element } from "../workspace/model";
 
 
@@ -159,4 +159,32 @@ export const documentGuardDirective: Directive = generateGuardDirective('documen
 
 export const customGuardDirective: Directive = generateGuardDirective('customGuard', (scope, element, attrs) => {
     return new ObjectGuard(() => scope.$eval(attrs.customGuard));
+});
+
+export const navigationTrigger: Directive = ng.directive('navigationTrigger', function () {
+    return {
+        restrict: "A",
+        link: function (scope, element, attrs) {
+            const listener = new ManualChangeListener;
+            navigationGuardService.registerListener(listener);
+            const trigger = (e:Event) => {
+                e && e.preventDefault();
+                listener.onChange.next({
+                    accept() {
+                        scope.$eval(attrs.navigationTrigger)
+                    },
+                    reject() { }
+                })
+            }
+            const bind = () => {
+                element.on("click", trigger)
+                return () => element.off("click", trigger)
+            }
+            const unbind = bind();
+            scope.$on("$destroy", function () {
+                navigationGuardService.unregisterListener(listener);
+                unbind();
+            });
+        }
+    };
 });
