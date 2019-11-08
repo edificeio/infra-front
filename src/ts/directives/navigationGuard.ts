@@ -48,9 +48,19 @@ function generateGuardDirective(directiveName: string, guardFactory: (scope, ele
                 let ngModel = requires[0];
                 let root = requires[1];
                 const guard = guardFactory(scope, element, attrs, ngModel);
-
+                let count = 0;
                 if (guard != null) {
-                    guard.reset();
+                    if (ngModel) {
+                        ngModel.$formatters.push((value) => {
+                            if (count == 0) {
+                                setTimeout(() => guard.reset());
+                                count++;
+                            }
+                            return value;
+                        });
+                    } else {
+                        setTimeout(() => guard.reset());
+                    }
                     if (root != null) {
                         root.registerGuard(guard);
                         scope.$on("$destroy", function () {
@@ -129,6 +139,10 @@ export const guardIgnoreTemplate: Directive = ng.directive('guardIgnoreTemplate'
 
 export const inputGuardDirective: Directive = generateGuardDirective('inputGuard', (scope, element, attrs, ngModel) => {
     return new InputGuard<any>(() => ngModel.$viewValue || "", () => ngModel.$viewValue || "");
+});
+
+export const dirtyGuardDirective: Directive = generateGuardDirective('dirtyGuard', (scope, element, attrs, ngModel) => {
+    return new InputGuard<any>(() => ngModel.$dirty, () => false);
 });
 
 export const documentGuardDirective: Directive = generateGuardDirective('documentGuard', (scope, element, attrs, ngModel) => {
