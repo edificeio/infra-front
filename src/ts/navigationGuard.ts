@@ -247,6 +247,14 @@ export class TemplateRouteChangeListener implements INavigationListener {
     }
 }
 
+export class ManualChangeListener implements INavigationListener {
+    onChange = new Subject<INavigationInfo>();
+    start() { }
+    stop() { 
+        this.onChange.unsubscribe();
+    }
+}
+
 if (!window.entcore) {
     window.entcore = {};
 }
