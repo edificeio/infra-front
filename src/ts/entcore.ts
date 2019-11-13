@@ -19,6 +19,7 @@ export * from './me';
 export * from './libs';
 export * from './toasts';
 export * from "./embedder";
+export * from "./stringutils/index";
 //interfaces
 export { Embedder } from "./embedder";
 export { DatepickerDelegate } from "./ng-app";
