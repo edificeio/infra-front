@@ -114,6 +114,7 @@ export const navigationGuardService = {
                     navigationGuardService._lastResponse = can;
                     if (can) {
                         navigation.accept();
+                        navigationGuardService.resetAll();//reset all guards on navigate
                     } else {
                         navigation.reject();
                     }
