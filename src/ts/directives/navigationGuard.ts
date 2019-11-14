@@ -193,7 +193,13 @@ export const documentGuardDirective: Directive = generateGuardDirective('documen
 });
 
 export const customGuardDirective: Directive = generateGuardDirective('customGuard', (scope, element, attrs) => {
-    return new ObjectGuard(() => scope.$eval(attrs.customGuard));
+    const temp = new ObjectGuard(() => scope.$eval(attrs.customGuard));
+    scope.$watch(function() {
+        return scope.$eval(attrs.customGuard);
+    }, function(){
+        temp.reset();
+    });
+    return temp;
 });
 
 export const navigationTrigger: Directive = ng.directive('navigationTrigger', function () {
