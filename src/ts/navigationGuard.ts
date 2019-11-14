@@ -1,5 +1,6 @@
 import { Subject, Subscription } from "rxjs";
 import { idiom } from "./idiom";
+import { template } from "./template";
 
 
 function setToArray<T>(s: Set<T>): T[] {
@@ -239,9 +240,58 @@ export class DOMRouteChangeListener implements INavigationListener {
 export class TemplateRouteChangeListener implements INavigationListener {
     private static _instance: TemplateRouteChangeListener = null;
     onChange = new Subject<INavigationInfo>();
-    start() { }
-    stop() { }
-
+    private defaultTrigger = true;
+    private containerNotTriggering: string[] = [];
+    private containerTriggering: string[] = [];
+    start() {
+        const self = this;
+        template.setDelegate({
+            tryOpen(args) {
+                self.tryOpen(args.name, args.success, args.reject);
+            }
+        });
+    }
+    stop() {
+        template.removeDelegate();
+    }
+    setTriggerByDefault(trigger: boolean) {
+        this.defaultTrigger = trigger;
+    }
+    private triggerNavigation(name: string): boolean {
+        for (let i = this.containerTriggering.length; i-- > 0;) {
+            if (this.containerTriggering[i] == name) {
+                return true;
+            }
+        }
+        for (let i = this.containerNotTriggering.length; i-- > 0;) {
+            if (this.containerNotTriggering[i] == name) {
+                return false;
+            }
+        }
+        return this.defaultTrigger;
+    }
+    tryOpen(containerName: string, openCb: () => void, rejectCb: () => void) {
+        if (this.triggerNavigation(containerName)) {
+            this.onChange.next({
+                accept: openCb,
+                reject: rejectCb
+            });
+        } else {
+            openCb();
+        }
+    }
+    addIgnoreContainer(name: string) {
+        this.containerNotTriggering.push(name);
+    }
+    removeIgnoreContainer(name: string) {
+        this.containerNotTriggering = this.containerNotTriggering.filter(n => n != name);
+    }
+    addTriggerContainer(name: string) {
+        this.containerTriggering.push(name);
+    }
+    removeTriggerContainer(name: string) {
+        this.containerTriggering = this.containerTriggering.filter(n => n != name);
+    }
     static getInstance() {
         if (TemplateRouteChangeListener._instance == null) {
             TemplateRouteChangeListener._instance = new TemplateRouteChangeListener();
@@ -253,7 +303,7 @@ export class TemplateRouteChangeListener implements INavigationListener {
 export class ManualChangeListener implements INavigationListener {
     onChange = new Subject<INavigationInfo>();
     start() { }
-    stop() { 
+    stop() {
         this.onChange.unsubscribe();
     }
 }

@@ -1,22 +1,25 @@
 import { appPrefix } from './globals';
 import { skin } from './skin';
 import { $ } from "./libs/jquery/jquery";
-import { navigationGuardService, TemplateRouteChangeListener, INavigationInfo } from './navigationGuard';
 
 let appFolder = appPrefix;
 if(appFolder === 'userbook'){
 	appFolder = 'directory';
 }
 
-let navGuardListener: TemplateRouteChangeListener = TemplateRouteChangeListener.getInstance();
-navigationGuardService.registerListener(navGuardListener);
+export interface TemplateDelegate{
+	tryOpen(args:{name:string, view:string, success:()=>void,reject:()=>void}):void;
+}
 
 export var template = {
 	viewPath: '/' + appFolder + '/public/template/',
 	containers: {} as any,
 	callbacks: {},
-	_guardIgnores: [],
-
+	_delegate: null as TemplateDelegate,
+	setDelegate(delegate: TemplateDelegate) {
+		template._delegate = delegate;
+	},
+	removeDelegate() { template.setDelegate(null); },
 	getCompletePath(view:string, isPortal?:boolean):string {
 		const split = $('#context').attr('src').split('-');
 		const hash = split[split.length - 1].split('.')[0];
@@ -40,24 +43,26 @@ export var template = {
 	},
 	open: function(name: string, view?: string)
 	{
-		for(let i = this._guardIgnores.length; i-- > 0;)
-		{
-			if(this._guardIgnores[i] == name)
-			{
-				template._open(name, view);
-				return;
+		return new Promise((resolve, reject) => {
+			if (template._delegate) {
+				template._delegate.tryOpen({
+					name,
+					view,
+					success() {
+						template._open(name, view);
+						resolve();
+					},
+					reject
+				})
+			} else {
+				try {
+					template._open(name, view);
+					resolve();
+				} catch (e) {
+					reject(e);
+				}
 			}
-		}
-		navGuardListener.onChange.next({
-			accept: function()
-			{
-				template._open(name, view);
-			},
-			reject: function()
-			{
-				// Do nothing
-			}
-		});
+		})
 	},
 	_open: function(name:string, view?:string){
 		if(!view){
@@ -120,17 +125,7 @@ export var template = {
 				if(cbCont[i] == fn)
 					cbCont.splice(i, 1);
 		}
-	},
-	addIgnoreGuard: function(name)
-	{
-		this._guardIgnores.push(name);
-	},
-	removeIgnoreGuard: function(name)
-	{
-		for(let i = this._guardIgnores.length; i-- > 0;)
-			if(this._guardIgnores[i] == name)
-				this._guardIgnores.splice(i, 1);
-	},
+	}
 };
 
 

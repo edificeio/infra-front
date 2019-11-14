@@ -1,6 +1,5 @@
-import { template } from "../template";
 import { Directive, ng } from "../ng-start";
-import { INavigationGuard, InputGuard, navigationGuardService, AngularJSRouteChangeListener, DOMRouteChangeListener, ObjectGuard, ManualChangeListener } from "../navigationGuard";
+import { INavigationGuard, InputGuard, navigationGuardService, AngularJSRouteChangeListener, DOMRouteChangeListener, ObjectGuard, ManualChangeListener, TemplateRouteChangeListener } from "../navigationGuard";
 import { Element } from "../workspace/model";
 
 
@@ -18,9 +17,12 @@ export const guardRootDirective: Directive = ng.directive('guardRoot', () => {
             let angularRCL = AngularJSRouteChangeListener.getInstance($scope.$root);
             navigationGuardService.registerListener(angularRCL);
             navigationGuardService.registerListener(DOMRouteChangeListener.getInstance());
+            navigationGuardService.registerListener(TemplateRouteChangeListener.getInstance());
 
             $scope.$on("$destroy", function () {
                 navigationGuardService.unregisterListener(angularRCL);
+                navigationGuardService.unregisterListener(DOMRouteChangeListener.getInstance());
+                navigationGuardService.unregisterListener(TemplateRouteChangeListener.getInstance());
                 navigationGuardService.unregisterRoot(rootID);
             });
 
@@ -122,16 +124,49 @@ export const resetGuardDirective: Directive = ng.directive('resetGuard', () => {
 
 export const guardIgnoreTemplate: Directive = ng.directive('guardIgnoreTemplate', function () {
     return {
-        require: "container",
+        require: ['?container', '?guardRoot'],
         restrict: "A",
-        link: function (scope, element, attrs, container) {
+        link: function (scope, element, attrs, requires) {
+            const container = requires[0];
+            const guardRoot = requires[1];
+            const instance = TemplateRouteChangeListener.getInstance();
+            if(guardRoot){
+                instance.setTriggerByDefault(false);
+                return;
+            }
             let templateName = container.template;
 
             if (templateName == null)
                 console.error("Container directive doesn't have a template attribute. Did its implementation change ?");
             else {
-                template.addIgnoreGuard(templateName);
-                scope.$on("$destroy", function () { template.removeIgnoreGuard(templateName); });
+                instance.addIgnoreContainer(templateName);
+                scope.$on("$destroy", function () { instance.removeIgnoreContainer(templateName); });
+            }
+        }
+    };
+});
+
+export const guardTriggerTemplate: Directive = ng.directive('guardTriggerTemplate', function () {
+    return {
+        require: ['?container', '?guardRoot'],
+        restrict: "A",
+        link: function (scope, element, attrs, requires) {
+            const container = requires[0];
+            const guardRoot = requires[1];
+            const instance = TemplateRouteChangeListener.getInstance();
+
+            if(guardRoot){
+                instance.setTriggerByDefault(true);
+                return;
+            }
+
+            let templateName = container.template;
+
+            if (templateName == null)
+                console.error("Container directive doesn't have a template attribute. Did its implementation change ?");
+            else {
+                instance.addTriggerContainer(templateName);
+                scope.$on("$destroy", function () { instance.removeTriggerContainer(templateName); });
             }
         }
     };
@@ -167,7 +202,7 @@ export const navigationTrigger: Directive = ng.directive('navigationTrigger', fu
         link: function (scope, element, attrs) {
             const listener = new ManualChangeListener;
             navigationGuardService.registerListener(listener);
-            const trigger = (e:Event) => {
+            const trigger = (e: Event) => {
                 e && e.preventDefault();
                 listener.onChange.next({
                     accept() {
