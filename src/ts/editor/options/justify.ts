@@ -74,21 +74,6 @@ export function projectRangeOnBlockElements(range: Range, root: HTMLElement): Ra
     return [newRange];
 }
 
-function beforeJustify(instance) {
-    instance.editZone.find('mathjax').html('');
-    instance.editZone.find('mathjax').removeAttr('contenteditable');
-}
-
-function afterJustify(instance) {
-    instance.editZone.find('mathjax').each(function (index, item) {
-        const scope = angular.element(item).scope();
-        scope.updateFormula(scope.formula)
-    });
-    instance.editZone.find('mathjax').attr('contenteditable', 'false');
-
-    instance.trigger('justify-changed');
-}
-
 function applyTextAlignToSelection(selection: Selection, root: HTMLElement, value: string) {
     const ranges: Range[] = [];
     const projectedRanges: Range[] = [];
@@ -112,14 +97,12 @@ export const justifyLeft = {
                     if (!instance.editZone.is(':focus')) {
                         instance.focus();
                     }
-                    beforeJustify(instance);
                     applyTextAlignToSelection(window.getSelection(), instance.editZone.get(0), 'left');
                     if (document.queryCommandState('justifyLeft')) {
                         element.addClass('toggled');
                     } else {
                         element.removeClass('toggled');
                     }
-                    afterJustify(instance)
                 });
 
                 instance.on('selectionchange', function (e) {
@@ -152,8 +135,6 @@ export const justifyCenter = {
                     if (!instance.editZone.is(':focus')) {
                         instance.focus();
                     }
-
-                    beforeJustify(instance);
                     if (!document.queryCommandState('justifyCenter')) {
                         applyTextAlignToSelection(window.getSelection(), instance.editZone.get(0), 'center');
                         element.addClass('toggled');
@@ -161,7 +142,6 @@ export const justifyCenter = {
                         applyTextAlignToSelection(window.getSelection(), instance.editZone.get(0), 'left');
                         element.removeClass('toggled');
                     }
-                    afterJustify(instance);
                 });
 
                 instance.on('selectionchange', function (e) {
@@ -198,8 +178,6 @@ export const justifyRight = {
                     if (!instance.editZone.is(':focus')) {
                         instance.focus();
                     }
-
-                    beforeJustify(instance);
                     if (!document.queryCommandState('justifyRight')) {
                         applyTextAlignToSelection(window.getSelection(), instance.editZone.get(0), 'right');
                         element.addClass('toggled');
@@ -207,7 +185,6 @@ export const justifyRight = {
                         applyTextAlignToSelection(window.getSelection(), instance.editZone.get(0), 'left');
                         element.removeClass('toggled');
                     }
-                    afterJustify(instance);
                 });
 
                 instance.on('selectionchange', function (e) {
@@ -242,7 +219,6 @@ export const justifyFull = {
                         instance.focus();
                     }
 
-                    beforeJustify(instance);
                     if (!document.queryCommandState('justifyFull')) {
                         applyTextAlignToSelection(window.getSelection(), instance.editZone.get(0), 'justify');
                         element.addClass('toggled');
@@ -250,7 +226,6 @@ export const justifyFull = {
                         applyTextAlignToSelection(window.getSelection(), instance.editZone.get(0), 'left');
                         element.removeClass('toggled');
                     }
-                    afterJustify(instance);
                 });
 
                 instance.on('selectionchange', function (e) {

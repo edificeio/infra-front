@@ -991,7 +991,7 @@ export const Selection = function(data){
             this.range.insertNode(wrapper[0]);
         }
         else {
-            this.editZone.append($('<div>' + htmlContent + '</div>'));
+            this.editZone.append(htmlContent);
             let sel = window.getSelection();
             let range = document.createRange();
             range.setStart(wrapper[0], wrapper[0].childNodes.length);
