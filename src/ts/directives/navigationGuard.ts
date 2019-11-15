@@ -89,10 +89,11 @@ export const resetGuardDirective: Directive = ng.directive('resetGuard', () => {
             let resetID = attrs.resetGuardId;
             const submit = async () => {
                 const promise: Promise<any> = scope.$eval(attrs.resetGuard)
-                if (!(promise instanceof Promise)) {
-                    throw "[resetGuard] result should be instance of Promise";
+                if (promise instanceof Promise) {
+                    await promise;//reset if promise return success
+                } else {
+                    console.warn("[resetGuard] result is not instance of Promise");
                 }
-                await promise;//reset if promise return success
                 if (resetID != null && resetID != "") {
                     navigationGuardService.reset(resetID);
                 }
