@@ -106,14 +106,19 @@ export const resetGuardDirective: Directive = ng.directive('resetGuard', () => {
                 }
             }
             const bind = () => {
-                const tagname = (element.prop("tagName") as string || "").toLowerCase();
-                if (tagname == "form") {
-                    element.on("submit", submit)
-                    return () => element.off("submit", submit)
-                } else {
-                    element.on("click", submit)
-                    return () => element.off("click", submit)
+                let event: string = attrs.resetGuardEvent;
+                if(event != null && event != "")
+                {
+                    const tagname = (element.prop("tagName") as string || "").toLowerCase();
+                    if (tagname == "form") {
+                        event = "submit";
+                    } else {
+                        event = "click";
+                    }
                 }
+
+                element.on(event, submit);
+                return () => element.off(event, submit);
             }
             const unbind = bind();
             scope.$on("$destroy", function () {
