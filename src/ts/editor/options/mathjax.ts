@@ -15,11 +15,13 @@ export const mathjax = {
             '</lightbox>',
             link: function(scope, element, attributes){
                 scope.display = {
-                    formula: '{-b \\pm \\sqrt{b^2-4ac} \\over 2a}'
+                    formula: '' +
+                        '\\begin{equation}\n' +
+                        '{-b \\pm \\sqrt{b^2-4ac} \\over 2a}\n' +
+                        '\\end{equation}'
                 };
                 
                 var editNode = undefined;
-                
                 scope.updateContent = function(){
                     if(editNode){
                         $(editNode).attr('formula', scope.display.formula);
