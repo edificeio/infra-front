@@ -18,7 +18,7 @@ export const embedderService = {
         const providers = (await http.get('/infra/embed/default')).data;
         const customProviders = (await http.get('/infra/embed/custom')).data;
         for (const custom of customProviders) {
-            custom.name = custom.name.toLowerCase().replace(/\ |\:|\?|#|%|\$|£|\^|\*|€|°|\(|\)|\[|\]|§|'|"|&|ç|ù|`|=|\+|<|@/g, '')
+            custom.name = (custom.name || "").toLowerCase().replace(/\ |\:|\?|#|%|\$|£|\^|\*|€|°|\(|\)|\[|\]|§|'|"|&|ç|ù|`|=|\+|<|@/g, '')
         }
         embedderService._providers = [...providers, ...customProviders];
         return embedderService._providers;
