@@ -165,7 +165,15 @@ export const linker = {
                     }
 
                     if(scope.linker.params.link){
-                        linkNode.attr('href', scope.linker.params.link);
+                        let matcher = new RegExp('^www');
+                        let linkToCheck = scope.linker.params.link.match(matcher);
+                        let protocolToAdd = 'http://';
+                        if(linkToCheck === null) {
+                            linkNode.attr('href', scope.linker.params.link);
+                        } else if(linkToCheck[0] == 'www') {
+                            let finalUrl = protocolToAdd.concat(scope.linker.params.link.toString());
+                            linkNode.attr('href', finalUrl);
+                        }
 
                         if (scope.linker.params.appPrefix && !scope.linker.externalLink) {
                             linkNode.attr('data-app-prefix', scope.linker.params.appPrefix);
