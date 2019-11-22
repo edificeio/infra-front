@@ -16,7 +16,7 @@ function isTouchDevice() {
 //===directive
 export let explorer = ng.directive('explorer', () => {
     return {
-        restrict: 'E',
+        restrict: 'EA',
         transclude: true,
         scope: {
             ngModel: '=',

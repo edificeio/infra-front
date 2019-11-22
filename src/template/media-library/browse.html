@@ -80,42 +80,18 @@
 
 	<div class="cell eight height-five twelve-mobile browse-list height-minus300 overflowx-hd overflowy-hd">
 
-		<div class="absolute reduce-block-eight" ng-if="!documents.length && !folders.length" style="text-align: center">
+		<!--VIEW MODE-->
+		<div class="cell right-magnet">
+			<div class="choice-view">
+				<i class="show-icons" ng-class="{ selected: isViewMode('icons') }" ng-click="changeViewMode('icons')"></i>
+				<i class="show-list" ng-class="{ selected: isViewMode('list') }" ng-click="changeViewMode('list')"></i>
+			</div>
+		</div>
+
+		<div class="reduce-block-eight" ng-if="!documents.length && !folders.length" style="text-align: center; margin-top: 40px">
 			<i18n>library.browse.notfound</i18n>
 		</div>
-		<div class="absolute icons-view" style="overflow: auto" bottom-scroll="display.limit = display.limit + 6">
-			<div class="element reduce-block-six" ng-repeat="folder in folders | orderBy:'name'  | limitTo:display.limit">
-				<explorer ng-model="folder.selected" on-open="openFolder(folder)">
-					<div class="img container">
-						<i class="folder-large"></i>
-					</div>
-					<legend>
-						<a class="medium-text">[[folder.name]]</a>
-					</legend>
-				</explorer>
-
-			</div>
-			<div class="element reduce-block-six" ng-repeat="document in documents | orderBy:'isNew' | orderBy:'created':true | limitTo:display.limit - folders.length">
-				<explorer ng-model="document.selected" ng-click="updateSelection(document)" on-open="selectDocument(document)"
-				 doc-id="[[document._id]]">
-					<div class="img container" ng-if="document.role() === 'img'">
-						<div class="clip">
-							<img ng-src="[[document.thumbUrl]]" />
-							<div class="absolute" ng-if="display.loading && display.loading.indexOf(document) !== -1">
-								<img skin-src="/img/illustrations/loading.gif" />
-							</div>
-						</div>
-					</div>
-					<div class="img container" ng-if="document.role() !== 'img'">
-						<i class="[[document.role()]]-large"></i>
-					</div>
-					<legend>
-						<a class="medium-text">[[document.name]]</a>
-						<a><strong class="small-text">[[document.ownerName]]</strong></a>
-					</legend>
-				</explorer>
-			</div>
-		</div>
+		<container ng-hide="!documents.length && !folders.length" template="documents-view"></container>
 	</div>
 </div>
 <div class="row"></div>
