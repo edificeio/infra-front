@@ -1,0 +1,78 @@
+<!--
+ ~	Copyright © WebServices pour l'Éducation, 2014
+ ~
+ ~ This file is part of ENT Core. ENT Core is a versatile ENT engine based on the JVM.
+ ~
+ ~ This program is free software; you can redistribute it and/or modify
+ ~ it under the terms of the GNU Affero General Public License as
+ ~ published by the Free Software Foundation (version 3 of the License).
+ ~
+ ~ For the sake of explanation, any module that communicate over native
+ ~ Web protocols, such as HTTP, with ENT Core is outside the scope of this
+ ~ license and could be license under its own terms. This is merely considered
+ ~ normal use of ENT Core, and does not fall under the heading of "covered work".
+ ~
+ ~ This program is distributed in the hope that it will be useful,
+ ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ ~
+ -->
+
+<table class="list-view sticky-header darkgrey primary-hover">
+  <thead>
+    <tr id='start'>
+      <th scope="col" class="icon zero-mobile">
+
+      </th>
+      <th scope="col" class="content" ng-click="orderByField('name')">
+        <span class="sortable">
+          <span class="icons right-spacing">
+            <i class="arrow" ng-class="{'icon-off':!isOrderedAsc('name')}"></i>
+            <i class="arrow bottom" ng-class="{'icon-off':!isOrderedDesc('name')}"></i>
+          </span>
+          <span translate content="name"></span>
+        </span>
+      </th>
+      <th scope="col" class="user" ng-click="orderByField('ownerName')">
+        <span class="sortable">
+          <span class="icons right-spacing">
+            <i class="arrow" ng-class="{'icon-off':!isOrderedAsc('ownerName')}"></i>
+            <i class="arrow bottom" ng-class="{'icon-off':!isOrderedDesc('ownerName')}"></i>
+          </span>
+          <span translate content="owner"></span>
+        </span>
+      </th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr ng-repeat="folder in folders | orderBy: orderFieldFolder | limitTo:display.limit" ng-class="{ checked: folder.selected }">
+      <td class="icon zero-mobile">
+        <div class="twelve cell">
+          <i class="folder"></i>
+        </div>
+      </td>
+      <td class="content">
+        <strong>
+          <a ng-click="openFolder(folder)">[[folder.name]]</a>
+        </strong>
+      </td>
+      <td class="user"><a>[[folder.ownerName]]</a></td>
+    </tr>
+    <tr
+      ng-repeat="document in documents | orderBy:'isNew' | orderBy: orderFieldDocument | limitTo:display.limit - folders.length"
+      ng-class="{ overline: true, checked: document.selected }"
+      explorer ng-model="document.selected" ng-click="updateSelection(document)" on-open="selectDocument(document)"
+      doc-id="[[document._id]]"
+    >
+     <td class="icon zero-mobile">
+        <div class="twelve cell">
+          <i class="[[document.role()]]"></i>
+        </div>
+      </td>
+      <td class="content"><a ng-click="updateSelection(document)">[[document.name]]</a><em class="tag">[[document.metadata.extension]]</em></td>
+      <td class="user"><a>[[document.ownerName]]</a></td>
+
+      </td>
+    </tr>
+  </tbody>
+</table>

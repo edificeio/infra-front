@@ -9,6 +9,7 @@ import http from 'axios';
 import { timeInterval } from 'rxjs/operator/timeInterval';
 export type Header = { template: string, worflowKey: string, i18Key: string, visible: () => boolean };
 type LIST_TYPE = "myDocuments" | "appDocuments" | "publicDocuments" | "sharedDocuments" | "trashDocuments" | "externalDocuments";
+type MediaLibraryView = "icons" | "list";
 export interface MediaLibraryDelegate {
 	title?:string
 	visit?($scope: MediaLibraryScope);
@@ -29,6 +30,9 @@ export interface MediaLibraryScope {
 		compressionReady?: boolean,
 		editedDocument?: Document
 	}
+	viewMode: MediaLibraryView
+	orderFieldDocument: string
+	orderFieldFolder: string
 	upload: {
 		files?: FileList
 		loading?: Document[],
@@ -51,6 +55,12 @@ export interface MediaLibraryScope {
 	selectDocument(doc: Document)
 	selectDocuments();
 	openFolder(folder: Folder)
+	isViewMode(mode: MediaLibraryView): void
+	changeViewMode(mode: MediaLibraryView): void
+	orderByField(field: string): void
+	orderByDefault(): void
+	isOrderedAsc(field: string): boolean
+	isOrderedDesc(field: string): boolean
 	isListFrom(listName: LIST_TYPE): boolean
 	listFrom(listName: LIST_TYPE)
 	headers(): Header[];
@@ -277,6 +287,42 @@ export const mediaLibrary = ng.directive('mediaLibrary', ['$timeout', function (
 			}
 			scope.isSelectedHeader = function (h: Header): boolean {
 				return header && h && header.i18Key == h.i18Key;
+			}
+			scope.isViewMode = function (mode: MediaLibraryView) {
+					return scope.viewMode == mode;
+			}
+			scope.changeViewMode = function (mode: MediaLibraryView) {
+					if (!mode || scope.viewMode == mode) {
+							return;
+					}
+					template.open('documents-view', "entcore/media-library/" + mode);
+					scope.viewMode = mode;
+			}
+			scope.changeViewMode("icons");
+			scope.orderByField = function(field: string): void
+			{
+				if(scope.isOrderedAsc(field) == true)
+					scope.orderFieldDocument = '-' + field;
+				else if(scope.isOrderedDesc(field))
+					return scope.orderByDefault();
+				else
+					scope.orderFieldDocument = field;
+
+				scope.orderFieldFolder = scope.orderFieldDocument;
+			}
+			scope.orderByDefault = function(): void
+			{
+				scope.orderFieldDocument = "-created";
+				scope.orderFieldFolder = "name";
+			}
+			scope.orderByDefault();
+			scope.isOrderedAsc = function(field: string): boolean
+			{
+				return scope.orderFieldDocument == field;
+			}
+			scope.isOrderedDesc = function(field: string): boolean
+			{
+				return scope.orderFieldDocument == '-' + field;
 			}
 			scope.isListFrom = function (listName: LIST_TYPE) {
 				return scope.display.listFrom == listName;
