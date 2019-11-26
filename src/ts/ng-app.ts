@@ -538,7 +538,7 @@ module.directive('adminPortal', function(){
 
 module.directive('portalStyles', function(){
 	return {
-		restrict: 'E',
+		restrict: 'EA',
 		compile: function(element, attributes){
 			if(attributes.portalStyles != "false") $("html").addClass("portal-container")
 			$('[logout]').attr('href', '/auth/logout?callback=' + skin.logoutCallback);
@@ -549,7 +549,7 @@ module.directive('portalStyles', function(){
 
 module.directive('defaultStyles', function(){
 	return {
-		restrict: 'E',
+		restrict: 'EA',
 		link: function(scope, element, attributes){
 			if(attributes.defaultStyles != "false") $("html").addClass("portal-container")
 			ui.setStyle(skin.theme);
