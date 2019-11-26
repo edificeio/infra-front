@@ -9,7 +9,8 @@ export let embedder = ng.directive('embedder', () => {
         scope: {
             ngModel: '=',
             onChange: '&',
-            show: '='
+            show: '=',
+            hiddenShareVideoCode: '='
         },
         templateUrl: '/' + appPrefix + '/public/template/entcore/embedder.html',
         link: function(scope, element, attributes){
@@ -18,9 +19,7 @@ export let embedder = ng.directive('embedder', () => {
                     name: 'none'
                 }
             };
-
             scope.providers = [];
-
             element.on('focus', 'textarea', (e) => {
                 $(e.target).next().addClass('focus');
                 $(e.target).next().addClass('move');
