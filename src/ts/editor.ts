@@ -522,6 +522,7 @@ export let RTE = {
                     var instance = $parse(attributes.instance);
                     if(!instance(scope)){
                         editorInstance = new RTE.Instance({
+                            hiddenShareVideoCode: attributes.hiddenShareVideoCode === 'true'? 'true' : 'false',
                             toolbarConfiguration: toolbarConf,
                             element: element,
                             scope: scope,

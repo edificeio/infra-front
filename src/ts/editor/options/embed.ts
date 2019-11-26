@@ -3,7 +3,7 @@ export const embed = {
     run: function (instance) {
         return {
             template: '<i ng-click="display.copyEmbed = true" tooltip="editor.option.embed"></i>' +
-            '<embedder ng-model="display.htmlCode" on-change="applyHtml()" show="display.copyEmbed"></embedder>',
+            '<embedder hidden-share-video-code=' + instance.hiddenShareVideoCode + ' ng-model="display.htmlCode" on-change="applyHtml()" show="display.copyEmbed"></embedder>',
             link: function (scope, element, attributes) {
                 scope.display = {
                     htmlCode: ''
