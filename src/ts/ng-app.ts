@@ -498,6 +498,7 @@ module.directive('portal', function(){
 		transclude: true,
 		templateUrl: skin.portalTemplate,
 		compile: function(element, attributes, transclude){
+			$("html").addClass("portal-container")
 			element.find('[logout]').attr('href', '/auth/logout?callback=' + skin.logoutCallback);
 			ui.setStyle(skin.theme);
 			Http.prototype.bind('disconnected', function(){
@@ -518,6 +519,7 @@ module.directive('adminPortal', function(){
 		transclude: true,
 		templateUrl: '/public/admin/portal.html',
 		compile: function(element, attributes, transclude){
+			$("html").addClass("portal-container")
 			$('[logout]').attr('href', '/auth/logout?callback=' + skin.logoutCallback);
 			http().get('/userbook/preference/admin').done(function(data){
 				var theme = data.preference ? JSON.parse(data.preference) : null
@@ -538,6 +540,7 @@ module.directive('portalStyles', function(){
 	return {
 		restrict: 'E',
 		compile: function(element, attributes){
+			if(attributes.portalStyles != "false") $("html").addClass("portal-container")
 			$('[logout]').attr('href', '/auth/logout?callback=' + skin.logoutCallback);
 			ui.setStyle(skin.theme);
 		}
@@ -548,6 +551,7 @@ module.directive('defaultStyles', function(){
 	return {
 		restrict: 'E',
 		link: function(scope, element, attributes){
+			if(attributes.defaultStyles != "false") $("html").addClass("portal-container")
 			ui.setStyle(skin.theme);
 		}
 	}
