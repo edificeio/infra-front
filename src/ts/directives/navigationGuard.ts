@@ -107,7 +107,7 @@ export const resetGuardDirective: Directive = ng.directive('resetGuard', () => {
             }
             const bind = () => {
                 let event: string = attrs.resetGuardEvent;
-                if(event != null && event != "")
+                if(typeof event != "string" || !event.trim())
                 {
                     const tagname = (element.prop("tagName") as string || "").toLowerCase();
                     if (tagname == "form") {
