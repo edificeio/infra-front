@@ -40,12 +40,13 @@ export function onDropFromDesktop(e, editorInstance, element){
 
     const uploadFile = async (file: File) => {
         var name = files[i].name;
+        const urlOrigin = window.location.origin || "";
         const doc = new Document();
         await doc.upload(files[i], visibility)
         all --;
-        var path = '/workspace/document/';
+        var path = urlOrigin + '/workspace/document/';
         if (visibility === 'public') {
-            path = '/workspace/pub/document/';
+            path = urlOrigin + '/workspace/pub/document/';//test
         }
 
         if (name.indexOf('.mp3') !== -1 || name.indexOf('.wav') !== -1 || name.indexOf('.ogg') !== -1) {
