@@ -129,7 +129,7 @@
 <lightbox show="display.editItem" on-close="display.editItem = false;">
     <container template="schedule-edit-template"></container>
 </lightbox>
-<lightbox show="display.createItem" on-close="closeCreateWindow()">
+<lightbox show="display.createItem" on-close="closeCreateWindow()" delegate-close="canICloseLightBox()">
     <container template="schedule-create-template"></container>
 </lightbox>
 <lightbox show="display.moreItems" on-close="display.moreItems = false;" class="schedules-more-items">
