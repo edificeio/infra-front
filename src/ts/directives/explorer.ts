@@ -57,15 +57,16 @@ export let explorer = ng.directive('explorer', () => {
             }
 
             $('body').on('click.explorer', function (e) {
-                if ($(e.target).parents('explorer, .toggle, .lightbox').length === 0
+                if ($(e.target).parents('explorer, .explorer, .toggle, .lightbox').length === 0
                     && !$(e.target).is('.lightbox') 
 					&& e.target.nodeName !== "EXPLORER"
                     && ($(e.target).parents('body').length || e.target.nodeName === 'BODY')
                 ) {
+                    let old = scope.ngModel;
                     scope.ngModel = false;
                     scope.$apply('ngModel');
 
-                    if (scope.ngChange) {
+                    if (scope.ngChange && old == true) {
                         scope.ngChange({'$event':e});
                     }
 
