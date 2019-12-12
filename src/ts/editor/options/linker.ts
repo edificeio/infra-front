@@ -167,7 +167,7 @@ export const linker = {
                     if(scope.linker.params.link){
                         let matcher = new RegExp('^www');
                         let linkToCheck = scope.linker.params.link.match(matcher);
-                        let protocolToAdd = 'http://';
+                        let protocolToAdd = 'https://';
                         if(linkToCheck === null) {
                             linkNode.attr('href', scope.linker.params.link);
                         } else if(linkToCheck[0] == 'www') {
