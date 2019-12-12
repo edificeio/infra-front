@@ -607,6 +607,17 @@ Model.prototype.sync = function(){
 	}
 }());
 
+function isLocalStorage(){
+	let test = 'test';
+	try {
+		localStorage.setItem(test, test);
+		localStorage.removeItem(test);
+		return true;
+	} catch(e) {
+		return false;
+	}
+}
+
 export async function bootstrap(func) {
    if(window.notLoggedIn){
 		Behaviours.loadBehaviours(appPrefix, async function(){
@@ -653,6 +664,11 @@ export async function bootstrap(func) {
 				model.trigger('preferences-updated');
 			}
 		};
+
+		if (isLocalStorage()) {
+			localStorage.setItem('login-event', model.me.login);
+		}
+		
 		model.trigger("userinfo-loaded")
 		model.trigger('preferences-updated');
 

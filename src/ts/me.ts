@@ -93,11 +93,23 @@ if(!(window as any).entcore){
 	(window as any).entcore = {};
 }
 (window as any).entcore.Me = Me;
+(window as any).newLogin = false;
+
+// listen to storage event
+window.addEventListener('storage', function(event){
+    if (event.key == 'login-event') {
+        if (event.newValue != null && model.me.login !== event.newValue ) {
+            (window as any).newLogin = true;
+            console.log("login-event");
+        }
+        localStorage.removeItem(event.key);
+    }
+}, false);
 
 if(!(XMLHttpRequest.prototype as any).baseSend && !(window as any).pupetterMode){
     (XMLHttpRequest.prototype as any).baseSend = XMLHttpRequest.prototype.send;
     XMLHttpRequest.prototype.send = function(data){
-        if(document.cookie.indexOf('authenticated=true') === -1 && window.location.href.indexOf('/auth') === -1 && !window.notLoggedIn){
+        if((document.cookie.indexOf('authenticated=true') === -1 || window['newLogin'] === true) && window.location.href.indexOf('/auth') === -1 && !window.notLoggedIn){
             const url = idiom.translate('disconnected.redirect.url');
             const checkedUrl = 'disconnected.redirect.url' != url && !!url && url.length > 0 ? url : '/auth/login';
             const lightbox = $(`<lightbox>
