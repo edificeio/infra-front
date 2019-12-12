@@ -1,0 +1,71 @@
+{
+  "name": "entcore",
+  "version": "3.8.0-dev.13",
+  "description": "",
+  "main": "gulpfile.js",
+  "types": "./types/src/ts/entcore.d.ts",
+  "dependencies": {
+    "angular": "1.3",
+    "angular-route": "1.3",
+    "angular-sanitize": "1.3",
+    "awesome-typescript-loader": "^3.2.1",
+    "axios": "^0.15.3",
+    "conventional-changelog-cli": "^2.0.12",
+    "core-js": "^2.4.1",
+    "entcore-toolkit": "^1.0.0",
+    "gulp": "^3.9.1",
+    "gulp-rename": "^1.2.2",
+    "gulp-watch": "^4.3.5",
+    "humane-js": "^3.2.2",
+    "jquery": "^2.2.3",
+    "lodash": "^4.17.4",
+    "merge2": "^1.0.2",
+    "moment": "^2.18.1",
+    "nouislider": "14.0.2",
+    "rxjs": "5.4.2",
+    "source-map-loader": "^0.1.6",
+    "typescript": "2.4.1",
+    "uglify-js": "^3.0.23",
+    "uglifyjs-webpack-plugin": "^0.4.6",
+    "underscore": "^1.8.3",
+    "webpack": "^3.1.0",
+    "webpack-stream": "^3.2.0"
+  },
+  "devDependencies": {
+    "@types/core-js": "0.9.46",
+    "@types/jasmine": "2.8.8",
+    "@types/pixi.js": "4.5.7",
+    "@types/webdriverio": "4.13.0",
+    "angular-mocks": "1.3.20",
+    "gulp-append-prepend": "^1.0.6",
+    "jasmine": "2.8.0",
+    "karma": "3.1.1",
+    "karma-browserstack-launcher": "1.3.0",
+    "karma-chrome-launcher": "2.2.0",
+    "karma-firefox-launcher": "1.1.0",
+    "karma-jasmine": "1.1.2",
+    "karma-typescript": "3.0.8",
+    "mathjax": "2.7.5",
+    "rimraf": "2.6.2",
+    "ts-node": "7.0.1",
+    "wdio-browserstack-service": "0.1.18",
+    "wdio-jasmine-framework": "0.3.8",
+    "wdio-selenium-standalone-service": "0.0.11",
+    "webdriverio": "4.14.1"
+  },
+  "scripts": {
+    "test": "karma start",
+    "test:compatibility": "karma start karma-compatibility.conf.js",
+    "test:end-to-end": "npx wdio"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/opendigitaleducation/infra-front.git"
+  },
+  "author": "",
+  "license": "AGPL-3.0",
+  "bugs": {
+    "url": "https://github.com/opendigitaleducation/infra-front/issues"
+  },
+  "homepage": "https://github.com/opendigitaleducation/infra-front"
+}
