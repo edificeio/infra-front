@@ -16,6 +16,10 @@ const workflowDirectiveLinkBuilder = (name:string) =>
 				let right = model.me && model.me.workflow;
 				const workflow = !!(right && right[auth[0]]);
 				const content = element.children();
+				if(model.me.functions["SUPER_ADMIN"]) {
+					func(true, content, element);
+					return;
+				}
 				if (!right || !workflow) {
 					func(false, content, element);
 					return;
