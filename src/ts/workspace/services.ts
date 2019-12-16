@@ -30,6 +30,11 @@ export interface WorkspaceEvent {
     ids?: string[]
 }
 
+export type ElementWithVisible = workspaceModel.Element & {
+    visibleGroups:Array<{id:string, name:string,structureName:string, groupDisplayName:string}>
+    visibleUsers:Array<{id:string, username:string,lastName:string, firstName:string, login:string, profile:string}>
+}
+
 let MAX_FILE_SIZE;
 let xsrfCookie: { name: string, val: string };
 if (document.cookie) {
@@ -150,6 +155,9 @@ export const workspaceService = {
     },
     fetchFolders(params: ElementQuery, sort: "name" | "created" = "name"): Promise<workspaceModel.Element[]> {
         return http<workspaceModel.Element[]>().get('/workspace/folders/list', params)
+    },
+    fetchParentInfo(id: string): Promise<ElementWithVisible> {
+        return http<ElementWithVisible>().get(`/workspace/document/parent/${id}`);
     },
     async fetchTrees(params: ElementQuery, sort: "name" | "created" = "name"): Promise<workspaceModel.Tree[]> {
         let folders: workspaceModel.Element[] = await http<workspaceModel.Element[]>().get('/workspace/folders/list', params);
