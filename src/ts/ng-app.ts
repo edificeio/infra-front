@@ -392,11 +392,15 @@ module.directive('filesInputChange', function(){
 			file: '=ngModel'
 		},
 		link: function($scope, $element){
+			$scope.$watch("file",function(newVal:FileList, oldVal:FileList){
+				if(newVal !== oldVal){
+				   if(!newVal) $element[0].value = "";
+				}
+			})
 			$element.bind('change', function(){
 				$scope.file = $element[0].files;
 				$scope.$apply();
 				$scope.filesInputChange();
-				$element[0].value = "";
 				$scope.$apply();
 			})
 		}
