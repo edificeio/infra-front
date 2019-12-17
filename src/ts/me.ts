@@ -98,11 +98,19 @@ if(!(window as any).entcore){
 // listen to storage event
 window.addEventListener('storage', function(event){
     if (event.key == 'login-event') {
+        //if login is resetted => break
+        // -> dont set newLogin to true 
+        // -> avoid looping on each remove => storage listener
+        if(event.newValue == "RESET")return;
         if (event.newValue != null && model.me.login !== event.newValue ) {
             (window as any).newLogin = true;
             console.log("login-event");
         }
-        localStorage.removeItem(event.key);
+        try{
+            localStorage.setItem(event.key,"RESET");
+        }catch(e){
+            console.warn("[storage] could not remove login-event:",e)
+        }
     }
 }, false);
 
