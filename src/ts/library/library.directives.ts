@@ -335,6 +335,7 @@ export const libraryPublishDirective: Directive = ng.directive('libraryPublish',
                                         </a>
                                       </li>
                                       <li class="small-text"><i18n>bpr.form.publication.licence.text.2</i18n></li>
+                                      <li class="small-text"><i18n>bpr.form.publication.licence.text.3</i18n></li>
                                     </ul>
                                 </div>
                             </div>
