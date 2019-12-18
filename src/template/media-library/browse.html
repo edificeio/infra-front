@@ -91,7 +91,7 @@
 		<div class="reduce-block-eight" ng-if="!documents.length && !folders.length" style="text-align: center; margin-top: 40px">
 			<i18n>library.browse.notfound</i18n>
 		</div>
-		<container ng-hide="!documents.length && !folders.length" template="documents-view"></container>
+		<container ng-hide="!documents.length && !folders.length" template="documents-view" guard-ignore-template></container>
 	</div>
 </div>
 <div class="row"></div>
