@@ -11,11 +11,27 @@ export interface TemplateDelegate{
 	tryOpen(args:{name:string, view:string, success:()=>void,reject:()=>void}):void;
 }
 
+type PromiseWithResolvers =  {promise:Promise<void>, resolve():void, reject():void };
 export var template = {
 	viewPath: '/' + appFolder + '/public/template/',
 	containers: {} as any,
+	readyPromises:{} as {[id:string]:PromiseWithResolvers},
 	callbacks: {},
 	_delegate: null as TemplateDelegate,
+	getReadyPromise(name:string, forceReset = false){
+		if(!template.readyPromises[name] || forceReset){
+			let resolve = null, reject = null;
+			const promise =  new Promise<any>((res,rej)=>{
+				resolve = res;
+				reject = rej;
+			})
+			template.readyPromises[name] = {resolve, reject, promise};
+		}
+		return template.readyPromises[name];
+	},
+	deleteReadyPromise(name:string){
+		delete template.readyPromises[name];
+	},
 	setDelegate(delegate: TemplateDelegate) {
 		template._delegate = delegate;
 	},
@@ -43,8 +59,9 @@ export var template = {
 	},
 	open: function(name: string, view?: string)
 	{
-		return new Promise((resolve, reject) => {
+		return new Promise(async (resolve, reject) => {
 			if (template._delegate) {
+				await template.getReadyPromise(name).promise;
 				template._delegate.tryOpen({
 					name,
 					view,
@@ -101,10 +118,12 @@ export var template = {
 			});
 		}
 	},
-	watch: function(container, fn){
+	watch: function(container: string, fn){
 		if(typeof fn !== 'function'){
+			template.getReadyPromise(container).reject();
 			throw TypeError('template.watch(string, function) called with wrong parameters');
 		}
+		template.getReadyPromise(container).resolve();
 		if(!this.callbacks){
 			this.callbacks = {};
 		}
@@ -113,8 +132,9 @@ export var template = {
 		}
 		this.callbacks[container].push(fn);
 	},
-	unwatch: function(container, fn)
+	unwatch: function(container:string, fn)
 	{
+		template.deleteReadyPromise(container);
 		if(typeof fn !== 'function'){
 			throw TypeError('template.unwatch(string, function) called with wrong parameters');
 		}
