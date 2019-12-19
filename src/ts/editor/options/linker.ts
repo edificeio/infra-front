@@ -6,15 +6,63 @@ import { http } from "../../http";
 import { _ } from '../../libs/underscore/underscore';
 import { model } from "../../modelDefinitions";
 import { appPrefix } from "../../globals";
-import { editorEvents } from "../../editor";
+import { editorEvents, LinkerEventBody } from "../../editor";
 
+interface EditorInstance{
+    selection: any
+    focus():void
+    trigger(event:string):void
+    compile(html:string):(scope:any)=>void
+    bindContextualMenu(scope:any, tag:string, menu:Array<{label:string, action:(e:any)=>void}>):void
+}
+
+type Resource = { _id?: string, title?: string, path?: string }
+type App = { address?: string, icon?: string }
+export interface LinkerScope {
+    linker: {
+        externalLink?: boolean | string
+        display: {
+            searching?: boolean
+            chooseLink?: boolean
+            search?: {
+                application: App,
+                text: string
+            }
+        },
+        apps: App[],
+        search: {
+            application: App,
+            text: string
+        },
+        params: {
+            id?: string
+            appPrefix?: string;
+            link?: string
+            blank?: boolean
+            target?: string
+            tooltip?: string
+        },
+        resource: Resource,
+        resources?: Resource[]
+        cancel?: () => void
+        saveLink?: () => void;
+        addResource?: () => any;
+        createResource?: () => void;
+        applyLink?: (link: string) => void
+        searchApplication?: (onFinish?: () => void) => void
+        applyResource?: (resource: any) => void;
+        loadApplicationResources?: (onFinish?: () => void) => void
+        openLinker?: (appPrefix: string, address: string, element?: Node) => void
+    }
+    $apply: any;
+}
 export const linker = {
     name: 'linker',
-    run: function(instance){
+    run: function(instance:EditorInstance){
         return {
             template: '<i ng-click="linker.openLinker()" tooltip="editor.option.link"></i>' +
             '<div ng-include="\'/infra/public/template/linker.html\'"></div>',
-            link: function (scope, element, attributes) {
+            link: function (scope: LinkerScope, element, attributes) {
                 ui.extendSelector.touchEvents('[contenteditable] a');
                 scope.linker = {
                     display: {},
@@ -99,27 +147,55 @@ export const linker = {
                         };
                     }
                     Behaviours.loadBehaviours(scope.linker.params.appPrefix, function (appBehaviour) {
-                        const result = Behaviours.applicationsBehaviours[prefix].loadResources(() => cb(Behaviours.applicationsBehaviours[prefix].resources));
-                        if(result && result.then){
-                            result.then(() => {
-                                cb(Behaviours.applicationsBehaviours[prefix].resources);
-                            });
+                        const behaviour = Behaviours.applicationsBehaviours[prefix];
+                        scope.linker.addResource = behaviour.create;
+                        if(behaviour.loadResourcesWithFilter){
+                            cb();
+                        }else{
+                            const result = behaviour.loadResources(() => cb());
+                            if(result && result.then){
+                                result.then(() => {
+                                    cb();
+                                });
+                            }
                         }
-                        scope.linker.addResource = Behaviours.applicationsBehaviours[prefix].create;
                     });
                 };
-
+                const debounce = (callback, wait) => {
+                    let timeout = null
+                    return (...args) => {
+                      const next = () => callback(...args)
+                      clearTimeout(timeout)
+                      timeout = setTimeout(next, wait)
+                    }
+                  }
+                const searchDebounced = debounce((appBehaviour, cb)=>{
+                    scope.linker.display.searching = true;
+                    scope.$apply('linker');
+                    appBehaviour.loadResourcesWithFilter(scope.linker.search.text, (r)=>{
+                        scope.linker.resources = r;
+                        scope.linker.display.searching = false;
+                        scope.$apply('linker');
+                        cb && cb();
+                    })
+                }, 400)
                 scope.linker.searchApplication = function(cb){
                     var split = scope.linker.search.application.address.split('/');
                     var prefix = split[split.length - 1];
                     scope.linker.params.appPrefix = prefix;
                     Behaviours.loadBehaviours(scope.linker.params.appPrefix, function(appBehaviour){
-                        scope.linker.resources = _.filter(appBehaviour.resources, function(resource) {
-                            return scope.linker.search.text !== '' && (idiom.removeAccents(resource.title.toLowerCase()).indexOf(idiom.removeAccents(scope.linker.search.text).toLowerCase()) !== -1 ||
-                                resource._id === scope.linker.search.text);
-                        });
-                        if(typeof cb === 'function'){
-                            cb();
+                        if(appBehaviour.loadResourcesWithFilter){
+                            if(scope.linker.search.text){
+                                searchDebounced(appBehaviour, cb)
+                            }
+                        }else{
+                            scope.linker.resources = _.filter(appBehaviour.resources, function(resource) {
+                                return scope.linker.search.text !== '' && (idiom.removeAccents(resource.title.toLowerCase()).indexOf(idiom.removeAccents(scope.linker.search.text).toLowerCase()) !== -1 ||
+                                    resource._id === scope.linker.search.text);
+                            });
+                            if(typeof cb === 'function'){
+                                cb();
+                            }
                         }
                     });
                 };
@@ -198,7 +274,7 @@ export const linker = {
                         editorEvents.onLinkerAdd.next({
                             externalLink: scope.linker.externalLink,
                             ...scope.linker.params
-                        })
+                        } as LinkerEventBody)
                     }
 
                     if (selectedNode && selectedNode.nodeName === 'A') {
