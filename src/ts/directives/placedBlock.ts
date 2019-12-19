@@ -12,6 +12,9 @@ export const placedBlock = ng.directive('placedBlock', function(){
 			z: '=',
 			h: '=',
 			w: '=',
+			transformX: '=?', // A transform function for the X coordinate: transformX(x: number, reverseTransform: boolean): number
+			transformY: '=?', // A transform function for the Y coordinate: transformY(y: number, reverseTransform: boolean): number
+			transformZ: '=?', // A transform function for the Z coordinate: transformZ(z: number, reverseTransform: boolean): number
 			ratio: '@' // W/H ratio that will be preserved when resized.
 		},
 		template: '<article ng-transclude ng-style="{\'z-index\': z }"></article>',
@@ -27,20 +30,52 @@ export const placedBlock = ng.directive('placedBlock', function(){
                 }
             };
 
-
 			element.css({ 'position': 'absolute' });
-			scope.$watch('x', function(newVal){
-				element.offset({
-					top: element.offset().top,
-					left: parseInt(newVal) + element.parents('.drawing-zone').offset().left
-				});
-			});
 
-			scope.$watch('y', function(newVal){
-				element.offset({
-					left: element.offset().left,
-					top: parseInt(newVal) + element.parents('.drawing-zone').offset().top
-				});
+			let xUpdate = function(newVal)
+			{
+				let left = scope.transformX != null ? scope.transformX(parseInt(newVal), false) : parseInt(newVal);
+
+				if(left == null)
+				{
+					window.setTimeout(function()
+					{
+						xUpdate(newVal);
+					});
+				}
+				else
+				{
+					element.offset({
+						top: element.offset().top,
+						left: left + element.parents('.drawing-zone').offset().left,
+					}, 0);
+				}
+			};
+			scope.$watch('x', xUpdate);
+
+			let yUpdate = function(newVal)
+			{
+				let top = scope.transformY != null ? scope.transformY(parseInt(newVal), false) : parseInt(newVal);
+
+				if(top == null)
+				{
+					window.setTimeout(function()
+					{
+						yUpdate(newVal);
+					}, 0);
+				}
+				else
+				{
+					element.offset({
+						left: element.offset().left,
+						top: top + element.parents('.drawing-zone').offset().top,
+					});
+				}
+			};
+			scope.$watch('y', yUpdate);
+
+			scope.$watch('z', function(newVal){
+				element.css({ 'z-index': scope.transformZ != null ? scope.transformZ(scope.z) : scope.z })
 			});
 
 			var toTop = function(){
@@ -74,12 +109,18 @@ export const placedBlock = ng.directive('placedBlock', function(){
 				toTop();
 			});
 
-            const applyPosition = () => {
-                scope.x = element.position().left;
-				scope.$apply('x');
+      const applyPosition = () => {
+				scope.x = element.position().left;
 				scope.y = element.position().top;
-				scope.$apply('y');
-            }
+
+				if(scope.transformX != null)
+					scope.x = scope.transformX(scope.x, true);
+
+				if(scope.transformY != null)
+					scope.y = scope.transformY(scope.y, true);
+
+				scope.$apply();
+      }
 
 			element.on('stopDrag', () => {
 				applyPosition();
@@ -93,10 +134,6 @@ export const placedBlock = ng.directive('placedBlock', function(){
 					w: element.width(),
 					h: element.height()
 				});
-			});
-
-			scope.$watch('z', function(newVal){
-				element.css({ 'z-index': scope.z })
 			});
 
 			element.on('stopResize', function(){
