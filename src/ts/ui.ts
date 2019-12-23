@@ -318,7 +318,7 @@ let touchEvents = {
                 };
             });
             element.on('touchleave touchend', function (e) {
-                if (initialMouse.x + 150 < mouse.x) {
+                if (initialMouse.x + 150 < mouse.x && (initialMouse.x < $('body').width()/10)) {
                     element.trigger('swipe-right');
                 }
                 if (initialMouse.x - 150 > mouse.x) {
