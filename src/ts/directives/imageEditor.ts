@@ -18,9 +18,9 @@ export const imageEditor = ng.directive('imageEditor', () => {
         template: `
             <div ng-if="show && inline && ready">
                 <i ng-if="display.isImageLoading" class="loading image-loading"></i>
-                <container template="entcore/image-editor/main"></container>
+                <container template="entcore/image-editor/main" guard-ignore-template></container>
             </div>
-            <div ng-show="show && !inline && ready">
+            <div ng-if="show && !inline && ready">
                 <lightbox show="show" on-close="hide()">
                     <i ng-if="display.isImageLoading" class="loading image-loading"></i>
                     <container template="entcore/image-editor/main" guard-ignore-template></container>
