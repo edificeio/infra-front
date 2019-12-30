@@ -12,8 +12,7 @@ const secondLevelWidgets = [
 	"rss-widget", 
 	"bookmark-widget", 
 	"cursus-widget",
-	"maxicours-widget",
-	"qwant"
+	"maxicours-widget"
 ];
 
 export let widgets = {
