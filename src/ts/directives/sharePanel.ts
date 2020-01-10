@@ -11,6 +11,7 @@ import { notify } from '../notify';
 import { template } from '../template';
 import { ui } from '../ui';
 import { Shareable, ShareVisible, SharePayload, ShareInfos, ShareAction } from '../rights';
+import { Behaviours } from '../behaviours';
 export interface ShareCloseDelegate {
     $canceled: boolean
     $close: () => void
@@ -45,6 +46,7 @@ export interface SharePanelScope {
     search: string
     found: ShareVisible[]
     maxEdit: number
+    shareOverrideDefaultActions: string[]
     onValidate?(args: {
         $data: SharePayload,
         $resource: ShareableWithId,
@@ -131,6 +133,31 @@ export const sharePanel = ng.directive('sharePanel', ['$rootScope', ($rootScope)
             if ($scope.appPrefix) {
                 currentApp = $scope.appPrefix;
             }
+
+            function loadAppBehavioursSharingConf() {
+                Behaviours.loadBehaviours(appPrefix, () => {
+                    if (Behaviours.applicationsBehaviours[appPrefix] 
+                        && Behaviours.applicationsBehaviours[appPrefix].share
+                        && typeof Behaviours.applicationsBehaviours[appPrefix].share === "function") {
+                            $scope.shareOverrideDefaultActions = Behaviours.applicationsBehaviours[appPrefix].share().overrideDefaultActions;
+                    }
+                });
+            }
+
+            // get sharing configuration from platform
+            // if no sharing configuration from platform then get sharing configuration from app behaviours
+            http()
+                .get(`${appPrefix}/config/share`)
+                .done((config: {overrideDefaultActions: string[]}) => {
+                    if (config && config.overrideDefaultActions) {
+                        $scope.shareOverrideDefaultActions = config.overrideDefaultActions;
+                    } else {
+                        loadAppBehavioursSharingConf();
+                    }
+                })
+                .e404(error => {
+                    loadAppBehavioursSharingConf();
+                });
 
             $scope.shareTable = '/' + appPrefix + '/public/template/entcore/share-panel-table.html';
 
@@ -384,7 +411,11 @@ export const sharePanel = ng.directive('sharePanel', ['$rootScope', ($rootScope)
                 var defaultActions = []
                 $scope.actions.forEach(function (action) {
                     var actionId = action.displayName.split('.')[1];
-                    if (actionsConfiguration[actionId].default) {
+
+                    if ($scope.shareOverrideDefaultActions) {
+                        $scope.shareOverrideDefaultActions.forEach(shareOverrideDefaultAction => item.actions[shareOverrideDefaultAction] = true);
+                        defaultActions = $scope.shareOverrideDefaultActions;
+                    } else if (actionsConfiguration[actionId].default) {
                         item.actions[action.displayName] = true;
                         defaultActions.push(action);
                     }
@@ -399,7 +430,7 @@ export const sharePanel = ng.directive('sharePanel', ['$rootScope', ($rootScope)
                                 user.type = 'sharebookmark-user';
                                 user.actions = {};
                                 defaultActions.forEach(defaultAction => {
-                                    user.actions[defaultAction.displayName] = true;
+                                    user.actions[defaultAction] = true;
                                 });
                             });
                         }
@@ -409,7 +440,7 @@ export const sharePanel = ng.directive('sharePanel', ['$rootScope', ($rootScope)
                                 group.type = 'sharebookmark-group';
                                 group.actions = {};
                                 defaultActions.forEach(defaultAction => {
-                                    group.actions[defaultAction.displayName] = true;
+                                    group.actions[defaultAction] = true;
                                 });
                             });
                         }
