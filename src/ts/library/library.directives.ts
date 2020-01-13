@@ -310,6 +310,7 @@ export const libraryPublishDirective: Directive = ng.directive('libraryPublish',
                             <div class="row top-spacing-twice">
                                 <label class="cell three bold" for="">
                                     <i18n>bpr.form.publication.keywords</i18n> :
+                                    <br /><small>bpr.form.publication.keywords.separate</small>
                                 </label>
                                 <input class="cell nine"
                                     type="text"
