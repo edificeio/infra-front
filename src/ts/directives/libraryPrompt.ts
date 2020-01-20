@@ -20,7 +20,7 @@ export let libraryPrompt = ng.directive('libraryPrompt', ['$timeout', function (
                     <hr>
                     <div class="apps">
                         <div class="container">
-                            <i class="workspace-large"></i>
+                            <i class="library-large"></i>
                         </div>
                         <p>
                             <i18n>library.prompt.content</i18n>
@@ -33,7 +33,7 @@ export let libraryPrompt = ng.directive('libraryPrompt', ['$timeout', function (
                 </div>
             </div>
         
-        </lightbox>    
+        </lightbox>
         `,
         link: function(scope, element, attributes){
 
