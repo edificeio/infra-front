@@ -33,6 +33,7 @@ import * as directives from './directives';
 import { Me } from './me';
 import httpAxios from 'axios';
 import { NgModelExtend } from './directives';
+import { initThemeDirective } from './theme';
 
 
 var module = angular.module('app', ['ngSanitize', 'ngRoute'], ['$interpolateProvider', function($interpolateProvider) {
@@ -152,7 +153,7 @@ var module = angular.module('app', ['ngSanitize', 'ngRoute'], ['$interpolateProv
         	}
         }
     });
-
+initThemeDirective(module);
 //routing
 if(routes.routing){
 	module.config(['$routeProvider', routes.routing]);

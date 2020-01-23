@@ -5,6 +5,8 @@ import { _ } from './libs/underscore/underscore';
 
 let _skinResolved, _skinRejected = null;
 export var skin = {
+	skinName:'',
+	themeName:'',
 	addDirectives: undefined as any,
 	templateMapping: {},
 	skin: 'raw',
@@ -136,6 +138,8 @@ export var skin = {
 		const that = this;
 		return new Promise((resolve, reject) => {
 			http().get('/theme').done(function(data){
+				that.skinName = data.skinName;
+				that.themeName = data.themeName;
 				that.theme = data.skin;
 				that.basePath = that.theme + '../../';
 				that.skin = that.theme.split('/assets/themes/')[1].split('/')[0];
