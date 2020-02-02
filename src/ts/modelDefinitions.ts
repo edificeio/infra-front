@@ -1,4 +1,5 @@
 import { appPrefix, infraPrefix } from './globals';
+import {VideoRecorder} from "./video/VideoRecorder";
 
 export declare interface IModel{
 	api: { get?: string, put?: string, post?: string, delete?: string }
@@ -39,6 +40,7 @@ Model.prototype.build = function () { };
 export class BaseModel extends Model{
 	me: any;
     calendar: any;
+    videoRecorder: VideoRecorder;
     widgets: any;
 	mediaLibrary: any;
 	bootstrapped: boolean;
@@ -118,7 +120,7 @@ if (!window.entcore) {
 }
 window.entcore.model = model;
 (window as any).model = model;
-
+model.videoRecorder = new VideoRecorder();
 window.entcore.Model = Model;
 (window as any).Model = Model;
 window.entcore.Collection = Collection;
