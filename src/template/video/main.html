@@ -18,26 +18,20 @@
  ~
  -->
 
-<div class="row media-library">
-	<div class="drop-zone import-files">
-		<article class="drop flex-row align-center">
-				<i class="two cloud-upload"></i>
-				<div class="ten help">
-					<em><i18n>medialibrary.drop.help2</i18n></em>
-				</div>
-		</article>
-		<article class="default flex-row align-center absolute-position">
-			<div class="three select-file">
-				<div class="hidden-content">
-					<input class="upload-input" type="file" multiple files-input-change="importFiles()" ng-model="upload.files" />
-				</div>
-				<button class="file-button no-margin" translate content="library.file.choose" ng-click="triggerIpnutFileClick($event)"></button>
-			</div>
-			<i class="two cloud-upload"></i>
-			<div class="seven help">
-				<em><i18n>medialibrary.drop.help</i18n></em>
-			</div>
-		</article>
+<lightbox show="show" on-close="cancel();">
+    <div class="embed-container">
+        <h2>[[title()]]</h2>
+        <section class="row video">
+            <section class="twelve cell tabs row">
+                <header ng-repeat="header in headers()" ng-class="{'selected':isSelectedHeader(header)}" ng-click="showHeader(header)" workflow="[[header.worflowKey]]" ng-show="header.visible()">
+                    <span translate content="[[header.i18Key]]"></span>
+                </header>
+                <section class="medium-text">
+                    <container template="entcore/video/main" guard-ignore-template></container>
+                    <container template="entcore/video/cache" guard-ignore-template style="display:none"></container>
+                </section>
+            </section>
+        </section>
 
-	</div>
-</div>
+    </div>
+</lightbox>

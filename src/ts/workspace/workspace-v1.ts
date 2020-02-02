@@ -305,7 +305,7 @@ export class AppDocuments extends Folder {
         }
         const response = await workspaceService.fetchDocuments({ filter: "protected", parentId: this._id || "" });
         this.documents.all.splice(0, this.documents.all.length);
-        this.documents.addRange((response));
+        this.documents.addRange((response))
         MediaLibrary.eventer.trigger('sync');
     }
 }

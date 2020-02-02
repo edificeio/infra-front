@@ -8,8 +8,8 @@ import { idiom } from '../idiom';
 import http from 'axios';
 
 export type Header = { template: string, worflowKey: string, i18Key: string, visible: () => boolean };
-type LIST_TYPE = "myDocuments" | "appDocuments" | "publicDocuments" | "sharedDocuments" | "trashDocuments" | "externalDocuments";
-type MediaLibraryView = "icons" | "list";
+export type LIST_TYPE = "myDocuments" | "appDocuments" | "publicDocuments" | "sharedDocuments" | "trashDocuments" | "externalDocuments";
+export type MediaLibraryView = "icons" | "list";
 export interface MediaLibraryDelegate {
 	title?:string
 	visit?($scope: MediaLibraryScope);
@@ -28,13 +28,13 @@ export interface MediaLibraryScope {
 		listFrom?: LIST_TYPE,
 		loading?: Document[],
 		compressionReady?: boolean,
-		editedDocument?: Document
+		editedDocument?: Document,
 	}
 	viewMode: MediaLibraryView
 	orderFieldDocument: string
 	orderFieldFolder: string
 	upload: {
-		files?: FileList
+		files?: FileList,
 		loading?: Document[],
 		documents: Document[],
 		highlights: Document[]
@@ -334,6 +334,7 @@ export const mediaLibrary = ng.directive('mediaLibrary', ['$timeout', function (
 				return scope.display.listFrom == listName;
 			}
 			scope.listFrom = async (listName: LIST_TYPE): Promise<any> => {
+				console.log('LIST FROM')
 				scope.display.listFrom = listName;
 				const temp = MediaLibrary[scope.display.listFrom];
 				await scope.openFolder(temp);

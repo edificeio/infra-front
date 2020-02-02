@@ -913,7 +913,7 @@ export const workspaceService = {
         clone._id = null;
         return workspaceService.createDocument(blob, clone, parent, { visibility: args.visibility, application: args.application })
     },
-    async updateDocument(file: File | Blob, document: workspaceModel.Element): Promise<workspaceModel.Element> {
+    async   updateDocument(file: File | Blob, document: workspaceModel.Element): Promise<workspaceModel.Element> {
         const formData = new FormData();
         let newName = document.name || document.title;
         const extension = document.metadata && document.metadata.extension;
