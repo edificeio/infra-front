@@ -79,6 +79,7 @@ export interface MediaLibraryScope {
 	confirmImport()
 	cancelUpload()
 	isExternalVisible(): boolean
+	triggerIpnutFileClick(event): void;
 	//angular
 	ngModel: Document | Document[]
 	ngChange()
@@ -559,6 +560,16 @@ export const mediaLibrary = ng.directive('mediaLibrary', ['$timeout', function (
 			scope.$on("$destroy", function () {
 				cancelAll();
 				MediaLibrary.deselectAll();
+			});
+
+			// Rather dirty hack in case event isn't propagated from button to input..
+			scope.triggerIpnutFileClick = function(event) {
+				event.preventDefault();
+				event.stopPropagation();
+				$(".upload-input").trigger("click");
+			}
+			element.on('click', '.upload-input', (event) => {
+				event.stopPropagation();
 			});
 		}
 	}
