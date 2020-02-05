@@ -38,7 +38,8 @@ export const contentDivider = ng.directive('contentDivider', () => {
         `},
 
         scope: {
-            ngModel: '='
+            ngModel: '=',
+            callback: '=',
         },
 
         link: (scope, element, attributes,ctrl,transclude) => {
