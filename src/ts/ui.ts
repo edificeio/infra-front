@@ -1061,7 +1061,8 @@ export const ui = {
                             if (element.data('dragging')) {
                                 element.trigger('stopDrag');
                                 if(params.noScroll || devices.isiOS()){
-                                    $('body').css({ overflow: "visible" });
+                                    const value = $('body').attr("data-overflow") || "visible";
+                                    $('body').css({ overflow: value });
                                 }
                                 element.data('dragging', false);
                                 $('#audioWrapper').css({'display':'none'});
