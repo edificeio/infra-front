@@ -45,7 +45,7 @@
     </tr>
   </thead>
   <tbody>
-    <tr ng-repeat="folder in folders | orderBy: orderFieldFolder | limitTo:display.limit" ng-class="{ checked: folder.selected }">
+    <tr ng-repeat="folder in folders | orderBy: orderFieldFolder" ng-class="{ checked: folder.selected }">
       <td class="icon zero-mobile">
         <div class="twelve cell">
           <i class="folder"></i>
@@ -59,7 +59,7 @@
       <td class="user"><a>[[folder.ownerName]]</a></td>
     </tr>
     <tr
-      ng-repeat="document in documents | orderBy:'isNew' | orderBy: orderFieldDocument | limitTo:display.limit - folders.length"
+      ng-repeat="document in documents | orderBy:'isNew' | orderBy: orderFieldDocument"
       ng-class="{ overline: true, checked: document.selected }"
       explorer ng-model="document.selected" ng-click="updateSelection(document)" on-open="selectDocument(document)"
       doc-id="[[document._id]]"

@@ -18,8 +18,8 @@
  ~
  -->
 
-<div class="icons-view" style="overflow: auto" bottom-scroll="display.limit = display.limit + 6">
-	<div class="element reduce-block-six" ng-repeat="folder in folders | orderBy: orderFieldFolder | limitTo:display.limit">
+<div class="icons-view" style="overflow: auto">
+	<div class="element reduce-block-six" ng-repeat="folder in folders | orderBy: orderFieldFolder">
 		<explorer ng-model="folder.selected" on-open="openFolder(folder)">
 			<div class="img container">
 				<i class="folder-large"></i>
@@ -30,12 +30,12 @@
 		</explorer>
 
 	</div>
-	<div class="element reduce-block-six" ng-repeat="document in documents | orderBy:'isNew' | orderBy: orderFieldDocument | limitTo:display.limit - folders.length">
+	<div class="element reduce-block-six" ng-repeat="document in documents | orderBy:'isNew' | orderBy: orderFieldDocument">
 		<explorer ng-model="document.selected" ng-click="updateSelection(document)" on-open="selectDocument(document)"
 		 doc-id="[[document._id]]">
 			<div class="img container" ng-if="document.role() === 'img'">
 				<div class="clip">
-					<img ng-src="[[document.thumbUrl]]" />
+					<img image-lazy-load="document.thumbUrl"/>
 					<div class="absolute" ng-if="display.loading && display.loading.indexOf(document) !== -1">
 						<img skin-src="/img/illustrations/loading.gif" />
 					</div>
