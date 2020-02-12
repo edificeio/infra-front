@@ -193,7 +193,7 @@ export let embedder = ng.directive('embedder', ['$timeout', function ($timeout) 
             const HEADER_UPLOAD: Header = {
                 i18Key: "video.header.upload",
                 template: "entcore/media-library/upload",
-                visible: () => true,
+                visible: () => false,
                 worflowKey: "workspace.create"
             }
             const HEADER_RECORD: Header = {
