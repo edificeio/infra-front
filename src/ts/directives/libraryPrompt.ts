@@ -1,7 +1,8 @@
 import { ng } from '../ng-start';
 import { http } from '../http';
+import { idiom as lang } from '../idiom';
 
-export let libraryPrompt = ng.directive('libraryPrompt', ['$timeout', function ($timeout) {
+export let libraryPrompt = ng.directive('libraryPrompt', ['$timeout', '$sce', function ($timeout, $sce) {
     return {
         restrict: 'E',
         scope: {
@@ -15,21 +16,34 @@ export let libraryPrompt = ng.directive('libraryPrompt', ['$timeout', function (
             <div class="reduce-block-eight">
                 <div class="block-container">
                     <h1 class="centered-text">
-                        <i18n>library.prompt.title</i18n>
+                        <i18n ng-if="step == 1">library.prompt.title1</i18n>
+                        <i18n ng-if="step == 2">library.prompt.title2</i18n>
                     </h1>
                     <hr>
                     <div class="apps">
-                        <div class="container">
+                        <div ng-if="step == 1" class="container">
                             <i class="library-large"></i>
                         </div>
-                        <p>
-                            <i18n>library.prompt.content</i18n>
-                        </p>
+                        <div>
+                            <div ng-if="step == 1" class="content1" ng-bind-html="content1"></div>
+                            <div ng-if="step == 2" class="content1 centered-text" ng-bind-html="content2"></div>
+                            <div ng-if="step == 2">
+                                <img skin-src="/img/illustrations/library-incentive.gif" />
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <hr>
+                <nav class="dots">
+                    <ul>
+                        <li class="dot" ng-click="step = 1" ng-class="{ active: step == 1 }"></li>
+                        <li class="dot" ng-click="step = 2" ng-class="{ active: step == 2 }"></li>
+                    </ul>
+                </nav>
                 <div class="row">        
                     <button ng-click="seeLater()" class="cancel"><i18n>library.prompt.see.later</i18n></button>
+                    <button ng-show="step == 1" ng-click="step = 2" class="right-magnet"><i18n>library.prompt.how.to.publish</i18n></button>
+                    <button ng-show="step == 2" ng-click="ignore()" class="right-magnet"><i18n>library.prompt.understood</i18n></button>
                 </div>
             </div>
         
@@ -42,6 +56,11 @@ export let libraryPrompt = ng.directive('libraryPrompt', ['$timeout', function (
             if (!scope.originModule) {
                 return;
             }
+
+            let moduleTranslated = lang.translate(scope.originModule + '.library.prompt.title');
+            scope.content1 = $sce.trustAsHtml(lang.translate('library.prompt.content1').replace('[[modules]]', moduleTranslated));
+            scope.content2 = $sce.trustAsHtml(lang.translate('library.prompt.content2'));
+            scope.step = 1;
 
             let state;
 
