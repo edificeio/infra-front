@@ -5,7 +5,7 @@ import {VideoRecorder} from "./VideoRecorder";
 
 export const VideoController = ng.controller('VideoController', ['$scope', 'model', 'route', '$timeout',
     ($scope, model, route, $timeout) => {
-        $scope.RECORD_MAX_TIME = 3; // MAX TIME OF RECORDING IN MINUTES
+        $scope.RECORD_MAX_TIME = 5; // MAX TIME OF RECORDING IN MINUTES
         $scope.template = template;
         $scope.me = model.me;
         $scope.recorder = model.videoRecorder;
