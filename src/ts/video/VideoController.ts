@@ -57,7 +57,7 @@ export const VideoController = ng.controller('VideoController', ['$scope', 'mode
                     $scope.gumVideo = document.querySelector('video#gum');
                 }
                 $scope.gumVideo.addEventListener('timeupdate', $scope.handleDuration);
-                $scope.gumVideo.muted = false;
+                $scope.gumVideo.muted = true;
                 $scope.gumVideo.volume = 1;
                 $scope.gumVideo.src = null;
                 $scope.gumVideo.srcObject = null;
@@ -147,6 +147,7 @@ export const VideoController = ng.controller('VideoController', ['$scope', 'mode
         $scope.play =  () => {
             console.log('VIDEO: PLAY');
             let buffer = $scope.recorder.getBuffer();
+            $scope.gumVideo.muted = false;
             $scope.gumVideo.src = null;
             $scope.gumVideo.srcObject = null;
             $scope.gumVideo.src = window.URL.createObjectURL(buffer);
