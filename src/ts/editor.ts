@@ -51,6 +51,9 @@ const whitelistedClasses = [
     'smiley'
 ];
 
+const whiteListAttributes = ["accept","accept-charset","accesskey","action","align","alt","async","autocomplete","autofocus","autoplay","bgcolor","border","charset","checked","cite","class","color","cols","colspan","content","contenteditable","controls","coords","data","data-*","datetime","default","defer","dir","dirname","disabled","download","draggable","dropzone","enctype","for","form","formaction","headers","height","hidden","high","href","hreflang","http-equiv","id","ismap","kind","label","lang","list","loop","low","max","maxlength","media","method","min","multiple","muted","name","novalidate","open","optimum","pattern","placeholder","poster","preload","readonly","rel","required","reversed","rows","rowspan","sandbox","scope","selected","shape","size","sizes","span","spellcheck","src","srcdoc","srclang","srcset","start","step","style","tabindex","target","title","translate","type","usemap","value","width","wrap"];
+
+
 function removeNodes(selector: string, root: HTMLElement): HTMLElement {
     const nodesToRemove = root.querySelectorAll(selector);
     for (let i = nodesToRemove.length - 1; i >= 0; i--) {
@@ -113,6 +116,25 @@ function removeUnauthorizedStyleProperties(root: HTMLElement): HTMLElement {
     return root;
 }
 
+function removeUnauthorizedAttributeProperties(root: HTMLElement): HTMLElement {
+    const removeAttribute = (e:HTMLElement) => {
+        const attributes = e.attributes;
+        for(let i = 0 ; i < attributes.length; i++){
+            const current = attributes.item(i);
+            if(whiteListAttributes.indexOf(current.name)==-1){
+                e.removeAttribute(current.name);
+            }
+        }
+    }
+    const nodesWithAttr = root.querySelectorAll('*');
+    removeAttribute(root);
+    for (let i = nodesWithAttr.length - 1; i >= 0; i--) {
+        const element = (nodesWithAttr.item(i) as HTMLElement);
+        removeAttribute(element);
+    }
+    return root;
+}
+
 function convertNode(selector: string, tag: string, style: (StyleProperties | ((element: Element) => StyleProperties)), root: HTMLElement): HTMLElement {
     const selectedNodes = root.querySelectorAll(selector);
     for (let i = selectedNodes.length - 1; i >= 0; i--) {
@@ -163,6 +185,7 @@ export function convertHTMLToEditorFormat(html: string): string {
 
     removeUnauthorizedClasses(container);
     removeUnauthorizedStyleProperties(container);
+    removeUnauthorizedAttributeProperties(container);
 
     convertNode('b', 'span', {'font-weight': 'bold'}, container);
     convertNode('i', 'span', {'font-style': 'italic'}, container);
@@ -1127,7 +1150,22 @@ export let RTE = {
                         onDropFromDesktop(e, editorInstance, element);
                     });
 
+                    //clean attributs
+                    const cleanAttributesOnChange = () =>{
+                        const cleanSubject = new Subject;
+                        //avoid bad performance using debounce
+                        cleanSubject.debounceTime(750).subscribe(() => {
+                            removeUnauthorizedAttributeProperties(editorInstance.editZone[0]);
+                        })
+                        editorInstance.on("contentupdated",() => cleanSubject.next());
+                        return () => {
+                            cleanSubject.unsubscribe();
+                        }
+                    }
+                    const cancelAttributesClean = cleanAttributesOnChange();
+                    //
                     scope.$on('$destroy', function () {
+                        cancelAttributesClean();
                         cancelAnimationFrame(placeEditorToolbar);
                     });
                 }
