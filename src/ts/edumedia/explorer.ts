@@ -194,6 +194,7 @@ export const edumediaExplorer = ng.directive('edumediaExplorer', ['$timeout', fu
             const tree = await edumediaService.fetchSubjects();
             let selected: EdumediaMedia[] = [];
             scope.stack = [];
+            let current:EdumediaTreeItem=null;
             let searching = false;
             let kind: "root" | "folder" | "media" = "root";
             const init = () => {
@@ -206,6 +207,7 @@ export const edumediaExplorer = ng.directive('edumediaExplorer', ['$timeout', fu
             init();
             const setCurrent = async (item: EdumediaTreeItem) => {
                 const res = await edumediaService.fetchChildren(item as EdumediaTreeItem);
+                current = item;
                 $timeout(() => {
                     kind = res.children ? "folder" : "media";
                     visible = "explorer";
@@ -240,7 +242,7 @@ export const edumediaExplorer = ng.directive('edumediaExplorer', ['$timeout', fu
                 })
                 if (text) {
                     searching = true;
-                    const res = await edumediaService.search(text);
+                    const res = await edumediaService.search(text, 40, current?current.id:undefined);
                     $timeout(() => {
                         scope.items = res.medias;
                     })
