@@ -168,10 +168,10 @@ export const edumediaService = {
         _tokenPromise = promiseFactory();
         return _tokenPromise;
     },
-    async search(search: string, max?: number): Promise<EdumediaSearchResult> {
+    async search(search: string, max: number=40, fromItemId?:string): Promise<EdumediaSearchResult> {
         const url = await edumediaService.getUrl();
         const res = await axios({
-            url: `${url}/search?q=${search}&max=${max}`,
+            url: `${url}/search?q=${search}&max=${max}&${fromItemId?'tree-item-api-id='+fromItemId:''}`,
             method: 'get'
         });
         const resSearch:EdumediaSearchResult = res.data;
