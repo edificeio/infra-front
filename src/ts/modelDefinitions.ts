@@ -120,7 +120,6 @@ if (!window.entcore) {
 }
 window.entcore.model = model;
 (window as any).model = model;
-model.videoRecorder = new VideoRecorder();
 window.entcore.Model = Model;
 (window as any).Model = Model;
 window.entcore.Collection = Collection;

@@ -1,14 +1,60 @@
-import {template} from "../template";
-import {notify} from "../notify";
-import {ng} from "../ng-start";
-import {VideoRecorder} from "./VideoRecorder";
+import { template } from "../template";
+import { notify } from "../notify";
+import { ng } from "../ng-start";
+import { VideoRecorder } from "./VideoRecorder";
+import { model } from "../modelDefinitions";
+
+interface VideoControllerScope {
+    RECORD_MAX_TIME: number;
+    template: typeof template
+    me: typeof model.me
+    recorder: VideoRecorder;
+    display: {}
+    cameraIsAuth: boolean
+    authorized: boolean
+    videoIsRecorded: boolean
+    videoIsRecording: boolean
+    uploadVideo: boolean
+    videofile: { name?: string }
+    action: 'videorecorder'
+    notFound: boolean
+    currentDuration: number
+    recordStartTime: number
+    recordTime: number | string
+    recordMaxTime: number
+    init(): void
+    setCookie(value: boolean, duration: number): void
+    showCamera(): void
+    onTrackedVideoFrame(time: number): void;
+    stopRecord(): void
+    msToTime(time: number): string
+    getCookie(): string
+    startRecord(): Promise<void>
+    handleDuration(event: Event): void;
+    play(): void;
+    switchRecording(): void
+    redo(): void;
+    doPlay(): void;
+    showUpload(): void;
+    upload(): void;
+    pad(num: number): string;
+    openMainPage(): void
+    release(): void;
+    website: any;
+    selectedWebsite: any;
+    $apply: any
+    $emit: any
+    $on: any;
+}
 
 export const VideoController = ng.controller('VideoController', ['$scope', 'model', 'route', '$timeout',
-    ($scope, model, route, $timeout) => {
+    ($scope: VideoControllerScope, model, route, $timeout) => {
         $scope.RECORD_MAX_TIME = 5; // MAX TIME OF RECORDING IN MINUTES
         $scope.template = template;
         $scope.me = model.me;
-        $scope.recorder = model.videoRecorder;
+        $scope.recorder = new VideoRecorder('video#gum', (e)=>{
+            $scope.handleDuration(e);
+        });
         $scope.display = {};
         $scope.cameraIsAuth = false;
         $scope.authorized = false;
@@ -18,21 +64,18 @@ export const VideoController = ng.controller('VideoController', ['$scope', 'mode
         $scope.videofile = {};
         $scope.action = 'videorecorder';
         $scope.notFound = false;
-        $scope.gumVideo = null;
         $scope.currentDuration = 0;
         $scope.recordStartTime = 0;
         $scope.recordTime = 0;
         $scope.recordMaxTime = $scope.RECORD_MAX_TIME * 60000;
-        $scope.constraints = {
-            audio: {
-                channelCount: 0
-            },
-            video: {
-                width: 640,
-                height: 360
-            },
-            facingMode: 'user'
-        };
+        $scope.$on("$destroy", () => {
+            console.log("destory video....")
+            $scope.release();
+        })
+        $scope.$on("releaseVideo", () => {
+            console.log("release event video....")
+            $scope.release();
+        })
         // By default open the website list
         template.open('video', 'videorecorder');
 
@@ -46,26 +89,8 @@ export const VideoController = ng.controller('VideoController', ['$scope', 'mode
 
         $scope.showCamera = () => {
             $scope.cameraIsAuth = true;
-            console.log('Using media constraints:', $scope.constraints);
-            $scope.startStreaming();
-        }
-
-        $scope.startStreaming = () => {
-            navigator.mediaDevices.getUserMedia($scope.constraints).then(stream => {
-                (window as any).stream = stream;
-                if (!$scope.gumVideo) {
-                    $scope.gumVideo = document.querySelector('video#gum');
-                }
-                $scope.gumVideo.addEventListener('timeupdate', $scope.handleDuration);
-                $scope.gumVideo.muted = true;
-                $scope.gumVideo.volume = 1;
-                $scope.gumVideo.src = null;
-                $scope.gumVideo.srcObject = null;
-                ($scope.gumVideo as any).srcObject = stream;
-                console.log('VIDEO STREAM STARTED', $scope.gumVideo);
-            }, error => {
-                alert(error);
-            });
+            console.log('Using media constraints:', $scope.recorder.constraints);
+            $scope.recorder.startStreaming();
         }
 
 
@@ -74,7 +99,7 @@ export const VideoController = ng.controller('VideoController', ['$scope', 'mode
             if (time > $scope.recordMaxTime) {
                 $scope.stopRecord();
             } else {
-                $scope.recordTime =  $scope.msToTime(time);
+                $scope.recordTime = $scope.msToTime(time);
                 $scope.$apply();
             }
         }
@@ -83,7 +108,7 @@ export const VideoController = ng.controller('VideoController', ['$scope', 'mode
             var name = "camera-auth" + "=";
             var decodedCookie = decodeURIComponent(document.cookie);
             var ca = decodedCookie.split(';');
-            for(var i = 0; i <ca.length; i++) {
+            for (var i = 0; i < ca.length; i++) {
                 var c = ca[i];
                 while (c.charAt(0) == ' ') {
                     c = c.substring(1);
@@ -98,21 +123,16 @@ export const VideoController = ng.controller('VideoController', ['$scope', 'mode
 
         $scope.setCookie = (cvalue, exdays) => {
             var d = new Date();
-            d.setTime(d.getTime() + (exdays*24*60*60*1000));
-            var expires = "expires="+ d.toUTCString();
+            d.setTime(d.getTime() + (exdays * 24 * 60 * 60 * 1000));
+            var expires = "expires=" + d.toUTCString();
             document.cookie = "camera-auth=" + cvalue + ";" + expires;
         }
 
 
-        $scope.startRecord = () => {
+        $scope.startRecord = async () => {
             console.log('VIDEO: START RECORD');
             $scope.videoIsRecorded = false;
             $scope.videoIsRecording = true;
-            if ($scope.recorder) {
-                console.log('NO MEDIA RECORDER', model);
-                model.videoRecorder = new VideoRecorder();
-                $scope.recorder = model.videoRecorder ;
-            }
             $scope.recorder.startRecording();
             $scope.recordStartTime = $scope.currentDuration;
         }
@@ -144,18 +164,13 @@ export const VideoController = ng.controller('VideoController', ['$scope', 'mode
             }
         }
 
-        $scope.play =  () => {
+        $scope.play = () => {
             console.log('VIDEO: PLAY');
-            let buffer = $scope.recorder.getBuffer();
-            $scope.gumVideo.muted = false;
-            $scope.gumVideo.src = null;
-            $scope.gumVideo.srcObject = null;
-            $scope.gumVideo.src = window.URL.createObjectURL(buffer);
-            $scope.gumVideo.controls = true;
+            $scope.recorder.play();
         }
 
         $scope.doPlay = () => {
-            $scope.gumVideo.play();
+            $scope.recorder.doPlay();
         }
 
         $scope.redo = () => {
@@ -163,7 +178,7 @@ export const VideoController = ng.controller('VideoController', ['$scope', 'mode
             $scope.videoIsRecording = false;
             $scope.videoIsRecorded = false;
             $scope.recorder.clearBuffer();
-            $scope.startStreaming();
+            $scope.recorder.startStreaming();
         }
 
         $scope.showUpload = () => {
@@ -182,7 +197,7 @@ export const VideoController = ng.controller('VideoController', ['$scope', 'mode
                 } else {
 
                     notify.success("video.file.saved");
-                    $scope.$emit("video-upload","");
+                    $scope.$emit("video-upload", "");
                 }
                 $scope.uploadVideo = false;
                 $scope.$apply();
@@ -196,11 +211,11 @@ export const VideoController = ng.controller('VideoController', ['$scope', 'mode
             s = (s - secs) / 60;
             var mins = s % 60;
 
-            return  $scope.pad(mins) + ':' + $scope.pad(secs) ;
+            return $scope.pad(mins) + ':' + $scope.pad(secs);
         }
 
         $scope.pad = (num) => {
-            if ((''+num).length >= 2) return num;
+            if (('' + num).length >= 2) return num + '';
             var lead = '0' + new Array(2).join('0')
             return (lead + num).slice(-2);
         }
@@ -214,7 +229,11 @@ export const VideoController = ng.controller('VideoController', ['$scope', 'mode
             template.open('video', 'videorecorder');
             window.location.hash = "";
         }
-
+        $scope.release = () => {
+            $scope.recorder.stopStreaming();
+            $scope.videoIsRecording=false;
+            $scope.videoIsRecorded = false;
+        }
 
 
         // We check if camera is already authorized
