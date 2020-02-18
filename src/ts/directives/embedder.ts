@@ -145,6 +145,7 @@ export interface VideoScope {
     $parent: any
 
     cancel();
+    $broadcast:any;
 }
 
 export let embedder = ng.directive('embedder', ['$timeout', function ($timeout) {
@@ -695,6 +696,7 @@ export let embedder = ng.directive('embedder', ['$timeout', function ($timeout) 
             scope.cancel = function () {
                 scope.show = false;
                 scope.unselectProvider();
+                scope.$broadcast('releaseVideo', {});
             };
 
             scope.unselectProvider = function () {
