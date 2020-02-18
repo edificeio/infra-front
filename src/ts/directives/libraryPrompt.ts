@@ -87,7 +87,6 @@ export let libraryPrompt = ng.directive('libraryPrompt', ['$timeout', '$sce', fu
                 state = preferences;
 
                 setTimeout(function(){
-                    console.log("OOOOOOOOOOOOOUUUUUUUUUUUIIIIIIIIIIIi")
                     scope.show.libraryprompt = true;
                     scope.$apply();
                 }, 1000);
