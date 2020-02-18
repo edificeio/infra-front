@@ -1,5 +1,6 @@
 ﻿export * from './assistant';
 export * from './autocomplete';
+export * from './autosize';
 export * from './bindHtml';
 export * from './bottomScroll';
 export * from './calendar';
