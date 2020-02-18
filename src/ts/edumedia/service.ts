@@ -7,6 +7,8 @@ import { model } from '../modelDefinitions';
 import { MD5 } from "./utils";
 import { Me } from '../me';
 import { idiom } from '../idiom';
+import { getEditorWhiteListAttributes } from '../editor/whiteList';
+
 
 const EXTERNAL_ID = "edumedia";
 const CONTENT_TYPE = "edumedia";
@@ -16,7 +18,7 @@ declare var $: any;
 export interface EdumediaConfig {
     uri: string
     pattern: string
-    ignoreSubjects?:string[]
+    ignoreSubjects?: string[]
 }
 export interface EdumediaMedia {
     id: string
@@ -168,14 +170,14 @@ export const edumediaService = {
         _tokenPromise = promiseFactory();
         return _tokenPromise;
     },
-    async search(search: string, max: number=40, fromItemId?:string): Promise<EdumediaSearchResult> {
+    async search(search: string, max: number = 40, fromItemId?: string): Promise<EdumediaSearchResult> {
         const url = await edumediaService.getUrl();
         const res = await axios({
-            url: `${url}/search?q=${search}&max=${max}&${fromItemId?'tree-item-api-id='+fromItemId:''}`,
+            url: `${url}/search?q=${search}&max=${max}&${fromItemId ? 'tree-item-api-id=' + fromItemId : ''}`,
             method: 'get'
         });
-        const resSearch:EdumediaSearchResult = res.data;
-        resSearch.medias.forEach(m=>m.media=true)
+        const resSearch: EdumediaSearchResult = res.data;
+        resSearch.medias.forEach(m => m.media = true)
         return resSearch;
     },
     async fetchSubjects(): Promise<EdumediaTree> {
@@ -185,9 +187,9 @@ export const edumediaService = {
             method: 'get'
         });
         const conf = await edumediaService.getEdumediaConfig();
-        let subjects:EdumediaTree = res.data;
-        if(conf.ignoreSubjects){
-            subjects.children = subjects.children.filter(s=>conf.ignoreSubjects.indexOf(s.id)==-1);
+        let subjects: EdumediaTree = res.data;
+        if (conf.ignoreSubjects) {
+            subjects.children = subjects.children.filter(s => conf.ignoreSubjects.indexOf(s.id) == -1);
         }
         return subjects;
     },
@@ -273,7 +275,15 @@ export const edumediaService = {
     }
 }
 // === Register thumb mapper and role mapper
-function initWorkspaceConfig() {
+function initEdumedia() {
+    try {
+        //ADD edumedia attribute
+        getEditorWhiteListAttributes().push('edumedia-content-jquery');
+        getEditorWhiteListAttributes().push('edumedia-fullscreen-jquery');
+        getEditorWhiteListAttributes().push('edumedia-delete-jquery');
+    } catch (e) {
+        console.warn(e)
+    }
     Element.registerContentTypeToRoleMapper((contentType, preview) => {
         if (contentType && contentType.indexOf(EDU_MEDIA_CONTENT_TYPE) > -1) {
             if (preview) {
@@ -328,4 +338,4 @@ function initWorkspaceConfig() {
         return true;
     })
 }
-initWorkspaceConfig();
+initEdumedia();
