@@ -17,6 +17,19 @@ export const themeService = {
             id: 'themeOld'
         });
         jQuery('head').append(style);
+    },
+    loadThemeJs(theme:string){
+        let version = 'dev';
+        if((window as any).springboardBuildDate){
+            version = (window as any).springboardBuildDate;
+        }
+        jQuery("#themeJS").remove();
+        const style = jQuery('<script>', {
+            type: 'text/javascript',
+            src: `/assets/themes/${theme}/js/theme.js?version=${version}`,
+            id: 'themeJS'
+        });
+        jQuery('body').append(style);
     }
 }
 
@@ -36,6 +49,7 @@ export function initThemeDirective(module:any){
                         url = `/assets/themes/${theme.bootstrapVersion}/skins/${skinName}/`;
                         element.addClass(theme.bootstrapVersion);//add class at root=>wrapped theme
                         themeService.loadOldWrappedTheme(theme.child, skinName);
+                        themeService.loadThemeJs(theme.bootstrapVersion)
                     }
                 }
                 ui.setStyle(url);

@@ -128,12 +128,12 @@ abstract class AbstractToolTip {
         $(window).off('scroll', this.tryMoveTip);
         this.isBinded = false;
     }
-    show = (e:any) => {
+    show = (e: any) => {
         if (!this.isReady()) return false;
         //console.debug('[Tooltip.show] emit show event....',e)
         this.onChange.next('show');
     }
-    hide = (e:any) => {
+    hide = (e: any) => {
         if (!this.isReady()) return false;
         //console.debug('[Tooltip.hide] emit hide event....',e)
         this.onChange.next('hide');
@@ -229,6 +229,15 @@ export const tooltipOnEllipsis = ng.directive('tooltipOnEllipsis', ['$compile', 
                 },
                 tooltipType: "tooltipOnEllipsis", sourceElement: element.parent('a')
             });
+        }
+    }
+}]);
+export const odebtTooltip = ng.directive('odebtTooltip', ['$compile', function ($compile) {
+    return {
+        restrict: 'A',
+        link: function (scope, element, attributes) {
+            if (attributes.odebtTooltip) jQuery(element).attr("title", attributes.odebtTooltip);
+            (jQuery(element) as any).tooltip();
         }
     }
 }]);
