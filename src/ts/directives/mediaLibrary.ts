@@ -87,6 +87,7 @@ export interface MediaLibraryScope {
 	$apply(a?)
 	$watch(a?, b?)
 	$on(a?, b?)
+	$id: any
 	$parent: any
 }
 export const mediaLibrary = ng.directive('mediaLibrary', ['$timeout', function ($timeout) {
@@ -572,9 +573,12 @@ export const mediaLibrary = ng.directive('mediaLibrary', ['$timeout', function (
 			scope.triggerIpnutFileClick = function(event) {
 				event.preventDefault();
 				event.stopPropagation();
-				$(".upload-input").trigger("click");
+				$(".upload-input").trigger("click", [scope.$id]);
 			}
-			element.on('click', '.upload-input', (event) => {
+			element.on('click', '.upload-input', (event, scopeId) => {
+				if (scopeId != scope.$id) {
+					event.preventDefault();
+				}
 				event.stopPropagation();
 			});
 		}
