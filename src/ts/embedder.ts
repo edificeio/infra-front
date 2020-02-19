@@ -1,4 +1,5 @@
 import http from "axios";
+import { Element } from "./workspace/model";
 
 
 export interface Embedder {
@@ -22,6 +23,12 @@ export const embedderService = {
         }
         embedderService._providers = [...providers, ...customProviders];
         return embedderService._providers;
+    },
+    getHtmlForVideoStream(document:Element){
+        return `<video controls class="render" src="${document.documentUrl}"></video>`
+    },
+    getHtmlForVideoStreams(documents:Element[]){
+        return documents.map(d=>embedderService.getHtmlForVideoStream(d)).join(' ');
     },
     async getHtmlForUrl(url: string, returnDefault: boolean = false) {
         const providers = await embedderService.getProviders();

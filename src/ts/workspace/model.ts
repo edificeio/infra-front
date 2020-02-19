@@ -468,6 +468,10 @@ export class Element extends Model implements Node, Shareable, Selectable {
         return `/workspace/document/${this._id}?thumbnail=120x120`;
     }
 
+    get documentUrl(){
+        return `/workspace/document/${this._id}`;
+    }
+
     get previewUrl(){
         return `/workspace/document/preview/${this._id}`;
     }
