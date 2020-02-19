@@ -44,7 +44,10 @@ export type BrowserInfo = {
 export const devices = {
     isIE: () => navigator.userAgent.indexOf('Trident') !== -1,
     isiOS: () => /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream,
-    getBrowserInfo():BrowserInfo{
+    isIphone: () => navigator.userAgent.indexOf("iPhone") != -1,
+    isIpod: () => navigator.userAgent.indexOf("iPod") != -1 ,
+    isIpad: () =>navigator.userAgent.indexOf("iPad") != -1 ,
+    getBrowserInfo ():BrowserInfo{
         const safeSplit = (str: string = "", pattern: string = "") => {
             if (typeof str == "string") {
                 return str.split(pattern);
