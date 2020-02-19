@@ -20,7 +20,7 @@ interface VideoControllerScope {
     recordStartTime: number
     recordTime: string
     recordMaxTime: number
-    isIncompatibleDevice():boolean
+    isIncompatibleDevice(): boolean
     isIncompatible(): boolean
     startCamera(): void
     stopRecord(pause?: boolean): void
@@ -185,15 +185,19 @@ export const VideoController = ng.controller('VideoController', ['$scope', 'mode
             showCamera();
         }
 
-        $scope.isIncompatibleDevice= () => devices.isIphone() || devices.isIpad() || devices.isIpod();
+        $scope.isIncompatibleDevice = () => devices.isIphone() || devices.isIpad() || devices.isIpod();
 
         $scope.isIncompatible = () => $scope.videoState == 'incompatible';
 
         $scope.isReady = () => $scope.videoState == 'ready';
 
-        $scope.isCameraVisible = () => $scope.videoState == 'starting' || $scope.videoState == 'ready' || $scope.videoState == 'recording' || $scope.videoState == 'recorded';
+        $scope.isCameraVisible = () => $scope.videoState == 'starting'
+            || $scope.videoState == 'ready'
+            || $scope.videoState == 'recording'
+            || $scope.videoState == 'recorded'
+            || $scope.videoState == 'uploading';
 
-        $scope.showActions = () => $scope.videoState == 'recording' || $scope.videoState == 'recorded';
+        $scope.showActions = () => $scope.videoState == 'recording' || $scope.videoState == 'recorded' || $scope.videoState == 'uploading';
 
         $scope.isRecording = () => $scope.videoState == 'recording';
 
@@ -249,7 +253,7 @@ export const VideoController = ng.controller('VideoController', ['$scope', 'mode
 
         $scope.upload = () => {
             $scope.videoState = 'uploading';
-            $scope.videofile={}
+            $scope.videofile = {}
             $scope.videofile.name = `Capture Vidéo ${new Date().toLocaleDateString('fr-FR')}`;
             safeApply();
             $scope.recorder.upload($scope.videofile.name, function (response) {
