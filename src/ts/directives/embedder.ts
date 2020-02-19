@@ -7,6 +7,7 @@ import {template} from "../template";
 import {Document, Folder, MediaLibrary} from "../workspace";
 import {idiom} from "../idiom";
 import {model} from "../modelDefinitions";
+import { embedderService } from '../embedder';
 
 export interface VideoDelegate {
     title?: string
@@ -132,7 +133,7 @@ export interface VideoScope {
     isExternalVisible(): boolean
 
     //angular
-    ngModel: Document | Document[]
+    ngModel: string
 
     ngChange()
 
@@ -539,9 +540,9 @@ export let embedder = ng.directive('embedder', ['$timeout', function ($timeout) 
                     (scope.openedFolder.filter == "protected" && scope.visibility === 'protected') ||
                     (scope.openedFolder.filter == "public" && scope.visibility === 'public')) {
                     if (scope.multiple) {
-                        scope.ngModel = selectedDocuments;
+                        scope.ngModel = embedderService.getHtmlForVideoStreams(selectedDocuments);
                     } else {
-                        scope.ngModel = selectedDocuments[0];
+                        scope.ngModel = embedderService.getHtmlForVideoStream(selectedDocuments[0]);
                     }
                 } else {
                     const duplicateDocuments = [];
@@ -558,14 +559,14 @@ export let embedder = ng.directive('embedder', ['$timeout', function ($timeout) 
 
                     scope.display.loading = undefined;
                     if (scope.multiple) {
-                        scope.ngModel = duplicateDocuments;
+                        scope.ngModel = embedderService.getHtmlForVideoStreams(duplicateDocuments);
                     } else {
-                        scope.ngModel = duplicateDocuments[0];
+                        scope.ngModel =  embedderService.getHtmlForVideoStream(duplicateDocuments[0]);
                     }
                     scope.$apply();
                 }
-                if ((scope.ngModel && (scope.ngModel as Document)._id) || (scope.ngModel && scope.multiple && (scope.ngModel as Document[]).length)) {
-                    $timeout(() => scope.ngChange());
+                if (scope.ngModel) {
+                    setTimeout(() => scope.ngChange && scope.ngChange());
                 }
             };
 
