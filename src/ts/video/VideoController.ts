@@ -10,101 +10,122 @@ interface VideoControllerScope {
     me: typeof model.me
     recorder: VideoRecorder;
     display: {}
-    cameraIsAuth: boolean
     authorized: boolean
-    videoIsRecorded: boolean
-    videoIsRecording: boolean
+    videoState: 'idle' | 'ready' | 'recording' | 'recorded'
     uploadVideo: boolean
     videofile: { name?: string }
     action: 'videorecorder'
     notFound: boolean
     currentDuration: number
     recordStartTime: number
-    recordTime: number | string
+    recordTime: string
     recordMaxTime: number
-    init(): void
-    setCookie(value: boolean, duration: number): void
-    showCamera(): void
-    onTrackedVideoFrame(time: number): void;
-    stopRecord(): void
-    msToTime(time: number): string
-    getCookie(): string
-    startRecord(): Promise<void>
-    handleDuration(event: Event): void;
-    play(): void;
+    startCamera(): void
+    stopRecord(pause?: boolean): void
+    startRecord(resume?: boolean): Promise<void>
     switchRecording(): void
     redo(): void;
-    doPlay(): void;
-    showUpload(): void;
+    play(): void;
     upload(): void;
     pad(num: number): string;
     openMainPage(): void
-    release(): void;
+    showActions(): boolean
+    isCameraVisible(): boolean;
+    isReady(): boolean
+    isRecorded(): boolean;
+    isRecording(): boolean;
     website: any;
     selectedWebsite: any;
     $apply: any
     $emit: any
     $on: any;
+    $root: any
 }
 
-export const VideoController = ng.controller('VideoController', ['$scope', 'model', 'route', '$timeout',
-    ($scope: VideoControllerScope, model, route, $timeout) => {
+export const VideoController = ng.controller('VideoController', ['$scope', 'model', 'route', '$element',
+    ($scope: VideoControllerScope, model, route, $element) => {
         $scope.RECORD_MAX_TIME = 5; // MAX TIME OF RECORDING IN MINUTES
         $scope.template = template;
         $scope.me = model.me;
-        $scope.recorder = new VideoRecorder('video#gum', (e)=>{
-            $scope.handleDuration(e);
+        $scope.recorder = new VideoRecorder(() => {
+            return jQuery($element).find('video')[0] as HTMLMediaElement;
+        }, (e) => {
+            handleDuration(e);
         });
         $scope.display = {};
-        $scope.cameraIsAuth = false;
         $scope.authorized = false;
-        $scope.videoIsRecorded = false;
-        $scope.videoIsRecording = false;
+        $scope.videoState = 'idle';
         $scope.uploadVideo = false;
         $scope.videofile = {};
         $scope.action = 'videorecorder';
         $scope.notFound = false;
         $scope.currentDuration = 0;
         $scope.recordStartTime = 0;
-        $scope.recordTime = 0;
+        $scope.recordTime = '00:00';
         $scope.recordMaxTime = $scope.RECORD_MAX_TIME * 60000;
         $scope.$on("$destroy", () => {
-            console.log("destory video....")
-            $scope.release();
+            console.log("[VideoController.destroy] release video....")
+            release();
         })
         $scope.$on("releaseVideo", () => {
-            console.log("release event video....")
-            $scope.release();
+            console.log("[VideoController.releaseVideo] release video because of event....")
+            release();
+        })
+        $scope.$on("displayVideoRecorder", () => {
+            console.log("[VideoController.displayVideoRecorder] display video because of event....")
+            tryStartStreaming();
         })
         // By default open the website list
         template.open('video', 'videorecorder');
+        //===private function
+        const safeApply = (fn?: any) => {
+            try {
+                const phase = $scope.$root && $scope.$root.$$phase;
+                if (phase == '$apply' || phase == '$digest') {
+                    if (fn && (typeof (fn) === 'function')) {
+                        fn();
+                    }
+                } else {
+                    $scope.$apply(fn);
+                }
+            } catch (e) { }
+        };
 
-
-        $scope.init = () => {
-            $scope.setCookie(true, 30);
-            $scope.showCamera();
-            console.log('CONSTRAINTS', navigator.mediaDevices.getSupportedConstraints())
+        let _lastRecordDuration = 0;
+        let _currentRecordDuration = 0;
+        const handleDuration = (event: Event) => {
+            $scope.currentDuration = event.timeStamp;
+            if ($scope.videoState == 'recording') {
+                const realTime = event.timeStamp - $scope.recordStartTime;
+                _currentRecordDuration = realTime;
+                onTrackedVideoFrame(realTime + _lastRecordDuration);
+            }
         }
-
-
-        $scope.showCamera = () => {
-            $scope.cameraIsAuth = true;
-            console.log('Using media constraints:', $scope.recorder.constraints);
-            $scope.recorder.startStreaming();
+        const setCookie = (cvalue: boolean, exdays: number) => {
+            var d = new Date();
+            d.setTime(d.getTime() + (exdays * 24 * 60 * 60 * 1000));
+            var expires = "expires=" + d.toUTCString();
+            document.cookie = "camera-auth=" + cvalue + ";" + expires;
         }
-
-
-        $scope.onTrackedVideoFrame = (time) => {
+        const onTrackedVideoFrame = (time: number) => {
             // console.log('TIME', time);
             if (time > $scope.recordMaxTime) {
                 $scope.stopRecord();
             } else {
-                $scope.recordTime = $scope.msToTime(time);
-                $scope.$apply();
+                $scope.recordTime = msToTime(time);
+                safeApply();
             }
         }
+        const msToTime = (s: number): string => {
+            var ms = s % 1000;
+            s = (s - ms) / 1000;
+            var secs = s % 60;
+            s = (s - secs) / 60;
+            var mins = s % 60;
 
-        $scope.getCookie = () => {
+            return $scope.pad(mins) + ':' + $scope.pad(secs);
+        }
+        const getCookie = (): string => {
             var name = "camera-auth" + "=";
             var decodedCookie = decodeURIComponent(document.cookie);
             var ca = decodedCookie.split(';');
@@ -119,77 +140,99 @@ export const VideoController = ng.controller('VideoController', ['$scope', 'mode
             }
             return null;
         }
-
-
-        $scope.setCookie = (cvalue, exdays) => {
-            var d = new Date();
-            d.setTime(d.getTime() + (exdays * 24 * 60 * 60 * 1000));
-            var expires = "expires=" + d.toUTCString();
-            document.cookie = "camera-auth=" + cvalue + ";" + expires;
+        const showUpload = (): void => {
+            $scope.uploadVideo = true;
+            $scope.videofile = {};
         }
-
-
-        $scope.startRecord = async () => {
-            console.log('VIDEO: START RECORD');
-            $scope.videoIsRecorded = false;
-            $scope.videoIsRecording = true;
-            $scope.recorder.startRecording();
-            $scope.recordStartTime = $scope.currentDuration;
+        const release = (): void => {
+            $scope.recorder.stopStreaming();
+            $scope.videoState = 'idle';
         }
-
-        $scope.handleDuration = (event) => {
-            $scope.currentDuration = event.timeStamp;
-            if ($scope.videoIsRecording) {
-                const realTime = event.timeStamp - $scope.recordStartTime;
-                $scope.onTrackedVideoFrame(realTime);
+        const showCamera = (notAllowedCb?: () => void): void => {
+            $scope.recordTime = msToTime(0);
+            $scope.videoState = 'ready';
+            safeApply();
+            console.log('[VideoController.showCamera] Using media constraints:', $scope.recorder.constraints);
+            $scope.recorder.startStreaming(notAllowedCb);
+        }
+        const tryStartStreaming = () => {
+            if($scope.videoState !=  'idle') {
+                console.warn('[VideoController.tryStartStreaming] already start');
+                return;
             }
-
+            console.log('[VideoController] try start streaming: ', getCookie())
+            if (getCookie() === 'true') {
+                showCamera(() => {
+                    $scope.videoState = 'idle';
+                });
+            }
+        }
+        //public
+        $scope.startCamera = () => {
+            setCookie(true, 30);
+            showCamera();
+            console.log('[VideoController.init] CONSTRAINTS:', navigator.mediaDevices.getSupportedConstraints())
         }
 
-        $scope.stopRecord = () => {
-            console.log('VIDEO: STOP RECORD');
-            $scope.videoIsRecording = false;
-            $scope.videoIsRecorded = true;
-            $scope.recorder.stopRecording();
-            $scope.play();
+        $scope.isReady = () => $scope.videoState == 'ready';
+
+        $scope.isCameraVisible = () => $scope.videoState == 'ready' || $scope.videoState == 'recording' || $scope.videoState == 'recorded';
+
+        $scope.showActions = () => $scope.videoState == 'recording' || $scope.videoState == 'recorded';
+
+        $scope.isRecording = () => $scope.videoState == 'recording';
+
+        $scope.isRecorded = () => $scope.videoState == 'recorded';
+
+        $scope.startRecord = async (resume = false) => {
+            console.log('[VideoController.startRecord] START RECORD', $scope.currentDuration);
+            $scope.recordStartTime = $scope.currentDuration;
+            if (resume) {
+                _lastRecordDuration = _currentRecordDuration;
+            } else {
+                _lastRecordDuration = 0;
+            }
+            _currentRecordDuration = 0;
+            $scope.videoState = 'recording'
+            if (resume) {
+                $scope.recorder.resume();
+            } else {
+                $scope.recorder.startRecording();
+            }
+        }
+
+        $scope.stopRecord = (pause = false) => {
+            console.log('[VideoController.stopRecord] STOP RECORD');
+            $scope.videoState = 'recorded'
+            if (pause) {
+                $scope.recorder.pause(true);
+            } else {
+                $scope.recorder.stopRecording(true);
+            }
         }
 
         $scope.switchRecording = () => {
-            console.log('VIDEO: SWITCH RECORD', $scope.videoIsRecorded);
-            if ($scope.videoIsRecorded) {
-                $scope.redo();
-                $scope.startRecord();
+            console.log('[VideoController.switchRecording] switching state:', $scope.videoState);
+            if ($scope.videoState == 'recorded') {
+                $scope.startRecord(false);
             } else {
-                $scope.stopRecord();
+                $scope.stopRecord(false);
             }
         }
 
         $scope.play = () => {
-            console.log('VIDEO: PLAY');
             $scope.recorder.play();
         }
 
-        $scope.doPlay = () => {
-            $scope.recorder.doPlay();
-        }
-
         $scope.redo = () => {
-            console.log('VIDEO: REDO');
-            $scope.videoIsRecording = false;
-            $scope.videoIsRecorded = false;
-            $scope.recorder.clearBuffer();
-            $scope.recorder.startStreaming();
-        }
-
-        $scope.showUpload = () => {
-            $scope.uploadVideo = true;
-            $scope.videofile = {};
+            console.log('[VideoController.redo] redoing...');
+            $scope.videoState = 'ready';
+            $scope.currentDuration = 0;
+            $scope.recorder.clearBuffer(true);
+            safeApply();
         }
 
         $scope.upload = () => {
-
-
-
             $scope.videofile.name = `Capture Vidéo ${new Date().toLocaleDateString('fr-FR')}`;
             $scope.recorder.upload($scope.videofile.name, function (response) {
                 if (response.error) {
@@ -200,18 +243,8 @@ export const VideoController = ng.controller('VideoController', ['$scope', 'mode
                     $scope.$emit("video-upload", "");
                 }
                 $scope.uploadVideo = false;
-                $scope.$apply();
+                safeApply();
             });
-        }
-
-        $scope.msToTime = (s) => {
-            var ms = s % 1000;
-            s = (s - ms) / 1000;
-            var secs = s % 60;
-            s = (s - secs) / 60;
-            var mins = s % 60;
-
-            return $scope.pad(mins) + ':' + $scope.pad(secs);
         }
 
         $scope.pad = (num) => {
@@ -229,19 +262,12 @@ export const VideoController = ng.controller('VideoController', ['$scope', 'mode
             template.open('video', 'videorecorder');
             window.location.hash = "";
         }
-        $scope.release = () => {
-            $scope.recorder.stopStreaming();
-            $scope.videoIsRecording=false;
-            $scope.videoIsRecorded = false;
-        }
 
 
         // We check if camera is already authorized
-        $scope.setCookie(false, 10)
-        console.log('SCOPE GET COOKIE', $scope.getCookie() == 'true')
-        if ($scope.getCookie() === 'true') {
-            $scope.showCamera();
-        }
+        //setCookie(false, 10)
+        console.log('[VideoController] SCOPE GET COOKIE', getCookie() == 'true')
+        tryStartStreaming();
 
     }]);
 
