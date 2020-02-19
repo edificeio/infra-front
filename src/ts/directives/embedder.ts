@@ -155,12 +155,13 @@ export let embedder = ng.directive('embedder', ['$timeout', function ($timeout) 
             delegate: "=",
             ngModel: '=',
             onChange: '&',
+            fileFormat: '=',
             show: '=',
             hiddenShareVideoCode: '='
         },
         templateUrl: '/' + appPrefix + '/public/template/entcore/video/main.html',
         link: function (scope: VideoScope, element, attributes) {
-            console.log('scope.delegate link', scope)
+            //console.log('scope.delegate link', scope)
             scope.delegate && scope.delegate.visit && scope.delegate.visit(scope);
             scope.display = {
                 search: '',
@@ -228,13 +229,13 @@ export let embedder = ng.directive('embedder', ['$timeout', function ($timeout) 
             }
 
             scope.$on("video-upload", function (event, message) {
-                console.log('TEMPLATE LOADING ')
+                //console.log('TEMPLATE LOADING ')
                 //template.open(MAIN_CONTAINER, TEMPLATE_LOADING);
                 scope.insertRecord()
             });
 
             scope.title = () => {
-                console.log('scope.delegate title', scope.delegate)
+                //console.log('scope.delegate title', scope.delegate)
 
                 if (scope.delegate && scope.delegate.title) {
                     return scope.delegate.title;
@@ -368,7 +369,7 @@ export let embedder = ng.directive('embedder', ['$timeout', function ($timeout) 
                 tab && scope.showHeader(tab);
             }
             scope.showHeader = function (tab: Header) {
-                console.log('scope.delegate showHeader', scope.delegate)
+                //console.log('scope.delegate showHeader', scope.delegate)
                 if (scope.delegate && scope.delegate.handleShow) {
                     //TODO why cast as any?
                     const hasHandled = scope.delegate.handleShow(scope as any, {cancelAll, displayHighLights, showTemplate});
@@ -442,7 +443,7 @@ export let embedder = ng.directive('embedder', ['$timeout', function ($timeout) 
                 scope.openedFolder = folder;
                 await folder.sync();
                 scope.documents = filteredDocuments(folder);
-                console.log(scope.documents);
+                //console.log(scope.documents);
                 scope.folders = filterFolders(scope.openedFolder);
                 scope.$apply();
             };
@@ -460,7 +461,7 @@ export let embedder = ng.directive('embedder', ['$timeout', function ($timeout) 
                     scope.listFrom("sharedDocuments")
                 }
                 scope.$watch('fileFormat', async (newVal) => {
-                    console.log('FILEFORMAT', newVal);
+                    //console.log('FILEFORMAT', newVal);
                     if (!newVal) {
                         return;
                     }
@@ -495,18 +496,18 @@ export let embedder = ng.directive('embedder', ['$timeout', function ($timeout) 
             function filteredDocuments(source: Folder) {
                 return source.documents.filter(function (doc: Document) {
                     const hasDelegateRoleFilter = scope.delegate && scope.delegate.filterDocumentRole;
-                    console.log('scope.delegate', scope.delegate)
-                    console.log('hasDelegateRoleFilter', hasDelegateRoleFilter)
-                    console.log('hasDelegateRoleFilter', hasDelegateRoleFilter)
+                    //console.log('scope.delegate', scope.delegate)
+                    //console.log('hasDelegateRoleFilter', hasDelegateRoleFilter)
+                    //console.log('hasDelegateRoleFilter', hasDelegateRoleFilter)
                     const hasValidRole = (doc.role() === scope.fileFormat || scope.fileFormat === 'any');
-                    console.log('hasValidRole', hasValidRole)
+                    //console.log('hasValidRole', hasValidRole)
                     const filetypeOk = hasDelegateRoleFilter ? scope.delegate.filterDocumentRole(doc) : hasValidRole;
-                    console.log('filetypeOk', filetypeOk)
+                    //console.log('filetypeOk', filetypeOk)
                     const filenameOk = matchSearch(doc.metadata.filename);
-                    console.log('filenameOk', filenameOk)
+                    //console.log('filenameOk', filenameOk)
                     const nameOk = matchSearch(doc.name);
-                    console.log('nameOk', nameOk)
-                    console.log('----------------------------')
+                    //console.log('nameOk', nameOk)
+                    //console.log('----------------------------')
                     return filetypeOk && (filenameOk || nameOk);
                 });
             }
@@ -631,7 +632,7 @@ export let embedder = ng.directive('embedder', ['$timeout', function ($timeout) 
             };
 
             scope.importFiles = function (files) {
-                console.log('IMPORT FILES', files);
+                //console.log('IMPORT FILES', files);
                 if (!files) {
                     files = scope.upload.files;
                 }
