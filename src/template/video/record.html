@@ -1,6 +1,6 @@
 <div ng-controller="VideoController" class="video">
     <!--UPGRADE DIALOG-->
-    <div ng-if="isIncompatible()" class="browser" style="box-shadow:none">
+    <div ng-if="isIncompatible() && !isIncompatibleDevice()" class="browser" style="box-shadow:none">
         <h3><i18n>embed.video.incompatible</i18n></h3>
         <p><i18n>embed.video.incompatible.details</i18n></p>
         <p class="update">
@@ -12,6 +12,9 @@
             </a>
         </p>
     </div>
+    <div ng-if="isIncompatible() && isIncompatibleDevice()" class="browser" style="box-shadow:none">
+       <h3><i18n>embed.video.incompatible.devices</i18n></p>
+    </div>
     <!--RECORDER-->
     <div ng-if="!isIncompatible()" style="display: flex;flex-direction: column;justify-content: center;align-content: center;">
         <span style="margin-bottom: 20px;align-self: center;" ng-if="isCameraVisible()">
@@ -20,8 +23,8 @@
 
         <div ng-if="isCameraVisible()" style="align-self: center;position: relative;">
             <div ng-if="isRecording()" style="position: absolute; top: -2px; left: 4px; color: white;"><span
-                    style="color:red; font-size:23px;margin-right:5px;position: relative;top:2px;">&#9679;</span>[[
-                recordTime ]] / [[pad(RECORD_MAX_TIME)]]:00</div>
+                    style="color:red; font-size:23px;margin-right:5px;position: relative;top:2px;">&#9679;</span>
+                    [[recordTime]] / [[pad(RECORD_MAX_TIME)]]:00</div>
             <video id="gum" playsinline autoplay muted></video>
         </div>
         <!-- SECTION CAMERA EN ATTENTE D'AUTHORISATION -->

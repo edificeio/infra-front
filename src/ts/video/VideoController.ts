@@ -12,8 +12,7 @@ interface VideoControllerScope {
     recorder: VideoRecorder;
     display: {}
     authorized: boolean
-    videoState: 'idle' | 'starting' | 'ready' | 'recording' | 'recorded' | 'incompatible'
-    uploadVideo: boolean
+    videoState: 'idle' | 'starting' | 'ready' | 'recording' | 'recorded' | 'incompatible' | 'uploading'
     videofile: { name?: string }
     action: 'videorecorder'
     notFound: boolean
@@ -21,6 +20,7 @@ interface VideoControllerScope {
     recordStartTime: number
     recordTime: string
     recordMaxTime: number
+    isIncompatibleDevice():boolean
     isIncompatible(): boolean
     startCamera(): void
     stopRecord(pause?: boolean): void
@@ -57,7 +57,6 @@ export const VideoController = ng.controller('VideoController', ['$scope', 'mode
         $scope.display = {};
         $scope.authorized = false;
         $scope.videoState = 'idle';
-        $scope.uploadVideo = false;
         $scope.videofile = {};
         $scope.action = 'videorecorder';
         $scope.notFound = false;
@@ -142,10 +141,6 @@ export const VideoController = ng.controller('VideoController', ['$scope', 'mode
             }
             return null;
         }
-        const showUpload = (): void => {
-            $scope.uploadVideo = true;
-            $scope.videofile = {};
-        }
         const release = (): void => {
             $scope.recorder.stopStreaming();
             $scope.videoState = 'idle';
@@ -166,7 +161,8 @@ export const VideoController = ng.controller('VideoController', ['$scope', 'mode
         }
         const tryStartStreaming = () => {
             const browser = devices.getBrowserInfo();
-            if (browser.name != 'Firefox' && browser.name != 'Chrome') {
+            const incompatibleBrowser = browser.name != 'Firefox' && browser.name != 'Chrome';
+            if (incompatibleBrowser || $scope.isIncompatibleDevice()) {
                 $scope.videoState = 'incompatible';
                 safeApply();
                 console.warn('[VideoController.tryStartStreaming] browser incompatible:', browser)
@@ -187,8 +183,9 @@ export const VideoController = ng.controller('VideoController', ['$scope', 'mode
         $scope.startCamera = () => {
             setCookie(true, 30);
             showCamera();
-            console.log('[VideoController.init] CONSTRAINTS:', navigator.mediaDevices.getSupportedConstraints())
         }
+
+        $scope.isIncompatibleDevice= () => devices.isIphone() || devices.isIpad() || devices.isIpod();
 
         $scope.isIncompatible = () => $scope.videoState == 'incompatible';
 
@@ -251,7 +248,10 @@ export const VideoController = ng.controller('VideoController', ['$scope', 'mode
         }
 
         $scope.upload = () => {
+            $scope.videoState = 'uploading';
+            $scope.videofile={}
             $scope.videofile.name = `Capture Vidéo ${new Date().toLocaleDateString('fr-FR')}`;
+            safeApply();
             $scope.recorder.upload($scope.videofile.name, function (response) {
                 if (response.error) {
                     notify.error("video.file.error");
@@ -260,7 +260,7 @@ export const VideoController = ng.controller('VideoController', ['$scope', 'mode
                     notify.success("video.file.saved");
                     $scope.$emit("video-upload", "");
                 }
-                $scope.uploadVideo = false;
+                $scope.videoState = 'recorded';
                 safeApply();
             });
         }
