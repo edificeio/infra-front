@@ -3,8 +3,8 @@
         <i18n >video.msg</i18n>
     </span>
 
-    <div ng-if="isCameraVisible()" style="align-self: center; " >
-        <div ng-if="isRecording()" style="    position: relative; top: 20px; left: 4px; color: white;">[[ recordTime ]] / [[pad(RECORD_MAX_TIME)]]:00</div>
+    <div ng-if="isCameraVisible()" style="align-self: center;position: relative;" >
+        <div ng-if="isRecording()" style="position: absolute; top: -2px; left: 4px; color: white;"><span style="color:red; font-size:23px;margin-right:5px;position: relative;top:2px;">&#9679;</span>[[ recordTime ]] / [[pad(RECORD_MAX_TIME)]]:00</div>
         <video id="gum" playsinline autoplay muted ></video>
     </div>
 
