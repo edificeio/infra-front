@@ -3,6 +3,7 @@ import { notify } from "../notify";
 import { ng } from "../ng-start";
 import { VideoRecorder } from "./VideoRecorder";
 import { model } from "../modelDefinitions";
+import { devices } from "../globals";
 
 interface VideoControllerScope {
     RECORD_MAX_TIME: number;
@@ -11,7 +12,7 @@ interface VideoControllerScope {
     recorder: VideoRecorder;
     display: {}
     authorized: boolean
-    videoState: 'idle' | 'ready' | 'recording' | 'recorded'
+    videoState: 'idle' | 'starting' | 'ready' | 'recording' | 'recorded' | 'incompatible'
     uploadVideo: boolean
     videofile: { name?: string }
     action: 'videorecorder'
@@ -20,6 +21,7 @@ interface VideoControllerScope {
     recordStartTime: number
     recordTime: string
     recordMaxTime: number
+    isIncompatible(): boolean
     startCamera(): void
     stopRecord(pause?: boolean): void
     startRecord(resume?: boolean): Promise<void>
@@ -148,15 +150,29 @@ export const VideoController = ng.controller('VideoController', ['$scope', 'mode
             $scope.recorder.stopStreaming();
             $scope.videoState = 'idle';
         }
-        const showCamera = (notAllowedCb?: () => void): void => {
-            $scope.recordTime = msToTime(0);
-            $scope.videoState = 'ready';
-            safeApply();
-            console.log('[VideoController.showCamera] Using media constraints:', $scope.recorder.constraints);
-            $scope.recorder.startStreaming(notAllowedCb);
+        const showCamera = async (notAllowedCb?: () => void): Promise<void> => {
+            try {
+                $scope.recordTime = msToTime(0);
+                $scope.videoState = 'starting';
+                safeApply();
+                console.log('[VideoController.showCamera] Using media constraints:', $scope.recorder.constraints);
+                await $scope.recorder.startStreaming(notAllowedCb);
+                $scope.videoState = 'ready';
+            } catch (e) {
+                console.error('[VideoController.showCamera] Failed to start:', e);
+                $scope.videoState = 'idle';
+            }
+            safeApply()
         }
         const tryStartStreaming = () => {
-            if($scope.videoState !=  'idle') {
+            const browser = devices.getBrowserInfo();
+            if (browser.name != 'Firefox' && browser.name != 'Chrome') {
+                $scope.videoState = 'incompatible';
+                safeApply();
+                console.warn('[VideoController.tryStartStreaming] browser incompatible:', browser)
+                return;
+            }
+            if ($scope.videoState != 'idle') {
                 console.warn('[VideoController.tryStartStreaming] already start');
                 return;
             }
@@ -174,9 +190,11 @@ export const VideoController = ng.controller('VideoController', ['$scope', 'mode
             console.log('[VideoController.init] CONSTRAINTS:', navigator.mediaDevices.getSupportedConstraints())
         }
 
+        $scope.isIncompatible = () => $scope.videoState == 'incompatible';
+
         $scope.isReady = () => $scope.videoState == 'ready';
 
-        $scope.isCameraVisible = () => $scope.videoState == 'ready' || $scope.videoState == 'recording' || $scope.videoState == 'recorded';
+        $scope.isCameraVisible = () => $scope.videoState == 'starting' || $scope.videoState == 'ready' || $scope.videoState == 'recording' || $scope.videoState == 'recorded';
 
         $scope.showActions = () => $scope.videoState == 'recording' || $scope.videoState == 'recorded';
 

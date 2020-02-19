@@ -37,10 +37,71 @@ if((window as any).infraPrefix === undefined){
 
 export let infraPrefix: string = (window as any).infraPrefix;
 export let currentLanguage = '';
-
+export type BrowserInfo = {
+    name:'MSIE'|'Chrome'|'Safari'|'Firefox',
+    version:number,
+}
 export const devices = {
     isIE: () => navigator.userAgent.indexOf('Trident') !== -1,
-    isiOS: () => /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream
+    isiOS: () => /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream,
+    getBrowserInfo():BrowserInfo{
+        const safeSplit = (str: string = "", pattern: string = "") => {
+            if (typeof str == "string") {
+                return str.split(pattern);
+            } else {
+                return [];
+            }
+        }
+        const userAgent = navigator.userAgent;
+        if (userAgent.indexOf('Chrome') !== -1) {
+			const chromeVersion = safeSplit(userAgent, 'Chrome/')[1];
+			const version = parseInt(safeSplit(chromeVersion, '.')[0]);
+			return {
+				name: 'Chrome',
+				version: version,
+			}
+		}
+		else if (userAgent.indexOf('IEMobile') !== -1) {
+			const ieVersion = safeSplit(userAgent, 'IEMobile/')[1];
+			const version = parseInt(safeSplit(ieVersion, ';')[0]);
+			return {
+				name: 'MSIE',
+				version: version,
+			}
+		}
+		else if (userAgent.indexOf('AppleWebKit') !== -1 && userAgent.indexOf('Chrome') === -1) {
+			const safariVersion = safeSplit(userAgent, 'Version/')[1];
+			const version = parseInt(safeSplit(safariVersion, '.')[0]);
+			return {
+				name: 'Safari',
+				version: version,
+			}
+		}
+		else if (userAgent.indexOf('Firefox') !== -1) {
+			const ffVersion = safeSplit(userAgent, 'Firefox/')[1];
+			const version = parseInt(safeSplit(ffVersion, '.')[0]);
+			return {
+				name: 'Firefox',
+				version: version,
+			}
+		}
+		else if (userAgent.indexOf('MSIE') !== -1) {
+			const msVersion = safeSplit(userAgent, 'MSIE ')[1];
+			const version = parseInt(safeSplit(msVersion, ';')[0]);
+			return {
+				name: 'MSIE',
+				version: version,
+			}
+		}
+		else if (userAgent.indexOf('MSIE') === -1 && userAgent.indexOf('Trident') !== -1) {
+			const msVersion = safeSplit(userAgent, 'rv:')[1];
+			const version = parseInt(safeSplit(msVersion, '.')[0]);
+			return {
+				name: 'MSIE',
+				version: version,
+			}
+		}
+    }
 };
 
 const defaultLanguage = () => {

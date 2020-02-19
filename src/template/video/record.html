@@ -1,46 +1,56 @@
-<div ng-controller="VideoController" class="video" style="display: flex;flex-direction: column;justify-content: center;align-content: center;">
-    <span style="margin-bottom: 20px;align-self: center;" ng-if="isCameraVisible()">
-        <i18n >video.msg</i18n>
-    </span>
-
-    <div ng-if="isCameraVisible()" style="align-self: center;position: relative;" >
-        <div ng-if="isRecording()" style="position: absolute; top: -2px; left: 4px; color: white;"><span style="color:red; font-size:23px;margin-right:5px;position: relative;top:2px;">&#9679;</span>[[ recordTime ]] / [[pad(RECORD_MAX_TIME)]]:00</div>
-        <video id="gum" playsinline autoplay muted ></video>
+<div ng-controller="VideoController" class="video">
+    <!--UPGRADE DIALOG-->
+    <div ng-if="isIncompatible()" class="browser" style="box-shadow:none">
+        <h3><i18n>embed.video.incompatible</i18n></h3>
+        <p><i18n>embed.video.incompatible.details</i18n></p>
+        <p class="update">
+            <a href="https://www.google.fr/chrome/browser/desktop/" target="_blank">
+                <img src="/auth/public/img/chrome_logo.png" />
+            </a>
+            <a href="https://www.mozilla.org/fr/firefox/new/" target="_blank">
+                <img src="/auth/public/img/firefox_logo.png" />
+            </a>
+        </p>
     </div>
+    <!--RECORDER-->
+    <div ng-if="!isIncompatible()" style="display: flex;flex-direction: column;justify-content: center;align-content: center;">
+        <span style="margin-bottom: 20px;align-self: center;" ng-if="isCameraVisible()">
+            <i18n>video.msg</i18n>
+        </span>
 
-
-    <!-- SECTION CAMERA EN ATTENTE D'AUTHORISATION -->
-    <span style="margin-bottom: 20px;align-self: center;" ng-if="!isCameraVisible()">
-        <i18n>video.auth.text</i18n>
-    </span>
-    <div style="align-self: center;width: 640px; height:360px; background-color: #d8d8d8; display: flex;justify-content: center;align-items: center;"
-         ng-if="!isCameraVisible() ">
-        <button ng-click="startCamera()">
-            <i18n>video.start.camera</i18n>
+        <div ng-if="isCameraVisible()" style="align-self: center;position: relative;">
+            <div ng-if="isRecording()" style="position: absolute; top: -2px; left: 4px; color: white;"><span
+                    style="color:red; font-size:23px;margin-right:5px;position: relative;top:2px;">&#9679;</span>[[
+                recordTime ]] / [[pad(RECORD_MAX_TIME)]]:00</div>
+            <video id="gum" playsinline autoplay muted></video>
+        </div>
+        <!-- SECTION CAMERA EN ATTENTE D'AUTHORISATION -->
+        <span style="margin-bottom: 20px;align-self: center;" ng-if="!isCameraVisible()">
+            <i18n>video.auth.text</i18n>
+        </span>
+        <div style="align-self: center;width: 640px; height:360px; background-color: #d8d8d8; display: flex;justify-content: center;align-items: center;"
+            ng-if="!isCameraVisible() ">
+            <button ng-click="startCamera()">
+                <i18n>video.start.camera</i18n>
+            </button>
+        </div>
+        <!-- FIN SECTION CAMERA EN ATTENTE D'AUTHORISATION -->
+        <button style="align-self: center;margin-top: 20px;" ng-click="startRecord()" ng-if="isReady()">
+            <i18n>video.start.record</i18n>
         </button>
+        <div ng-if="showActions()" style="display: flex; justify-content: center; margin-top: 20px;">
+            <button ng-click="switchRecording()" ng-disabled="!isRecording()">
+                <i18n>video.stop.record</i18n>
+            </button>
+            <button ng-click="play()" ng-disabled="!isRecorded()">
+                <i18n>video.play</i18n>
+            </button>
+            <button ng-click="redo()" ng-disabled="!isRecorded()">
+                <i18n>video.redo</i18n>
+            </button>
+            <button ng-click="upload()" ng-disabled="!isRecorded()">
+                <i18n>video.upload</i18n>
+            </button>
+        </div>
     </div>
-    <!-- FIN SECTION CAMERA EN ATTENTE D'AUTHORISATION -->
-
-
-
-    <button style="align-self: center;margin-top: 20px;" ng-click="startRecord()" ng-if="isReady()">
-        <i18n>video.start.record</i18n>
-    </button>
-
-
-    <div ng-if="showActions()" style="display: flex; justify-content: center; margin-top: 20px;">
-        <button ng-click="switchRecording()" ng-disabled="!isRecording()">
-            <i18n>video.stop.record</i18n>
-        </button>
-        <button ng-click="play()" ng-disabled="!isRecorded()">
-            <i18n>video.play</i18n>
-        </button>
-        <button ng-click="redo()" ng-disabled="!isRecorded()">
-            <i18n>video.redo</i18n>
-        </button>
-        <button ng-click="upload()" ng-disabled="!isRecorded()">
-            <i18n>video.upload</i18n>
-        </button>
-    </div>
-
 </div>
