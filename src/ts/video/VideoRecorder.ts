@@ -3,8 +3,10 @@ import { http } from "../http";
 type MediaRecorderImpl = {
     start(time: number): void;
     stop(): void;
+    pause(): void;
     onstop(event: MediaStreamEvent): void;
     ondataavailable(event: any): void;
+    resume(): void;
 }
 declare var MediaRecorder: {
     new(stream: MediaStream, options: { mimeType: string }): MediaRecorderImpl
@@ -14,10 +16,10 @@ declare var MediaRecorder: {
 export class VideoRecorder {
     private stream: MediaStream;
     private gumVideo: HTMLMediaElement
-    private mediasource: MediaSource;
     private mediaRecorder: MediaRecorderImpl;
     private recorded: Blob[];
     private id: string;
+    private mode: 'idle' | 'play' | 'record' = 'idle';
     public constraints: MediaStreamConstraints & { facingMode?: string } = {
         audio: {
             channelCount: 0,
@@ -30,55 +32,85 @@ export class VideoRecorder {
         },
         facingMode: 'user'
     } as MediaStreamConstraints;
-    constructor(private videoSelector: string, private handleDuration: (event: Event) => void) {
-
-    }
-    doPlay(){
-        if(!this.gumVideo)return;
+    constructor(private videoFactory: () => HTMLMediaElement, private handleDuration: (event: Event) => void) {}
+    
+    play() {
+        if (!this.gumVideo) {
+            console.warn('[VideoRecorder.play] stream not init');
+            return;
+        }
+        this.preparePlay();
         this.gumVideo.play();
     }
-    play() {
-        let buffer = this.getBuffer();
-        this.gumVideo.muted = false;
-        this.gumVideo.src = null;
-        this.gumVideo.srcObject = null;
-        this.gumVideo.src = window.URL.createObjectURL(buffer);
-        this.gumVideo.controls = true;
+    private preparePlay() {
+        if (this.mode != 'play') {
+            this.gumVideo.removeEventListener('timeupdate', this.handleDuration);
+            let buffer = this.getBuffer();
+            console.log('[VideoRecorder.preparePlay] buffer size: ', buffer.size)
+            this.gumVideo.muted = false;
+            this.gumVideo.src = null;
+            this.gumVideo.srcObject = null;
+            this.gumVideo.src = window.URL.createObjectURL(buffer);
+            this.gumVideo.controls = true;
+            this.mode = 'play';
+        } else {
+            console.log('[VideoRecorder.preparePlay] already in play mode')
+        }
     }
-    stopStreaming(){
-        if(this.gumVideo){
+    private prepareRecord() {
+        if (!this.stream) {
+            console.warn('[VideoRecorder.prepareRecord] stream not init')
+            return;
+        }
+        if (this.mode != 'record') {
+            this.gumVideo.muted = true;
+            this.gumVideo.volume = 1;
+            this.gumVideo.src = null;
+            this.gumVideo.srcObject = null;
+            this.gumVideo.srcObject = this.stream;
+            this.gumVideo.controls = false;
+            this.gumVideo.removeEventListener('timeupdate', this.handleDuration);
+            this.gumVideo.addEventListener('timeupdate', this.handleDuration);
+            this.mode = 'record';
+        } else {
+            console.log('[VideoRecorder.prepareRecord] already in record mode')
+        }
+    }
+    stopStreaming() {
+        if (this.gumVideo) {
             this.gumVideo.removeEventListener('timeupdate', this.handleDuration);
         }
-        if(this.stream){
-            try{
-                this.stopRecording();
-            }catch(e){}
+        if (this.stream) {
+            try {
+                this.stopRecording(false);
+            } catch (e) { }
             const tracks = this.stream.getTracks();
             for (const track of tracks) {
                 try {
                     track.stop();
                 } catch (e) { }
             }
-            this.gumVideo.srcObject = undefined;
             this.stream = undefined;
         }
+        this.gumVideo = undefined;
+        this.mode ='idle';
     }
-    async startStreaming() {
+    async startStreaming(notAllowedCb?:()=>void) {
         try {
             if (this.stream) return;
             const stream = await navigator.mediaDevices.getUserMedia(this.constraints);
             if (!this.gumVideo) {
-                this.gumVideo = document.querySelector(this.videoSelector) as HTMLMediaElement;
+                this.gumVideo = this.videoFactory();
             }
-            this.gumVideo.addEventListener('timeupdate', this.handleDuration);
-            this.gumVideo.muted = true;
-            this.gumVideo.volume = 1;
-            this.gumVideo.src = null;
-            this.gumVideo.srcObject = null;
-            this.gumVideo.srcObject = stream;
             this.stream = stream;
-            console.log('VIDEO STREAM STARTED', this.gumVideo);
+            this.prepareRecord();
+            console.log('[VideoRecorder.startStreaming] VIDEO STREAM STARTED', this.gumVideo);
         } catch (e) {
+            if(e && e.name=='NotAllowedError'){
+                if(notAllowedCb){
+                    return notAllowedCb();
+                }
+            }
             alert(e);
         }
     }
@@ -94,27 +126,31 @@ export class VideoRecorder {
     //         this.recorded.push(event.data);
     //     }
     // }
-
+    public resume() {
+        this.prepareRecord();
+        this.mediaRecorder.resume();
+    }
     public async startRecording() {
         await this.startStreaming();
+        this.prepareRecord();
         this.recorded = new Array();
         this.id = this.uuid();
         let that = this;
         let options = { mimeType: 'video/webm;codecs=vp9' };
         if (MediaRecorder.isTypeSupported) { // SAFARI TEST
             if (!MediaRecorder.isTypeSupported(options.mimeType)) {
-                console.error(`${options.mimeType} is not Supported`);
+                console.error(`[VideoRecorder.startRecording] ${options.mimeType} is not Supported`);
                 options = { mimeType: 'video/mp4; codecs="avc1.424028, mp4a.40.2"' };
                 if (!MediaRecorder.isTypeSupported(options.mimeType)) {
-                    console.error(`${options.mimeType} is not Supported`);
+                    console.error(`[VideoRecorder.startRecording] ${options.mimeType} is not Supported`);
                     options = { mimeType: 'video/webm;codecs=vp8,opus' };
 
                     if (!MediaRecorder.isTypeSupported(options.mimeType)) {
-                        console.error(`${options.mimeType} is not Supported`);
+                        console.error(`[VideoRecorder.startRecording] ${options.mimeType} is not Supported`);
                         options = { mimeType: 'video/webm' };
 
                         if (!MediaRecorder.isTypeSupported(options.mimeType)) {
-                            console.error(`${options.mimeType} is not Supported`);
+                            console.error(`[VideoRecorder.startRecording] ${options.mimeType} is not Supported`);
                             options = { mimeType: 'video/ogg' };
                         }
 
@@ -128,13 +164,13 @@ export class VideoRecorder {
         try {
             this.mediaRecorder = new MediaRecorder(this.stream, options);
         } catch (e) {
-            console.error('Exception while creating MediaRecorder:', e);
+            console.error('[VideoRecorder.startRecording] Exception while creating MediaRecorder:', e);
             return;
         }
 
-        console.log('Created MediaRecorder', this.mediaRecorder, 'with options', options);
+        console.log('[VideoRecorder.startRecording] Created MediaRecorder', this.mediaRecorder, 'with options', options);
         this.mediaRecorder.onstop = (event) => {
-            console.log('Recorder stopped: ', event);
+            console.log('[VideoRecorder.onstop] Recorder stopped: ', event);
         };
         this.mediaRecorder.ondataavailable = function (event) {
             if (event.data && event.data.size > 0) {
@@ -142,19 +178,26 @@ export class VideoRecorder {
             }
         };
         this.mediaRecorder.start(1000); // collect 1000ms of data
-        console.log('MediaRecorder started', this.mediaRecorder);
+        console.log('[VideoRecorder.startRecording] MediaRecorder started', this.mediaRecorder);
     }
 
-    public stopRecording() {
+    public pause(preparePlay: boolean) {
+        this.mediaRecorder.pause();
+        preparePlay && this.preparePlay();
+    }
+
+    public stopRecording(preparePlay: boolean) {
         this.mediaRecorder.stop();
+        preparePlay && this.preparePlay();
     }
 
     public getBuffer() {
         return new Blob(this.recorded, { type: 'video/webm' });
     }
 
-    public clearBuffer() {
+    public clearBuffer(prepareRecord: boolean) {
         this.recorded = null;
+        prepareRecord && this.prepareRecord();
     }
 
     public upload(filename, callback) {

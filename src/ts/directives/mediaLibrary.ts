@@ -7,7 +7,7 @@ import { model } from '../modelDefinitions';
 import { idiom } from '../idiom';
 import { timeInterval } from 'rxjs/operator/timeInterval';
 import http from "axios";
-export type Header = { template: string, worflowKey: string, i18Key: string, visible: () => boolean };
+export type Header = { template: string, worflowKey: string, i18Key: string, visible: () => boolean, onDisplay?:()=>void };
 export type LIST_TYPE = "myDocuments" | "appDocuments" | "publicDocuments" | "sharedDocuments" | "trashDocuments" | "externalDocuments";
 export type MediaLibraryView = "icons" | "list";
 export interface MediaLibraryDelegate {
@@ -131,6 +131,7 @@ export const mediaLibrary = ng.directive('mediaLibrary', ['$timeout', function (
 			const showTemplate = (h: Header) => {
 				header = h;
 				template.open(MAIN_CONTAINER, h.template);
+				h.onDisplay && h.onDisplay();
 			}
 			scope.headers = function () {
 				const headers = [HEADER_RECORD, HEADER_UPLOAD, HEADER_BROWSE]

@@ -200,10 +200,15 @@ export let embedder = ng.directive('embedder', ['$timeout', function ($timeout) 
             const HEADER_RECORD: Header = {
                 i18Key: "video.header.record",
                 template: "entcore/video/record",
+                onDisplay(){
+                    emitDisplayEvent();
+                },
                 visible: () => true,
                 worflowKey: "workspace.create"
             };
-
+            const emitDisplayEvent = () =>{
+                scope.$broadcast('displayVideoRecorder', {});
+            }
             scope.template = template;
             //
             let header: Header = HEADER_BROWSE;
@@ -668,8 +673,11 @@ export let embedder = ng.directive('embedder', ['$timeout', function ($timeout) 
                 $(e.target).prev().removeClass('focus');
             });
 
-            scope.$watch('show', function () {
+            scope.$watch('show', function (newValue) {
                 scope.unselectProvider();
+                if(newValue){
+                    emitDisplayEvent();
+                }
             });
 
             http().get('/infra/embed/default').done(function (providers) {
