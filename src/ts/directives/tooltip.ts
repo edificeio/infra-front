@@ -16,7 +16,7 @@ abstract class AbstractToolTip {
     protected isBinded = false;
     protected tooltipCheck = false;
     protected subscription = new Subscription;
-
+    protected observer: MutationObserver;
     static create(args: {
         $compile: any,
         scope: TooltipScope,
@@ -117,6 +117,24 @@ abstract class AbstractToolTip {
         //this.element.on('mouseout', this.hide);
         this.targetElement.on('mouseleave', this.hide);
         $(window).on('scroll', this.tryMoveTip);
+        //listen disabled
+        try {
+            this.observer = new MutationObserver((mutations) => {
+                mutations.forEach((mutation) => {
+                    // Check the modified attributeName is "disabled"
+                    if (mutation.attributeName === "disabled") {
+                        this.hide();
+                    }
+                });
+            });
+            // Configure to only listen to attribute changes
+            const config = { attributes: true };
+            // Start observing myElem
+            this.observer.observe(this.targetElement[0], config);
+        } catch (e) {
+            console.warn("[Tooltip] Could not listen attributes:", e)
+        }
+
         this.isBinded = true;
     }
     unbind(): void {
@@ -126,6 +144,11 @@ abstract class AbstractToolTip {
         this.element.off('mouseout', this.hide);
         this.element.off('mouseleave', this.hide);
         $(window).off('scroll', this.tryMoveTip);
+        try {
+            this.observer && this.observer.disconnect();
+        } catch (e) {
+            console.warn("[Tooltip] Could not stop listen attributes:", e)
+        }
         this.isBinded = false;
     }
     show = (e: any) => {
@@ -133,7 +156,7 @@ abstract class AbstractToolTip {
         //console.debug('[Tooltip.show] emit show event....',e)
         this.onChange.next('show');
     }
-    hide = (e: any) => {
+    hide = (e?: any) => {
         if (!this.isReady()) return false;
         //console.debug('[Tooltip.hide] emit hide event....',e)
         this.onChange.next('hide');
