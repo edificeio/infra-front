@@ -172,12 +172,11 @@ export const VideoController = ng.controller('VideoController', ['$scope', 'mode
                 console.warn('[VideoController.tryStartStreaming] already start');
                 return;
             }
-            console.log('[VideoController] try start streaming: ', getCookie())
-            if (getCookie() === 'true') {
-                showCamera(() => {
-                    $scope.videoState = 'idle';
-                });
-            }
+            console.log('[VideoController] try start streaming: ');
+            showCamera(() => {
+                $scope.videoState = 'idle';
+            });
+
         }
         //public
         $scope.startCamera = () => {
@@ -284,11 +283,6 @@ export const VideoController = ng.controller('VideoController', ['$scope', 'mode
             template.open('video', 'videorecorder');
             window.location.hash = "";
         }
-
-
-        // We check if camera is already authorized
-        //setCookie(false, 10)
-        console.log('[VideoController] SCOPE GET COOKIE', getCookie() == 'true')
         tryStartStreaming();
 
     }]);

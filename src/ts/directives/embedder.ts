@@ -166,15 +166,19 @@ export let embedder = ng.directive('embedder', ['$timeout', function ($timeout) 
                 worflowKey: "workspace.create"
             };
             const emitDisplayEvent = () =>{
+                console.log("Broadcast display event displayVideoRecorder...")
                 scope.$broadcast('displayVideoRecorder', {});
             }
             scope.template = template;
             //
             let header: Header = HEADER_BROWSE;
 
-            const showTemplate = (h: Header) => {
+            const showTemplate = async (h: Header) => {
                 header = h;
-                template.open(MAIN_CONTAINER, h.template);
+                await template.open(MAIN_CONTAINER, h.template);
+                h.onDisplay && setTimeout(()=>{
+                    h.onDisplay();
+                })
             };
 
             scope.headers = function () {
@@ -634,9 +638,6 @@ export let embedder = ng.directive('embedder', ['$timeout', function ($timeout) 
 
             scope.$watch('show', function (newValue) {
                 scope.unselectProvider();
-                if(newValue){
-                    emitDisplayEvent();
-                }
             });
 
             http().get('/infra/embed/default').done(function (providers) {
