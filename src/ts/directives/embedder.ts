@@ -60,92 +60,49 @@ export interface VideoScope {
     visibility: "public" | "protected" | "external";
     viewMode: MediaLibraryView
 
-    updatePreview();
-
-    onChange()
-
-    applyHtml(template);
-
-    unselectProvider();
-
+    updatePreview():void;
+    applyHtml():void;
+    unselectProvider():void;
     title(): string
-
-    updateSearch()
-
-    editImage()
-
-    insertRecord()
-
+    updateSearch():void
+    editImage():void
+    insertRecord():void
     selectedDocuments(): Document[]
-
     selectDocument(doc: Document)
-
-    selectDocuments();
-
-    openFolder(folder: Folder)
-
+    selectDocuments():void;
+    openFolder(folder: Folder):void
     isViewMode(mode: MediaLibraryView): void
-
     changeViewMode(mode: MediaLibraryView): void
-
     orderByField(field: string): void
-
     orderByDefault(): void
-
     isOrderedAsc(field: string): boolean
-
     isOrderedDesc(field: string): boolean
-
     isListFrom(listName: LIST_TYPE): boolean
-
-    listFrom(listName: LIST_TYPE)
-
+    listFrom(listName: LIST_TYPE):void
     headers(): Header[];
-
-    showHeader(tab: Header)
-
-    showHeaderByI18Key(tab: string)
-
+    showHeader(tab: Header):void
+    showHeaderByI18Key(tab: string):void
     isSelectedHeader(header: Header): boolean;
-
     isEditedFirst(): boolean
-
     isEditedLast(): boolean
-
     nextImage(): void
-
     previousImage(): void
-
-    importFiles(files: FileList)
-
-    closeCompression()
-
-    openCompression(doc: Document)
-
-    updateSelection(doc: Document)
-
-    abortOrDelete(doc: Document)
-
-    confirmImport()
-
-    cancelUpload()
-
+    importFiles(files: FileList):void
+    closeCompression():void
+    openCompression(doc: Document):void
+    updateSelection(doc: Document):void
+    abortOrDelete(doc: Document):void
+    confirmImport():void
+    cancelUpload():void
     isExternalVisible(): boolean
-
     //angular
     ngModel: string
-
-    ngChange()
-
-    $apply(a?)
-
-    $watch(a?, b?)
-
-    $on(a?, b?)
-
+    ngChange():void
+    $apply(a?:any):void
+    $watch(a?:any, b?:any):void
+    $on(a?:any, b?:any):void
     $parent: any
-
-    cancel();
+    cancel():void;
     $broadcast:any;
 }
 
@@ -155,7 +112,7 @@ export let embedder = ng.directive('embedder', ['$timeout', function ($timeout) 
         scope: {
             delegate: "=",
             ngModel: '=',
-            onChange: '&',
+            ngChange: '&',
             fileFormat: '=',
             show: '=',
             hiddenShareVideoCode: '='
@@ -695,11 +652,11 @@ export let embedder = ng.directive('embedder', ['$timeout', function ($timeout) 
                 });
             });
 
-            scope.applyHtml = function (template) {
+            scope.applyHtml = function () {
                 scope.show = false;
                 scope.ngModel = scope.display.htmlCode;
                 scope.$apply();
-                scope.onChange();
+                scope.ngChange && scope.ngChange();
                 scope.unselectProvider();
             };
 
