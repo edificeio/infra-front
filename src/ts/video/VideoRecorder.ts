@@ -1,4 +1,5 @@
 import { http } from "../http";
+import { Subject } from "rxjs";
 
 type MediaRecorderImpl = {
     start(time: number): void;
@@ -12,7 +13,6 @@ declare var MediaRecorder: {
     new(stream: MediaStream, options: { mimeType: string }): MediaRecorderImpl
     isTypeSupported: (mime: string) => boolean
 };
-
 export class VideoRecorder {
     private stream: MediaStream;
     private gumVideo: HTMLMediaElement
@@ -32,8 +32,31 @@ export class VideoRecorder {
         },
         facingMode: 'user'
     } as MediaStreamConstraints;
-    constructor(private videoFactory: () => HTMLMediaElement, private handleDuration: (event: Event) => void) {}
-    
+    public onPlayChanged = new Subject<Event>();
+    constructor(private videoFactory: () => HTMLMediaElement, private handleDuration: (event: Event) => void) { }
+    private bindPlayEvents() {
+        if (!this.gumVideo) return;
+        this.unbindPlayEvents();
+        this.gumVideo.addEventListener('play', this.videoPausePlayHandler, false);
+        this.gumVideo.addEventListener('pause', this.videoPausePlayHandler, false);
+    }
+    private unbindPlayEvents() {
+        if (!this.gumVideo) return;
+        this.gumVideo.removeEventListener('play', this.videoPausePlayHandler, false);
+        this.gumVideo.removeEventListener('pause', this.videoPausePlayHandler, false);
+    }
+    private videoPausePlayHandler = (e: Event) => {
+        this.onPlayChanged.next(e)
+    }
+    private unbindRecordEvent(){
+        if (!this.gumVideo) return;
+        this.gumVideo.removeEventListener('timeupdate', this.handleDuration);
+    }
+    private bindRecordEvent(){
+        if (!this.gumVideo) return;
+        this.unbindRecordEvent();
+        this.gumVideo.addEventListener('timeupdate', this.handleDuration);
+    }
     play() {
         if (!this.gumVideo) {
             console.warn('[VideoRecorder.play] stream not init');
@@ -44,7 +67,8 @@ export class VideoRecorder {
     }
     private preparePlay() {
         if (this.mode != 'play') {
-            this.gumVideo.removeEventListener('timeupdate', this.handleDuration);
+            this.unbindRecordEvent();
+            this.bindPlayEvents();
             let buffer = this.getBuffer();
             console.log('[VideoRecorder.preparePlay] buffer size: ', buffer.size)
             this.gumVideo.muted = false;
@@ -69,8 +93,8 @@ export class VideoRecorder {
             this.gumVideo.srcObject = null;
             this.gumVideo.srcObject = this.stream;
             this.gumVideo.controls = false;
-            this.gumVideo.removeEventListener('timeupdate', this.handleDuration);
-            this.gumVideo.addEventListener('timeupdate', this.handleDuration);
+            this.unbindPlayEvents();
+            this.bindRecordEvent();
             this.mode = 'record';
         } else {
             console.log('[VideoRecorder.prepareRecord] already in record mode')
@@ -78,7 +102,8 @@ export class VideoRecorder {
     }
     stopStreaming() {
         if (this.gumVideo) {
-            this.gumVideo.removeEventListener('timeupdate', this.handleDuration);
+            this.unbindPlayEvents();
+            this.unbindRecordEvent();
         }
         if (this.stream) {
             try {
@@ -93,9 +118,9 @@ export class VideoRecorder {
             this.stream = undefined;
         }
         this.gumVideo = undefined;
-        this.mode ='idle';
+        this.mode = 'idle';
     }
-    async startStreaming(notAllowedCb?:()=>void) {
+    async startStreaming(notAllowedCb?: () => void) {
         try {
             if (this.stream) return;
             const stream = await navigator.mediaDevices.getUserMedia(this.constraints);
@@ -106,8 +131,8 @@ export class VideoRecorder {
             this.prepareRecord();
             console.log('[VideoRecorder.startStreaming] VIDEO STREAM STARTED', this.gumVideo);
         } catch (e) {
-            if(e && e.name=='NotAllowedError'){
-                if(notAllowedCb){
+            if (e && e.name == 'NotAllowedError') {
+                if (notAllowedCb) {
                     return notAllowedCb();
                 }
             }
@@ -200,7 +225,7 @@ export class VideoRecorder {
         prepareRecord && this.prepareRecord();
     }
 
-    public upload(filename, callback) {
+    public upload(filename, callback,errCallback) {
         if (!filename) {
             filename = "video-" + this.id;
         }
@@ -211,7 +236,7 @@ export class VideoRecorder {
             if (typeof callback === 'function') {
                 callback(data);
             }
-        });
+        }).error(errCallback);
     }
 
 }

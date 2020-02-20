@@ -32,10 +32,13 @@ interface VideoControllerScope {
     pad(num: number): string;
     openMainPage(): void
     showActions(): boolean
+    isUploading():boolean;
+    canPlay():boolean;
     isCameraVisible(): boolean;
     isReady(): boolean
     isRecorded(): boolean;
     isRecording(): boolean;
+    isPlaying():boolean;
     website: any;
     selectedWebsite: any;
     $apply: any
@@ -54,6 +57,11 @@ export const VideoController = ng.controller('VideoController', ['$scope', 'mode
         }, (e) => {
             handleDuration(e);
         });
+        let isPlaying = false;
+        const sub = $scope.recorder.onPlayChanged.subscribe(e=>{
+            isPlaying = e.type=='play';
+            safeApply();
+        })
         $scope.display = {};
         $scope.authorized = false;
         $scope.videoState = 'idle';
@@ -142,6 +150,7 @@ export const VideoController = ng.controller('VideoController', ['$scope', 'mode
             return null;
         }
         const release = (): void => {
+            sub.unsubscribe();
             $scope.recorder.stopStreaming();
             $scope.videoState = 'idle';
         }
@@ -183,6 +192,15 @@ export const VideoController = ng.controller('VideoController', ['$scope', 'mode
             setCookie(true, 30);
             showCamera();
         }
+
+        $scope.canPlay=()=>{
+            if($scope.isPlaying()) return false;
+            return $scope.isRecorded();
+        }
+
+        $scope.isUploading = () => $scope.videoState == 'uploading';
+
+        $scope.isPlaying = () => isPlaying;
 
         $scope.isIncompatibleDevice = () => devices.isIphone() || devices.isIpad() || devices.isIpod();
 
@@ -263,6 +281,10 @@ export const VideoController = ng.controller('VideoController', ['$scope', 'mode
                     notify.success("video.file.saved");
                     $scope.$emit("video-upload", "");
                 }
+                $scope.videoState = 'recorded';
+                safeApply();
+            },()=>{
+                notify.error("video.file.error");
                 $scope.videoState = 'recorded';
                 safeApply();
             });

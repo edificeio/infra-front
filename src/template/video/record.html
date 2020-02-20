@@ -16,7 +16,7 @@
        <h3><i18n>embed.video.incompatible.devices</i18n></p>
     </div>
     <!--RECORDER-->
-    <div ng-if="!isIncompatible()" style="display: flex;flex-direction: column;justify-content: center;align-content: center;">
+    <div ng-if="!isIncompatible()" class="videocontroller">
         <span style="margin-bottom: 20px;align-self: center;" ng-if="isCameraVisible()">
             <i18n>video.msg</i18n>
         </span>
@@ -41,18 +41,15 @@
         <button style="align-self: center;margin-top: 20px;" ng-click="startRecord()" ng-if="isReady()">
             <i18n>video.start.record</i18n>
         </button>
-        <div ng-if="showActions()" style="display: flex; justify-content: center; margin-top: 20px;">
-            <button ng-click="switchRecording()" ng-disabled="!isRecording()">
-                <i18n>video.stop.record</i18n>
+        <div ng-if="showActions()" class="controls">
+            <button class="pause" ng-click="switchRecording()" ng-disabled="!isRecording()" tooltip="embed.video.stop">
             </button>
-            <button ng-click="play()" ng-disabled="!isRecorded()">
-                <i18n>video.play</i18n>
+            <button class="play" ng-click="play()" ng-disabled="!canPlay()" tooltip="embed.video.play">
             </button>
-            <button ng-click="redo()" ng-disabled="!isRecorded()">
-                <i18n>video.redo</i18n>
+            <button class="remove" ng-click="redo()" ng-disabled="!isRecorded()" tooltip="embed.video.redo">
             </button>
-            <button ng-click="upload()" ng-disabled="!isRecorded()">
-                <i18n>video.upload</i18n>
+            <button class="save" ng-class="{'save':!isUploading()}" ng-click="upload()" ng-disabled="!isRecorded()" tooltip="embed.video.save">
+                <i ng-if="isUploading()" class="loading"></i>
             </button>
         </div>
     </div>
