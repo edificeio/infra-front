@@ -92,6 +92,7 @@ export class VideoRecorder {
             this.gumVideo.volume = 1;
             this.gumVideo.src = null;
             this.gumVideo.srcObject = null;
+            this.gumVideo.autoplay = true;
             this.gumVideo.srcObject = this.stream;
             this.gumVideo.controls = false;
             this.unbindPlayEvents();
