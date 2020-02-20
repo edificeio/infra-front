@@ -74,6 +74,7 @@ export class VideoRecorder {
             this.gumVideo.muted = false;
             this.gumVideo.src = null;
             this.gumVideo.srcObject = null;
+            this.gumVideo.autoplay = false;
             this.gumVideo.src = window.URL.createObjectURL(buffer);
             this.gumVideo.controls = true;
             this.mode = 'play';
