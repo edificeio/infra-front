@@ -1,6 +1,7 @@
 import { Subject, Subscription } from "rxjs";
 import { idiom } from "./idiom";
 import { template } from "./template";
+import { LightboxDelegate } from "./directives";
 
 
 function setToArray<T>(s: Set<T>): T[] {
@@ -307,6 +308,27 @@ export class ManualChangeListener implements INavigationListener {
     stop() {
         this.onChange.unsubscribe();
     }
+}
+
+
+export class LightboxChangeListener implements INavigationListener,LightboxDelegate {
+    onChange = new Subject<INavigationInfo>();
+    start() { }
+    stop() {
+        this.onChange.unsubscribe();
+    }
+	stayOpen():Promise<boolean>{
+		return new Promise((resolve,reject)=>{
+			this.onChange.next({
+				accept(){
+					resolve(false);
+				},
+				reject(){
+					resolve(true);
+				}
+			})
+		});
+	}
 }
 
 if (!window.entcore) {

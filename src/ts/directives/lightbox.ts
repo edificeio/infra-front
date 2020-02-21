@@ -2,6 +2,25 @@ import { ng } from '../ng-start';
 import { $ } from '../libs/jquery/jquery';
 import { _ } from '../libs/underscore/underscore';
 
+export interface LightboxDelegate{
+	stayOpen():Promise<boolean>;
+}
+class LightboxDelegateWrapper implements LightboxDelegate{
+	constructor(private all:Array<LightboxDelegate>) {}
+	async stayOpen():Promise<boolean>{
+		for(const current of this.all){
+			if(current){
+				const res = await current.stayOpen();
+				if(res){
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
+}
+
 export let lightbox = ng.directive('lightbox', () => {
 	return {
 		restrict: 'E',
@@ -11,6 +30,7 @@ export let lightbox = ng.directive('lightbox', () => {
 			tiny: '=',
 			onShow: '&?',
 			onClose: '&',
+			delegate:'=',
 			delegateClose: '&?'
 		},
 		template: '<section class="lightbox" ng-class="{\'lightbox\': !tiny, \'tiny-lightbox\': tiny}">' +
@@ -23,9 +43,25 @@ export let lightbox = ng.directive('lightbox', () => {
 						'</div>'+
 					'</section>'+
 				'</div>',
-		link: function(scope, element, attributes){
-			element.children('.lightbox').find('> .background').on('click', function(e){
+		link: async function(scope, element, attributes){
+			let delegate:LightboxDelegate = scope.delegate;
+			if(attributes.navigationGuard){
+				const guard = await import("../navigationGuard");
+				const guardListener =  new guard.LightboxChangeListener();
+				delegate = new LightboxDelegateWrapper([delegate,guardListener]);
+				guard.navigationGuardService.registerListener(guardListener);
+				scope.$on("$destroy", () => {
+					guard.navigationGuardService.unregisterListener(guardListener);
+				})
+			}
+			element.children('.lightbox').find('> .background').on('click', async function(e){
 				if (element.children('.lightbox').find('image-editor, share-panel, .import-files, .split-screen, [template=entcore\\/image-editor\\/main]').length === 0){
+					if (delegate) {
+						let result= await delegate.stayOpen();
+						if(result===true){
+							return;
+						}
+					}
 					if (attributes.delegateClose) {
 						let result= scope.delegateClose({ $element:element });
 						if(result===true){
@@ -44,8 +80,14 @@ export let lightbox = ng.directive('lightbox', () => {
 					}
 				}
 			});
-			element.children('.lightbox').find('> .content > .close-lightbox > i.close-2x').on('click', function(e){
+			element.children('.lightbox').find('> .content > .close-lightbox > i.close-2x').on('click', async function(e){
 				if (element.children('.lightbox').find('share-panel').length === 0){
+					if (delegate) {
+						let result= await delegate.stayOpen();
+						if(result===true){
+							return;
+						}
+					}
 					if (attributes.delegateClose) {
 						let result= scope.delegateClose({ $element:element });
 						if(result===true){
