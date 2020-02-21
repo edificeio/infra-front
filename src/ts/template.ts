@@ -62,6 +62,12 @@ export var template = {
 		return new Promise(async (resolve, reject) => {
 			if (template._delegate) {
 				await template.getReadyPromise(name).promise;
+				//already open...
+				if(!template._delegate){
+					template._open(name, view);
+					resolve();
+					return;
+				}
 				template._delegate.tryOpen({
 					name,
 					view,

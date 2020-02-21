@@ -18,12 +18,12 @@
  ~
  -->
 
-<lightbox show="show" on-close="cancel();">
+<lightbox show="show" on-close="cancel();" navigation-guard="true">
     <div class="embed-container">
         <h2>[[title()]]</h2>
         <section class="row video">
             <section class="twelve cell tabs row">
-                <header ng-repeat="header in headers()" ng-class="{'selected':isSelectedHeader(header)}" ng-click="showHeader(header)" workflow="[[header.worflowKey]]" ng-show="header.visible()">
+                <header ng-repeat="header in headers()" ng-class="{'selected':isSelectedHeader(header)}" navigation-trigger="showHeader(header)" workflow="[[header.worflowKey]]" ng-show="header.visible()">
                     <span translate content="[[header.i18Key]]"></span>
                 </header>
                 <section class="medium-text">

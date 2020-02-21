@@ -70,7 +70,7 @@ export class VideoRecorder {
             this.unbindRecordEvent();
             this.bindPlayEvents();
             let buffer = this.getBuffer();
-            console.log('[VideoRecorder.preparePlay] buffer size: ', buffer.size)
+            //console.log('[VideoRecorder.preparePlay] buffer size: ', buffer.size)
             this.gumVideo.muted = false;
             this.gumVideo.src = null;
             this.gumVideo.srcObject = null;
@@ -79,7 +79,7 @@ export class VideoRecorder {
             this.gumVideo.controls = true;
             this.mode = 'play';
         } else {
-            console.log('[VideoRecorder.preparePlay] already in play mode')
+            //console.log('[VideoRecorder.preparePlay] already in play mode')
         }
     }
     private prepareRecord() {
@@ -99,7 +99,7 @@ export class VideoRecorder {
             this.bindRecordEvent();
             this.mode = 'record';
         } else {
-            console.log('[VideoRecorder.prepareRecord] already in record mode')
+            //console.log('[VideoRecorder.prepareRecord] already in record mode')
         }
     }
     stopStreaming() {
@@ -131,7 +131,7 @@ export class VideoRecorder {
             }
             this.stream = stream;
             this.prepareRecord();
-            console.log('[VideoRecorder.startStreaming] VIDEO STREAM STARTED', this.gumVideo);
+            //console.log('[VideoRecorder.startStreaming] VIDEO STREAM STARTED', this.gumVideo);
         } catch (e) {
             if (e && e.name == 'NotAllowedError') {
                 if (notAllowedCb) {
@@ -195,9 +195,9 @@ export class VideoRecorder {
             return;
         }
 
-        console.log('[VideoRecorder.startRecording] Created MediaRecorder', this.mediaRecorder, 'with options', options);
+        //console.log('[VideoRecorder.startRecording] Created MediaRecorder', this.mediaRecorder, 'with options', options);
         this.mediaRecorder.onstop = (event) => {
-            console.log('[VideoRecorder.onstop] Recorder stopped: ', event);
+            //console.log('[VideoRecorder.onstop] Recorder stopped: ', event);
         };
         this.mediaRecorder.ondataavailable = function (event) {
             if (event.data && event.data.size > 0) {
@@ -205,7 +205,7 @@ export class VideoRecorder {
             }
         };
         this.mediaRecorder.start(1000); // collect 1000ms of data
-        console.log('[VideoRecorder.startRecording] MediaRecorder started', this.mediaRecorder);
+        //console.log('[VideoRecorder.startRecording] MediaRecorder started', this.mediaRecorder);
     }
 
     public pause(preparePlay: boolean) {

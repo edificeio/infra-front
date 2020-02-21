@@ -4,7 +4,16 @@ import { ng } from "../ng-start";
 import { VideoRecorder } from "./VideoRecorder";
 import { model } from "../modelDefinitions";
 import { devices } from "../globals";
-
+import { IObjectGuardDelegate } from "../navigationGuard";
+class VideoGuardModel implements IObjectGuardDelegate{
+    hasRecorded = false;
+    guardObjectIsDirty(): boolean{
+        return this.hasRecorded;
+    }
+    guardObjectReset(): void{
+        this.hasRecorded = false;
+    }
+}
 interface VideoControllerScope {
     RECORD_MAX_TIME: number;
     template: typeof template
@@ -20,6 +29,7 @@ interface VideoControllerScope {
     recordStartTime: number
     recordTime: string
     recordMaxTime: number
+    guard: VideoGuardModel;
     isIncompatibleDevice(): boolean
     isIncompatible(): boolean
     startCamera(): void
@@ -49,6 +59,7 @@ interface VideoControllerScope {
 
 export const VideoController = ng.controller('VideoController', ['$scope', 'model', 'route', '$element',
     ($scope: VideoControllerScope, model, route, $element) => {
+        $scope.guard = new VideoGuardModel();
         $scope.RECORD_MAX_TIME = 5; // MAX TIME OF RECORDING IN MINUTES
         $scope.template = template;
         $scope.me = model.me;
@@ -73,15 +84,15 @@ export const VideoController = ng.controller('VideoController', ['$scope', 'mode
         $scope.recordTime = '00:00';
         $scope.recordMaxTime = $scope.RECORD_MAX_TIME * 60000;
         $scope.$on("$destroy", () => {
-            console.log("[VideoController.destroy] release video....")
+            //console.log("[VideoController.destroy] release video....")
             release();
         })
         $scope.$on("releaseVideo", () => {
-            console.log("[VideoController.releaseVideo] release video because of event....")
+            //console.log("[VideoController.releaseVideo] release video because of event....")
             release();
         })
         $scope.$on("displayVideoRecorder", () => {
-            console.log("[VideoController.displayVideoRecorder] display video because of event....")
+            //console.log("[VideoController.displayVideoRecorder] display video because of event....")
             tryStartStreaming();
         })
         // By default open the website list
@@ -117,7 +128,7 @@ export const VideoController = ng.controller('VideoController', ['$scope', 'mode
             document.cookie = "camera-auth=" + cvalue + ";" + expires;
         }
         const onTrackedVideoFrame = (time: number) => {
-            // console.log('TIME', time);
+            // //console.log('TIME', time);
             if (time > $scope.recordMaxTime) {
                 $scope.stopRecord();
             } else {
@@ -159,7 +170,7 @@ export const VideoController = ng.controller('VideoController', ['$scope', 'mode
                 $scope.recordTime = msToTime(0);
                 $scope.videoState = 'starting';
                 safeApply();
-                console.log('[VideoController.showCamera] Using media constraints:', $scope.recorder.constraints);
+                //console.log('[VideoController.showCamera] Using media constraints:', $scope.recorder.constraints);
                 await $scope.recorder.startStreaming(notAllowedCb);
                 $scope.videoState = 'ready';
             } catch (e) {
@@ -181,7 +192,7 @@ export const VideoController = ng.controller('VideoController', ['$scope', 'mode
                 console.warn('[VideoController.tryStartStreaming] already start');
                 return;
             }
-            console.log('[VideoController] try start streaming: ');
+            //console.log('[VideoController] try start streaming: ');
             showCamera(() => {
                 $scope.videoState = 'idle';
             });
@@ -221,7 +232,7 @@ export const VideoController = ng.controller('VideoController', ['$scope', 'mode
         $scope.isRecorded = () => $scope.videoState == 'recorded';
 
         $scope.startRecord = async (resume = false) => {
-            console.log('[VideoController.startRecord] START RECORD', $scope.currentDuration);
+            //console.log('[VideoController.startRecord] START RECORD', $scope.currentDuration);
             $scope.recordStartTime = $scope.currentDuration;
             if (resume) {
                 _lastRecordDuration = _currentRecordDuration;
@@ -234,11 +245,12 @@ export const VideoController = ng.controller('VideoController', ['$scope', 'mode
                 $scope.recorder.resume();
             } else {
                 $scope.recorder.startRecording();
+                $scope.guard.hasRecorded = true;
             }
         }
 
         $scope.stopRecord = (pause = false) => {
-            console.log('[VideoController.stopRecord] STOP RECORD');
+            //console.log('[VideoController.stopRecord] STOP RECORD');
             $scope.videoState = 'recorded'
             if (pause) {
                 $scope.recorder.pause(true);
@@ -248,7 +260,7 @@ export const VideoController = ng.controller('VideoController', ['$scope', 'mode
         }
 
         $scope.switchRecording = () => {
-            console.log('[VideoController.switchRecording] switching state:', $scope.videoState);
+            //console.log('[VideoController.switchRecording] switching state:', $scope.videoState);
             if ($scope.videoState == 'recorded') {
                 $scope.startRecord(false);
             } else {
@@ -261,7 +273,8 @@ export const VideoController = ng.controller('VideoController', ['$scope', 'mode
         }
 
         $scope.redo = () => {
-            console.log('[VideoController.redo] redoing...');
+            //console.log('[VideoController.redo] redoing...');
+            $scope.guard.guardObjectReset();
             $scope.videoState = 'ready';
             $scope.currentDuration = 0;
             $scope.recorder.clearBuffer(true);
@@ -277,7 +290,7 @@ export const VideoController = ng.controller('VideoController', ['$scope', 'mode
                 if (response.error) {
                     notify.error("video.file.error");
                 } else {
-
+                    $scope.guard.guardObjectReset();
                     notify.success("video.file.saved");
                     $scope.$emit("video-upload", "");
                 }

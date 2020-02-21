@@ -1,4 +1,4 @@
-<div ng-controller="VideoController" class="video">
+<div ng-controller="VideoController" class="video" guard-root custom-guard="guard">
     <!--UPGRADE DIALOG-->
     <div ng-if="isIncompatible() && !isIncompatibleDevice()" class="browser" style="box-shadow:none">
         <h3><i18n>embed.video.incompatible</i18n></h3>
@@ -48,7 +48,7 @@
             </button>
             <button class="remove" ng-click="redo()" ng-disabled="!isRecorded()" tooltip="embed.video.redo">
             </button>
-            <button class="save" ng-class="{'save':!isUploading()}" ng-click="upload()" ng-disabled="!isRecorded()" tooltip="embed.video.save">
+            <button ng-class="{'save':!isUploading()}" ng-click="upload()" ng-disabled="!isRecorded()" tooltip="embed.video.save">
                 <i ng-if="isUploading()" class="loading"></i>
             </button>
         </div>
