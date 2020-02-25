@@ -107,6 +107,25 @@ export const devices = {
     }
 };
 
+if (navigator.userAgent.match(/Mobile/i)
+    || navigator.userAgent.match(/iPhone/i)
+    || navigator.userAgent.match(/iPod/i)
+    || navigator.userAgent.match(/IEMobile/i)
+    || navigator.userAgent.match(/Windows Phone/i)
+    || navigator.userAgent.match(/Android/i)
+    || navigator.userAgent.match(/BlackBerry/i)
+    || navigator.userAgent.match(/webOS/i)) {
+    document.getElementsByTagName('html')[0].setAttribute('mobile-device', '');
+} else if (navigator.userAgent.match(/Tablet/i)
+    || navigator.userAgent.match(/iPad/i)
+    || navigator.userAgent.match(/Nexus 7/i)
+    || navigator.userAgent.match(/Nexus 10/i)
+    || navigator.userAgent.match(/KFAPWI/i)) {
+        document.getElementsByTagName('html')[0].setAttribute('tablet-device', '');
+} else {
+    document.getElementsByTagName('html')[0].setAttribute('desktop-device','');
+}
+
 const defaultLanguage = () => {
     const request = new XMLHttpRequest();
     request.open('GET', '/locale');
