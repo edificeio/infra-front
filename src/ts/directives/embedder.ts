@@ -429,9 +429,9 @@ export let embedder = ng.directive('embedder', ['$timeout', function ($timeout) 
                     }
 
                     if (newVal === 'video') {
-                        showTemplate(HEADER_RECORD);
+                        showTemplate(HEADER_INTEGRATION);
                         element.parents('lightbox').on('lightboxvisible', () => {
-                            showTemplate(HEADER_RECORD);
+                            showTemplate(HEADER_INTEGRATION);
                             scope.$apply();
                         });
                     } else {
