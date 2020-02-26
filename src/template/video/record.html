@@ -43,10 +43,13 @@
         </button>
         <div ng-if="showActions()" class="controls">
             <button class="pause" ng-click="switchRecording()" ng-disabled="!isRecording()" tooltip="embed.video.stop">
+                <i class="pause"></i>
             </button>
             <button class="play" ng-click="play()" ng-disabled="!canPlay()" tooltip="embed.video.play">
+                <i class="play"></i>
             </button>
             <button class="remove" ng-click="redo()" ng-disabled="!isRecorded()" tooltip="embed.video.redo">
+                <i class="rotate"></i>
             </button>
             <button ng-class="{'save':!isUploading()}" ng-click="upload()" ng-disabled="!isRecorded()" tooltip="embed.video.save">
                 <i ng-if="isUploading()" class="loading"></i>
