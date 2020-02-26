@@ -292,7 +292,7 @@ export const VideoController = ng.controller('VideoController', ['$scope', 'mode
                 } else {
                     $scope.guard.guardObjectReset();
                     notify.success("video.file.saved");
-                    $scope.$emit("video-upload", "");
+                    $scope.$emit("video-upload", response.id);
                 }
                 $scope.videoState = 'recorded';
                 safeApply();

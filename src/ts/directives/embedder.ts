@@ -66,7 +66,7 @@ export interface VideoScope {
     title(): string
     updateSearch():void
     editImage():void
-    insertRecord():void
+    insertRecord(docId: string):void
     selectedDocuments(): Document[]
     selectDocument(doc: Document)
     selectDocuments():void;
@@ -190,10 +190,10 @@ export let embedder = ng.directive('embedder', ['$timeout', function ($timeout) 
                 return header && h && header.i18Key == h.i18Key;
             }
 
-            scope.$on("video-upload", function (event, message) {
+            scope.$on("video-upload", function (event, docId) {
                 //console.log('TEMPLATE LOADING ')
                 //template.open(MAIN_CONTAINER, TEMPLATE_LOADING);
-                scope.insertRecord()
+                scope.insertRecord(docId);
             });
 
             scope.title = () => {
@@ -483,9 +483,14 @@ export let embedder = ng.directive('embedder', ['$timeout', function ($timeout) 
                 });
             }
 
-            scope.insertRecord = async () => {
+            scope.insertRecord = async (docId: string) => {
                 await MediaLibrary.appDocuments.sync();
-                showTemplate(HEADER_BROWSE);
+                MediaLibrary['appDocuments'].documents.all.forEach(doc => {
+                    if (doc.file == docId) {
+                        scope.upload.highlights.push(doc);
+                    }
+                });
+                scope.showHeader(HEADER_BROWSE);
                 scope.listFrom('appDocuments');
             };
 
