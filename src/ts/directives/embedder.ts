@@ -148,7 +148,7 @@ export let embedder = ng.directive('embedder', ['$timeout', function ($timeout) 
                 i18Key: "library.header.browse",
                 template: "entcore/media-library/browse",
                 visible: () => true,
-                worflowKey: null
+                worflowKey: "video.view"
             };
             const HEADER_UPLOAD: Header = {
                 i18Key: "video.header.upload",
@@ -163,7 +163,7 @@ export let embedder = ng.directive('embedder', ['$timeout', function ($timeout) 
                     emitDisplayEvent();
                 },
                 visible: () => true,
-                worflowKey: "workspace.create"
+                worflowKey: "video.view"
             };
             const emitDisplayEvent = () =>{
                 console.log("Broadcast display event displayVideoRecorder...")
