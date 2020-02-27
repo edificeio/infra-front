@@ -14,12 +14,13 @@ export interface Timeslot {
 }
 
 export var calendar = {
+	slotsDuration: [],
     setCalendar: function(cal){
         model.calendar = cal;
     },
 	getHours: function(scheduleItem, day){
-		var startTime = 7;
-		var endTime = 20;
+		var startTime = calendar.startOfDay;
+		var endTime = calendar.endOfDay;
 
 		if(scheduleItem.beginning.dayOfYear() === day.index){
 			startTime = scheduleItem.beginning.hours();
@@ -115,11 +116,13 @@ export var calendar = {
 
 		this.collection(calendar.TimeSlot);
 		this.timeSlots.load(calendar.getTimeslots());
+		this.processSlotsDuration();
 	},
 	viewTimeRange: 13,
 	firstHour: 0,
 	lastHour: 24,
 	startOfDay: 7,
+	startOfDayMinutes: 0,
 	endOfDay: 20,
 	dayHeight: 40,
 	customSlots: undefined,
@@ -170,7 +173,21 @@ function getFirstSlotIndex (slots) {
 			return i;
 		}
 	}
+
+	return null;
 }
+
+calendar.Calendar.prototype.getFirstSlotIndex = function () {
+	for (let i = 0; i < this.timeSlots.all.length; i++) {
+		let timeSlot = this.timeSlots.all[i];
+		if (timeSlot.start === calendar.startOfDay && timeSlot.startMinutes === calendar.startOfDayMinutes) {
+			return i;
+		}
+	}
+
+	return null;
+};
+
 calendar.Calendar.prototype.initTimeSlots = function(){
     this.collection(calendar.TimeSlot);
 	this.timeSlots.load(calendar.getTimeslots());
@@ -207,20 +224,60 @@ calendar.Calendar.prototype.setIncrement = function(incr) {
     return this.firstDay;
 };
 
+calendar.Calendar.prototype.processSlotsDuration = function () {
+	const slotsDuration = [];
+	const slots = calendar.getTimeslots();
+	slots.forEach(({start, startMinutes, end, endMinutes}) => {
+		let momentStart = moment().hour(start).minute(startMinutes).second(0);
+		let momentEnd = moment().hour(end).minute(endMinutes).second(0);
+		slotsDuration.push(momentEnd.diff(momentStart, 'minute'));
+	});
+	calendar.slotsDuration = slotsDuration;
+};
+
+calendar.Calendar.prototype.getSlotsIndex = function (beginning, end): Array<number> {
+	const indexes = [];
+	beginning = moment(beginning);
+	end = moment(end);
+	for (let i = 0; i < this.timeSlots.all.length; i++) {
+		let slot = this.timeSlots.all[i];
+		let slotStart = beginning.clone().hour(slot.start).minute(slot.startMinutes).seconds(0);
+		let slotEnd = end.clone().hour(slot.end).minute(slot.endMinutes).seconds(0);
+
+		/**
+		 * An item is NOT considered in a time slot when :
+		 * 		case 1: its end < slot start date
+		 * 		case 2:	its start > slot end date
+		 */
+
+		const case1 = end.isSameOrBefore(slotStart);
+		const case2 = beginning.isSameOrAfter(slotEnd);
+
+		if (!(case1 || case2)) {
+			indexes.push(i);
+		}
+	}
+
+	return indexes;
+};
+
 calendar.Calendar.prototype.setTimeslots = function (slots) {
 	calendar.customSlots = slots;
 	this.setStartAndEndOfDay(slots);
 	this.days.sync();
 	this.timeSlots.load(calendar.getTimeslots());
+	this.processSlotsDuration();
 };
 
 calendar.Calendar.prototype.setStartAndEndOfDay = function (slots) {
 	if (slots) {
 		calendar.startOfDay = parseInt(slots[0].startHour.split(':')[0]);
+		calendar.startOfDayMinutes = parseInt(slots[0].startHour.split(':')[1]);
 		const lastSlot = slots.length > calendar.viewTimeRange ? slots[calendar.viewTimeRange - 1] : slots[slots.length - 1];
 		calendar.endOfDay = parseInt(lastSlot.startHour.split(':')[0]);
 	} else {
 		calendar.startOfDay = 7;
+		calendar.startOfDayMinutes = 0;
 		calendar.endOfDay = calendar.startOfDay + calendar.viewTimeRange;
 	}
 };

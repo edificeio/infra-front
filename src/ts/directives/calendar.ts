@@ -312,6 +312,10 @@ export let scheduleItem = ng.directive('scheduleItem', function () {
                 var startDay = scope.item.beginning.dayOfYear();
                 var endDay = scope.item.end.dayOfYear();
                 var hours = calendar.getHours(scope.item, scope.day);
+                const itemSlots = model.calendar.getSlotsIndex(scope.item.beginning, scope.item.end);
+
+                // Stop function when no slots contains our item
+                if (itemSlots.length === 0) return;
 
                 var itemWidth = scope.day.scheduleItems.scheduleItemWidth(scope.item);
                 scheduleItemEl.css({ width: itemWidth + '%' });
@@ -332,10 +336,29 @@ export let scheduleItem = ng.directive('scheduleItem', function () {
                     });
                 }
                 scope.item.calendarGutter = calendarGutter;
-                var beginningMinutesHeight = scope.item.beginning.minutes() * calendar.dayHeight / 60;
-                var endMinutesHeight = scope.item.end.minutes() * calendar.dayHeight / 60;
-                var top = (hours.startTime - calendar.startOfDay) * calendar.dayHeight + beginningMinutesHeight;
-                scheduleItemEl.height(((hours.endTime - hours.startTime) * calendar.dayHeight - beginningMinutesHeight + endMinutesHeight) + 'px');
+
+                // Get slots duration. Slots can have different durations
+                let firstSlotDuration = itemSlots.length > 0 ? calendar.slotsDuration[itemSlots[0]] : 0;
+                let endSlotDuration = itemSlots.length > 0 ? calendar.slotsDuration[itemSlots[itemSlots.length - 1]] : 0;
+
+                // Compute beginning minutes height
+                let firstSlot = model.calendar.timeSlots.all[itemSlots[0]];
+                let startDiff = scope.item.beginning.diff(scope.item.beginning.clone().hours(firstSlot.start).minutes(firstSlot.startMinutes), 'minutes');
+                let beginningMinutesHeight = (startDiff / firstSlotDuration) * calendar.dayHeight;
+
+                // Compute end minutes height
+                let lastSlot = model.calendar.timeSlots.all[itemSlots[itemSlots.length - 1]];
+                let endDiff = scope.item.end.diff(scope.item.end.clone().hours(lastSlot.end).minutes(lastSlot.endMinutes), 'minutes');
+                var endMinutesHeight = (endDiff / endSlotDuration) * calendar.dayHeight;
+
+                // Compute item height
+                scheduleItemEl.height((itemSlots.length * calendar.dayHeight - beginningMinutesHeight + endMinutesHeight) + 'px');
+
+                // Compute item top. It use now slots indexes to compute top margin.
+                // Top margin = (first item slot - calendar first slot index) * calendar slot height called "dayHeight"
+                let calendarFirstSlot = model.calendar.getFirstSlotIndex();
+                let topMargin = itemSlots[0] - calendarFirstSlot;
+                var top = topMargin * calendar.dayHeight + beginningMinutesHeight;
                 scheduleItemEl.css({
                     top: top + 'px',
                     left: (scope.item.calendarGutter * (itemWidth * dayWidth / 100)) + 'px'
