@@ -1,5 +1,7 @@
 import { http } from "../http";
 import { Subject } from "rxjs";
+import { model } from '../modelDefinitions';
+import { notify } from '../notify';
 
 type MediaRecorderImpl = {
     start(time: number): void;
@@ -156,6 +158,14 @@ export class VideoRecorder {
     public resume() {
         this.prepareRecord();
         this.mediaRecorder.resume();
+    }
+    public async canStartRecording(callback) {
+        http().get(`/workspace/quota/user/${model.me.userId}`).done(result => {
+            let res = result.quota > result.storage;
+            callback(res)
+        }).error(err => {
+            callback(false);
+        });
     }
     public async startRecording() {
         await this.startStreaming();
