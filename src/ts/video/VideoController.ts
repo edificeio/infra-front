@@ -233,20 +233,26 @@ export const VideoController = ng.controller('VideoController', ['$scope', 'mode
 
         $scope.startRecord = async (resume = false) => {
             //console.log('[VideoController.startRecord] START RECORD', $scope.currentDuration);
-            $scope.recordStartTime = $scope.currentDuration;
-            if (resume) {
-                _lastRecordDuration = _currentRecordDuration;
-            } else {
-                _lastRecordDuration = 0;
-            }
-            _currentRecordDuration = 0;
-            $scope.videoState = 'recording'
-            if (resume) {
-                $scope.recorder.resume();
-            } else {
-                $scope.recorder.startRecording();
-                $scope.guard.hasRecorded = true;
-            }
+            $scope.recorder.canStartRecording(bool => {
+                if (!bool) {
+                    notify.error('video.file.too.large');
+                } else {
+                    $scope.recordStartTime = $scope.currentDuration;
+                    if (resume) {
+                        _lastRecordDuration = _currentRecordDuration;
+                    } else {
+                        _lastRecordDuration = 0;
+                    }
+                    _currentRecordDuration = 0;
+                    $scope.videoState = 'recording'
+                    if (resume) {
+                        $scope.recorder.resume();
+                    } else {
+                        $scope.recorder.startRecording();
+                        $scope.guard.hasRecorded = true;
+                    }
+                }
+            });
         }
 
         $scope.stopRecord = (pause = false) => {
