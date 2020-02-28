@@ -3,6 +3,9 @@
 
 
 const whiteListAttributes = [
+    // Exercizer
+    "zone-id",
+    // W3C
     "accept",
     "accept-charset",
     "accesskey",
