@@ -5,6 +5,7 @@ import { VideoRecorder } from "./VideoRecorder";
 import { model } from "../modelDefinitions";
 import { devices } from "../globals";
 import { IObjectGuardDelegate } from "../navigationGuard";
+import { Me } from "../me";
 class VideoGuardModel implements IObjectGuardDelegate{
     hasRecorded = false;
     guardObjectIsDirty(): boolean{
@@ -21,6 +22,7 @@ interface VideoControllerScope {
     recorder: VideoRecorder;
     display: {}
     authorized: boolean
+    hasRight:boolean
     videoState: 'idle' | 'starting' | 'ready' | 'recording' | 'recorded' | 'incompatible' | 'uploading'
     videofile: { name?: string }
     action: 'videorecorder'
@@ -59,6 +61,7 @@ interface VideoControllerScope {
 
 export const VideoController = ng.controller('VideoController', ['$scope', 'model', 'route', '$element',
     ($scope: VideoControllerScope, model, route, $element) => {
+        $scope.hasRight = true;
         $scope.guard = new VideoGuardModel();
         $scope.RECORD_MAX_TIME = 5; // MAX TIME OF RECORDING IN MINUTES
         $scope.template = template;
@@ -179,7 +182,13 @@ export const VideoController = ng.controller('VideoController', ['$scope', 'mode
             }
             safeApply()
         }
-        const tryStartStreaming = () => {
+        const tryStartStreaming = async () => {
+            if(!await Me.hasWorkflowRight("video.view")){
+                console.warn("[VideoController] missing workflow right video.view")
+                $scope.hasRight = false;
+                safeApply();
+                return;
+            }
             const browser = devices.getBrowserInfo();
             const incompatibleBrowser = browser.name != 'Firefox' && browser.name != 'Chrome';
             if (incompatibleBrowser || $scope.isIncompatibleDevice()) {
