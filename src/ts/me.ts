@@ -4,11 +4,24 @@ import { Eventer } from 'entcore-toolkit';
 import { idiom } from './idiom';
 import { $ } from "./entcore";
 import { notify } from './notify';
+import { Behaviours } from './behaviours';
 
 export class Me{
     static preferences: any;
     static loading: any[] = [];
     private static eventer: Eventer = new Eventer();
+
+    static async hasWorkflowRight(workflowName:string):Promise<boolean>{
+        const workflowParts = workflowName.split('.');
+        if(!model.me) return false;
+        await model.me.workflow.load([workflowParts[0]]);
+        if(!model.me.workflow) return false;
+        let current = model.me.workflow;
+        for(const prop of workflowParts){
+            current = current[prop];
+        }
+        return current;
+    }
 
     static get session(){
         return model.me;

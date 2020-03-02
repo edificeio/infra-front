@@ -8,6 +8,7 @@ import {Document, Folder, MediaLibrary} from "../workspace";
 import {idiom} from "../idiom";
 import {model} from "../modelDefinitions";
 import { embedderService } from '../embedder';
+import { Me } from '../me';
 
 export interface VideoDelegate {
     title?: string
@@ -148,7 +149,7 @@ export let embedder = ng.directive('embedder', ['$timeout', function ($timeout) 
                 i18Key: "library.header.browse",
                 template: "entcore/media-library/browse",
                 visible: () => true,
-                worflowKey: "video.view"
+                worflowKey: null
             };
             const HEADER_UPLOAD: Header = {
                 i18Key: "video.header.upload",
@@ -165,6 +166,7 @@ export let embedder = ng.directive('embedder', ['$timeout', function ($timeout) 
                 visible: () => true,
                 worflowKey: "video.view"
             };
+            Me.hasWorkflowRight("video.view") //hack to start and load workflow rights
             const emitDisplayEvent = () =>{
                 console.log("Broadcast display event displayVideoRecorder...")
                 scope.$broadcast('displayVideoRecorder', {});
