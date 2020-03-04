@@ -261,6 +261,7 @@ export const VideoController = ng.controller('VideoController', ['$scope', 'mode
                         $scope.guard.hasRecorded = true;
                     }
                 }
+                safeApply();
             });
         }
 
@@ -272,6 +273,7 @@ export const VideoController = ng.controller('VideoController', ['$scope', 'mode
             } else {
                 $scope.recorder.stopRecording(true);
             }
+            safeApply();
         }
 
         $scope.switchRecording = () => {

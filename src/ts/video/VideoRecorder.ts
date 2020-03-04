@@ -1,7 +1,8 @@
-import { http } from "../http";
+import { http, httpPromisy } from "../http";
 import { Subject } from "rxjs";
 import { model } from '../modelDefinitions';
 import { notify } from '../notify';
+import axios from "axios";
 
 type MediaRecorderImpl = {
     start(time: number): void;
@@ -237,18 +238,41 @@ export class VideoRecorder {
         prepareRecord && this.prepareRecord();
     }
 
-    public upload(filename, callback,errCallback) {
+    public async upload(filename, callback,errCallback) {
         if (!filename) {
             filename = "video-" + this.id;
         }
 
         let formData = new FormData();
         formData.append("file", this.getBuffer(), filename);
-        http().postFile("/video/upload", formData).done(function (data) {
-            if (typeof callback === 'function') {
-                callback(data);
+        try{
+            const res = await axios.post("/video/upload", formData);
+            if(res.status==202){
+                const id = res.data.processid;
+                console.log("[VideoRecorder] start fetching status for :", id, res.data)
+                let status = res.status;
+                let current = null;
+                let seconds = 1;
+                while(status == 202){
+                    current = await axios.get('/video/status/'+id);
+                    status = current.status;
+                    await new Promise((resolve)=> setTimeout(resolve, seconds * 1000))
+                    seconds = Math.min(15, seconds * 2);
+                }
+                if(status==201){
+                    callback && callback(res);
+                } else{
+                    console.warn("[VideoRecorder] Bad status while checking : ", res.status, res.data);
+                    errCallback && errCallback();
+                }
+            }else{
+                console.warn("[VideoRecorder] Bad status while uploading : ", res.status, res.data);
+                errCallback && errCallback();
             }
-        }).error(errCallback);
+        }catch(e){
+            console.warn(e)
+            errCallback && errCallback();
+        }
     }
 
 }
