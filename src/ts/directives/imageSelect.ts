@@ -18,7 +18,7 @@ export let imageSelect = ng.directive('imageSelect', function(){
 			'<i class="edit pick-file"></i>' +
 			'<img skin-src="[[default]]" class="pick-file" draggable="false" ng-if="!ngModel" style="cursor: pointer" />' +
 			'<lightbox show="userSelecting">' +
-			'<div ng-show="userSelecting">' +
+			'<div ng-if="userSelecting">' +
 			'<media-library ' +
 				'visibility="selectedFile.visibility"' +
 				'ng-change="updateDocument()" ' +
