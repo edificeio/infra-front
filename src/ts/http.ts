@@ -227,7 +227,10 @@ export class HttpPromisified<T> {
     }
     post(url: string, params?: any): PromiseHttp<T> {
         return this.promisify(this.inner.post(url, params));
-    }
+	}
+	postFile(url:string, data:any, params?:any): PromiseHttp<T> {
+        return this.promisify(this.inner.postFile(url, data, params));
+	}
     postJson(url: string, json: any): PromiseHttp<T> {
         return this.promisify(this.inner.postJson(url, json));
     }
