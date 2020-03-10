@@ -457,7 +457,7 @@ module.directive('iconsSelect', function() {
 						<i class="arrow no-margin right-spacing"></i>
 						<i class="[[current.icon]] cell no-2d no-margin right-spacing-twice"></i>
 						<i class="[[current.icon === 'default' ? 'none' : current.icon]] cell no-1d no-margin right-spacing-twice"></i>
-						<h2 class="top-spacing-twice cell-ellipsis"><a translate content="[[current.text]]"></a></h2>
+						<h2 class="cell-ellipsis"><a translate content="[[current.text]]"></a></h2>
 					</div>
 				</article>
 				<div class="options-list icons-view">
