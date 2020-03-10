@@ -37,7 +37,7 @@ export const edumediaHeader = ng.directive('edumediaHeader', [function () {
         <div class="edumedia-header-stack" ng-if="isNotEmptyStack() || canShowAdd()">	
             <nav ng-style="{'visibility': isNotEmptyStack() ? 'visible' : 'hidden'}">
                 <header><span ng-click="goTo(null)"><i18n>edumedia.theme</i18n></span>/</header>
-                <header ng-repeat="item in stack"><span ng-click="goTo(item)">[[item.title]]</span>[[$last?"":" / "]]</header>
+                <header ng-repeat="item in stack"><span ng-click="goTo(item)">[[item.title]]</span></header>
             </nav>
             <button type="button" class="right-magnet" ng-disabled="!canAdd" ng-click="add()" ng-if="canShowAdd()">
                 <i18n>add</i18n>
