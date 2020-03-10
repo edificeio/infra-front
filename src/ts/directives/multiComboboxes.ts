@@ -34,10 +34,10 @@ export const multiComboboxes: Directive = ng.directive('multiComboboxes', () => 
                     <span ng-if="ngDisabled" class="block cell-ellipsis right-spacing">[[ titleDisabled || title ]]</span>
                 </button>
                 <article class="absolute-w">
-                    <div class="search-pagination flex-row align-center">
+                    <div class="search-pagination flex-row align-center" ng-if="disableSearch != 'true'">
                         <div class="cell twelve">
                             <input class="twelve" name="searchField" type="text" ng-model="searchField"
-                                i18n-placeholder="portal.searching" autocomplete="off"/>
+                                i18n-placeholder="{{searchPlaceholder}}" autocomplete="off"/>
                             <i class="search"></i>
                         </div>
                     </div>
@@ -66,6 +66,8 @@ export const multiComboboxes: Directive = ng.directive('multiComboboxes', () => 
             ngDisabled: '=',
             options: '=',
             check: '&',
+            disableSearch: "@?",
+            searchPlaceholder: "@?",
             order: '=?',
             titleDisabled: '@?'
         },
@@ -77,6 +79,8 @@ export const multiComboboxes: Directive = ng.directive('multiComboboxes', () => 
             if(!scope.order) {
                 scope.order = 'label';
             }
+            if(scope.searchPlaceholder == null)
+                scope.searchPlaceholder = "portal.searching";
             
             scope.maxItems = 20;
             scope.showOptions = false;
