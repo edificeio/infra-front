@@ -1,6 +1,6 @@
 {
   "name": "entcore",
-  "version": "3.10.0-dev.4",
+  "version": "3.10.0-dev.5",
   "description": "",
   "main": "gulpfile.js",
   "types": "./types/src/ts/entcore.d.ts",
@@ -20,6 +20,7 @@
     "jquery": "^2.2.3",
     "lodash": "^4.17.4",
     "merge2": "^1.0.2",
+    "mobile-drag-drop": "^2.3.0-rc.2",
     "moment": "^2.18.1",
     "nouislider": "14.0.2",
     "rxjs": "5.4.2",
