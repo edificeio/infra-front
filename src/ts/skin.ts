@@ -65,14 +65,18 @@ export var skin = {
 	skins: [],
 	pickSkin: false,
 	themeConf: undefined,
+	themeConfPromise: undefined,
 	listSkins: function(): Promise<any>{
 		let conf = { overriding:[] };
-		return new Promise<any>((resolve, reject) => {
+		if(this.themeConfPromise){
+			return this.themeConfPromise;
+		}
+		this.themeConfPromise = new Promise<any>((resolve, reject) => {
 			const xhr = new XMLHttpRequest();
 			xhr.open('get', '/assets/theme-conf.js');
 			xhr.onload = async () => {
 				eval(xhr.responseText.split('exports.')[1]);
-				this.conf = conf;
+				this.themeConf = this.conf = conf;
 				const currentTheme = this.conf.overriding.find(t => t.child === skin.skin);
 				if(currentTheme.group){
 					this.skins = this.conf.overriding.filter(t => t.group === currentTheme.group);
@@ -87,6 +91,7 @@ export var skin = {
 			};
 			xhr.send();
 		});
+		return this.themeConfPromise;
 	},
 	loadBookmarks: async function(){
 		return new Promise<any>((resolve, reject) => {
