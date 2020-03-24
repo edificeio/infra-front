@@ -661,7 +661,7 @@ export const workspaceService = {
             }
         }
         if (document.role() === 'img') {
-            args.push(`quality=1&${MediaLibrary.thumbnails}`);
+            args.push(`quality=1`);
         }
         if (document.eParent) {
             args.push(`parentId=${document.eParent}`)
@@ -762,7 +762,7 @@ export const workspaceService = {
             newName += '.' + extension;
         }
         formData.append('file', file, newName);
-        const args = [MediaLibrary.thumbnails, 'quality=1'];
+        const args = ['quality=1'];
         (document.alt) && args.push('alt=' + document.alt);
         (document.legend) && args.push('legend=' + document.legend);
         await http().putFile(`/workspace/document/${document._id}?${args.join("&")}`, formData);
@@ -824,7 +824,7 @@ export const workspaceService = {
         httpO.bind('request-ended.add-revision', function () {
             listener("end")
         });
-        const p = http(httpO).putFile(`/workspace/document/${doc._id}?${MediaLibrary.thumbnails}`, data, { requestName: 'add-revision' });
+        const p = http(httpO).putFile(`/workspace/document/${doc._id}`, data, { requestName: 'add-revision' });
         p.e400(function (e) {
             const error = JSON.parse(e.responseText);
             listener("error", error);
@@ -835,7 +835,7 @@ export const workspaceService = {
         return p
     },
     deleteRevision(rev: workspaceModel.Revision): Promise<any> {
-        return http().delete(`/workspace/document/${rev.documentId}/revision/${rev._id}?${MediaLibrary.thumbnails}`);
+        return http().delete(`/workspace/document/${rev.documentId}/revision/${rev._id}`);
     }
 }
 

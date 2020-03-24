@@ -290,7 +290,6 @@ export class MediaLibrary {
     static trashDocuments = new Folder("trash");
     static eventer = new Eventer();
 
-    static thumbnails = "thumbnail=120x120&thumbnail=100x100&thumbnail=290x290&thumbnail=381x381&thumbnail=1600x0";
     static async sync() {
         if (MediaLibrary.synchronized) {
             return;
