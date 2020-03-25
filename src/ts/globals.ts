@@ -38,7 +38,7 @@ if((window as any).infraPrefix === undefined){
 export let infraPrefix: string = (window as any).infraPrefix;
 export let currentLanguage = '';
 export type BrowserInfo = {
-    name:'MSIE'|'Chrome'|'Safari'|'Firefox',
+    name:'MSIE'|'Edge'|'Chrome'|'Safari'|'Firefox'|'Opera'|'CriOS'|'FxiOS',
     version:number,
 }
 export const devices = {
@@ -56,7 +56,21 @@ export const devices = {
             }
         }
         const userAgent = navigator.userAgent;
-        if (userAgent.indexOf('Chrome') !== -1) {
+        if (userAgent.indexOf('OPR') !== -1) {
+			const operaVersion = safeSplit(userAgent, 'OPR/')[1];
+			const version = parseInt(safeSplit(operaVersion, '.')[0]);
+			return {
+				name: 'Opera',
+				version: version,
+			}
+        } else if (userAgent.indexOf('Edg') !== -1) {
+			const edgeVersion = safeSplit(userAgent, 'Edg/')[1];
+			const version = parseInt(safeSplit(edgeVersion, '.')[0]);
+			return {
+				name: 'Edge',
+				version: version,
+            }
+        } else if (userAgent.indexOf('Chrome') !== -1) {
 			const chromeVersion = safeSplit(userAgent, 'Chrome/')[1];
 			const version = parseInt(safeSplit(chromeVersion, '.')[0]);
 			return {
@@ -72,7 +86,10 @@ export const devices = {
 				version: version,
 			}
 		}
-		else if (userAgent.indexOf('AppleWebKit') !== -1 && userAgent.indexOf('Chrome') === -1) {
+        else if (userAgent.indexOf('AppleWebKit') !== -1 
+            && userAgent.indexOf('Chrome') === -1
+            && userAgent.indexOf('CriOS') === -1
+            && userAgent.indexOf('FxiOS') === -1) {
 			const safariVersion = safeSplit(userAgent, 'Version/')[1];
 			const version = parseInt(safeSplit(safariVersion, '.')[0]);
 			return {
@@ -103,7 +120,22 @@ export const devices = {
 				name: 'MSIE',
 				version: version,
 			}
-		}
+        } 
+        else if (userAgent.indexOf('CriOS') !== -1) {
+            const chromeIOsVersion = safeSplit(userAgent, 'CriOS/')[1];
+			const version = parseInt(safeSplit(chromeIOsVersion, '.')[0]);
+			return {
+				name: 'CriOS',
+				version: version,
+			}
+        } else if (userAgent.indexOf('FxiOS') !== -1) {
+            const ffIOsVersion = safeSplit(userAgent, 'FxiOS/')[1];
+			const version = parseInt(safeSplit(ffIOsVersion, '.')[0]);
+			return {
+				name: 'FxiOS',
+				version: version,
+			}
+        }
     }
 };
 

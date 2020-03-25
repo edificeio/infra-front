@@ -51,7 +51,11 @@ export var recorder = (function () {
 
 	function getUrl(sampleRate: number) {
 		const protocol = window.location.protocol === "https:" ? "wss" : "ws";
-		const base = protocol + "://" + window.location.host
+		let host: string = window.location.host;
+		if (window.location.host === 'localhost:8090') {
+			host = 'localhost:6502'
+		}
+		const base = protocol + "://" + host;
 		return `${base}/audio/${uuid()}?sampleRate=${sampleRate}`;
 	}
 
@@ -225,10 +229,16 @@ export var recorder = (function () {
 				}
 				ws.onclose = function (event) {
 					that.status = 'stop';
+					that.elapsedTime = 0;
 					notifyFollowers(that.status);
 					clearWs();
 				}
 			}
+		},
+		suspend: function () {
+			this.status = 'suspended';
+			player.pause();
+			notifyFollowers(this.status);
 		},
 		pause: function () {
 			this.status = 'paused';
