@@ -20,7 +20,7 @@ export let recorderComponent = ng.directive('recorder', function () {
             });
             scope.switchRecord = function () {
                 if (recorder.status === 'recording') {
-                    recorder.pause();
+                    recorder.suspend();
                 }
                 else {
                     recorder.record();
@@ -48,6 +48,22 @@ export let recorderComponent = ng.directive('recorder', function () {
             scope.saveRecord = function () {
                 recorder.save();
             };
+
+            scope.redo = () => {
+                recorder.flush();
+                recorder.record();
+            }
+
+            scope.isIdle = () => recorder.status === 'idle';
+            scope.isPreparing = () => recorder.status === 'preparing';
+            scope.isRecording = () => recorder.status === 'recording';
+            scope.isSuspended = () => recorder.status === 'suspended';
+            scope.isPaused = () => recorder.status === 'paused';
+            scope.isPlaying = () => recorder.status === 'playing';
+            scope.isStopped = () => recorder.status === 'stop';
+            scope.isEncoding = () => recorder.status === 'encoding';
+            scope.isUploading = () => recorder.status === 'uploading';
+            scope.showActionButtons = () => recorder.elapsedTime > 0 && recorder.status !== 'stop';
         }
     }
 });

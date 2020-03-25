@@ -32,8 +32,9 @@ interface VideoControllerScope {
     recordTime: string
     recordMaxTime: number
     guard: VideoGuardModel;
-    isIncompatibleDevice(): boolean
     isIncompatible(): boolean
+    isIncompatibleDevice(): boolean
+    isIncompatibleBrowser(): boolean
     startCamera(): void
     stopRecord(pause?: boolean): void
     startRecord(resume?: boolean): Promise<void>
@@ -189,9 +190,7 @@ export const VideoController = ng.controller('VideoController', ['$scope', 'mode
                 safeApply();
                 return;
             }
-            const browser = devices.getBrowserInfo();
-            const incompatibleBrowser = browser.name != 'Firefox' && browser.name != 'Chrome';
-            if (incompatibleBrowser || $scope.isIncompatibleDevice()) {
+            if ($scope.isIncompatibleBrowser() || $scope.isIncompatibleDevice()) {
                 $scope.videoState = 'incompatible';
                 safeApply();
                 console.warn('[VideoController.tryStartStreaming] browser incompatible:', browser)
@@ -224,12 +223,16 @@ export const VideoController = ng.controller('VideoController', ['$scope', 'mode
 
         $scope.isIncompatibleDevice = () => devices.isIphone() || devices.isIpad() || devices.isIpod();
 
+        $scope.isIncompatibleBrowser = () => {
+            const browser = devices.getBrowserInfo();
+            return browser.name != 'Firefox' && browser.name != 'Chrome' && browser.name != 'Edge' && browser.name != 'Opera';
+        };
+        
         $scope.isIncompatible = () => $scope.videoState == 'incompatible';
 
         $scope.isReady = () => $scope.videoState == 'ready';
 
-        $scope.isCameraVisible = () => $scope.videoState == 'starting'
-            || $scope.videoState == 'ready'
+        $scope.isCameraVisible = () => $scope.videoState == 'ready'
             || $scope.videoState == 'recording'
             || $scope.videoState == 'recorded'
             || $scope.videoState == 'uploading';
@@ -293,7 +296,9 @@ export const VideoController = ng.controller('VideoController', ['$scope', 'mode
             //console.log('[VideoController.redo] redoing...');
             $scope.guard.guardObjectReset();
             $scope.videoState = 'ready';
+            isPlaying = false;
             $scope.currentDuration = 0;
+            $scope.recordTime = '00:00'
             $scope.recorder.clearBuffer(true);
             safeApply();
         }
@@ -309,7 +314,9 @@ export const VideoController = ng.controller('VideoController', ['$scope', 'mode
                 } else {
                     $scope.guard.guardObjectReset();
                     notify.success("video.file.saved");
-                    $scope.$emit("video-upload", response.id);
+                    if (response.data) {
+                        $scope.$emit("video-upload", response.data.videoid);
+                    }
                 }
                 $scope.videoState = 'recorded';
                 safeApply();

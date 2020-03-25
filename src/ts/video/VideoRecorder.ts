@@ -11,6 +11,7 @@ type MediaRecorderImpl = {
     onstop(event: MediaStreamEvent): void;
     ondataavailable(event: any): void;
     resume(): void;
+    requestData(): void;
 }
 declare var MediaRecorder: {
     new(stream: MediaStream, options: { mimeType: string }): MediaRecorderImpl
@@ -22,7 +23,7 @@ export class VideoRecorder {
     private mediaRecorder: MediaRecorderImpl;
     private recorded: Blob[];
     private id: string;
-    private mode: 'idle' | 'play' | 'record' = 'idle';
+    private mode: 'idle' | 'play' | 'record' | 'playing' = 'idle';
     public constraints: MediaStreamConstraints & { facingMode?: string } = {
         audio: {
             channelCount: 0,
@@ -65,8 +66,15 @@ export class VideoRecorder {
             console.warn('[VideoRecorder.play] stream not init');
             return;
         }
-        this.preparePlay();
-        this.gumVideo.play();
+
+        if (this.mode == 'playing') {
+            this.gumVideo.pause();
+            this.mode = 'play';
+        } else {
+            this.preparePlay();
+            this.gumVideo.play();
+            this.mode = 'playing';
+        }
     }
     private preparePlay() {
         if (this.mode != 'play') {
@@ -225,8 +233,11 @@ export class VideoRecorder {
     }
 
     public stopRecording(preparePlay: boolean) {
+        this.mediaRecorder.requestData(); // get last recorded data slice
         this.mediaRecorder.stop();
-        preparePlay && this.preparePlay();
+        if (preparePlay) {
+            setTimeout(() => this.preparePlay(), 0);
+        }
     }
 
     public getBuffer() {
@@ -246,27 +257,27 @@ export class VideoRecorder {
         let formData = new FormData();
         formData.append("file", this.getBuffer(), filename);
         try{
-            const res = await axios.post("/video/upload", formData);
-            if(res.status==202){
-                const id = res.data.processid;
-                console.log("[VideoRecorder] start fetching status for :", id, res.data)
-                let status = res.status;
-                let current = null;
+            const uploadRes = await axios.post("/video/upload", formData);
+            if(uploadRes.status==202){
+                const id = uploadRes.data.processid;
+                console.log("[VideoRecorder] start fetching status for :", id, uploadRes.data)
+                let status = uploadRes.status;
+                let statusRes = null;
                 let seconds = 1;
                 while(status == 202){
-                    current = await axios.get('/video/status/'+id);
-                    status = current.status;
+                    statusRes = await axios.get('/video/status/'+id);
+                    status = statusRes.status;
                     await new Promise((resolve)=> setTimeout(resolve, seconds * 1000))
                     seconds = Math.min(15, seconds * 2);
                 }
                 if(status==201){
-                    callback && callback(res);
+                    callback && callback(statusRes);
                 } else{
-                    console.warn("[VideoRecorder] Bad status while checking : ", res.status, res.data);
+                    console.warn("[VideoRecorder] Bad status while checking : ", uploadRes.status, uploadRes.data);
                     errCallback && errCallback();
                 }
             }else{
-                console.warn("[VideoRecorder] Bad status while uploading : ", res.status, res.data);
+                console.warn("[VideoRecorder] Bad status while uploading : ", uploadRes.status, uploadRes.data);
                 errCallback && errCallback();
             }
         }catch(e){

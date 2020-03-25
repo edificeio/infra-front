@@ -1,59 +1,69 @@
 <div ng-controller="VideoController" class="video" guard-root custom-guard="guard">
-    <!--UPGRADE DIALOG-->
-    <div ng-if="isIncompatible() && !isIncompatibleDevice()" class="browser" style="box-shadow:none">
-        <h3><i18n>embed.video.incompatible</i18n></h3>
-        <p><i18n>embed.video.incompatible.details</i18n></p>
-        <p class="update">
-            <a href="https://www.google.fr/chrome/browser/desktop/" target="_blank">
-                <img src="/auth/public/img/chrome_logo.png" />
-            </a>
-            <a href="https://www.mozilla.org/fr/firefox/new/" target="_blank">
-                <img src="/auth/public/img/firefox_logo.png" />
-            </a>
-        </p>
-    </div>
-    <div ng-if="isIncompatible() && isIncompatibleDevice()" class="browser" style="box-shadow:none">
-       <h3><i18n>embed.video.incompatible.devices</i18n></p>
-    </div>
-    <!--RECORDER-->
-    <div ng-if="!isIncompatible()" class="videocontroller">
-        <span style="margin-bottom: 20px;align-self: center;" ng-if="isCameraVisible()">
-            <i18n>video.msg</i18n>
-        </span>
+    <div class="recorder--video">
+        <div ng-if="isIncompatible() && !isIncompatibleDevice()" class="browser" style="box-shadow:none">
+            <h3><i18n>embed.video.incompatible</i18n></h3>
+            <p><i18n>embed.video.incompatible.details</i18n></p>
+            <p class="update">
+                <a href="https://www.google.fr/chrome/browser/desktop/" target="_blank">
+                    <img src="/auth/public/img/chrome_logo.png" />
+                </a>
+                <a href="https://www.mozilla.org/fr/firefox/new/" target="_blank">
+                    <img src="/auth/public/img/firefox_logo.png" />
+                </a>
+            </p>
+        </div>
+        <div ng-if="isIncompatible() && isIncompatibleDevice()" 
+            class="browser emptyscreen" 
+            style="box-shadow:none">
+            <h2 class="emptyscreen-header"><i18n>embed.video.incompatible.devices</i18n></h2>
+            <p class="emptyscreen-footer"><i18n>embed.video.incompatible.devices.footer</i18n></p>
+            <img class="emptyscreen-image" src="/assets/themes/entcore-css-lib/images/emptyscreen-recorder-video.svg">
+        </div>
 
-        <div ng-if="isCameraVisible()" style="align-self: center;position: relative;">
-            <div ng-if="isRecording()" style="position: absolute; top: -2px; left: 4px; color: white;"><span
-                    style="color:red; font-size:23px;margin-right:5px;position: relative;top:2px;">&#9679;</span>
-                    [[recordTime]] / [[pad(RECORD_MAX_TIME)]]:00</div>
-            <video id="gum" playsinline autoplay muted></video>
+        <div class="recorder--activation" ng-if="!isIncompatible() && !isCameraVisible()">
+            <p><i18n>video.auth.text</i18n></p>
+            <div class="recorder--activation__auth">
+                <button type="button" ng-click="startCamera()">
+                    <i18n>video.start.camera</i18n>
+                </button>
+            </div>
         </div>
-        <!-- SECTION CAMERA EN ATTENTE D'AUTHORISATION -->
-        <span style="margin-bottom: 20px;align-self: center;" ng-if="!isCameraVisible()">
-            <i18n>video.auth.text</i18n>
-        </span>
-        <div style="align-self: center;width: 640px; height:360px; background-color: #d8d8d8; display: flex;justify-content: center;align-items: center;"
-            ng-if="!isCameraVisible() ">
-            <button ng-click="startCamera()">
-                <i18n>video.start.camera</i18n>
+        <div class="recorder--controls" ng-if="isReady()" style="justify-content: center">
+            <button type="button" ng-click="startRecord()">
+                <i class=record-video></i>
+                <span><i18n>embed.start</i18n></span>
             </button>
         </div>
-        <!-- FIN SECTION CAMERA EN ATTENTE D'AUTHORISATION -->
-        <button style="align-self: center;margin-top: 20px;" ng-click="startRecord()" ng-if="isReady()">
-            <i18n>video.start.record</i18n>
-        </button>
-        <div ng-if="showActions()" class="controls">
-            <button class="pause" ng-click="switchRecording()" ng-disabled="!isRecording()" tooltip="embed.video.stop">
-                <i class="stop"></i>
+        <div class="recorder--controls controls" ng-if="showActions()">
+            <button type="button" class="recorder--control stop" ng-click="switchRecording()" ng-disabled="!isRecording()">
+                <i class=stop></i>
+                <span><i18n>embed.stop</i18n></span>
             </button>
-            <button class="play" ng-click="play()" ng-disabled="!canPlay()" tooltip="embed.video.play">
-                <i class="play"></i>
+            <button type="button" class="recorder--control play" ng-click="play()" ng-disabled="!isRecorded()">
+                <i ng-class="{'play': !isPlaying(), 'pause': isPlaying()}"></i>
+                <span ng-if="!isPlaying()"><i18n>embed.play</i18n></span>
+                <span ng-if="isPlaying()"><i18n>embed.pause</i18n></span>
             </button>
-            <button class="remove" ng-click="redo()" ng-disabled="!isRecorded()" tooltip="embed.video.redo">
-                <i class="rotate"></i>
+            <button type="button" class="recorder--control redo" ng-click="redo()" ng-disabled="!isRecorded()">
+                <i class=redo></i>
+                <span><i18n>embed.redo</i18n></span>
             </button>
-            <button ng-class="{'save':!isUploading()}" ng-click="upload()" ng-disabled="!isRecorded()" tooltip="embed.video.save">
-                <i ng-if="isUploading()" class="loading"></i>
+            <button type="button" class="recorder--control save" ng-click="upload()" ng-disabled="!isRecorded()">
+                <i ng-class="{'save': !isUploading(), 'loading': isUploading(), 'block': isUploading()}"></i>
+                <span><i18n>embed.save</i18n></span>
             </button>
+        </div>
+        <div ng-if="!isIncompatible()">
+            <div class="recorder--viewer" ng-if="isReady() || isRecording()">
+                <p><i18n>video.msg</i18n></p>
+                <div class="recorder--timer">
+                    <i class="rec" ng-if="isRecording()"></i>
+                    <span>[[recordTime]] / [[pad(RECORD_MAX_TIME)]]:00</span>
+                </div>
+            </div>
+            <div class="recorder--viewer" ng-show="isCameraVisible()">
+                <video id="gum" playsinline autoplay muted></video>
+            </div>
         </div>
     </div>
 </div>

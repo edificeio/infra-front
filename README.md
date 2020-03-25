@@ -57,3 +57,11 @@ In `docker-compose.yml` add the same (than in Springboard) volume mapping for `n
     ```bash
     ./build.sh run
     ```
+
+### 4. Audio recorder (Dictaphone)
+
+During development, if you're using docker to run your springboard please open port 6502 to use audio recorder in your vertx container configuration by adding following port mapping:
+
+```
+- "6502:6502"
+```

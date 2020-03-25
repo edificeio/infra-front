@@ -670,6 +670,7 @@ export let embedder = ng.directive('embedder', ['$timeout', function ($timeout) 
 
             scope.cancel = function () {
                 scope.show = false;
+                template.close(MAIN_CONTAINER);
                 scope.unselectProvider();
                 scope.$broadcast('releaseVideo', {});
             };
