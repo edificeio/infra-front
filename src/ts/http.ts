@@ -216,7 +216,8 @@ export class HttpPromisified<T> {
     }
     private promisify(req: any): PromiseHttp<T> {
         const p = new Promise<T>((resolve, reject) => {
-            req.done(e => resolve(e)).error(e => reject(e))
+            if (req.xhr && req.xhr.status == 0) { reject(); return; }
+            req.done(e => resolve(e)).error(e => reject(e));
         });
         (p as any).e400 = req.e400.bind(req);
         return p as any;

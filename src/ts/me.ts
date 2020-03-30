@@ -133,7 +133,7 @@ if(!(XMLHttpRequest.prototype as any).baseSend && !(window as any).pupetterMode)
             `);
             $('body').append(lightbox).addClass('lightbox-opened');
             lightbox.find('.lightbox').fadeIn();
-            return;
+            throw "Disconnected !";
         }
         (this as any).baseSend(data);
     }
