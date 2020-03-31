@@ -1,12 +1,12 @@
 import { appPrefix } from '../globals';
 import { ng } from '../ng-start';
 import { $ } from "../libs/jquery/jquery";
-import { MediaLibrary, Document, DocumentStatus, Folder } from '../workspace/workspace-v1';
+import { MediaLibrary, Document, Folder } from '../workspace/workspace-v1';
 import { template } from '../template';
 import { model } from '../modelDefinitions';
 import { idiom } from '../idiom';
 import http from 'axios';
-import { timeInterval } from 'rxjs/operator/timeInterval';
+
 export type Header = { template: string, worflowKey: string, i18Key: string, visible: () => boolean };
 type LIST_TYPE = "myDocuments" | "appDocuments" | "publicDocuments" | "sharedDocuments" | "trashDocuments" | "externalDocuments";
 type MediaLibraryView = "icons" | "list";
@@ -78,6 +78,7 @@ export interface MediaLibraryScope {
 	abortOrDelete(doc: Document)
 	confirmImport()
 	cancelUpload()
+	canExpand(folder:Folder):boolean
 	isExternalVisible(): boolean
 	//angular
 	ngModel: Document | Document[]
@@ -159,6 +160,10 @@ export const mediaLibrary = ng.directive('mediaLibrary', ['$timeout', function (
 				}
 				scope.visibility = scope.visibility.toLowerCase() as any;
 			});
+
+			scope.canExpand = (folder:Folder) => {
+				return folder.canExpand();
+			}
 
 			scope.openCompression = (doc: Document) => {
 				if (!doc.isEditableImage) {

@@ -21,6 +21,7 @@ import * as moment from 'moment';
 
 import { Selectable, Eventer } from 'entcore-toolkit';
 import { MimeTypeUtils } from './mimeUtils';
+import { Document } from './workspace-v1';
 
 export const MEDIALIB_APPNAME = "media-library";
 export type TREE_NAME = "owner" | "shared" | "protected" | "public" | "trash" | "all" | "external";
@@ -63,8 +64,88 @@ export const ROLES = {
     IMG: "img",
     HTML: "html"
 }
+export enum ElementLoadStatus{
+    Void, Loading, Loaded
+}
+
+export class CacheList<T>{
+    private _updatedAt:Date
+    private _resetAt:Date
+    private _data:T[] = []
+    private _timeout:any;
+    private _status:ElementLoadStatus = ElementLoadStatus.Void;
+    private _nbTry = 0;
+    private _disabled = false;
+    constructor(private _ttlSeconds:number, private onChange:(data:T[])=>void, private shouldClear = () => true, private _reloadOnFail=true, private _nbTryOnFail = 3){}
+    get isEmpty(){return this.status==ElementLoadStatus.Void}
+    get isLoading(){return this.status==ElementLoadStatus.Loading}
+    get isNotEmpty(){return this.status==ElementLoadStatus.Loaded}
+    get status(){return this._status;}
+    get ttlSeconds() { return this._ttlSeconds; }
+    get data() { return this._data; }
+    get updatedAt() { return this._updatedAt; }
+    get resetAt() { return this._resetAt; }
+    get disabled(){return this._disabled;}
+    add(data:T){
+        if(this.disabled) return;
+        this.data.push(data);
+    }
+    remove(matching:(el: T) => boolean){
+        if(this.disabled) return;
+        this._data = this.data.filter(el => !matching(el));
+    }
+    reset(){
+        console.debug("[CacheList] reseting cache:", this.data)
+        clearTimeout(this._timeout);
+        this._data = [];
+        this._status = ElementLoadStatus.Void;
+        this._resetAt = new Date();
+    }
+    disableCache(){
+        this._disabled = true;
+    }
+    setData(data:T[]):void{
+        if(this.disabled) return;
+        this._data = data;
+        this._updatedAt = new Date;
+        clearTimeout(this._timeout);
+        this._status = ElementLoadStatus.Loaded;
+        this.onChange(this._data);
+        if(this.shouldClear()){
+            this._timeout = setTimeout(()=>{
+                this.reset();
+            },this._ttlSeconds*1000)
+        }
+    }
+    async setAsyncData(data:Promise<T[]>):Promise<void>{
+        if(this.disabled) return;
+        this._status = ElementLoadStatus.Loading;
+        try{
+            const d = await data;
+            this.setData(d);
+            this._nbTry = 0;
+        }catch(e){
+            const shouldReTry = this._reloadOnFail && this._nbTry < this._nbTryOnFail;
+            console.warn("[CacheList.setAsyncData] failed to load data. Should retry? ",shouldReTry,e)
+            if(shouldReTry){
+                this.reset()
+                this._nbTry ++;
+            }else{
+                this.setData([])
+            }
+        }
+    }
+}
+//
+const DEFAULT_CACHE_FOLDER_SEC =  60 * 10;
+const DEFAULT_CACHE_DOCUMENT_SEC =  60 * 2.5;
 //file or folder
 export class Element extends Model implements Node, Shareable, Selectable {
+    static cacheConfiguration = {
+        ttlFolderSeconds: DEFAULT_CACHE_FOLDER_SEC,
+        ttlDocumentSeconds: DEFAULT_CACHE_DOCUMENT_SEC
+    };
+    //
     _id?: string;
     eType: string;
     eParent: string;
@@ -122,12 +203,53 @@ export class Element extends Model implements Node, Shareable, Selectable {
     //visibility
     protected?: boolean
     public?: boolean
+    //cache
+    cacheChildren = new CacheList<Element>(Element.cacheConfiguration.ttlFolderSeconds, (data)=>{
+        this.children = [...data];
+    }, () => this.isShared)
+    cacheDocument = new CacheList<Document>(Element.cacheConfiguration.ttlDocumentSeconds, ()=>{}, () => this.isShared)
     constructor(data?: any) {
         super(data);
         this.version = parseInt("" + (Math.random() * 100));
         this.revisions = [];
         this.fromJSON(data);
         this.rights = new Rights(this);
+    }
+    removeChild(matching:(el: Node) => boolean){
+        this.children = this.children.filter(el => !matching(el));
+        this.cacheChildren.remove(matching)
+    }
+    addChild(el:Element){
+        this.children.push(el);
+        this.cacheChildren.add(el);
+    }
+    updateSelf(el:Element){
+        Object.assign(this,el);
+    }
+    updateChild(el:Element){
+        const found = this.children.find(s=>s._id==el._id);
+        found && found.updateSelf(el);
+        const foundC = this.cacheChildren.data.find(s=>s._id==el._id);
+        foundC && foundC.updateSelf(el);
+    }
+    removeDocument(matching:(el: Node) => boolean){
+        this.cacheDocument.remove(matching)
+    }
+    addDocument(doc:Document){
+        this.cacheDocument.add(doc);
+    }
+    setChildren(elts:Element[]){
+        this.children = elts;
+        this.cacheChildren.setData(elts);
+    }
+    clearChildren(){
+        this.setChildren([])
+    }
+    get isChildrenLoading(){
+        return this.cacheChildren.isLoading;
+    }
+    get isDocumentLoading(){
+        return this.cacheDocument.isLoading;
     }
     get isExternal() {
         return this._id && this._id.indexOf("external_") == 0;
@@ -461,6 +583,7 @@ export class FolderContext {
     }
     pushDoc(el: Element) {
         this.originalDocuments.push(el)
+        this.folder.addDocument(el as Document);
     }
     findDocuments(filter: (el: Element) => boolean) {
         let co = this.originalDocuments.filter(filter);
@@ -468,6 +591,7 @@ export class FolderContext {
     }
     deleteDocuments(matching: (el: Element) => boolean) {
         this.originalDocuments = this.originalDocuments.filter(el => !matching(el));
+        this.folder.removeDocument(matching);
         return this.originalDocuments;
     }
     restore() {
@@ -554,4 +678,23 @@ export function emptyNode(name?: string): Node {
         name,
         children: []
     }
+}
+
+export class ElementTree extends Element implements Tree{
+    constructor(enableCache:boolean, private tree:Tree){
+        super();
+        if(!enableCache){
+            this.cacheChildren.disableCache();
+            this.cacheDocument.disableCache();
+        }
+        this.children = this.tree.children;
+        this.name = this.tree.name;
+        this._isShared = this.tree.filter == "shared";
+    }
+    get hidden() { return this.tree.hidden}
+    get filter() { return this.tree.filter}
+    get hierarchical() { return this.tree.hierarchical}
+    get helpbox() { return this.tree.helpbox}
+    get buttons() { return this.tree.buttons}
+    get contextualButtons() { return this.tree.contextualButtons}
 }

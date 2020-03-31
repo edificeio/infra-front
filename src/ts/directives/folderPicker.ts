@@ -5,8 +5,7 @@ import { workspace, Document } from "../workspace";
 
 import models = workspace.v2.models;
 import { idiom } from '../idiom';
-import { onErrorResumeNext } from 'rxjs/operator/onErrorResumeNext';
-import { notify } from '../notify';
+type FolderPickerState = "normal" | "loading" | "loaded" | "empty";
 const workspaceService = workspace.v2.service;
 
 export interface FolderPickerScope {
@@ -22,6 +21,7 @@ export interface FolderPickerScope {
     isStateNormal(): boolean
     isStateLoading(): boolean
     isStateLoaded(): boolean
+    isStateEmpty(): boolean
     //
     openEditView()
     canOpenEditView(): boolean
@@ -53,6 +53,7 @@ export interface FolderPickerProps {
         actionTitle: string
         actionProcessing: string
         actionFinished: string
+        actionEmpty?:string
         info: string
     }
     sources: FolderPickerSource[]
@@ -114,6 +115,15 @@ export const folderPicker = ng.directive('folderPicker', ['$timeout', ($timeout)
                     <div class="centered vertical-spacing-four">
                         <div class="vertical-spacing-four valid-color">
                             <h2 translate content="[[folderProps.i18.actionFinished]]" class="valid-color"></h2>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div ng-if="isStateEmpty()">
+                <div class="flex-row vertical-spacing-four">
+                    <div class="centered vertical-spacing-four">
+                        <div class="vertical-spacing-four warning-color">
+                            <h2 translate content="[[folderProps.i18.actionEmpty]]" class="warning-color"></h2>
                         </div>
                     </div>
                 </div>
@@ -276,7 +286,7 @@ export const folderPicker = ng.directive('folderPicker', ['$timeout', ($timeout)
                 scope.safeApply();
             }
             //state
-            let state: "normal" | "loading" | "loaded" = "normal"
+            let state: FolderPickerState = "normal"
             scope.isStateNormal = function () {
                 return state == "normal";
             }
@@ -286,7 +296,10 @@ export const folderPicker = ng.directive('folderPicker', ['$timeout', ($timeout)
             scope.isStateLoaded = function () {
                 return state == "loaded";
             }
-            const setState = function (n: "normal" | "loading" | "loaded") {
+            scope.isStateEmpty = () => {
+                return state == "empty";
+            }
+            const setState = function (n: FolderPickerState) {
                 state = n;
                 scope.safeApply()
             }
@@ -321,9 +334,14 @@ export const folderPicker = ng.directive('folderPicker', ['$timeout', ($timeout)
                     const moveFromFiles: FolderPickerSourceFile[] = scope.folderProps.sources.filter(f => f.action == "move-from-file") as any;
                     const createFromBlob: FolderPickerSourceBlob[] = scope.folderProps.sources.filter(f => f.action == "create-from-blob") as any;
                     //
+                    let finalState: FolderPickerState = "loaded";
                     if (copyFromFiles.length) {
                         const ids = copyFromFiles.map(c => c.fileId);
-                        await workspaceService.copyAllFromIds(ids, selectedFolder)
+                        const res = await workspaceService.copyAllFromIds(ids, selectedFolder)
+                        if(res.copies.length==0){
+                            scope.folderProps.i18.actionEmpty = scope.folderProps.i18.actionEmpty || "folderpicker.copy.empty.text";
+                            finalState = "empty";
+                        }
                     }
                     //
                     if (moveFromFiles.length) {
@@ -342,7 +360,7 @@ export const folderPicker = ng.directive('folderPicker', ['$timeout', ($timeout)
                         await Promise.all(promises)
                     }
                     //
-                    setState("loaded")
+                    setState(finalState)
                     $timeout(() => {
                         setState("normal")
                         scope.folderProps.onSubmitSuccess(selectedFolder, count);

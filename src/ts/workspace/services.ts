@@ -5,8 +5,111 @@ import { notify } from '../notify';
 import { Document, MediaLibrary } from './workspace-v1';
 import * as workspaceModel from './model';
 import { Subject } from 'rxjs';
-
-
+//=============DOCUMENTS FUNCTIONS===================================================
+const acceptDocuments =  (params:ElementQuery) => (current: workspaceModel.Node) => {
+    //filter by trasherid
+    const currentElement = current as workspaceModel.Element;
+    if (currentElement.deleted && currentElement.trasher) {
+        return model.me.userId == currentElement.trasher;
+    }
+    //in case of directShared document => hide doc that are visible inside a folder
+    if(params.directShared && currentElement.eParent){
+        const isParentVisible = workspaceService._cacheFolders.find(folder => folder._id == currentElement.eParent);
+        if(isParentVisible){
+            return false;
+        }
+    }
+    return true;
+}
+const mapDocuments = (f:workspaceModel.Node) => {
+    const ff = new Document(f);
+    //load behaviours and myRights
+    const res = ff.behaviours("workspace");
+    //load rights
+    if (res instanceof Promise) {
+        res.then(_ => ff.rights && ff.rights.fromBehaviours())
+    } else {
+        ff.rights && ff.rights.fromBehaviours();
+    }
+    return ff;
+}
+//====================FOLDER FUNCTIONS===================
+const mapFolder = (f:workspaceModel.Element) => {
+    const ff = new workspaceModel.Element(f);
+    //load behaviours and myRights
+    const res = ff.behaviours("workspace");
+    //load rights
+    if (res instanceof Promise) {
+        res.then(_ => ff.rights && ff.rights.fromBehaviours())
+    } else {
+        ff.rights && ff.rights.fromBehaviours();
+    }
+    workspaceService.isLazyMode()?ff.cacheChildren.reset():ff.cacheChildren.disableCache();
+    workspaceService.isLazyMode()?ff.cacheDocument.reset():ff.cacheDocument.disableCache();
+    return ff;
+}
+const filterByTrasher = function (current: workspaceModel.Node) {
+    const currentElement = current as workspaceModel.Element;
+    if (currentElement.deleted && currentElement.trasher) {
+        return model.me.userId == currentElement.trasher;
+    }
+    return true;
+}
+const filterSharedFolders = (el:workspaceModel.Element) => el.isShared && !el.deleted;
+const filterTrashedFolders = (el:workspaceModel.Element) => el.deleted;
+const filterProtectedFolders = (el:workspaceModel.Element) => el.protected;
+const filterPublicFolders = (el:workspaceModel.Element) => el.public;
+const filterOtherFolders = (el:workspaceModel.Element) => {
+    if(filterSharedFolders(el)) return false;
+    if(filterTrashedFolders(el)) return false;
+    if(filterProtectedFolders(el)) return false;
+    if(filterPublicFolders(el)) return false;
+    return true;
+}
+const filterFoldersByTreeName = (tree:workspaceModel.TREE_NAME, parent:workspaceModel.Element) =>{
+    if(!tree || tree == "all"){
+        if(parent){
+            if(filterSharedFolders(parent)) tree = "shared";
+            else if(filterTrashedFolders(parent)) tree = "trash";
+            else if(filterProtectedFolders(parent)) tree = "protected";
+            else if(filterPublicFolders(parent)) tree = "public";
+            else if(filterOtherFolders(parent)) tree = "owner";
+            else tree = "all";
+        }else{
+            tree = "all";
+        }
+    }
+    switch(tree){
+        case "all":
+            return (_)=>true;
+        case "external":
+            return (_) => false;
+        case "owner":
+            return filterOtherFolders;
+        case "protected":
+            return filterProtectedFolders;
+        case "public":
+            return filterPublicFolders;
+        case "shared":
+            return filterSharedFolders;
+        case "trash":
+            return filterTrashedFolders;
+    }
+}
+//======================ELEMENTS FUNCTIONS
+const sortElement = (sort: "name" | "created")=>{
+    let sorts = workspaceModel.sortByCreatedAsc();
+    switch (sort) {
+        case "created":
+            sorts = workspaceModel.sortByCreatedAsc();
+            break;
+        case "name":
+            sorts = workspaceModel.sortByNameAsc();
+            break;
+    }
+    return sorts;
+}
+//========================INTERFACE
 export interface ElementQuery {
     id?: string;
     parentId?: string
@@ -19,6 +122,7 @@ export interface ElementQuery {
     directShared?: boolean
     limit?: number;
     skip?: number;
+    onlyRoot?:boolean
 }
 
 export interface WorkspaceEvent {
@@ -69,6 +173,9 @@ export const workspaceService = {
     onChange: new Subject<WorkspaceEvent>(),
     onImportFiles: new Subject<FileList>(),
     onConfirmImport: new Subject<workspaceModel.Element[]>(),
+    isLazyMode():boolean{
+        return (window as any).LAZY_MODE;
+    },
     hasExternalFolders(){
         return workspaceService._externalFolders.length>0;
     },
@@ -166,28 +273,9 @@ export const workspaceService = {
         //cache folders
         workspaceService._cacheFolders = folders;
         //create models
-        folders = folders.map(f => {
-            const ff = new workspaceModel.Element(f);
-            //load behaviours and myRights
-            const res = ff.behaviours("workspace");
-            //load rights
-            if (res instanceof Promise) {
-                res.then(_ => ff.rights && ff.rights.fromBehaviours())
-            } else {
-                ff.rights && ff.rights.fromBehaviours();
-            }
-            return ff;
-        });
+        folders = folders.map(mapFolder);
         //sorts
-        let sorts = workspaceModel.sortByCreatedAsc();
-        switch (sort) {
-            case "created":
-                sorts = workspaceModel.sortByCreatedAsc();
-                break;
-            case "name":
-                sorts = workspaceModel.sortByNameAsc();
-                break;
-        }
+        const sorts = sortElement(sort);
         //build tree
         const buildTree = (treeName: workspaceModel.TREE_NAME, filter: (el: workspaceModel.Element) => boolean) => {
             let children = folders.filter(filter);
@@ -213,9 +301,9 @@ export const workspaceService = {
         }
         const trees: workspaceModel.Tree[] = [];
         //
-        trees.push(buildTree("shared", el => el.isShared && !el.deleted))
-        trees.push(buildTree("trash", el => el.deleted))
-        trees.push(buildTree("protected", el => el.protected));
+        trees.push(buildTree("shared", filterSharedFolders))
+        trees.push(buildTree("trash", filterTrashedFolders))
+        trees.push(buildTree("protected", filterProtectedFolders));
         trees.push(buildTree("owner", _ => true));//all others
         //add external folders if exists
         if (workspaceService.hasExternalFolders()) {
@@ -228,20 +316,13 @@ export const workspaceService = {
         // filter by trasher
         const tree = trees.find(tree => tree.filter == "trash");
         if (tree) {
-            const accept = function (current: workspaceModel.Node) {
-                const currentElement = current as workspaceModel.Element;
-                if (currentElement.deleted && currentElement.trasher) {
-                    return model.me.userId == currentElement.trasher;
-                }
-                return true;
-            }
             const iterator = function (cursor: workspaceModel.Node) {
                 const current = cursor as workspaceModel.Element;
                 if (current.children) {
                     for (let child of current.children) {
                         iterator(child);
                     }
-                    current.children = current.children.filter(el => accept(el));
+                    current.children = current.children.filter(filterByTrasher);
                 }
             }
             iterator(tree)
@@ -260,40 +341,74 @@ export const workspaceService = {
         if (!skip) {
             filesO = await http<workspaceModel.Element[]>().get('/workspace/documents', params);
         }
-        //filter by trasherid
-        const accept = function (current: workspaceModel.Node) {
-            const currentElement = current as workspaceModel.Element;
-            if (currentElement.deleted && currentElement.trasher) {
-                return model.me.userId == currentElement.trasher;
-            }
-            //in case of directShared document => hide doc that are visible inside a folder
-            if(params.directShared && currentElement.eParent){
-                const isParentVisible = workspaceService._cacheFolders.find(folder => folder._id == currentElement.eParent);
-                if(isParentVisible){
-                    return false;
-                }
-            }
-            return true;
-        }
-        filesO = filesO.filter(accept);
+        filesO = filesO.filter(acceptDocuments(params));
         //create models
-        let files = filesO.map(f => {
-            const ff = new Document(f);
-            //load behaviours and myRights
-            const res = ff.behaviours("workspace");
-            //load rights
-            if (res instanceof Promise) {
-                res.then(_ => ff.rights && ff.rights.fromBehaviours())
-            } else {
-                ff.rights && ff.rights.fromBehaviours();
-            }
-            return ff;
-        });
-        if (sort == "created") {
-            return files.sort(workspaceModel.sortByCreatedAsc())
-        } else {
-            return files.sort(workspaceModel.sortByNameAsc())
+        let files = filesO.map(mapDocuments);
+        const sorts = sortElement(sort);
+        return files.sort(sorts)
+    },
+    async fetchChildren(parent:workspaceModel.Element, params: ElementQuery, sort: "name" | "created" = "name", args:{directlyShared?:boolean, onlyFolders?:boolean, onlyDocument?:boolean} = {directlyShared:false, onlyFolders:false, onlyDocument:false}): Promise<Document[]> {
+        //skip external folder
+        const skip = params.filter == "external" && !params.parentId;
+        if (skip) {
+            return  [];
         }
+        //compute which to load
+        const onlyDocument = args && args.onlyDocument;
+        const onlyFolders = args && args.onlyFolders;
+        const shouldLoadFolders = !onlyDocument && parent.cacheChildren.isEmpty;
+        const shouldLoadDocuments = !onlyFolders && parent.cacheDocument.isEmpty
+        //prepare params
+        if(!(parent instanceof workspaceModel.ElementTree)) params.parentId = parent._id;
+        if(args && args.directlyShared){
+            params.directShared = true;
+        }
+        params.hierarchical = false;
+        //transformer
+        const sorts = sortElement(sort);
+        const folderTransformer = async (promise:Promise<workspaceModel.Element[]>) => {
+            const fetchedResults = await promise;
+            const folders = fetchedResults.filter(n=>n.eType==workspaceModel.FOLDER_TYPE).map(mapFolder)
+                                        .filter(filterFoldersByTreeName(params.filter, parent)).filter(filterByTrasher).sort(sorts);
+            return folders;
+        }
+        const documentTransformer = async (promise:Promise<workspaceModel.Element[]>)=>{
+            const fetchedResults = await promise;
+            const documents = fetchedResults.filter(n=>n.eType==workspaceModel.FILE_TYPE).map(mapDocuments)
+                                            .filter(acceptDocuments(params)).filter(filterByTrasher).sort(sorts);
+            return documents;
+        }
+        //fetch
+        if(shouldLoadFolders && shouldLoadDocuments){
+            params.includeall = true;
+            const promise = http<workspaceModel.Element[]>().get('/workspace/documents', params);
+            await parent.cacheChildren.setAsyncData(folderTransformer(promise))
+            await parent.cacheDocument.setAsyncData(documentTransformer(promise));
+            return documentTransformer(promise);
+        }else if(shouldLoadDocuments){
+            params.includeall = false;
+            const promise = http<workspaceModel.Element[]>().get('/workspace/documents', params);
+            await parent.cacheDocument.setAsyncData(documentTransformer(promise));
+            return documentTransformer(promise);
+        }else if(shouldLoadFolders){
+            const promise = http<workspaceModel.Element[]>().get('/workspace/folders/list', params);
+            await parent.cacheChildren.setAsyncData(folderTransformer(promise))
+            return parent.cacheDocument.data;
+        }else{
+            return parent? parent.cacheDocument.data : [];
+        }
+    },
+    async fetchChildrenForRoot(tree:workspaceModel.ElementTree, params: ElementQuery, sort: "name" | "created" = "name", args:{directlyShared?:boolean, onlyFolders?:boolean, onlyDocument?:boolean} = {directlyShared:false, onlyFolders:false, onlyDocument:false}): Promise<Document[]> {
+        if(tree.filter == "shared" && tree.cacheDocument.isEmpty && !args.onlyDocument){
+            tree.cacheChildren.reset();//reload folders with document to avoid incomplete load (directlyshared)
+        }
+        return workspaceService.fetchChildren(tree, params, sort, args);
+    },
+    async fetchFolderById(id:string): Promise<workspaceModel.Element> {
+        const params : ElementQuery  = {filter:"all", id};
+        const fetchedResults = await http<workspaceModel.Element[]>().get('/workspace/folders/list', params);
+        return fetchedResults.length? fetchedResults.map(mapFolder)[0]:null;
+               
     },
     countChildren(folder: workspaceModel.Element) {
         if (!folder || !folder.children) {
@@ -358,7 +473,7 @@ export const workspaceService = {
                 for (let child of current.children) {
                     iterator(child);
                 }
-                current.children = current.children.filter(el => !matching(el));
+                current.removeChild(matching)
             }
         }
         iterator(tree)
@@ -451,6 +566,38 @@ export const workspaceService = {
             }
         }
         return undefined;
+    },
+    updateInTree(trees: workspaceModel.ElementTree[], model:workspaceModel.Element): workspaceModel.Element {
+        for (let t of trees) {
+            const founded = workspaceService.findParentFolderInTree(t, model._id)
+            if(founded){
+                if(founded.parent){
+                    founded.parent.updateChild(model);
+                }else{
+                    founded.child.updateSelf(model);
+                }
+                return founded.child;
+            }
+        }
+        return undefined;
+    },
+    findParentFolderInTree(tree: workspaceModel.ElementTree, folderId: string): {parent:workspaceModel.Element,child:workspaceModel.Element} {
+        const iterator = function (cursor: workspaceModel.Element, parent: workspaceModel.Element) {
+            const current = cursor as workspaceModel.Element;
+            if (current._id == folderId && workspaceService.isFolder(current)) {
+                return {parent, child:current};
+            }
+            if (current.children) {
+                for (let child of current.children) {
+                    const founded = iterator(child, current);
+                    if (founded) {
+                        return founded;
+                    }
+                }
+            }
+            return undefined;
+        }
+        return iterator(tree, null)
     },
     findFolderInTree(tree: workspaceModel.Node, folderId: string): workspaceModel.Element {
         const iterator = function (cursor: workspaceModel.Node) {
@@ -785,6 +932,7 @@ export const workspaceService = {
         const res = await p.then(e => {
             folder._id = e["_id"];
             copy = new workspaceModel.Element(folder);
+            parent && (copy.eParent = parent._id)
             copy.fromMe();//make behaviours working
             //load behaviours and myRights
             copy.behaviours("workspace");
@@ -836,7 +984,26 @@ export const workspaceService = {
     },
     deleteRevision(rev: workspaceModel.Revision): Promise<any> {
         return http().delete(`/workspace/document/${rev.documentId}/revision/${rev._id}`);
-    }
+    },
+    resetAllCache(tree: workspaceModel.Node, type:"document"|"folder"|"all", matching: (el: workspaceModel.Node) => boolean = (_)=> true): void {
+        const iterator = function (cursor: workspaceModel.Node) {
+            const current = cursor as workspaceModel.Element;
+            if (current.children) {
+                for (let child of current.children) {
+                    iterator(child);
+                }
+                if(matching(current)){
+                    if(type=="document" || type =="all"){
+                        current.cacheDocument.reset();
+                    }
+                    if(type=="folder" || type =="all"){
+                        current.cacheChildren.reset();
+                    }
+                }
+            }
+        }
+        iterator(tree)
+    },
 }
 
 workspaceService.onChange.subscribe(event => {
@@ -876,3 +1043,19 @@ workspaceService.onConfirmImport.subscribe(elts => {
         workspaceService.notifyContrib(dest, children)
     })
 })
+const initLazyMode=async ()=>{
+    try{
+        if(!window.location.pathname.startsWith("/workspace")){
+            const conf = await http().get('/workspace/conf/public');
+            (window as any).LAZY_MODE = conf["lazy-mode"];
+            conf["ttl-documents"] && (workspaceModel.Element.cacheConfiguration.ttlDocumentSeconds = conf["ttl-documents"]);
+            conf["ttl-folders"] && (workspaceModel.Element.cacheConfiguration.ttlFolderSeconds = conf["ttl-folders"]);
+        }else{
+            ((window as any).CACHE_DOC_TTL_SEC > 0) && (workspaceModel.Element.cacheConfiguration.ttlDocumentSeconds = (window as any).CACHE_DOC_TTL_SEC)
+            ((window as any).CACHE_FOLDER_TTL_SEC > 0) && (workspaceModel.Element.cacheConfiguration.ttlFolderSeconds = (window as any).CACHE_FOLDER_TTL_SEC)
+        }
+    }catch(e){
+        console.warn("[workspaceService.initLazyMode] failed: ",e)
+    }
+}
+initLazyMode();

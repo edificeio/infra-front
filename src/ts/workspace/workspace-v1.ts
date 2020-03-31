@@ -4,7 +4,7 @@ import http from 'axios';
 import { Eventer, Selection, Selectable } from 'entcore-toolkit';
 import { model } from '../modelDefinitions';
 import * as workspaceModel from "./model"
-import { workspaceService } from "./services"
+import { workspaceService } from "./services";
 //
 let xsrfCookie;
 if (document.cookie) {
@@ -172,7 +172,6 @@ export class Document extends workspaceModel.Element {
         return workspaceService.trashAll([this]);
     }
 }
-
 export class Folder implements Selectable {
     _id: string;
     eParent: string;
@@ -182,6 +181,7 @@ export class Folder implements Selectable {
     documents = new Selection<Document>([]);
     owner: string;
     filter: workspaceModel.TREE_NAME;
+    private _newModel:workspaceModel.Element;
     constructor(filter: workspaceModel.TREE_NAME, f?: workspaceModel.Element) {
         this.filter = filter;
         if (f) {
@@ -193,6 +193,19 @@ export class Folder implements Selectable {
                 this.folders.push(new Folder(this.filter, child))
             }
         }
+        this._newModel = new workspaceModel.Element({_id:this._id});
+    }
+    get isChildrenLoading(){
+        return this._newModel.isChildrenLoading;
+    }
+    get isDocumentLoading(){
+        return this._newModel.isDocumentLoading;
+    }
+    canExpand(){
+        if(workspaceService.isLazyMode() && this._id){
+            return this.folders.all.length > 0 || this._newModel.cacheChildren.isEmpty;
+        }
+        return this.folders.all.length > 0;
     }
     setChildren(children: workspaceModel.Element[]) {
         for (let child of children) {
@@ -225,10 +238,19 @@ export class Folder implements Selectable {
     }
 
     async sync() {
-        const response = await workspaceService.fetchDocuments({ filter: this.filter, parentId: this._id || "" });
-        this.documents.all.splice(0, this.documents.all.length);
-        this.documents.addRange(response);
-        MediaLibrary.eventer.trigger('sync');
+        if(workspaceService.isLazyMode()){
+            const response = await workspaceService.fetchChildren(this._newModel, { filter: this.filter, parentId: this._id || "" });
+            this.documents.all.splice(0, this.documents.all.length);
+            this.documents.addRange(response);
+            this.folders.all.splice(0, this.folders.all.length);
+            this.folders.addRange(this._newModel.cacheChildren.data.map(f=>new Folder(this.filter, f)));
+            MediaLibrary.eventer.trigger('sync');
+        }else{
+            const response = await workspaceService.fetchDocuments({ filter: this.filter, parentId: this._id || "" });
+            this.documents.all.splice(0, this.documents.all.length);
+            this.documents.addRange(response);
+            MediaLibrary.eventer.trigger('sync');
+        }
     }
 }
 
@@ -296,7 +318,7 @@ export class MediaLibrary {
         }
         try {
             MediaLibrary.synchronized = true;
-            const trees = await workspaceService.fetchTrees({ filter: "all", hierarchical: true })
+            const trees = await workspaceService.fetchTrees(workspaceService.isLazyMode()?{filter:"all", hierarchical:false, onlyRoot: true}:{ filter: "all", hierarchical: true })
             for (let tree of trees) {
                 switch (tree.filter) {
                     case 'owner':

@@ -2,6 +2,7 @@ import { ng } from '../ng-start';
 import { workspace } from "../workspace";
 
 import models = workspace.v2.models;
+import { workspaceService } from '../workspace/services';
 
 
 //function to compile template recursively
@@ -51,6 +52,7 @@ export interface FolderTreeInnerScope {
     isSelectedFolder(): boolean
     isOpenedFolder(): boolean
     openFolder()
+    safeApply(a?:any)
     isDisabled(): boolean
 }
 
@@ -69,7 +71,7 @@ export const folderTreeInner = ng.directive('folderTreeInner', ['$compile', ($co
         template: ` 
         <a ng-class="{ selected: isSelectedFolder(), opened: isOpenedFolder(),'disabled-color':isDisabled() }" ng-click="openFolder()" ng-if="folder.name !== undefined"
         class="folder-list-item">
-         <i class="arrow" ng-if="canExpendTree()" ng-class="{'disabled-color':isDisabled() }"></i> [[translate()]]
+         <i class="arrow" ng-if="canExpendTree()" ng-class="{'disabled-color':isDisabled() }"></i> [[translate()]] <i class="loading" ng-if="folder.isChildrenLoading"></i>
         </a>
         <ul data-ng-class="{ selected: isOpenedFolder(), closed: !isOpenedFolder() }" ng-if="isOpenedFolder()">
             <li data-ng-repeat="child in folder.children">
@@ -80,7 +82,20 @@ export const folderTreeInner = ng.directive('folderTreeInner', ['$compile', ($co
             // Use the compile function from the RecursionHelper,
             // And return the linking function(s) which it returns
             return compileRecursive($compile, element, (scope: FolderTreeInnerScope) => {
+                scope.safeApply = function (fn) {
+                    const phase = this.$root.$$phase;
+                    if (phase == '$apply' || phase == '$digest') {
+                        if (fn && (typeof (fn) === 'function')) {
+                            fn();
+                        }
+                    } else {
+                        this.$apply(fn);
+                    }
+                };
                 scope.canExpendTree = function () {
+                    if(workspaceService.isLazyMode() && scope.folder._id){
+                        return scope.folder.children.length > 0 || (scope.folder as models.Element).cacheChildren.isEmpty;
+                    }
                     return scope.folder.children.length > 0;
                 }
                 scope.isSelectedFolder = function () {
@@ -89,8 +104,13 @@ export const folderTreeInner = ng.directive('folderTreeInner', ['$compile', ($co
                 scope.isOpenedFolder = function () {
                     return scope.treeProps.isOpenedFolder(scope.folder);
                 }
-                scope.openFolder = function () {
-                    return scope.treeProps.openFolder(scope.folder);
+                scope.openFolder = async function () {
+                    if(workspaceService.isLazyMode() && scope.folder._id){
+                        await workspaceService.fetchChildren(scope.folder as models.Element, { filter: "all", hierarchical: false }, null, {onlyFolders:true})
+                    }
+                    const ret = scope.treeProps.openFolder(scope.folder);
+                    scope.safeApply();
+                    return ret;
                 }
                 scope.translate = function () {
                     return (scope.folder.name);

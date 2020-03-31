@@ -21,7 +21,7 @@
 <script type="text/ng-template" id="list-folders">
 	<li ng-repeat="folder in folder.folders.all">
 		<a ng-click="openFolder(folder)" ng-class="{ selected: folder === openedFolder, opened: folder.isOpenedRecursive(openedFolder) }">
-			<i class="arrow" ng-if="folder.folders.all.length"></i> [[folder.name]]
+			<i class="arrow" ng-if="canExpand(folder)"></i> [[folder.name]] <i class="loading" ng-if="folder.isChildrenLoading"></i>
 		</a>
 		<ul ng-include="'list-folders'" ng-show="folder.isOpenedRecursive(openedFolder)">
 		</ul>
