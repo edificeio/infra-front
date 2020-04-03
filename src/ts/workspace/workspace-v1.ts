@@ -201,8 +201,11 @@ export class Folder implements Selectable {
     get isDocumentLoading(){
         return this._newModel.isDocumentLoading;
     }
+    get isChildrenOrDocumentLoading(){
+        return this._newModel.isChildrenOrDocumentLoading;
+    }
     canExpand(){
-        if(workspaceService.isLazyMode() && this._id){
+        if(workspaceService.isLazyMode()){
             return this.folders.all.length > 0 || this._newModel.cacheChildren.isEmpty;
         }
         return this.folders.all.length > 0;
@@ -210,6 +213,12 @@ export class Folder implements Selectable {
     setChildren(children: workspaceModel.Element[]) {
         for (let child of children) {
             this.folders.push(new Folder(this.filter, child))
+        }
+    }
+    setChildrenFromTree(tree: workspaceModel.Tree){
+        this.setChildren(tree.children);
+        if(tree instanceof workspaceModel.ElementTree){
+            this._newModel = tree;
         }
     }
     deselectAll() {
@@ -238,8 +247,10 @@ export class Folder implements Selectable {
     }
 
     async sync() {
-        if(workspaceService.isLazyMode()){
-            const response = await workspaceService.fetchChildren(this._newModel, { filter: this.filter, parentId: this._id || "" });
+        if(workspaceService.isLazyMode()){            
+            const response = await (this._newModel instanceof workspaceModel.ElementTree?
+                                    workspaceService.fetchChildrenForRoot(this._newModel, { filter: this.filter, parentId: this._id || "" }):
+                                    workspaceService.fetchChildren(this._newModel, { filter: this.filter, parentId: this._id || "" }));
             this.documents.all.splice(0, this.documents.all.length);
             this.documents.addRange(response);
             this.folders.all.splice(0, this.folders.all.length);
@@ -259,6 +270,9 @@ export class MyDocuments extends Folder {
         super("owner")
     }
     async sync() {
+        if(workspaceService.isLazyMode()){
+            return super.sync();
+        }
         const response = await workspaceService.fetchDocuments({ filter: "owner", parentId: this._id || "" });
         this.documents.all.splice(0, this.documents.all.length);
         this.documents.addRange(response);
@@ -271,6 +285,9 @@ export class SharedDocuments extends Folder {
         super("shared")
     }
     async sync() {
+        if(workspaceService.isLazyMode()){
+            return super.sync();
+        }
         const response = await workspaceService.fetchDocuments({ filter: "shared", parentId: this._id || "" });
         this.documents.all.splice(0, this.documents.all.length);
         this.documents.addRange(response);
@@ -283,6 +300,9 @@ export class AppDocuments extends Folder {
         super("protected")
     }
     async sync() {
+        if(workspaceService.isLazyMode()){
+            //return super.sync(); => no lazy mode in app documents => always refresh (can add ...)
+        }
         const response = await workspaceService.fetchDocuments({ filter: "protected", parentId: this._id || "" });
         this.documents.all.splice(0, this.documents.all.length);
         this.documents.addRange((response));
@@ -295,6 +315,9 @@ export class PublicDocuments extends Folder {
         super("public")
     }
     async sync() {
+        if(workspaceService.isLazyMode()){
+            //return super.sync(); => no lazy mode in public documents => always refresh (can add....)
+        }
         const docResponse = await workspaceService.fetchDocuments({ filter: "public", parentId: this._id || "" })
         this.documents.all.splice(0, this.documents.all.length);
         this.documents.addRange(docResponse);
@@ -318,26 +341,26 @@ export class MediaLibrary {
         }
         try {
             MediaLibrary.synchronized = true;
-            const trees = await workspaceService.fetchTrees(workspaceService.isLazyMode()?{filter:"all", hierarchical:false, onlyRoot: true}:{ filter: "all", hierarchical: true })
+            const trees = await workspaceService.fetchTrees({ filter: "all", hierarchical: true })
             for (let tree of trees) {
                 switch (tree.filter) {
                     case 'owner':
-                        MediaLibrary.myDocuments.setChildren(tree.children);
+                        MediaLibrary.myDocuments.setChildrenFromTree(tree);
                         break;
                     case 'protected':
-                        MediaLibrary.appDocuments.setChildren(tree.children);
+                        MediaLibrary.appDocuments.setChildrenFromTree(tree);
                         break;
                     case 'public':
-                        MediaLibrary.publicDocuments.setChildren(tree.children);
+                        MediaLibrary.publicDocuments.setChildrenFromTree(tree);
                         break;
                     case 'shared':
-                        MediaLibrary.sharedDocuments.setChildren(tree.children);
+                        MediaLibrary.sharedDocuments.setChildrenFromTree(tree);
                         break;
                     case 'trash':
-                        MediaLibrary.trashDocuments.setChildren(tree.children);
+                        MediaLibrary.trashDocuments.setChildrenFromTree(tree);
                         break;
                     case 'external':
-                        MediaLibrary.externalDocuments.setChildren(tree.children);
+                        MediaLibrary.externalDocuments.setChildrenFromTree(tree);
                         break;
                 }
             }

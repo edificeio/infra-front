@@ -93,7 +93,7 @@ export const folderTreeInner = ng.directive('folderTreeInner', ['$compile', ($co
                     }
                 };
                 scope.canExpendTree = function () {
-                    if(workspaceService.isLazyMode() && scope.folder._id){
+                    if(workspaceService.isLazyMode()){
                         return scope.folder.children.length > 0 || (scope.folder as models.Element).cacheChildren.isEmpty;
                     }
                     return scope.folder.children.length > 0;
@@ -105,8 +105,13 @@ export const folderTreeInner = ng.directive('folderTreeInner', ['$compile', ($co
                     return scope.treeProps.isOpenedFolder(scope.folder);
                 }
                 scope.openFolder = async function () {
-                    if(workspaceService.isLazyMode() && scope.folder._id){
-                        await workspaceService.fetchChildren(scope.folder as models.Element, { filter: "all", hierarchical: false }, null, {onlyFolders:true})
+                    if(workspaceService.isLazyMode()){
+                        if(scope.folder instanceof models.ElementTree){
+                            const temp = scope.folder as models.ElementTree;
+                            await workspaceService.fetchChildrenForRoot(temp, { filter: temp.filter, hierarchical: false }, null, {onlyFolders:true})
+                        }else{
+                            await workspaceService.fetchChildren(scope.folder as models.Element, { filter: "all", hierarchical: false }, null, {onlyFolders:true})
+                        }
                     }
                     const ret = scope.treeProps.openFolder(scope.folder);
                     scope.safeApply();

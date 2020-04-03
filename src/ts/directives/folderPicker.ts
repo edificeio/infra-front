@@ -237,7 +237,9 @@ export const folderPicker = ng.directive('folderPicker', ['$timeout', ($timeout)
                     if (openedFolder === folder) {
                         return true;
                     } else if ((folder as models.Tree).filter) {
-                        return true;
+                        if(!workspaceService.isLazyMode()){
+                            return true;
+                        }
                     }
                     return openedFolder && workspaceService.findFolderInTreeByRefOrId(folder, openedFolder);
                 },

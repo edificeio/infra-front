@@ -267,6 +267,19 @@ export const workspaceService = {
         return http<ElementWithVisible>().get(`/workspace/document/parent/${id}`);
     },
     async fetchTrees(params: ElementQuery, sort: "name" | "created" = "name"): Promise<workspaceModel.Tree[]> {
+        if(workspaceService.isLazyMode()){
+            const trees = <Array<workspaceModel.Tree>>[
+                new workspaceModel.ElementTree(true, {children:[], name:"owner", filter:"owner"}),
+                new workspaceModel.ElementTree(true, {children:[], name:"shared", filter:"shared"}),
+                new workspaceModel.ElementTree(true, {children:[], name:"protected", filter:"protected"}),
+                new workspaceModel.ElementTree(true, {children:[], name:"public", filter:"public"}),
+                new workspaceModel.ElementTree(true, {children:[], name:"trash", filter:"trash"}),
+            ];
+            if (workspaceService.hasExternalFolders()) {
+                trees.push(new workspaceModel.ElementTree(true, {children:[], name:"external", filter:"external"}));
+            }
+            return trees;
+        }
         let folders: workspaceModel.Element[] = await http<workspaceModel.Element[]>().get('/workspace/folders/list', params);
         //skip external folders
         folders = folders.filter(f=>!f.externalId);
@@ -327,7 +340,6 @@ export const workspaceService = {
             }
             iterator(tree)
         }
-        //
         return trees;
     },
     async fetchDocuments(params: ElementQuery, sort: "name" | "created" = "name", args:{directlyShared:boolean} = {directlyShared:false}): Promise<Document[]> {
@@ -399,8 +411,8 @@ export const workspaceService = {
         }
     },
     async fetchChildrenForRoot(tree:workspaceModel.ElementTree, params: ElementQuery, sort: "name" | "created" = "name", args:{directlyShared?:boolean, onlyFolders?:boolean, onlyDocument?:boolean} = {directlyShared:false, onlyFolders:false, onlyDocument:false}): Promise<Document[]> {
-        if(tree.filter == "shared" && tree.cacheDocument.isEmpty && !args.onlyDocument){
-            tree.cacheChildren.reset();//reload folders with document to avoid incomplete load (directlyshared)
+        if(tree.filter == "shared" && !args.directlyShared){
+            args.directlyShared = true;
         }
         return workspaceService.fetchChildren(tree, params, sort, args);
     },

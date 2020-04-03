@@ -86,8 +86,11 @@ export class CacheList<T>{
     get updatedAt() { return this._updatedAt; }
     get resetAt() { return this._resetAt; }
     get disabled(){return this._disabled;}
-    add(data:T){
+    add(data:T, matching?:(a:T,b:T)=>boolean){
         if(this.disabled) return;
+        if(matching){
+            this._data = this._data.filter(c=>!matching(data, c));
+        }
         this.data.push(data);
     }
     remove(matching:(el: T) => boolean){
@@ -220,8 +223,9 @@ export class Element extends Model implements Node, Shareable, Selectable {
         this.cacheChildren.remove(matching)
     }
     addChild(el:Element){
+        this.children = this.children.filter(c=>c._id!=el._id);
         this.children.push(el);
-        this.cacheChildren.add(el);
+        this.cacheChildren.add(el, (a,b)=>a._id==b._id);
     }
     updateSelf(el:Element){
         Object.assign(this,el);
@@ -236,7 +240,7 @@ export class Element extends Model implements Node, Shareable, Selectable {
         this.cacheDocument.remove(matching)
     }
     addDocument(doc:Document){
-        this.cacheDocument.add(doc);
+        this.cacheDocument.add(doc,(a,b)=>a._id==b._id);
     }
     setChildren(elts:Element[]){
         this.children = elts;
@@ -250,6 +254,9 @@ export class Element extends Model implements Node, Shareable, Selectable {
     }
     get isDocumentLoading(){
         return this.cacheDocument.isLoading;
+    }
+    get isChildrenOrDocumentLoading(){
+        return this.isDocumentLoading || this.isChildrenLoading;
     }
     get isExternal() {
         return this._id && this._id.indexOf("external_") == 0;
@@ -469,7 +476,10 @@ export class Element extends Model implements Node, Shareable, Selectable {
         extension && (extension = extension.trim());
         if (!fileType)
             return 'unknown'
-        for (let roleMapper of this.roleMappers) {
+        if(!this.roleMappers){
+            console.warn("[Element.role] should not have emptyRoles", this);
+        }
+        for (let roleMapper of (this.roleMappers || [])) {
             const role = roleMapper(fileType,previewRole);
             if (role) {
                 return role;
@@ -582,6 +592,7 @@ export class FolderContext {
         this.sorted = true;
     }
     pushDoc(el: Element) {
+        this.originalDocuments = this.originalDocuments.filter(c=>c._id!=el._id);
         this.originalDocuments.push(el)
         this.folder.addDocument(el as Document);
     }
