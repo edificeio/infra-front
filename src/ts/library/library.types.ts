@@ -23,7 +23,7 @@ export const allSubjectAreas: string[] =  [
     "bpr.subjectArea.languages", 
     "bpr.subjectArea.italian",
     "bpr.subjectArea.spanish",
-    "bpr.subjectArea.frensh",
+    "bpr.subjectArea.french",
     "bpr.subjectArea.german",
     "bpr.subjectArea.english",
     "bpr.subjectArea.ancientLanguages", 
