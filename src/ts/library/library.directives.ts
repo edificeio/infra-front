@@ -199,6 +199,7 @@ export const libraryPublishDirective: Directive = ng.directive('libraryPublish',
             scope.translate = idiom.translate;
             scope.orderAllSubjectAreas = "customSort";
             scope.orderAllActivity = "customSort";
+            scope.warning = attrs.warning;
         },
         template: `
             <div ng-if="libraryPublishController.show">
@@ -215,6 +216,9 @@ export const libraryPublishDirective: Directive = ng.directive('libraryPublish',
                                 <i class="help sticker square-medium"></i>
                             </div>
                         </span>
+                    </div>
+                    <div ng-if="warning">
+                        <p class="warning-color">[[warning]]</p>
                     </div>
                     <div class="row">
                         <form ng-submit="libraryPublishController.publish()"
