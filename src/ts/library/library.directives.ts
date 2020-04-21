@@ -218,7 +218,7 @@ export const libraryPublishDirective: Directive = ng.directive('libraryPublish',
                         </span>
                     </div>
                     <div ng-if="warning">
-                        <p class="warning-color">[[warning]]</p>
+                        <p class="warning">[[warning]]</p>
                     </div>
                     <div class="row">
                         <form ng-submit="libraryPublishController.publish()"
