@@ -1625,7 +1625,7 @@ module.directive('help', function(){
 				scope.helpPath = helpPath + '/application/parametrage-de-la-classe/';
 			}
 
-			var helpContent;
+			var helpContent, burgerMenuElement, burgerButtonElement;
 
 			var setHtml = function(content){
 				helpContent = $('<div>' + content + '</div>');
@@ -1643,6 +1643,16 @@ module.directive('help', function(){
 					window.open($(e.target).closest('a').attr('href'), "_newtab" ); 
 				});
 				element.find('li a').first().click();
+
+				// Activate hamburger menu on responsive
+				element.find('#TOC').wrap('<div id="burger-menu" class="burger-menu"></div>');
+				burgerMenuElement = element.find('#burger-menu');
+				burgerMenuElement.prepend('<button id="burger-button" class="burger-button"><i class="burger-icon"></i></button>');
+				burgerButtonElement = element.find('#burger-button');
+				burgerButtonElement.click(function(e) {
+					burgerMenuElement.toggleClass('active');
+				}); // end of hamburger
+
 				scope.display.read = true;
 				scope.$apply('display');
 			};
