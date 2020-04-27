@@ -31,7 +31,7 @@ function imageLazyLoadFunc() {
                     changes.forEach(change => {
                         if (change.intersectionRatio > 0) {
                             if(!change.target.src || change.target.src.indexOf(scope.imageLazyLoad)==-1){
-                                change.target.src = scope.imageLazyLoad;
+                                change.target.src = scope.imageLazyLoad + (scope.imageLazyLoad.indexOf("?") > -1 ? "&" : "?") + "t=" + new Date().valueOf();
                             }
                         }
                     })
