@@ -56,6 +56,7 @@ export class LibraryServiceProvider<R> {
             publicationAsFormData.append("pdfUri", publication.pdfUri);
             publicationAsFormData.append("application", publication.application);
             publicationAsFormData.append("resourceId", publication.resourceId);
+            publicationAsFormData.append("teacherSchool", publication.userStructureName);
             // TODO remove teacherCity
             publicationAsFormData.append("teacherCity", "test");
 

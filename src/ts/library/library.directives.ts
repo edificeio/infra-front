@@ -10,6 +10,7 @@ import {
 } from './library.types';
 import { idiom } from '../idiom';
 import { notify } from '../notify';
+import { model } from '../modelDefinitions';
 
 ng.providers.push(libraryServiceProvider);
 
@@ -85,10 +86,25 @@ export class LibraryPublishController<R> {
         }
     };
     private id: string;
+    public userStructureNames: string[];
+    public userAttachmentStructureName: string;
+    public multiStructureUser: boolean;
 
     static $inject = ['$scope', '$q', '$http', '$location', 'libraryService'];
 
     constructor(private $scope, private $q, private $http, private $location, private libraryService: LibraryService<R>) {
+        this.userStructureNames = model.me.structureNames;
+        this.multiStructureUser = model.me.structureNames && model.me.structureNames.length > 1;
+        this.$http({
+            url: `/directory/user/${model.me.userId}/attachment-school`, 
+            responseType: 'json',
+            method: 'GET'
+        }).then(res => {
+            if (res.data){ 
+                this.userAttachmentStructureName = res.data.name;
+            }
+        });
+        
         $scope.$watch(() => this.publication ? this.publication.cover : undefined, () => {
             if (this.revocableUrl) {
                 URL.revokeObjectURL(this.revocableUrl);
@@ -133,7 +149,8 @@ export class LibraryPublishController<R> {
                 pdfUri: '',
                 licence: '',
                 teacherAvatar: null,
-                resourceId: this.id
+                resourceId: this.id,
+                userStructureName: this.userAttachmentStructureName ? this.userAttachmentStructureName : this.userStructureNames && this.userStructureNames[0]
             };
             this.publication = Object.assign({}, defaultPublication, {...resourceInformation, cover, pdfUri});
         }).catch(err => {
@@ -321,6 +338,16 @@ export const libraryPublishDirective: Directive = ng.directive('libraryPublish',
                                     name="title"
                                     ng-model="libraryPublishController.publication.keyWords"
                                     placeholder="[[ translate('bpr.form.publication.keywords.placeholder') ]]" />
+                            </div>
+                            <div ng-if="libraryPublishController.multiStructureUser && !libraryPublishController.userAttachmentStructureName" 
+                                class="row top-spacing-twice">
+                                <label class="cell three bold" for="">
+                                    <i18n>bpr.form.publication.structure</i18n> * :
+                                </label>
+                                <select ng-model="libraryPublishController.publication.userStructureName"
+                                    class="cell nine language">
+                                    <option ng-repeat="structureName in libraryPublishController.userStructureNames | orderBy:'toString()'">[[ structureName ]]</option>
+                                </select>
                             </div>
                             <div class="row top-spacing-twice">
                                 <div class="licence-condition">

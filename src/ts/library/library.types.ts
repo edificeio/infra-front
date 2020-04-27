@@ -80,6 +80,7 @@ export interface LibraryPublication {
     licence: string;
     teacherAvatar: Blob;
     resourceId: string;
+    userStructureName: string;
 }
 
 export interface IdAndLibraryResourceInformation {
