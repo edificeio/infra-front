@@ -36,7 +36,7 @@ export const multiComboboxes: Directive = ng.directive('multiComboboxes', () => 
                 <article class="absolute-w">
                     <div class="search-pagination flex-row align-center" ng-if="disableSearch != 'true'">
                         <div class="cell twelve">
-                            <input class="twelve" name="searchField" type="text" ng-model="searchField"
+                            <input class="twelve" name="searchFieldValue" type="text" ng-model="searchField.value"
                                 i18n-placeholder="{{searchPlaceholder}}" autocomplete="off"/>
                             <i class="search"></i>
                         </div>
@@ -73,6 +73,7 @@ export const multiComboboxes: Directive = ng.directive('multiComboboxes', () => 
         },
 
         link: (scope, element, attributes) => {
+            scope.searchField = {value: ''};
             scope.titleAll = attributes.titleAll;
             scope.title = attributes.title;
             scope.titleDisabled = attributes.titleDisabled;
@@ -114,13 +115,11 @@ export const multiComboboxes: Directive = ng.directive('multiComboboxes', () => 
                 }
             });
 
-            scope.searchField = "";
-
             // Show / Hide the options on click
             var hide = function() {
                 element.find('article').css('opacity', 0);
                 element.find('article').css('z-index', -1);
-                scope.searchField = "";
+                scope.searchField.value = '';
             };
             element.find('button').on('click', function() {
                 if (scope.showOptions) {
@@ -147,10 +146,10 @@ export const multiComboboxes: Directive = ng.directive('multiComboboxes', () => 
             $('body').on('click', close);
 
             // Filter labels in search field
-            scope.filterByLabel = (option) => {
+            scope.filterByLabel = (option) => {                
                 if (!option.label)
                     option.label = '';
-                return option.label.toLowerCase().includes(scope.searchField.toLowerCase());
+                return option.label.toLowerCase().includes(scope.searchField.value.toLowerCase());
             };
 
             // Check
@@ -168,7 +167,7 @@ export const multiComboboxes: Directive = ng.directive('multiComboboxes', () => 
                 scope.options.forEach(option => {
                     scope.onCheck(option, checked);
                 });
-                scope.searchField = "";
+                scope.searchField.value = '';
             };
             scope.selectNone = () => {
                 scope.select(false);
