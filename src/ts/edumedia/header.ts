@@ -39,13 +39,15 @@ export const edumediaHeader = ng.directive('edumediaHeader', [function () {
                 <header><span ng-click="goTo(null)"><i18n>edumedia.theme</i18n></span>/</header>
                 <header ng-repeat="item in stack"><span ng-click="goTo(item)">[[item.title]]</span>[[$last?"":" / "]]</header>
             </nav>
-            <button type="button" class="right-magnet" ng-disabled="!canAdd" ng-click="add()" ng-if="canShowAdd()">
-                <i18n>add</i18n>
-            </button>
         </div>
         <div class="edumedia-header-title">
             <h2>[[currentTitle()]]</h2>
-            <input type="search" ng-model="display.search" i18n-placeholder="search" ng-change="onSearchChange()" class="four cell">
+        </div>
+        <div class="edumedia-header-actions">
+            <input type="search" ng-model="display.search" i18n-placeholder="search" ng-change="onSearchChange()">
+            <button type="button" class="right-magnet" ng-disabled="!canAdd" ng-click="add()" ng-if="canShowAdd()">
+                <i18n>add</i18n>
+            </button>
         </div>
         `,
         link: function (scope: EdumediaHeaderScope, element, attributes) {

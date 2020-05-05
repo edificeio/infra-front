@@ -181,7 +181,7 @@ export const edumediaExplorer = ng.directive('edumediaExplorer', ['$timeout', fu
             'onSelectMedias': '&'
         },
         template: `
-            <div>
+            <div class="edumedia-explorer-container">
                 <edumedia-explorer-media ng-if="displayMedia()" media="currentMedia" notify-add="onAdd(currentMedia)" notify-back="onMediaBack()"></edumedia-explorer-media>
                 <edumedia-header ng-if="displayExplorer()" can-add="canAdd()" notify-search="onSearch($text)" notify-add="onAdd()" notify-go-to="onGoTo($stack)" stack="stack" class="row"></edumedia-header>
                 <div ng-if="displayExplorer()" class="edumedia-scrollable-area" ng-class="{'edumedia-search':isSearching()}">
