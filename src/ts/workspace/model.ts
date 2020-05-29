@@ -195,6 +195,8 @@ export class Element extends Model implements Node, Shareable, Selectable {
         extension?: string;
         filename?: string;
         size?: number;
+        captation?: boolean;
+        duration?: number;
     };
     link?: string;
     icon?: string;

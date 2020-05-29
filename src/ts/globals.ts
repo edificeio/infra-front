@@ -139,6 +139,9 @@ export const devices = {
     }
 };
 
+export type DEVICE_TYPE = 'Mobile' | 'Tablet' | 'Desktop';
+export let deviceType: DEVICE_TYPE;
+
 if (navigator.userAgent.match(/Mobile/i)
     || navigator.userAgent.match(/iPhone/i)
     || navigator.userAgent.match(/iPod/i)
@@ -147,14 +150,17 @@ if (navigator.userAgent.match(/Mobile/i)
     || navigator.userAgent.match(/Android/i)
     || navigator.userAgent.match(/BlackBerry/i)
     || navigator.userAgent.match(/webOS/i)) {
+    deviceType = 'Mobile';
     document.getElementsByTagName('html')[0].setAttribute('mobile-device', '');
 } else if (navigator.userAgent.match(/Tablet/i)
     || navigator.userAgent.match(/iPad/i)
     || navigator.userAgent.match(/Nexus 7/i)
     || navigator.userAgent.match(/Nexus 10/i)
     || navigator.userAgent.match(/KFAPWI/i)) {
+    deviceType = 'Tablet';
         document.getElementsByTagName('html')[0].setAttribute('tablet-device', '');
 } else {
+    deviceType = 'Desktop';
     document.getElementsByTagName('html')[0].setAttribute('desktop-device','');
 }
 

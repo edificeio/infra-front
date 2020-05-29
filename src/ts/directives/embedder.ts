@@ -1,5 +1,5 @@
 import {ng} from '../ng-start';
-import {appPrefix} from '../globals';
+import {appPrefix, devices, deviceType} from '../globals';
 import {http} from '../http';
 import {$} from '../libs/jquery/jquery';
 import {Header, LIST_TYPE, MediaLibraryScope, MediaLibraryView} from "./mediaLibrary";
@@ -484,7 +484,30 @@ export let embedder = ng.directive('embedder', ['$timeout', function ($timeout) 
                     return matchSearch(doc.name);
                 });
             }
-
+            
+            function logVideoEvent(eventName: string, document: Document) {
+                if (document.metadata.captation) {
+                    let browserInfo = devices.getBrowserInfo();
+                    let videoEventData = {
+                        event: eventName,
+                        videoId: document._id,
+                        userId: model.me.userId,
+                        userProfile: model.me.profiles[0],
+                        device: deviceType,
+                        browser: browserInfo.name + ' ' + browserInfo.version,
+                        structure: model.me.structureNames[0],
+                        level: model.me.level,
+                        videoDuration: document.metadata.duration,
+                        videoSize: document.metadata.size,
+                        url: window.location.hostname,
+                        app: appPrefix
+                    }
+                    http().postJson('/infra/video/event', videoEventData).done(function(res){
+                        console.log(res);
+                    });
+                }
+            }
+            
             scope.insertRecord = async (docId: string) => {
                 await MediaLibrary.appDocuments.sync();
                 MediaLibrary['appDocuments'].documents.all.forEach(doc => {
@@ -534,7 +557,10 @@ export let embedder = ng.directive('embedder', ['$timeout', function ($timeout) 
                     scope.$apply();
                 }
                 if (scope.ngModel) {
-                    setTimeout(() => scope.ngChange && scope.ngChange());
+                    setTimeout(() => {
+                        scope.ngChange && scope.ngChange();
+                        selectedDocuments.forEach(selectedDocument => logVideoEvent('EVENT_VIDEO_ADD', selectedDocument));
+                    });
                 }
             };
 

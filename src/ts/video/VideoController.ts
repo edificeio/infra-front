@@ -3,9 +3,11 @@ import { notify } from "../notify";
 import { ng } from "../ng-start";
 import { VideoRecorder } from "./VideoRecorder";
 import { model } from "../modelDefinitions";
-import { devices } from "../globals";
+import {appPrefix, devices, deviceType} from '../globals';
 import { IObjectGuardDelegate } from "../navigationGuard";
 import { Me } from "../me";
+import { http } from '../http';
+
 class VideoGuardModel implements IObjectGuardDelegate{
     hasRecorded = false;
     guardObjectIsDirty(): boolean{
@@ -29,6 +31,7 @@ interface VideoControllerScope {
     notFound: boolean
     currentDuration: number
     recordStartTime: number
+    recordTimeInMs: number
     recordTime: string
     recordMaxTime: number
     guard: VideoGuardModel;
@@ -86,6 +89,7 @@ export const VideoController = ng.controller('VideoController', ['$scope', 'mode
         $scope.currentDuration = 0;
         $scope.recordStartTime = 0;
         $scope.recordTime = '00:00';
+        $scope.recordTimeInMs = 0;
         $scope.recordMaxTime = $scope.RECORD_MAX_TIME * 60000;
         $scope.$on("$destroy", () => {
             //console.log("[VideoController.destroy] release video....")
@@ -137,6 +141,7 @@ export const VideoController = ng.controller('VideoController', ['$scope', 'mode
                 $scope.stopRecord();
             } else {
                 $scope.recordTime = msToTime(time);
+                $scope.recordTimeInMs = time;
                 safeApply();
             }
         }
@@ -172,6 +177,7 @@ export const VideoController = ng.controller('VideoController', ['$scope', 'mode
         const showCamera = async (notAllowedCb?: () => void): Promise<void> => {
             try {
                 $scope.recordTime = msToTime(0);
+                $scope.recordTimeInMs = 0;
                 $scope.videoState = 'starting';
                 safeApply();
                 //console.log('[VideoController.showCamera] Using media constraints:', $scope.recorder.constraints);
@@ -298,7 +304,8 @@ export const VideoController = ng.controller('VideoController', ['$scope', 'mode
             $scope.videoState = 'ready';
             isPlaying = false;
             $scope.currentDuration = 0;
-            $scope.recordTime = '00:00'
+            $scope.recordTime = '00:00';
+            $scope.recordTimeInMs = 0;
             $scope.recorder.clearBuffer(true);
             safeApply();
         }
@@ -308,7 +315,7 @@ export const VideoController = ng.controller('VideoController', ['$scope', 'mode
             $scope.videofile = {}
             $scope.videofile.name = `Capture Vidéo ${new Date().toLocaleDateString('fr-FR')}`;
             safeApply();
-            $scope.recorder.upload($scope.videofile.name, function (response) {
+            $scope.recorder.upload($scope.videofile.name, Math.round($scope.recordTimeInMs), function (response) {                
                 if (response.error) {
                     notify.error("video.file.error");
                 } else {
@@ -318,6 +325,25 @@ export const VideoController = ng.controller('VideoController', ['$scope', 'mode
                         $scope.$emit("video-upload", response.data.videoid);
                     }
                 }
+                
+                let browserInfo = devices.getBrowserInfo();
+                let videoEventData = {
+                    event: 'EVENT_VIDEO_SAVE',
+                    videoId: response.data.videoworkspaceid,
+                    userId: $scope.me.userId,
+                    userProfile: $scope.me.profiles[0],
+                    device: deviceType,
+                    browser: browserInfo.name + ' ' + browserInfo.version,
+                    structure: $scope.me.structureNames[0],
+                    level: $scope.me.level,
+                    videoDuration: Math.round($scope.recordTimeInMs),
+                    videoSize: response.data.videosize,
+                    url: window.location.hostname,
+                    app: appPrefix
+                }
+                http().postJson('/infra/video/event', videoEventData).done(function(res){
+                    console.log(res);
+                });
                 $scope.videoState = 'recorded';
                 safeApply();
             },()=>{

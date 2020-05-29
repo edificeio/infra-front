@@ -249,7 +249,7 @@ export class VideoRecorder {
         prepareRecord && this.prepareRecord();
     }
 
-    public async upload(filename, callback,errCallback) {
+    public async upload(filename, recordTime, callback,errCallback) {
         if (!filename) {
             filename = "video-" + this.id;
         }
@@ -257,7 +257,7 @@ export class VideoRecorder {
         let formData = new FormData();
         formData.append("file", this.getBuffer(), filename);
         try{
-            const uploadRes = await axios.post("/video/upload", formData);
+            const uploadRes = await axios.post("/video/upload?duration="+recordTime, formData);
             if(uploadRes.status==202){
                 const id = uploadRes.data.processid;
                 console.log("[VideoRecorder] start fetching status for :", id, uploadRes.data)
