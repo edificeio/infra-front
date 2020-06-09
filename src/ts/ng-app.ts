@@ -1651,7 +1651,22 @@ module.directive('help', function(){
 				burgerButtonElement = element.find('#burger-button');
 				burgerButtonElement.click(function(e) {
 					burgerMenuElement.toggleClass('active');
-				}); // end of hamburger
+				}); 
+				element.find('#TOC > ul li a').on('click', function (e) {
+					burgerMenuElement.removeClass('active');
+				});
+				
+				let bodyClick = function (event) {
+					if (element.find('#TOC > ul').find(event.target).length == 0 
+						&& burgerMenuElement.find(event.target).length == 0) {
+						burgerMenuElement.removeClass('active');
+					}
+				}
+				$('body').on('click', bodyClick);
+				scope.$on('$destroy', function () {
+					$('body').off('click', bodyClick);
+				});
+				// end of hamburger
 
 				scope.display.read = true;
 				scope.$apply('display');
