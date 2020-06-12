@@ -9,7 +9,7 @@ export const font = {
             template:
             '<select-list display="font" display-as="fontFamily" placeholder="editor.font.placeholder" tooltip="editor.option.font">' +
             '<opt ng-repeat="font in fonts" ng-click="setFontFamily(font)" ' +
-            'value="font" ng-style="{ \'font-family\': font.fontFamily }">[[font.fontFamily]]</opt>' +
+            'value="font" ng-style="{ \'font-family\': \'[[font.fontFamily]]\' }">[[font.fontFamily]]</opt>' +
             '</select-list>',
             link: function(scope, element, attributes){
 
@@ -47,7 +47,7 @@ export const font = {
                     );
                 }
 
-                scope.fonts = [{ fontFamily: 'Arial' }, { fontFamily: 'Verdana' }, { fontFamily: 'Tahoma' }, { fontFamily: "Comic Sans MS" }];
+                scope.fonts = [];
                 scope.font = '';
 
                 setTimeout(function() {
@@ -66,7 +66,7 @@ export const font = {
 
                 scope.setFontFamily = function (font) {
                     scope.font = font;
-                    instance.selection.css({ 'font-family': font.fontFamily });
+                    instance.selection.css({ 'font-family': '"' + font.fontFamily + '"' });
                 };
 
                 instance.on('selectionchange', function(e){
