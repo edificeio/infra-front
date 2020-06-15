@@ -764,10 +764,7 @@ export const workspaceService = {
             return Promise.resolve(copies);
         }).then(copies => Promise.resolve({ nbFiles: 0, nbFolders: ids.length, copies }));
     },
-    notifyContrib(folder: workspaceModel.Element, eltsOrIds: workspaceModel.Element[] | string[], addVersion: boolean = false) {
-        const isDefinedFolder = folder && folder._id;
-        const isSharedFolder = isDefinedFolder && (folder.isShared || (folder.shared || []).length > 0);
-        const isNotDeletedFolder = isDefinedFolder && !folder.deleted;
+    notifyContrib(folderId: string, eltsOrIds: workspaceModel.Element[] | string[], addVersion: boolean = false) {
         const getIds = () => {
             const ids: string[] = [];
             for (let e of eltsOrIds) {
@@ -779,11 +776,11 @@ export const workspaceService = {
             }
             return ids;
         }
-        if (isSharedFolder && isNotDeletedFolder) {
+        if (folderId) {
             const ids: string[] = getIds();
-            return http().postJson("/workspace/folder/notify/contrib/" + folder._id, { ids, addVersion })
+            return http().postJson("/workspace/folder/notify/contrib/" + folderId, { ids, addVersion })
         } else if (addVersion) {
-            // when adding version to root => should work
+            // when adding version to root => should notify about file change
             const ids: string[] = getIds();
             return http().postJson("/workspace/folder/notify/contrib/root", { ids, addVersion })
         } else {
@@ -1025,16 +1022,15 @@ workspaceService.onChange.subscribe(event => {
     }
     //on create revision or update doc (edit picture on image editor)
     if (event.action == "document-change" && (event.elements && event.elements.length)) {
-        const elts = event.elements;
-        const destFolderIds = elts.filter(el => el.eParent).map(el => el.eParent);
+        const elts:workspaceModel.Element[] = event.elements;
+        const destFolderIds: string[] = elts.filter(el => el.eParent).map(el => el.eParent);
         const uniqDestFolderIds = destFolderIds.filter((elem, pos, arr) => arr.indexOf(elem) == pos);
-        const destFolders = workspaceService._cacheFolders.filter(folder => uniqDestFolderIds.indexOf(folder._id) > -1);
         //
-        if (destFolders.length == 0) {
+        if (uniqDestFolderIds.length == 0) {
             workspaceService.notifyContrib(null, elts, true)
         } else {
-            destFolders.forEach(dest => {
-                const children = elts.filter(el => el.eParent == dest._id);
+            uniqDestFolderIds.forEach(dest => {
+                const children = elts.filter(el => el.eParent == dest);
                 workspaceService.notifyContrib(dest, children, true)
             })
         }
@@ -1042,16 +1038,15 @@ workspaceService.onChange.subscribe(event => {
     }
     //on other actions (copy, move...)
     if (event.dest && event.dest.isShared && ((event.elements && event.elements.length) || (event.ids && event.ids.length))) {
-        workspaceService.notifyContrib(event.dest, event.elements || event.ids)
+        workspaceService.notifyContrib(event.dest._id, event.elements || event.ids)
     }
 })
-workspaceService.onConfirmImport.subscribe(elts => {
-    const destFolderIds = elts.filter(el => el.eParent).map(el => el.eParent);
+workspaceService.onConfirmImport.subscribe((elts:workspaceModel.Element[]) => {
+    const destFolderIds: string[] = elts.filter(el => el.eParent).map(el => el.eParent);
     const uniqDestFolderIds = destFolderIds.filter((elem, pos, arr) => arr.indexOf(elem) == pos);
-    const destFolders = workspaceService._cacheFolders.filter(folder => uniqDestFolderIds.indexOf(folder._id) > -1);
     //
-    destFolders.forEach(dest => {
-        const children = elts.filter(el => el.eParent == dest._id);
+    uniqDestFolderIds.forEach(dest => {
+        const children = elts.filter(el => el.eParent == dest);
         workspaceService.notifyContrib(dest, children)
     })
 })
