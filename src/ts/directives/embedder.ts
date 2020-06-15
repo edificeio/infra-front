@@ -66,7 +66,7 @@ export let embedder = ng.directive('embedder', () => {
             };
 
             scope.unselectProvider = function () {
-                var preview = element.find('.' + scope.display.provider.name + ' .preview');
+                let preview = element.find('.' + scope.display.provider.name + ' .preview');
                 preview.html('');
                 scope.display.provider = { name: 'none' };
                 scope.display.url = '';
@@ -97,8 +97,9 @@ export let embedder = ng.directive('embedder', () => {
             );
             
             scope.updatePreview = function () {
+
                 if(scope.display.provider.name === 'other'){
-                    var preview = element.find('.' + scope.display.provider.name + ' .preview');
+                    let preview = element.find('.' + scope.display.provider.name + ' .preview');
                     preview.html(
                         scope.display.htmlCode
                     );
@@ -110,23 +111,25 @@ export let embedder = ng.directive('embedder', () => {
 
                 label:for(let pattern of scope.display.provider.url) {
 
-                    var agnosticUrl = scope.display.url.split('//')[1];
-                    var matchParams = new RegExp('\{[a-zA-Z0-9_.]+\}', "g");
-                    var params = pattern.match(matchParams);
+                    let matchParams = new RegExp('\{[a-zA-Z0-9_.]+\}', "g");
+                    let params = pattern.match(matchParams);
+                    let computedEmbed = scope.display.provider.embed;
 
-                    var computedEmbed = scope.display.provider.embed;
-                    
-                    params.splice(1, params.length);
                     for(let param of params) {
+
                         scope.display.invalidPath = false;
-                        var paramBefore = pattern.split(param)[0];
-                        var additionnalSplit = paramBefore.split('}')
-                        if (additionnalSplit.length > 1) {
-                            paramBefore = additionnalSplit[additionnalSplit.length - 1];
+
+                        let paramBefore = pattern.split(param)[0];
+                        let additionalSplit = paramBefore.split('}')
+
+                        if (additionalSplit.length > 1) {
+                            paramBefore = additionalSplit[additionalSplit.length - 1];
                         }
-                        var paramAfter = pattern.split(param)[1].split('{')[0];
-                        var paramValue = scope.display.url.split(paramBefore)[1];
-                        if (!paramValue) {
+
+                        let paramAfter = pattern.split(param)[1].split('{')[0];
+                        let paramValue = scope.display.url.split(paramBefore)[1];
+
+                        if (!paramValue && param !== "{ignore}") {
                             scope.display.invalidPath = true;
                             continue label;
                         }
@@ -134,15 +137,18 @@ export let embedder = ng.directive('embedder', () => {
                             paramValue = paramValue.split(paramAfter)[0];
                         }
 
-                        var replace = new RegExp('\\' + param.replace(/}/, '\\}'), 'g');
-                        scope.display.htmlCode = computedEmbed.replace(replace, paramValue);
+                        let replace = new RegExp('\\' + param.replace(/}/, '\\}'), 'g');
 
-                        break label;
+                        computedEmbed = computedEmbed.replace(replace, paramValue);
+                        scope.display.htmlCode = computedEmbed;
 
+                        if(param === params[params.length - 1]) {
+                            break label;
+                        }
                     };
                 };
 
-                var preview = element.find('.' + scope.display.provider.name + ' .preview');
+                let preview = element.find('.' + scope.display.provider.name + ' .preview');
                 preview.html(
                     scope.display.htmlCode
                 );
