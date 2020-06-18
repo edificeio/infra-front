@@ -658,7 +658,7 @@ export let RTE = {
                         placeEditorToolbar = requestAnimationFrame(sticky);
                     }
 
-                    $(window).on('resize', function () {
+                    var resizeFn = function () {
                         if(element.parents('.editor-media').length > 0){
                             return;
                         }
@@ -677,7 +677,8 @@ export let RTE = {
                         }
                         placeToolbar();
                         editorInstance.trigger('contentupdated');
-                    });
+                    };
+                    $(window).on('resize', resizeFn);
 
                     element.children('popover').find('li:first-child').on('click', function(){
                         element.removeClass('html');
@@ -867,7 +868,7 @@ export let RTE = {
                         scope.$emit('editor-focus', { target: element.get(0) });
                         element.addClass('focus');
                         element.find('button.editor-edit-action').css({ display: 'none' });
-                        placeToolbar();
+                        resizeFn();
                         element.parent().data('lock', true);
                         element.parents('grid-cell').data('lock', true);
                         if ($(window).width() < ui.breakpoints.tablette) {
