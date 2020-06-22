@@ -59,7 +59,7 @@
       <td class="user"><a>[[folder.ownerName]]</a></td>
     </tr>
     <tr
-      ng-repeat="document in documents | orderBy:'isNew' | orderBy: orderFieldDocument"
+      ng-repeat="document in documentList.documents"
       ng-class="{ overline: true, checked: document.selected }"
       explorer ng-model="document.selected" ng-click="updateSelection(document)" on-open="selectDocument(document)"
       doc-id="[[document._id]]"

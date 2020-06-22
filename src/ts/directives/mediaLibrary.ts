@@ -6,6 +6,7 @@ import { template } from '../template';
 import { model } from '../modelDefinitions';
 import { idiom } from '../idiom';
 import http from "axios";
+import { DocumentsListModel } from '../workspace/model';
 export type Header = { template: string, worflowKey: string, i18Key: string, visible: () => boolean, onDisplay?:()=>void };
 export type LIST_TYPE = "myDocuments" | "appDocuments" | "publicDocuments" | "sharedDocuments" | "trashDocuments" | "externalDocuments";
 export type MediaLibraryView = "icons" | "list";
@@ -19,10 +20,10 @@ export interface MediaLibraryDelegate {
 export interface MediaLibraryScope {
 	template: any
 	multiple: boolean
+	documentList: DocumentsListModel;
 	visibility: "public" | "protected" | "external"
 	display: {
 		search: string,
-		limit: number,
 		editDocument?: boolean,
 		listFrom?: LIST_TYPE,
 		loading?: Document[],
@@ -89,7 +90,8 @@ export interface MediaLibraryScope {
 	$id: any
 	$parent: any
 }
-export const mediaLibrary = ng.directive('mediaLibrary', ['$timeout', function ($timeout) {
+
+export const mediaLibrary = ng.directive('mediaLibrary', ['$timeout','$filter', function ($timeout,$filter) {
 	return {
 		restrict: 'E',
 		scope: {
@@ -101,6 +103,8 @@ export const mediaLibrary = ng.directive('mediaLibrary', ['$timeout', function (
 		},
 		templateUrl: '/' + appPrefix + '/public/template/entcore/media-library/main.html',
 		link: function (scope: MediaLibraryScope, element, attributes) {
+			scope.documentList = new DocumentsListModel($filter, true);
+			scope.documentList.watch(scope);
 			//=== Call visitors
 			scope.delegate && scope.delegate.visit && scope.delegate.visit(scope);
 			//
@@ -224,8 +228,7 @@ export const mediaLibrary = ng.directive('mediaLibrary', ['$timeout', function (
 			scope.sharedDocuments = MediaLibrary.sharedDocuments;
 
 			scope.display = {
-				search: '',
-				limit: 24
+				search: ''
 			};
 
 			const previousImage = () => {

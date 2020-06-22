@@ -26,3 +26,25 @@ export let bottomScroll = ng.directive('bottomScroll', function(){
 		}
 	}
 });
+
+
+export let onBottomScroll = ng.directive('onBottomScroll', function(){
+	return {
+		restrict: 'A',
+		link: function (scope, element, attributes) {
+			const onBottomScrollOffset = parseInt(attributes.onBottomScrollOffset) || 100;
+		    element.scroll(function () {
+				const height = element.outerHeight();
+				const scrollTop = element.scrollTop();
+				const scrollHeight = element.prop("scrollHeight");
+				const remaining = scrollHeight - (height+scrollTop)
+				if (remaining < onBottomScrollOffset) {
+				    scope.$eval(attributes.onBottomScroll);
+				    if (!scope.$$phase) {
+				        scope.$apply();
+					}
+				}
+			});
+		}
+	}
+});

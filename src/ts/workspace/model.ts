@@ -28,6 +28,54 @@ export type TREE_NAME = "owner" | "shared" | "protected" | "public" | "trash" | 
 export const FOLDER_TYPE = "folder";
 export const FILE_TYPE = "file";
 
+export class DocumentsListModel{
+	public incrementSize = 50;
+	private _displayNum: number = 50;
+	private _orderField: string;
+	private _original:Array<Document> = [];
+	private _documents:Array<Document> = [];
+	constructor(private $filter:any, private _sort = false){}
+	protected recompute(){
+		this._documents = [...this._original];
+		if(this._sort){
+			this.sort();
+		}
+        this._documents = this.$filter('limitTo')(this._documents, this._displayNum);
+        console.log('[DocumentsListModel.recompute] loading more ...', this._documents.length)
+	}
+    protected sort(){
+        this._documents = this.$filter('orderBy')(this._documents, 'isNew')
+        this._documents = this.$filter('orderBy')(this._documents, this._orderField)
+    }
+    get documents() { return this._documents; }
+	set documents(d) { 
+		this._original = d;
+		this.recompute();
+	}
+	set orderField(d:string) { 
+		this._orderField = d;
+		this.recompute();
+	}
+	set displayNum(d:number) { 
+		this._displayNum =d;
+		this.recompute();
+	}
+	increment():void{
+		this.displayNum =this._displayNum + this.incrementSize;
+	}
+	watch($scope:any,args:{documents:string,orderFieldDocument?:string}={documents:'documents',orderFieldDocument:'orderFieldDocument'}):DocumentsListModel{
+		$scope.$watch(args.documents,(newValue)=>{
+			this.documents = newValue || [];
+		})
+		if(this._sort){
+            $scope.$watch(args.orderFieldDocument,(newValue)=>{
+                this.orderField = newValue || 'name'
+            })
+        }
+        return this;
+	}
+}
+
 export interface Node {
     _id?: string
     children: Node[]
@@ -574,33 +622,42 @@ export class FolderContext {
     private filtered: boolean = false;
     private sorted: boolean = false;
     private sortFunction: (el1: Element, el2: Element) => number;
+    private cacheSortedDocuments: Element[] = null;
     constructor(public folder: Element = emptyFolder()) {
         this.setFolder(folder);
+    }
+    private clearCache():void{
+        this.cacheSortedDocuments = null;
     }
     setFolder(f: Element) {
         this.folder = f;
     }
     setDocuments(c: Element[]) {
         this.originalDocuments = c;
+        this.clearCache();
     }
     setFilter(all: Element[]) {
         this.filteredFolders = all.filter(a => a.eType == FOLDER_TYPE);
         this.filteredDocuments = all.filter(a => a.eType == FILE_TYPE);
         this.filtered = true;
+        this.clearCache();
     }
     applyFilter(filter: (el: Element) => boolean) {
         this.filteredDocuments = this.originalDocuments.filter(filter);
         this.filteredFolders = this.folder.children.filter(filter);
         this.filtered = true;
+        this.clearCache();
     }
     applySort(sort: (el1: Element, el2: Element) => number) {
         this.sortFunction = sort;
         this.sorted = true;
+        this.clearCache();
     }
     pushDoc(el: Element) {
         this.originalDocuments = this.originalDocuments.filter(c=>c._id!=el._id);
         this.originalDocuments.push(el)
         this.folder.addDocument(el as Document);
+        this.clearCache();
     }
     findDocuments(filter: (el: Element) => boolean) {
         let co = this.originalDocuments.filter(filter);
@@ -609,10 +666,12 @@ export class FolderContext {
     deleteDocuments(matching: (el: Element) => boolean) {
         this.originalDocuments = this.originalDocuments.filter(el => !matching(el));
         this.folder.removeDocument(matching);
+        this.clearCache();
         return this.originalDocuments;
     }
     restore() {
         this.filtered = false;
+        this.clearCache();
     }
     get documents() {
         return this.filtered ? this.filteredDocuments : this.originalDocuments;
@@ -624,7 +683,10 @@ export class FolderContext {
         return [...this.folders, ...this.documents];
     }
     get sortedDocuments() {
-        return this.sorted ? this.documents.slice(0).sort(this.sortFunction) : this.documents;
+        if(!this.cacheSortedDocuments){
+            this.cacheSortedDocuments = this.sorted ? this.documents.slice(0).sort(this.sortFunction) : this.documents;
+        }
+        return this.cacheSortedDocuments;
     }
     get sortedFolders() {
         return this.sorted ? this.folders.slice(0).sort(this.sortFunction) : this.folders;
