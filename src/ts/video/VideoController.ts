@@ -230,6 +230,9 @@ export const VideoController = ng.controller('VideoController', ['$scope', 'mode
         $scope.isIncompatibleDevice = () => devices.isIphone() || devices.isIpad() || devices.isIpod();
 
         $scope.isIncompatibleBrowser = () => {
+            if(!(window as any).MediaRecorder){
+                return true;
+            }
             const browser = devices.getBrowserInfo();
             return browser.name != 'Firefox' && browser.name != 'Chrome' && browser.name != 'Edge' && browser.name != 'Opera';
         };
