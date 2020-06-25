@@ -1,6 +1,6 @@
 import { model } from '../modelDefinitions';
 import { http as httpOriginal, httpPromisy as http, PromiseHttp } from '../http';
-import { idiom as lang } from '../idiom';
+import { idiom as lang, idiom } from '../idiom';
 import { notify } from '../notify';
 import { Document, MediaLibrary } from './workspace-v1';
 import * as workspaceModel from './model';
@@ -517,6 +517,12 @@ export const workspaceService = {
         res.then(e => {
             workspaceService.onChange.next({ action: "update", elements: [{ name: newNameOrigin, eType: el.eType, _id: el._id } as workspaceModel.Element] });
         });
+        res.e400 && res.e400((e)=>{
+            const error = JSON.parse(e.responseText).error;
+            if(error && error.indexOf("duplicate")){
+                notify.error(idiom.translate(error));
+            }
+        });
         return res;
     },
     deleteAll(elements: workspaceModel.Element[]): Promise<{ nbFiles: number, nbFolders: number }> {
@@ -845,6 +851,7 @@ export const workspaceService = {
                     }
                     resolve(document);
                     document._id = result._id;
+                    document.name = result.name;
                     document.updateProps();
                     document.fromMe();//make behaviour working
                     //load behaviours and myRights
@@ -937,6 +944,9 @@ export const workspaceService = {
         let copy: workspaceModel.Element = null;
         p.e400((e) => {
             error = JSON.parse(e.responseText).error;
+            if(error && error.indexOf("duplicate")){
+                notify.error(idiom.translate(error));
+            }
         });
         const res = await p.then(e => {
             folder._id = e["_id"];
