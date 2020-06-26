@@ -377,7 +377,7 @@ export const workspaceService = {
         }
         params.hierarchical = false;
         //transformer
-        const sorts = sortElement(sort);
+        const sorts = sortElement(sort || "name");
         const folderTransformer = async (promise:Promise<workspaceModel.Element[]>) => {
             const fetchedResults = await promise;
             const folders = fetchedResults.filter(n=>n.eType==workspaceModel.FOLDER_TYPE).map(mapFolder)
