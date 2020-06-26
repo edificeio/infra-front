@@ -148,6 +148,19 @@ export class VideoRecorder {
                 if (notAllowedCb) {
                     return notAllowedCb();
                 }
+            }else if (e && e.name == 'NotReadableError'){
+                try{
+                    //try without constraint
+                    const stream = await navigator.mediaDevices.getUserMedia({});
+                    if (!this.gumVideo) {
+                        this.gumVideo = this.videoFactory();
+                    }
+                    this.stream = stream;
+                    this.prepareRecord();
+                }catch(e){
+                    alert(e);
+                }
+                return;
             }
             alert(e);
         }
