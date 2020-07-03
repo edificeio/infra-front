@@ -46,7 +46,7 @@ export const embedderService = {
     getHtmlForProvider(embedder: Embedder, url: string): string {
         for (let pattern of embedder.url) {
             const matchParams = new RegExp('\{[a-zA-Z0-9_.]+\}', "g");
-            const params = pattern.match(matchParams);
+            const params = pattern.match(matchParams) || [];
             const computedEmbed = embedder.embed;
 
             params.splice(1, params.length);
