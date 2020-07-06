@@ -62,6 +62,7 @@ export var recorder = (function () {
 	function sendWavChunk() {
 		var index = rightChannel.length;
 		if (!(index > lastIndex)) return;
+		encoder.postMessage(["init", context.sampleRate])
 		encoder.postMessage(['chunk', leftChannel.slice(lastIndex, index), rightChannel.slice(lastIndex, index), (index - lastIndex) * bufferSize]);
 		encoder.onmessage = function (e) {
 			if (!compress) {
@@ -249,6 +250,7 @@ export var recorder = (function () {
 			this.pause();
 			this.status = 'playing';
 			var encoder = new Worker('/infra/public/js/audioEncoder.js');
+			encoder.postMessage(["init", context.sampleRate])
 			encoder.postMessage(['wav', rightChannel, leftChannel, recordingLength]);
 			encoder.onmessage = function (e) {
 				player.src = window.URL.createObjectURL(e.data);
