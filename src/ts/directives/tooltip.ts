@@ -114,7 +114,7 @@ abstract class AbstractToolTip {
             }
         }))
         this.targetElement.on('mouseenter', this.show);
-        this.targetElement.on('mouseout', this.hide);
+        //this.element.on('mouseout', this.hide);
         this.targetElement.on('mouseleave', this.hide);
         $(window).on('scroll', this.tryMoveTip);
         //listen disabled
@@ -141,8 +141,8 @@ abstract class AbstractToolTip {
         //console.debug('[Tooltip.unbind] unbinding....')
         this.subscription.unsubscribe();
         this.targetElement.off('mouseenter', this.show);
-        this.targetElement.off('mouseout', this.hide);
-        this.targetElement.off('mouseleave', this.hide);
+        this.element.off('mouseout', this.hide);
+        this.element.off('mouseleave', this.hide);
         $(window).off('scroll', this.tryMoveTip);
         try {
             this.observer && this.observer.disconnect();
