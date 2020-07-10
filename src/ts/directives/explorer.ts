@@ -87,10 +87,8 @@ export let explorer = ng.directive('explorer', () => {
                     })
 
                     element.on('click', function (e, position) {
-                        if ($(e.target).parents('editor').length === 0) {
-                            select(e);
-                            scope.$apply('ngModel');
-                        }
+                        select(e);
+                        scope.$apply('ngModel');
                     })
 
                     element.on('doubletap dblclick', function (e) {
@@ -102,10 +100,8 @@ export let explorer = ng.directive('explorer', () => {
                     element.off('click dblclick doubletap contextmenu')
 
                     element.on('click', function (e) {
-                        if ($(e.target).parents('editor').length === 0) {
-                            select(e);
-                            scope.$apply('ngModel');
-                        }
+                        select(e);
+                        scope.$apply('ngModel');
                     });
                     element.on('dblclick', function (e) {
                         scope.onOpen({'$event':e});

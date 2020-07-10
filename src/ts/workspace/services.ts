@@ -157,6 +157,7 @@ export interface WorkspacePreference {
     sortField?: string
     sortDesc?: boolean
     view?: WorkspacePreferenceView
+    bbmView?: WorkspacePreferenceView
     quickstart?: "viewed" | "notviewed"
 }
 export type DocumentActionType = "comment" | "download" | "move" | "copy" | "share" | "history"

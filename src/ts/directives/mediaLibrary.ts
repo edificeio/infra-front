@@ -7,6 +7,7 @@ import { model } from '../modelDefinitions';
 import { idiom } from '../idiom';
 import http from "axios";
 import { DocumentsListModel } from '../workspace/model';
+import { workspaceService } from '../workspace/services';
 export type Header = { template: string, worflowKey: string, i18Key: string, visible: () => boolean, onDisplay?:()=>void };
 export type LIST_TYPE = "myDocuments" | "appDocuments" | "publicDocuments" | "sharedDocuments" | "trashDocuments" | "externalDocuments";
 export type MediaLibraryView = "icons" | "list";
@@ -307,8 +308,11 @@ export const mediaLibrary = ng.directive('mediaLibrary', ['$timeout','$filter', 
 					}
 					template.open('documents-view', "entcore/media-library/" + mode);
 					scope.viewMode = mode;
+					workspaceService.savePreference({bbmView: mode})
 			}
-			scope.changeViewMode("icons");
+			workspaceService.getPreference().then(pref=>{
+				scope.changeViewMode(pref.bbmView as MediaLibraryView || "icons");
+			})
 			scope.orderByField = function(field: string): void
 			{
 				if(scope.isOrderedAsc(field) == true)
