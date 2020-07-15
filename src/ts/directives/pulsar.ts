@@ -255,8 +255,8 @@ export let pulsar = ng.directive('pulsar', ['$compile', function($compile){
 
                      $('<div class="pulsar-layer"></div>')
 
-                        .width(pulsarHighlight.width() + pulsarLayerMarge * 2)
-                        .height(pulsarHighlight.height() + pulsarLayerMarge *  2)
+                        .width(pulsarHighlight.outerWidth() + pulsarLayerMarge * 2)
+                        .height(pulsarHighlight.outerHeight() + pulsarLayerMarge *  2)
                         .offset({ top: pulsarHighlight.offset().top - pulsarLayerMarge, left: pulsarHighlight.offset().left - pulsarLayerMarge, })
                         .hide()
                         .appendTo('body')
