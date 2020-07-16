@@ -23,6 +23,7 @@ export let explorer = ng.directive('explorer', () => {
             ngClick: '&',
             ngChange: '&',
             onOpen: '&',
+            shouldSelect: '&?',
         },
         template: '<div class="explorer" ng-transclude></div>',
         link: function (scope, element, attributes) {
@@ -44,6 +45,11 @@ export let explorer = ng.directive('explorer', () => {
             }
             //
             function select(e) {
+                if(attributes.shouldSelect){
+                    if(!scope.shouldSelect({ '$event': e })){
+                        return;
+                    }
+                }
                 scope.ngModel = !scope.ngModel;
                 scope.$apply('ngModel');
 
