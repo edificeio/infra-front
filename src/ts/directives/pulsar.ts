@@ -258,6 +258,7 @@ export let pulsar = ng.directive('pulsar', ['$compile', function($compile){
                         .width(pulsarHighlight.outerWidth() + pulsarLayerMarge * 2)
                         .height(pulsarHighlight.outerHeight() + pulsarLayerMarge *  2)
                         .offset({ top: pulsarHighlight.offset().top - pulsarLayerMarge, left: pulsarHighlight.offset().left - pulsarLayerMarge, })
+                        .css({position: "absolute"})
                         .hide()
                         .appendTo('body')
                         .fadeIn("slow");
