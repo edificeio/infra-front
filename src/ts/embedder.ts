@@ -31,6 +31,7 @@ export const embedderService = {
         return documents.map(d=>embedderService.getHtmlForVideoStream(d)).join(' ');
     },
     async getHtmlForUrl(url: string, returnDefault: boolean = false) {
+        if(url && url.trim().startsWith('<iframe')) return url;
         const providers = await embedderService.getProviders();
         for (const p of providers) {
             const html = embedderService.getHtmlForProvider(p, url);
