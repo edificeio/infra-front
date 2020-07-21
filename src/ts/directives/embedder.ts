@@ -9,6 +9,7 @@ import {idiom} from "../idiom";
 import {model} from "../modelDefinitions";
 import { embedderService } from '../embedder';
 import { Me } from '../me';
+import { DocumentsListModel } from '../workspace/model';
 
 export interface VideoDelegate {
     title?: string
@@ -40,6 +41,7 @@ export interface VideoScope {
         listFrom?: LIST_TYPE,
         htmlCode?: any
     },
+    documentList: DocumentsListModel;
     orderFieldDocument: string
     orderFieldFolder: string
     folders: Folder[]
@@ -107,7 +109,7 @@ export interface VideoScope {
     $broadcast:any;
 }
 
-export let embedder = ng.directive('embedder', ['$timeout', function ($timeout) {
+export let embedder = ng.directive('embedder', ['$timeout', '$filter', function ($timeout, $filter) {
     return {
         restrict: 'E',
         scope: {
@@ -120,6 +122,8 @@ export let embedder = ng.directive('embedder', ['$timeout', function ($timeout) 
         },
         templateUrl: '/' + appPrefix + '/public/template/entcore/video/main.html',
         link: function (scope: VideoScope, element, attributes) {
+			scope.documentList = new DocumentsListModel($filter, true);
+			scope.documentList.watch(scope);
             //console.log('scope.delegate link', scope)
             scope.delegate && scope.delegate.visit && scope.delegate.visit(scope);
             scope.display = {
