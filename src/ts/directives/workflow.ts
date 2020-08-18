@@ -6,28 +6,33 @@ const workflowDirectiveLinkBuilder = (name:string) =>
 	(func: (right: boolean, content: any, element: any) => void) =>
 		function (scope, element, attributes) {
 			attributes.$observe(name, async () => {
-				const auth = attributes[name].split('.');
-				if (!Behaviours.applicationsBehaviours[auth[0]]) {
-					throw "Behaviours from application " + auth[0] + " missing";
-				}
-				if (Behaviours.applicationsBehaviours[auth[0]].callbacks) {
-					await Behaviours.load(auth[0]);
-				}
-				let right = model.me && model.me.workflow;
-				const workflow = !!(right && right[auth[0]]);
 				const content = element.children();
-				if(model.me.functions["SUPER_ADMIN"]) {
-					func(true, content, element);
-					return;
-				}
-				if (!right || !workflow) {
+				try{
+					const auth = attributes[name].split('.');
+					if (!Behaviours.applicationsBehaviours[auth[0]]) {
+						throw "Behaviours from application " + auth[0] + " missing";
+					}
+					if (Behaviours.applicationsBehaviours[auth[0]].callbacks) {
+						await Behaviours.load(auth[0]);
+					}
+					let right = model.me && model.me.workflow;
+					const workflow = !!(right && right[auth[0]]);
+					if(model.me.functions["SUPER_ADMIN"]) {
+						func(true, content, element);
+						return;
+					}
+					if (!right || !workflow) {
+						func(false, content, element);
+						return;
+					}
+					auth.forEach(function (prop) {
+						right = right[prop];
+					});
+					func(right, content, element);
+				}catch(e){
 					func(false, content, element);
-					return;
+					throw e;
 				}
-				auth.forEach(function (prop) {
-					right = right[prop];
-				});
-				func(right, content, element);
 			});
 		};
 
