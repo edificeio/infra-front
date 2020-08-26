@@ -58,3 +58,4 @@ export * from "./library";
 export * from "./noUiSlider";
 export * from "./libraryPrompt";
 export * from "./dragndrop";
+export * from "./structureTree";
