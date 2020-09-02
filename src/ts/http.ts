@@ -1,4 +1,5 @@
 import { idiom as lang } from './idiom';
+import { notify } from './notify'
 import { _ } from './libs/underscore/underscore';
 
 var loadedScripts = {};
@@ -108,7 +109,7 @@ export var http = (function(){
 					}
 					else{
 						if(!params.disableNotifications && e.status !== 0){
-							humane.spawn({ addnCls: 'humane-original-error' })(lang.translate("e" + e.status));
+							notify.error("e" + e.status);
 						}
 					}
 
