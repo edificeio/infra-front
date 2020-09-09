@@ -504,7 +504,10 @@ module.directive('portal', function(){
             case "matomo":
                 try {
                     var _paq = window["_paq"] = window["_paq"] || [];
-                    /* tracker methods like "setCustomDimension" should be called before "trackPageView" */
+					if( params.Profile )	_paq.push(['setCustomDimension', 1, params.Profile]);
+					if( params.School )		_paq.push(['setCustomDimension', 2, params.School]);
+					if( params.Project )	_paq.push(['setCustomDimension', 3, params.Project]);
+					/* tracker methods like "setCustomDimension" should be called before "trackPageView" */
                     _paq.push(['trackPageView']);
                     _paq.push(['enableLinkTracking']);
                     (function() {
