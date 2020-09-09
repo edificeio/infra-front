@@ -881,6 +881,89 @@ export const workspaceService = {
         });
         return res;
     },
+    async importZip(file: File | Blob, zip: Document, parent?: workspaceModel.Element, params?: { visibility?: "public" | "protected", application?: string }): Promise<Document[]> {
+        zip.eType = workspaceModel.FILE_TYPE;
+        zip.eParent = parent ? parent._id : null;
+        zip.uploadStatus = "loading";
+        zip.fromFile(file);
+        //
+        let formData = new FormData();
+        formData.append('file', file);
+        zip.uploadXhr = new XMLHttpRequest();
+        //
+        const args = [];
+        if (params) {
+            if (params.visibility === 'public' || params.visibility === 'protected') {
+                args.push(`${params.visibility}=true`)
+            }
+            if (params.application) {
+                args.push(`application=${params.application}`)
+            }
+        }
+        if (zip.eParent) {
+            args.push(`parentId=${zip.eParent}`)
+        }
+        let path = `/workspace/zip?${args.join("&")}`;
+        zip.uploadXhr.open('POST', path);
+        if (xsrfCookie) {
+            zip.uploadXhr.setRequestHeader('X-XSRF-TOKEN', xsrfCookie.val);
+        }
+
+        zip.uploadXhr.send(formData);
+        zip.uploadXhr.onprogress = (e) => {
+            zip.eventer.trigger('progress', e);
+        }
+
+        const res = new Promise<Document[]>((resolve, reject) => {
+            zip.uploadXhr.onload = async () => {
+                if (zip.uploadXhr.status >= 200 && zip.uploadXhr.status < 400) {
+                    zip.eventer.trigger('loaded');
+                    zip.uploadStatus = "loaded";
+                    const result = JSON.parse(zip.uploadXhr.responseText);
+                    const documents: workspaceModel.Element[] = result.saved;
+                    const res = documents.map(e=>{
+                        let val: workspaceModel.Element;
+                        if(e.eType==workspaceModel.FOLDER_TYPE){
+                            val = mapFolder(e);
+                        }else{
+                            val = mapDocuments(e);
+                        }
+                        val.uploadStatus = "loaded";
+                        val.updateProps();
+                        val.fromMe();//make behaviour working
+                        //load behaviours and myRights
+                        val.behaviours("workspace");
+                        return val;
+                    })
+                    resolve(res as any);
+                    const elts = res.filter(e=>(!parent && !e.eParent) || (parent && e.eParent==parent._id));
+                    workspaceService.onChange.next({ action: "add", elements: elts, dest: parent })
+                    if(result.errors && result.errors.length){
+                        notify.error("folder.zip.upload.partial");
+                    }
+                    zip.uploadXhr = null;
+                }
+                else {
+                    if (zip.uploadXhr.status === 413) {
+                        if (!MAX_FILE_SIZE)
+                            MAX_FILE_SIZE = parseInt(lang.translate('max.file.size'));
+                        notify.error(lang.translate('file.too.large.limit') + (MAX_FILE_SIZE / 1024 / 1024) + lang.translate('mb'));
+                    } else if (zip.uploadXhr.status === 403) {
+                        notify.error("upload.forbidden")
+                    }
+                    else {
+                        const error = JSON.parse(zip.uploadXhr.responseText);
+                        notify.error(error.error);
+                    }
+                    zip.eventer.trigger('error');
+                    zip.uploadStatus = "failed";
+                    zip.uploadXhr = null;
+                    reject()
+                }
+            }
+        });
+        return res;
+    },
     async getDocumentBlob(id: string): Promise<Blob> {
         return new Promise<Blob>((resolve, reject) => {
             const xhr = new XMLHttpRequest();

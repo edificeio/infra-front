@@ -478,7 +478,7 @@ export class Element extends Model implements Node, Shareable, Selectable {
     }
     get isEditableImage() {
         const editables = ['jpg', 'jpeg', 'bmp', 'png'];
-        const ext = this.metadata['content-type'].split('/')[1].toLowerCase();
+        const ext = this.metadata && this.metadata['content-type'].split('/')[1].toLowerCase();
         return editables.indexOf(ext) !== -1 && this.uploadStatus !== "loading" && this.uploadStatus !== "failed";
     }
 
