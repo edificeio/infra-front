@@ -400,25 +400,34 @@ export let RTE = {
     Selection: Selection,
     Toolbar: function(instance){
         instance.toolbarConfiguration.options.forEach(function(option){
-            if(option.mobile === false && $(window).width() <= ui.breakpoints.tablette){
+            if(option.mobile === false  && $(window).width() <= ui.breakpoints.tablette){
                 return;
             }
-            var optionElement = $('<div></div>');
-            optionElement.addClass('option');
-            optionElement.addClass(option.name.replace(/([A-Z])/g, "-$1").toLowerCase());
-            instance.element.find('editor-toolbar').append(optionElement);
-            var optionScope = instance.scope.$new();
-
-            var optionResult = option.run(instance);
-            if (optionResult.template) {
-                optionElement.html(instance.compile(optionResult.template)(optionScope));
-                optionResult.link(optionScope, optionElement, instance.attributes);
-            }
-            if (optionResult.templateUrl) {
-                http().get(optionResult.templateUrl).done(function (content) {
-                    optionElement.html(instance.compile(content)(optionScope));
+            function addTemplate(optionName){
+                var optionElement = $('<div></div>');
+                optionElement.addClass('option');
+                optionElement.addClass(optionName);
+                instance.element.find('editor-toolbar').append(optionElement);
+                var optionScope = instance.scope.$new();
+                var optionResult = option.run(instance);
+                if (optionResult.template) {
+                    optionElement.html(instance.compile(optionResult.template)(optionScope));
                     optionResult.link(optionScope, optionElement, instance.attributes);
-                }.bind(this));
+                }
+                if (optionResult.templateUrl) {
+                    http().get(optionResult.templateUrl).done(function (content) {
+                        optionElement.html(instance.compile(content)(optionScope));
+                        optionResult.link(optionScope, optionElement, instance.attributes);
+                    }.bind(this));
+                }
+            }
+            var optionName = option.name.replace(/([A-Z])/g, "-$1").toLowerCase();
+            if(optionName == "sound"){
+                if(!instance.hiddenShareSoundCode) addTemplate(optionName);
+            }else if(optionName == "embed"){
+                if(!instance.hiddenShareVideoCode)  addTemplate(optionName);
+            }else {
+                addTemplate(optionName);
             }
         });
     },
@@ -545,6 +554,7 @@ export let RTE = {
                     if(!instance(scope)){
                         editorInstance = new RTE.Instance({
                             hiddenShareVideoCode: attributes.hiddenShareVideoCode === 'true'? 'true' : 'false',
+                            hiddenShareSoundCode: attributes.hiddenShareSoundCode === 'true'? 'true' : 'false',
                             toolbarConfiguration: toolbarConf,
                             element: element,
                             scope: scope,
