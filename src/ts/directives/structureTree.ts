@@ -72,6 +72,10 @@ export const structureTree = ng.directive('structureTree', ['$compile', ($compil
                     }
                 };
                 
+                scope.$on('selectedItem', (event, data) => {
+                    scope.selectedItemId = data;
+                });
+                
                 scope.toggleChildren = function($event) {
                     const nestedElement = $event.target.parentElement.querySelector(".nested");
                     if (nestedElement) {
@@ -82,11 +86,13 @@ export const structureTree = ng.directive('structureTree', ['$compile', ($compil
                 
                 scope.selectItem = function(id: string) {
                     scope.select({'id': id});
-                    scope.selectedItemId = id;
+                    // emit and broadcast due to recursive directive
+                    scope.$emit('selectedItem', id);
+                    scope.$broadcast('selectedItem', id);
                 };
                 
                 scope.bubbleSelect = function(id: string) {
-                    scope.select({'id': id});
+                    scope.selectItem(id);
                 };
                 
                 scope.isSelected = function(item: {id: string, name: string}) {
