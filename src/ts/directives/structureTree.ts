@@ -40,7 +40,7 @@ export const structureTree = ng.directive('structureTree', ['$compile', ($compil
             select: '&'
         },
         template: `
-            <ul>
+            <ul ng-show="display.show">
                 <li ng-repeat="item in items"
                     ng-class="{active: isSelected(item)}">
                     <span ng-click="toggleChildren($event)"
@@ -61,20 +61,30 @@ export const structureTree = ng.directive('structureTree', ['$compile', ($compil
             // Use the compile function from the RecursionHelper,
             // And return the linking function(s) which it returns
             return compileRecursive($compile, element, (scope) => {
-                scope.safeApply = function (fn) {
-                    const phase = this.$root.$$phase;
-                    if (phase == '$apply' || phase == '$digest') {
-                        if (fn && (typeof (fn) === 'function')) {
-                            fn();
-                        }
-                    } else {
-                        this.$apply(fn);
-                    }
-                };
+                scope.display = {
+                    show: false
+                }
                 
                 scope.$on('selectedItem', (event, data) => {
                     scope.selectedItemId = data;
                 });
+                
+                // hide menu on click outside
+                function handleClick(event) {
+                    const structureTreeDivElement = document.getElementsByClassName('structure-tree')[0];
+                    const structureTreeCurrentNameElement = document.getElementsByClassName('structure-tree__current')[0];
+                    if (event.target == structureTreeCurrentNameElement) {
+                        scope.display.show = !scope.display.show;
+                        scope.$apply();
+                        return;
+                    }
+                    if (!structureTreeDivElement.contains(event.target)) {
+                        scope.display.show = false;
+                        scope.$apply();
+                        return;
+                    }
+                }
+                document.addEventListener('click', handleClick);
                 
                 scope.toggleChildren = function($event) {
                     const nestedElement = $event.target.parentElement.querySelector(".nested");
@@ -97,7 +107,11 @@ export const structureTree = ng.directive('structureTree', ['$compile', ($compil
                 
                 scope.isSelected = function(item: {id: string, name: string}) {
                     return item.id === scope.selectedItemId;
-                };         
+                };
+                
+                scope.$on('$destroy', function() {
+                    document.removeEventListener('click', handleClick);                    
+                });       
             });
         }
     }
