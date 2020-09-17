@@ -8,6 +8,11 @@ const workflowDirectiveLinkBuilder = (name:string) =>
 			attributes.$observe(name, async () => {
 				const content = element.children();
 				try{
+					if (!attributes[name]) {
+						func(true, content, element);
+						return;
+					}
+					
 					const auth = attributes[name].split('.');
 					if (!Behaviours.applicationsBehaviours[auth[0]]) {
 						throw "Behaviours from application " + auth[0] + " missing";
