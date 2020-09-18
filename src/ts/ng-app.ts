@@ -1227,7 +1227,7 @@ module.directive('alphabetical', ['$parse', function($parse){
 		compile: function(element, attributes){
 			var iterator = attributes.list;
 			var iteratorContent = element.html();
-			iteratorContent = iteratorContent.replace('<div class="item', '<div ng-repeat="'+ iterator +' |filter: matching(letter)" class="item>');
+			iteratorContent = iteratorContent.replace('<div class="item"', '<div ng-repeat="'+ iterator +' |filter: matching(letter)" class="item"');
 			element.html('<lightbox class="letter-picker" show="display.pickLetter" on-close="display.pickLetter = false;">' +
 				'<div ng-repeat="letter in letters"><h2 ng-click="viewLetter(letter)" class="cell" ng-class="{disabled: matchingElements[letter].length <= 0 }">[[letter]]</h2></div>' +
 				'</lightbox>' +
