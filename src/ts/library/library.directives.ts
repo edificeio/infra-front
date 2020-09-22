@@ -377,7 +377,7 @@ export const libraryPublishDirective: Directive = ng.directive('libraryPublish',
                                         class="right-magnet"
                                         ng-disabled="libraryPublishController.invalidFormFields()">
                                         <i18n ng-if="!libraryPublishController.loading">publish</i18n>
-                                        <i ng-if="libraryPublishController.loading" class="loading"></i>
+                                        <i ng-if="libraryPublishController.loading" class="loading" style="margin: 0"></i>
                                     </button>
                                     <button type="button" 
                                         ng-click="libraryPublishController.closePublishLightboxAndApply()" 
