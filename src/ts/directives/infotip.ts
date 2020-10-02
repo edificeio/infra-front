@@ -8,17 +8,30 @@ export let infotip = ng.directive('infotip', () => {
             <i class="close"></i>
             <div ng-transclude></div>
         `,
-        scope: {name: '@', onChange: '&'},
+        scope: {name: '@', onChange: '&', savePreferenceUnder: "@"},
         transclude: true,
 
         link: async (scope, element, attributes) => {
-            const onChange = function () {
-                let isFalse = infotips[scope.name] === false;
-                scope.onChange && scope.onChange({'$visible': !isFalse});
+            // 2 cases, depending on the savePreferenceUnder scoped value.
+            let key = 'infotip';
+            if( angular.isString(scope.savePreferenceUnder) && scope.savePreferenceUnder.trim().length > 0 ) {
+                key = scope.savePreferenceUnder.trim();
+            }
+
+            await Me.preference( key );
+
+            // Helper get/set function
+            var visibility = function(value?: Boolean) {
+                if( arguments.length <= 0 ) return Me.preferences[key][scope.name]!==false ? true : false;
+                else                        Me.preferences[key][scope.name] = value;
+            }
+
+            const notifyVisibility = function () {
+                scope.onChange && scope.onChange( {'$visible': visibility()} );
             };
-            let infotips = await Me.preference('infotip');
-            onChange();
-            if (infotips[scope.name] === false) {
+
+            notifyVisibility();
+            if( !visibility() ) {
                 element.remove();
             } else {
                 element.css({'display': !!attributes.display ? attributes.display : 'block'});
@@ -26,9 +39,9 @@ export let infotip = ng.directive('infotip', () => {
 
             element.children('i').on('click', () => {
                 element.slideUp();
-                Me.preferences.infotip[scope.name] = false;
-                onChange();
-                Me.savePreference('infotip');
+                visibility( false );
+                notifyVisibility();
+                Me.savePreference( key );
             })
         }
     }
