@@ -8,7 +8,7 @@ export let infotip = ng.directive('infotip', () => {
             <i class="close"></i>
             <div ng-transclude></div>
         `,
-        scope: {name: '@', onChange: '&', savePreferenceUnder: "@"},
+        scope: {name: '@', onChange: '&', savePreferenceUnder: "@", showOnce: "="},
         transclude: true,
 
         link: async (scope, element, attributes) => {
@@ -35,6 +35,10 @@ export let infotip = ng.directive('infotip', () => {
                 element.remove();
             } else {
                 element.css({'display': !!attributes.display ? attributes.display : 'block'});
+                if( scope.showOnce ) {
+                    visibility( false ); // Do not notify this visibility change.
+                    Me.savePreference( key );
+                }
             }
 
             element.children('i').on('click', () => {
