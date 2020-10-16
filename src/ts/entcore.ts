@@ -1,4 +1,5 @@
 export * from "./http";
+export * from "./init";
 export * from "./ui";
 export * from "./notify";
 export * from "./template";
