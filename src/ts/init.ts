@@ -60,6 +60,10 @@ function checkWebview(){
     }
     if (isIOSWebview() && isIOSWebviewUA()) {
         setCookie("webviewdetected", "true",100);
+        const secure = getSignedCookie("webviewsecure");
+        if(!secure){
+            window.location.reload();
+        }
     } else {
         //not in ios webview
     }
