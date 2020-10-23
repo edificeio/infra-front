@@ -6,6 +6,7 @@ export * from './bottomScroll';
 export * from './calendar';
 export * from './carousel';
 export * from './completeChange';
+export * from './connectorLightbox';
 export * from './contactChip';
 export * from './contentDivider';
 export * from './dotsMenu';
