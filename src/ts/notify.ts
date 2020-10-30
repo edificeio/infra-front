@@ -3,18 +3,21 @@ import { idiom as lang, idiom as idiom } from './idiom';
 var humane = require('humane-js');
 
 export var notify = {
-	message: function(type, message){
+	message: function(type, message, timeout?){
 		message = lang.translate(message);
-		humane.spawn({ addnCls: 'humane-original-' + type })(message);
+		var options = { addnCls: 'humane-original-' + type };
+		if(timeout != null)
+			options["timeout"] = timeout;
+		humane.spawn(options)(message);
 	},
-	error: function(message){
-		this.message('error', message);
+	error: function(message, timeout?){
+		this.message('error', message, timeout);
 	},
-	info: function(message){
-		this.message('info', message)
+	info: function(message, timeout?){
+		this.message('info', message, timeout)
 	},
-	success: function(message){
-		this.message('success', message);
+	success: function(message, timeout?){
+		this.message('success', message, timeout);
 	}
 };
 
