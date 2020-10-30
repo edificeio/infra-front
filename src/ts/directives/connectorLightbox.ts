@@ -138,12 +138,17 @@ export let connectorLightbox = ng.directive('connectorLightbox', ['$timeout', '$
                     scope.authenticatedConnectorsAccessed = [_app.name];
                 }
 
-                http().putJson('/userbook/preference/authenticatedConnectorsAccessed', scope.authenticatedConnectorsAccessed);
+                let target = _app.target != null ? _app.target : '_self';
 
-                if (_app.target) {
-                    window.open(_app.address, _app.target);
+                if (target != '_self') {
+                    http().putJson('/userbook/preference/authenticatedConnectorsAccessed', scope.authenticatedConnectorsAccessed);
+                    window.open(_app.address, target);
                 } else {
-                    window.open(_app.address, '_self');
+                    (async function()
+                    {
+                        await httpPromisy<any>().putJson('/userbook/preference/authenticatedConnectorsAccessed', scope.authenticatedConnectorsAccessed);
+                        window.open(_app.address, target);
+                    })();
                 }
             };
             const openAppWithCheck = function (app: App): void {
