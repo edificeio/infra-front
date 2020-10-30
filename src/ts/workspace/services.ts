@@ -953,7 +953,7 @@ export const workspaceService = {
                     }
                     else {
                         const error = JSON.parse(zip.uploadXhr.responseText);
-                        notify.error(error.error);
+                        notify.error(error.error, 20000);
                     }
                     zip.eventer.trigger('error');
                     zip.uploadStatus = "failed";
