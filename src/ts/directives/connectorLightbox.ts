@@ -147,7 +147,8 @@ export let connectorLightbox = ng.directive('connectorLightbox', ['$timeout', '$
                     (async function()
                     {
                         await httpPromisy<any>().putJson('/userbook/preference/authenticatedConnectorsAccessed', scope.authenticatedConnectorsAccessed);
-                        window.open(_app.address, target);
+                        //window.open(_app.address, target);
+                        window.location.href = _app.address;
                     })();
                 }
             };
