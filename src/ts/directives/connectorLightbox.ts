@@ -105,10 +105,6 @@ export let connectorLightbox = ng.directive('connectorLightbox', ['$timeout', '$
             const init = async () => {
                 //event
                 const sub = _onTriggerApp.subscribe((event) => {
-                    if (_MUTEX == true) {
-                        return;
-                    }
-                    _MUTEX = true;
                     _app = event;
                     openAppWithCheck(event);
                 })
@@ -153,6 +149,10 @@ export let connectorLightbox = ng.directive('connectorLightbox', ['$timeout', '$
             };
             const openAppWithCheck = function (app: App): void {
                 if (isAuthenticatedConnector(app) && isAuthenticatedConnectorFirstAccess(app)) {
+                    if (_MUTEX == true) {
+                        return;
+                    }
+                    _MUTEX = true;
                     scope.authenticatedConnectorClicked = app;
                     scope.display.showAuthenticatedConnectorLightbox = true;
                     scope.$apply();
