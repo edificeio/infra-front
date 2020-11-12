@@ -61,7 +61,7 @@ export const linker = {
     run: function(instance:EditorInstance){
         return {
             template: '<i ng-click="linker.openLinker()" tooltip="editor.option.link"></i>' +
-            '<div ng-include="\'/infra/public/template/linker.html\'"></div>',
+                '<div ng-include="\'/infra/public/template/linker.html\'"></div>',
             link: function (scope: LinkerScope, element, attributes) {
                 ui.extendSelector.touchEvents('[contenteditable] a');
                 scope.linker = {
@@ -164,11 +164,11 @@ export const linker = {
                 const debounce = (callback, wait) => {
                     let timeout = null
                     return (...args) => {
-                      const next = () => callback(...args)
-                      clearTimeout(timeout)
-                      timeout = setTimeout(next, wait)
+                        const next = () => callback(...args)
+                        clearTimeout(timeout)
+                        timeout = setTimeout(next, wait)
                     }
-                  }
+                }
                 const searchDebounced = debounce((appBehaviour, cb)=>{
                     scope.linker.display.searching = true;
                     scope.$apply('linker');
@@ -204,7 +204,7 @@ export const linker = {
                     Behaviours.loadBehaviours(scope.linker.params.appPrefix, function(appBehaviour){
                         appBehaviour.create(scope.linker.resource, function(){
                             scope.linker.search.text = scope.linker.resource.title;
-                            
+
                             scope.linker.searchApplication();
                             scope.$apply();
                         });
@@ -265,6 +265,10 @@ export const linker = {
                             linkNode.attr('target', scope.linker.params.target);
                         }
                         if(scope.linker.params.tooltip){
+                            var reg = /[<]/gi;
+                            scope.linker.params.tooltip = scope.linker.params.tooltip.replace(reg, "&lt;");
+                            reg = /[>]/gi;
+                            scope.linker.params.tooltip = scope.linker.params.tooltip.replace(reg, "&gt;");
                             linkNode.attr('tooltip', scope.linker.params.tooltip);
                         }
                         else if(linkNode.attr('tooltip')){
