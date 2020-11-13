@@ -1,4 +1,4 @@
-import { appPrefix, deviceType } from '../globals';
+import { appPrefix } from '../globals';
 import { ng } from '../ng-start';
 import { $ } from "../libs/jquery/jquery";
 import { MediaLibrary, Document, Folder } from '../workspace/workspace-v1';
@@ -133,19 +133,10 @@ export const mediaLibrary = ng.directive('mediaLibrary', ['$timeout','$filter', 
 			scope.template = template;
 			//
 			let header: Header = HEADER_BROWSE;
-			let hack: boolean = true;
 			const showTemplate = (h: Header) => {
 				header = h;
 				template.open(MAIN_CONTAINER, h.template);
 				h.onDisplay && h.onDisplay();
-				// This is a horrendous hack to bypass rendering problems with webkit
-				if (deviceType == "Mobile" && hack) {
-					hack = false;
-					let display = $("editor").css("display");
-					$("editor").css("display", "none");
-					setTimeout(() => $("editor").css("display", display), 500);
-				}
-				//
 			}
 			scope.headers = function () {
 				const headers = [HEADER_RECORD, HEADER_UPLOAD, HEADER_BROWSE]
