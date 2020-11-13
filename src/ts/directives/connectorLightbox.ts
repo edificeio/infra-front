@@ -12,7 +12,8 @@ type App = {
 type AppEvent = {
     app:App,
     $mutex?:boolean,
-    ctrlKey:boolean   // Was CTRL key pressed ?
+    ctrlKey:boolean,   // Was CTRL key pressed ?
+    metaKey: boolean // Was Command key pressed? (Apple keyboard)
 }
 
 export interface ConnectorLightboxScope {
@@ -68,7 +69,8 @@ export let connectorLightboxTrigger = ng.directive('connectorLightboxTrigger', [
                     const appEvent = { 
                         app: scope.connectorLightboxTrigger,
                         $mutex: false,
-                        ctrlKey: !!event.ctrlKey
+                        ctrlKey: !!event.ctrlKey,
+                        metaKey: !!event.metaKey
                     } as AppEvent;
                     _onTriggerApp.next( appEvent );
                 })
@@ -150,7 +152,7 @@ export let connectorLightbox = ng.directive('connectorLightbox', ['$timeout', '$
                     scope.authenticatedConnectorsAccessed = [_app.name];
                 }
 
-                const target = _appEvent.ctrlKey ? '_blank' : !!_app.target ? _app.target : '_self';
+                const target = _appEvent.ctrlKey || _appEvent.metaKey ? '_blank' : !!_app.target ? _app.target : '_self';
 
                 if (target !== '_self') {
                     http().putJson('/userbook/preference/authenticatedConnectorsAccessed', scope.authenticatedConnectorsAccessed);
@@ -174,7 +176,7 @@ export let connectorLightbox = ng.directive('connectorLightbox', ['$timeout', '$
                 if( typeof app === "undefined" )
                     throw "ConnectorLightboxScope.openAppWithCheck failed : target app is undefined";
                 
-                const target = _appEvent.ctrlKey ? '_blank' : !!app.target ? app.target : '_self';
+                const target = _appEvent.ctrlKey || _appEvent.metaKey ? '_blank' : !!app.target ? app.target : '_self';
 
                 if(scope.skipCheck){
                     window.open(app.address, target);

@@ -626,17 +626,22 @@ module.directive('portal', ['$compile','tracker', function($compile,tracker){
 	return {
 		restrict: 'E',
 		transclude: true,
-		templateUrl: skin.portalTemplate,
+		templateUrl: function(element, attributes) { return attributes.templateUrl ? attributes.templateUrl : skin.portalTemplate },
 		compile: function(element, attributes, transclude){
 			// Initialize any configured tracker
 			tracker.init();
 
 			$("html").addClass("portal-container")
 			element.find('[logout]').attr('href', '/auth/logout?callback=' + skin.logoutCallback);
-			ui.setStyle(skin.theme);
+			
+			if (!attributes.templateUrl) {
+				ui.setStyle(skin.theme);
+			}
+			
 			Http.prototype.bind('disconnected', function(){
 				window.location.href = '/';
 			})
+			
 			return function postLink( scope, element, attributes, controller, transcludeFn ) {
 				scope.template = template;
 				// Create the banner to display
@@ -1750,7 +1755,7 @@ module.directive('help', function(){
 	return {
 		restrict: 'E',
 		scope: {},
-		template: '<i class="navbar-help" ></i>' +
+		template: '<i class="navbar-help ic-help"></i>' +
 		'<lightbox show="display.read" on-close="display.read = false"><div></div></lightbox>',
 		link: async function(scope, element){
 			let helpPath = await skin.getHelpPath();
