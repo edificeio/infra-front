@@ -179,12 +179,21 @@ export let embedder = ng.directive('embedder', ['$timeout', '$filter', function 
             //
             let header: Header = HEADER_BROWSE;
 
+            let hack: boolean = true;
             const showTemplate = async (h: Header) => {
                 header = h;
                 await template.open(MAIN_CONTAINER, h.template);
                 h.onDisplay && setTimeout(()=>{
                     h.onDisplay();
-                })
+                });
+                // This is a horrendous hack to bypass rendering problems with webkit
+                if (navigator.userAgent.match(/iPhone/i) && hack) {
+                    hack = false;
+                    let display = $("editor").css("display");
+                    $("editor").css("display", "none");
+                    setTimeout(() => { hack = true; $("editor").css("display", display); }, 500);
+                }
+                //
             };
 
             scope.headers = function () {

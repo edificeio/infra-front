@@ -420,17 +420,6 @@ export let RTE = {
                     optionResult.link(optionScope, optionElement, instance.attributes);
                 }.bind(this));
             }
-            let hack: boolean = true;
-            if (navigator.userAgent.match(/iPhone/i)) { // Vilainous hack to bypass rendering glitch on webkit..
-                optionElement.children('i').on('click', (e) => {
-                    if (hack) {
-                        hack = false;
-                        let display = $("editor").css("display");
-                        $("editor").css("display", "none");
-                        setTimeout(() => { hack = true; $("editor").css("display", display); }, 500);
-                    }
-                });
-            }
         });
     },
     ToolbarConfiguration: function(){
