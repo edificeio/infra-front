@@ -2587,3 +2587,15 @@ module.directive('onEnter', function () {
         });
     };
 });
+//=== Global counter service for uniqueness
+module.service("CounterService", [
+	(function(){ // CounterService should be defined in its own source file, instead of locally.
+		var CounterService = function() {
+			this.count = 1;
+		}
+		CounterService.prototype.increase = function() {
+      return ++this.count;
+		}
+		return CounterService;
+	})()
+]);

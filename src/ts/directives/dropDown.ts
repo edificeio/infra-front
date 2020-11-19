@@ -6,6 +6,7 @@ export const dropDown = ng.directive('dropDown', ['$compile', '$timeout', ($comp
 	return {
 		restrict: 'E',
 		scope: {
+			listId: "=?",				// HTML id of the inner list container (required for ARIA)
 			options: '=',
 			ngChange: '&',
 			onClose: '&',
@@ -13,9 +14,9 @@ export const dropDown = ng.directive('dropDown', ['$compile', '$timeout', ($comp
 		},
 		template: `
 			<div data-drop-down class="drop-down">
-				<div>
+				<div role="listbox">
 					<ul class="ten cell right-magnet">
-						<li class="block-container" ng-repeat="option in options | limitTo:limit" ng-model="option">
+						<li class="block-container" ng-repeat="option in options | limitTo:limit" ng-model="option" ng-class="{alert: option === ngModel}">
 							<a class="cell right-spacing" ng-class="{'sharebookmark': option.type === 'sharebookmark'}">
 								<i class="add-favorite cell" ng-if="option.type === 'sharebookmark'"></i>
 								[[option.toString()]]
@@ -32,6 +33,13 @@ export const dropDown = ng.directive('dropDown', ['$compile', '$timeout', ($comp
 			scope.translate = idiom.translate;
 			scope.limit = 6;
 			var dropDown = element.find('[data-drop-down]');
+			var dropDownContent = element.find('[data-drop-down] ul');
+
+			if( dropDownContent ) {
+				if( scope.listId )
+					dropDownContent.attr( 'id', scope.listId );
+			}
+
 			scope.setDropDownHeight = function(){
 				var liHeight = 0;
 				var max = Math.min(scope.limit, scope.options.length);

@@ -32,7 +32,7 @@ export const color = {
     run: function(instance){
         return {
             template: '<i tooltip="editor.option.color"></i>' +
-                '<input tooltip="editor.option.color" type="color" />',
+                '<input tooltip="editor.option.color" type="color" tabindex="-1"/>',
             link: function (scope, element, attributes) {
                 element.on('click', 'i', function () {
                     element.find('input').click();
@@ -83,7 +83,7 @@ export const backgroundColor = {
     name: 'backgroundColor',
     run: function(instance){
         return {
-            template: '<i></i><input tooltip="editor.option.backgroundcolor" type="color" />',
+            template: '<i></i><input tooltip="editor.option.backgroundcolor" type="color" tabindex="-1" />',
             link: function(scope, element, attributes){
                 element.on('click', 'i', function () {
                     element.find('input').click();

@@ -126,7 +126,13 @@ function removeUnauthorizedAttributeProperties(root: HTMLElement): HTMLElement {
         }
     }
     const nodesWithAttr = root.querySelectorAll('*');
-    removeAttribute(root);
+		removeAttribute(root);
+		// On the root element, we need to put back attributes for accessibility purposes.
+		// Maybe they'd better be whitelisted instead ? Or maybe root does not even need cleaning ??
+		root.setAttribute("role", "textbox");
+		root.setAttribute("aria-multiline", "true");
+		root.setAttribute("aria-label", lang.translate('aria.message.content') );
+
     for (let i = nodesWithAttr.length - 1; i >= 0; i--) {
         const element = (nodesWithAttr.item(i) as HTMLElement);
         removeAttribute(element);
@@ -457,25 +463,27 @@ export let RTE = {
         module.directive('editor', ['$parse', '$compile', function($parse, $compile) {
             return {
                 restrict: 'E',
-                template: '' +
-                    '<button type="button" class="editor-toolbar-opener"></button>' +
-                    '<button type="button" class="close-focus">OK</button>' +
-                    '<editor-toolbar></editor-toolbar>' +
-                    '<contextual-menu><ul></ul></contextual-menu>' +
-                    '<popover>' +
-                    '<i class="tools" popover-opener opening-event="click"></i>' +
-                    '<popover-content>' +
-                    '<ul>' +
-                    '<li><i18n>editor.mode.wysiwyg</i18n></li>' +
-                    '<li><i18n>editor.mode.html</i18n></li>' +
-                    '<li><i18n>editor.mode.mixed</i18n></li>' +
-                    '</ul>' +
-                    '</popover-content>' +
-                    '</popover>' +
-                    '<div><div contenteditable="true"></div></div>' +
-                    '<textarea></textarea>' +
-                    '<code class="language-html"></code>' +
-                    '<button type="button" class="editor-edit-action" style="z-index:10"><i18n>editor.edit</i18n></button>',
+                template: `
+<button type="button" class="editor-toolbar-opener" tabindex="-1"></button>
+<button type="button" class="close-focus" tabindex="-1">OK</button>
+<editor-toolbar></editor-toolbar>
+<contextual-menu><ul></ul></contextual-menu>
+<popover>
+	<i class="tools" popover-opener opening-event="click"></i>
+	<popover-content>
+		<ul>
+			<li><i18n>editor.mode.wysiwyg</i18n></li>
+			<li><i18n>editor.mode.html</i18n></li>
+			<li><i18n>editor.mode.mixed</i18n></li>
+		</ul>
+	</popover-content>
+</popover>
+<div><div role="textbox" contenteditable="true" aria-label="[[lang.translate('aria.message.content')]]" aria-multiline="true"></div>
+</div>
+<textarea tabindex="-1"></textarea>
+<code class="language-html" tabindex="-1"></code>
+<button type="button" class="editor-edit-action" style="z-index:10"><i18n>editor.edit</i18n></button>
+								`,
                 link: function (scope, element, attributes) {
                     if (navigator.userAgent.indexOf('Trident') !== -1 || navigator.userAgent.indexOf('Edge') !== -1) {
                         element.find('code').hide();
@@ -1074,7 +1082,6 @@ export let RTE = {
                             scope.$apply();
                         }
                         if(e.keyCode === 9){
-                            e.preventDefault();
                             var currentTag;
                             if(editorInstance.selection.range.startContainer.tagName){
                                 currentTag = editorInstance.selection.range.startContainer;
@@ -1082,7 +1089,9 @@ export let RTE = {
                             else{
                                 currentTag = editorInstance.selection.range.startContainer.parentNode;
                             }
+                            // Note (accessibility) : the tab key must blur the editor, unless the caret is on a TD or LI.
                             if(currentTag.tagName === 'TD'){
+                                e.preventDefault();
                                 var nextTag = currentTag.nextSibling;
                                 if(!nextTag){
                                     nextTag = $(currentTag).parent('tr').next().children('td')[0];
@@ -1098,10 +1107,14 @@ export let RTE = {
                                 editorInstance.selection.moveCaret(nextTag, nextTag.firstChild.textContent.length);
                             }
                             else if (currentTag.tagName === 'LI') {
+																e.preventDefault();
                                 document.execCommand('indent');
                             }
                             else {
-                                editorInstance.selection.range.insertNode($('<span style="padding-left: 25px;">&#8203;</span>')[0]);
+                                // Accessibility patch:
+                                //editorInstance.selection.range.insertNode($('<span style="padding-left: 25px;">&#8203;</span>')[0]);
+                                // Replaced by:
+                                e.currentTarget.blur();
                             }
                         }
                     });

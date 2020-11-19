@@ -239,6 +239,13 @@ export var idiom = {
             }
         }]);
 
+				/* For use in templates : <div title="{{'my.i18n.key.here'|i18n}}>" */
+				module.filter('i18n', function() {
+					return function(input) {
+						return idiom.translate(input);
+					};
+				});
+
         module.directive('i18nPlaceholder', ['$compile', function($compile){
             return {
                 link: function(scope, element, attributes){
