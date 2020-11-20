@@ -11,6 +11,7 @@ type App = {
 }
 
 export interface ConnectorLightboxScope {
+    skipCheck: boolean;
     display: {
         showAuthenticatedConnectorLightbox: boolean
     }
@@ -112,6 +113,12 @@ export let connectorLightbox = ng.directive('connectorLightbox', ['$timeout', '$
                     sub.unsubscribe();
                 });
                 scope.authenticatedConnectorsAccessed = await _getPreference();
+                try{
+                    const conf = await httpPromisy<any>().get('/cas/conf/public');
+                    scope.skipCheck = !!conf.skip;
+                } catch(e){
+                    console.warn("Failed to get public conf: ", e)
+                }
             }
             const isAuthenticatedConnector = function (app: App): boolean {
                 return !!app.casType || (app.scope && app.scope.length > 0 && !!app.scope[0]);
@@ -148,6 +155,14 @@ export let connectorLightbox = ng.directive('connectorLightbox', ['$timeout', '$
                 }
             };
             const openAppWithCheck = function (app: App): void {
+                if(scope.skipCheck){
+                    if (app.target) {
+                        window.open(app.address, app.target);
+                    } else {
+                        window.open(app.address, '_self');
+                    }
+                    return;
+                }
                 if (isAuthenticatedConnector(app) && isAuthenticatedConnectorFirstAccess(app)) {
                     if (_MUTEX == true) {
                         return;
