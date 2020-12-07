@@ -155,12 +155,12 @@ if(!(XMLHttpRequest.prototype as any).baseSend && !(window as any).pupetterMode)
         if((document.cookie.indexOf('authenticated=true') === -1 || window['newLogin'] === true) && window.location.href.indexOf('/auth') === -1 && !window.notLoggedIn){
             const url = idiom.translate('disconnected.redirect.url');
             const checkedUrl = 'disconnected.redirect.url' != url && !!url && url.length > 0 ? url : '/auth/login';
-            const lightbox = $(`<lightbox>
+            const lightbox = $(`<lightbox class="lightbox-disconnected">
                     <section class="lightbox">
                         <div class="content">
                             <h2>${ idiom.translate('disconnected.title') }</h2>
                             <div class="warning">${ idiom.translate('disconnected.warning') }</div>
-                            <a class="button right-magnet" href="${checkedUrl}">${ idiom.translate('disconnected.redirect') }</a>
+                            <a class="button right-magnet" href="${checkedUrl}" target="_blank">${ idiom.translate('disconnected.redirect') }</a>
                         </div>
                         <div class="background"></div>
                     </section>
@@ -168,6 +168,11 @@ if(!(XMLHttpRequest.prototype as any).baseSend && !(window as any).pupetterMode)
             `);
             $('body').append(lightbox).addClass('lightbox-opened');
             lightbox.find('.lightbox').fadeIn();
+            jQuery(".lightbox-disconnected a").on("click", function(){
+                jQuery(".lightbox-disconnected").fadeOut(400, function(){
+                    jQuery(".lightbox-disconnected").remove();
+                });
+            })
             throw "Disconnected !";
         }
         (this as any).baseSend(data);
