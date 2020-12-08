@@ -3,6 +3,7 @@ import { Subject } from "rxjs";
 import { model } from '../modelDefinitions';
 import { notify } from '../notify';
 import axios from "axios";
+import { appPrefix, devices, deviceType } from "../globals";
 
 type MediaRecorderImpl = {
     start(time: number): void;
@@ -61,6 +62,19 @@ export class VideoRecorder {
         this.unbindRecordEvent();
         this.gumVideo.addEventListener('timeupdate', this.handleDuration);
     }
+		switchCamera( id ) {
+			if( id==='user' ) {
+				delete (this.constraints.video as MediaTrackConstraints).deviceId;
+				this.constraints.facingMode = 'user';
+				(this.constraints.video as MediaTrackConstraints).facingMode = this.constraints.facingMode;
+				(this.constraints.audio as MediaTrackConstraints).facingMode = this.constraints.facingMode;
+			} else {
+				delete (this.constraints.video as MediaTrackConstraints).facingMode;
+				(this.constraints.video as MediaTrackConstraints).deviceId = id;
+			}
+			this.stopStreaming();
+			this.startStreaming();
+		}
     play() {
         if (!this.gumVideo) {
             console.warn('[VideoRecorder.play] stream not init');
@@ -269,6 +283,14 @@ export class VideoRecorder {
 
         let formData = new FormData();
         formData.append("file", this.getBuffer(), filename);
+				// Also report useful contextual data
+				let browserInfo = devices.getBrowserInfo();
+				formData.append("device", deviceType);
+				formData.append("browser", browserInfo.name + ' ' + browserInfo.version);
+				formData.append("duration", recordTime);
+				formData.append("weight", ''+this.getBuffer().size);
+				formData.append("url", window.location.hostname);
+				formData.append("app", appPrefix);
         try{
             const uploadRes = await axios.post("/video/upload?duration="+recordTime, formData);
             if(uploadRes.status==202){

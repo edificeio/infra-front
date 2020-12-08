@@ -86,6 +86,7 @@ export interface VideoScope {
     showHeader(tab: Header):void
     showHeaderByI18Key(tab: string):void
     isSelectedHeader(header: Header): boolean;
+		getClassOf(header: Header): any;
     isEditedFirst(): boolean
     isEditedLast(): boolean
     nextImage(): void
@@ -204,6 +205,10 @@ export let embedder = ng.directive('embedder', ['$timeout', '$filter', function 
             scope.isSelectedHeader = function (h: Header): boolean {
                 return header && h && header.i18Key == h.i18Key;
             }
+
+            scope.getClassOf = function( h: Header ): any {
+							return (h !== HEADER_RECORD) ? "" : "beta-feature";
+						}
 
             scope.$on("video-upload", function (event, docId) {
                 //console.log('TEMPLATE LOADING ')
@@ -498,11 +503,10 @@ export let embedder = ng.directive('embedder', ['$timeout', '$filter', function 
                 });
             }
             
-            function logVideoEvent(eventName: string, document: Document) {
+            function logVideoEvent_AddToContent(document: Document) {
                 if (document.metadata.captation) {
                     let browserInfo = devices.getBrowserInfo();
                     let videoEventData = {
-                        event: eventName,
                         videoId: document._id,
                         userId: model.me.userId,
                         userProfile: model.me.profiles[0],
@@ -510,12 +514,12 @@ export let embedder = ng.directive('embedder', ['$timeout', '$filter', function 
                         browser: browserInfo.name + ' ' + browserInfo.version,
                         structure: model.me.structureNames[0],
                         level: model.me.level,
-                        videoDuration: document.metadata.duration,
-                        videoSize: document.metadata.size,
+                        duration: document.metadata.duration,
+                        weight: document.metadata.size,
                         url: window.location.hostname,
                         app: appPrefix
                     }
-                    http().postJson('/infra/video/event', videoEventData).done(function(res){
+                    http().postJson('/video/event/embed', videoEventData).done(function(res){
                         console.log(res);
                     });
                 }
@@ -572,7 +576,7 @@ export let embedder = ng.directive('embedder', ['$timeout', '$filter', function 
                 if (scope.ngModel) {
                     setTimeout(() => {
                         scope.ngChange && scope.ngChange();
-                        selectedDocuments.forEach(selectedDocument => logVideoEvent('EVENT_VIDEO_ADD', selectedDocument));
+                        selectedDocuments.forEach(selectedDocument => logVideoEvent_AddToContent(selectedDocument));
                     });
                 }
             };

@@ -35,6 +35,7 @@ import httpAxios from 'axios';
 import { NgModelExtend } from './directives';
 import { initThemeDirective } from './theme';
 import {VideoController} from "./video/VideoController";
+import { VideoEventTracker } from './video/VideoEventTracker';
 
 
 var module = angular.module('app', ['ngSanitize', 'ngRoute'], ['$interpolateProvider', function($interpolateProvider) {
@@ -2461,6 +2462,7 @@ $(document).ready(function(){
 		    RTE.addDirectives(module);
             if (window.entcore.ng.init) {
 				window.entcore.ng.controllers.push(VideoController);
+				window.entcore.ng.services.push(VideoEventTracker);
                 window.entcore.ng.init(module);
 		    }
 			model.build();

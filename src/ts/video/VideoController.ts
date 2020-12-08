@@ -7,6 +7,7 @@ import {appPrefix, devices, deviceType} from '../globals';
 import { IObjectGuardDelegate } from "../navigationGuard";
 import { Me } from "../me";
 import { http } from '../http';
+import { idiom as lang } from "../idiom";
 
 class VideoGuardModel implements IObjectGuardDelegate{
     hasRecorded = false;
@@ -34,6 +35,8 @@ interface VideoControllerScope {
     recordTimeInMs: number
     recordTime: string
     recordMaxTime: number
+		videoInputDevices: MediaDeviceInfo[]
+		selectedVid: MediaDeviceInfo;
     guard: VideoGuardModel;
     isIncompatible(): boolean
     isIncompatibleDevice(): boolean
@@ -41,6 +44,7 @@ interface VideoControllerScope {
     startCamera(): void
     stopRecord(pause?: boolean): void
     startRecord(resume?: boolean): Promise<void>
+		switchCamera(id): void;
     switchRecording(): void
     redo(): void;
     play(): void;
@@ -67,7 +71,7 @@ export const VideoController = ng.controller('VideoController', ['$scope', 'mode
     ($scope: VideoControllerScope, model, route, $element) => {
         $scope.hasRight = true;
         $scope.guard = new VideoGuardModel();
-        $scope.RECORD_MAX_TIME = 5; // MAX TIME OF RECORDING IN MINUTES
+        $scope.RECORD_MAX_TIME = 3; // MAX TIME OF RECORDING IN MINUTES
         $scope.template = template;
         $scope.me = model.me;
         $scope.recorder = new VideoRecorder(() => {
@@ -91,6 +95,28 @@ export const VideoController = ng.controller('VideoController', ['$scope', 'mode
         $scope.recordTime = '00:00';
         $scope.recordTimeInMs = 0;
         $scope.recordMaxTime = $scope.RECORD_MAX_TIME * 60000;
+				Promise.resolve().then( () => {
+					return navigator.mediaDevices.enumerateDevices();
+				})
+				.then( devices => { 
+					return devices.filter( device => { 
+						return device.kind === "videoinput";
+					})
+				})
+				.then( devices => {
+					devices.unshift({deviceId:"user", label: lang.translate("video.default.camera"), groupId:'', kind:'videoinput'});
+					$scope.videoInputDevices = devices;
+					$scope.selectedVid = devices[0];
+				})
+				.catch( () => { 
+					$scope.videoInputDevices = [{deviceId:"user", label: lang.translate("video.default.camera"), groupId:'', kind:'videoinput'}];
+					$scope.selectedVid = devices[0];
+				});
+
+				$scope.switchCamera = (id) => {
+					$scope.recorder.switchCamera( id );
+				}
+
         $scope.$on("$destroy", () => {
             //console.log("[VideoController.destroy] release video....")
             release();
@@ -328,10 +354,9 @@ export const VideoController = ng.controller('VideoController', ['$scope', 'mode
                         $scope.$emit("video-upload", response.data.videoid);
                     }
                 }
-                
+								
                 let browserInfo = devices.getBrowserInfo();
                 let videoEventData = {
-                    event: 'EVENT_VIDEO_SAVE',
                     videoId: response.data.videoworkspaceid,
                     userId: $scope.me.userId,
                     userProfile: $scope.me.profiles[0],
@@ -339,12 +364,12 @@ export const VideoController = ng.controller('VideoController', ['$scope', 'mode
                     browser: browserInfo.name + ' ' + browserInfo.version,
                     structure: $scope.me.structureNames[0],
                     level: $scope.me.level,
-                    videoDuration: Math.round($scope.recordTimeInMs),
-                    videoSize: response.data.videosize,
+                    duration: Math.round($scope.recordTimeInMs),
+                    weight: response.data.videosize,
                     url: window.location.hostname,
                     app: appPrefix
                 }
-                http().postJson('/infra/video/event', videoEventData).done(function(res){
+                http().postJson('/video/event/capture', videoEventData).done(function(res){
                     console.log(res);
                 });
                 $scope.videoState = 'recorded';

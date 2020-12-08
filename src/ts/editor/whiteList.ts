@@ -30,7 +30,6 @@ const whiteListAttributes = [
     "controls",
     "coords",
     "data",
-    "data-*",
     "datetime",
     "default",
     "defer",
@@ -106,6 +105,16 @@ const whiteListAttributes = [
     "wrap"
 ];
 
+// TODO Better be a regexp array but i have no time to implement it now.
+const whiteListAttributesStartingBy = [
+	"aria-",
+	"data-"
+];
+
 export function getEditorWhiteListAttributes(){
     return whiteListAttributes;
+}
+
+export function getEditorWhiteListAttributesStartingBy(){
+	return whiteListAttributesStartingBy;
 }

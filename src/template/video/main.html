@@ -19,12 +19,22 @@
  -->
 
 <lightbox show="show" on-close="cancel();" navigation-guard="true">
+		<style>
+			header > span.beta-feature:after {
+				color: #FF8500;
+				content: "[Beta]";
+				font-size: 8px;
+				position: absolute;
+				top: 0;
+				right: 0;
+			}
+		</style>
     <div class="embed-container">
         <h2>[[title()]]</h2>
         <section class="twelve row">
             <section class="tabs heading-tabs">
                 <header ng-repeat="header in headers()" ng-class="{'selected':isSelectedHeader(header)}" navigation-trigger="showHeader(header)" workflow="[[header.worflowKey]]" ng-show="header.visible()">
-                    <span translate content="[[header.i18Key]]"></span>
+                    <span translate content="[[header.i18Key]]" ng-class="getClassOf(header)"></span>
                 </header>
             </section>
             <section class="medium-text">

@@ -11,7 +11,7 @@ import { onPressEnter } from './editor/onPressEnter';
 import { onDropFromDesktop } from './editor/onDropFromDesktop';
 import { onPressDelete } from "./editor/onPressDelete";
 import { Subject } from "rxjs";
-import { getEditorWhiteListAttributes } from './editor/whiteList';
+import { getEditorWhiteListAttributes, getEditorWhiteListAttributesStartingBy } from './editor/whiteList';
 
 export type LinkerEventBody = {
     link: string,
@@ -118,8 +118,12 @@ function removeUnauthorizedAttributeProperties(root: HTMLElement): HTMLElement {
     const removeAttribute = (e:HTMLElement) => {
         const attributes = e.attributes;
         const whiteListAttributes = getEditorWhiteListAttributes();
+        const whiteListAttributesStartingBy = getEditorWhiteListAttributesStartingBy();
         for(let i = 0 ; i < attributes.length; i++){
-            const current = attributes.item(i);
+						const current = attributes.item(i);
+						if( whiteListAttributesStartingBy.findIndex( startingBy => current.name.startsWith(startingBy) ) >= 0 ) {
+							continue; // current attribute is whitelisted.
+						}
             if(whiteListAttributes.indexOf(current.name)==-1){
                 e.removeAttribute(current.name);
             }
@@ -130,8 +134,6 @@ function removeUnauthorizedAttributeProperties(root: HTMLElement): HTMLElement {
 		// On the root element, we need to put back attributes for accessibility purposes.
 		// Maybe they'd better be whitelisted instead ? Or maybe root does not even need cleaning ??
 		root.setAttribute("role", "textbox");
-		root.setAttribute("aria-multiline", "true");
-		root.setAttribute("aria-label", lang.translate('aria.message.content') );
 
     for (let i = nodesWithAttr.length - 1; i >= 0; i--) {
         const element = (nodesWithAttr.item(i) as HTMLElement);
@@ -561,8 +563,8 @@ export let RTE = {
                     var instance = $parse(attributes.instance);
                     if(!instance(scope)){
                         editorInstance = new RTE.Instance({
-                            hiddenShareVideoCode: attributes.hiddenShareVideoCode === 'true'? 'true' : 'false',
-                            hiddenShareSoundCode: attributes.hiddenShareSoundCode === 'true'? 'true' : 'false',
+                            hiddenShareVideoCode: (attributes.hiddenShareVideoCode === 'true'),
+                            hiddenShareSoundCode: (attributes.hiddenShareSoundCode === 'true'),
                             toolbarConfiguration: toolbarConf,
                             element: element,
                             scope: scope,

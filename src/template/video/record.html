@@ -33,6 +33,10 @@
                 <i class=record-video></i>
                 <span><i18n>embed.start</i18n></span>
             </button>
+						<select class="two cell" style="margin-left: 1em"
+							ng-options="vid as vid.label for vid in videoInputDevices"
+							ng-model="selectedVid" ng-change="switchCamera( selectedVid.deviceId )" >
+						</select>
         </div>
         <div class="recorder--controls controls" ng-if="showActions()">
             <button type="button" class="recorder--control stop" ng-click="switchRecording()" ng-disabled="!isRecording()">
@@ -54,6 +58,7 @@
             </button>
         </div>
         <div ng-if="!isIncompatible()">
+					<div class="recorder--viewer" ng-if="isUploading()"><p><i18n>video.upload.msg</i18n></p></div>
             <div class="recorder--viewer" ng-if="isReady() || isRecording()">
                 <p><i18n>video.msg</i18n></p>
                 <div class="recorder--timer">
