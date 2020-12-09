@@ -33,6 +33,7 @@ export interface INavigationListener {
 export interface INavigationGuard {
     reset(): void;
     canNavigate(): boolean;
+    onUserConfirmNavigate?(canNavigate:boolean):void;
 }
 
 export const navigationGuardService = {
@@ -111,6 +112,7 @@ export const navigationGuardService = {
             for (const guard of setToArray(root)) {
                 if (!guard.canNavigate()) {
                     const can = confirm(idiom.translate("navigation.guard.text"));
+                    guard.onUserConfirmNavigate && guard.onUserConfirmNavigate(can);
                     navigationGuardService._lastTime = new Date().getTime();
                     navigationGuardService._lastResponse = can;
                     if (can) {
@@ -157,6 +159,7 @@ export class InputGuard<T> implements INavigationGuard {
 export interface IObjectGuardDelegate {
     guardObjectIsDirty(): boolean;
     guardObjectReset(): void;
+    guardOnUserConfirmNavigate?(canNavigate:boolean):void;
 }
 
 export class ObjectGuard implements INavigationGuard {
@@ -166,6 +169,10 @@ export class ObjectGuard implements INavigationGuard {
     }
     canNavigate(): boolean {
         return !this.currentValue().guardObjectIsDirty();
+    }
+    onUserConfirmNavigate(canNavigate:boolean):void{
+        const tmp = this.currentValue();
+        tmp.guardOnUserConfirmNavigate && tmp.guardOnUserConfirmNavigate(canNavigate);
     }
 }
 
@@ -335,3 +342,4 @@ if (!window.entcore) {
     window.entcore = {};
 }
 window.entcore.navigationGuardService = navigationGuardService;
+window.entcore.ObjectGuard = ObjectGuard;
