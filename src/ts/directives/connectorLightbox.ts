@@ -7,7 +7,8 @@ type App = {
     target: string,
     address: string,
     casType: string,
-    scope: string[]
+    scope: string[],
+    $mutex?:boolean
 }
 
 export interface ConnectorLightboxScope {
@@ -29,7 +30,6 @@ export interface ConnectorLightboxTriggerScope {
 }
 
 let _CACHE = undefined;
-let _MUTEX = false;
 
 const _getPreference = async () => {
     if (_CACHE) {
@@ -61,6 +61,7 @@ export let connectorLightboxTrigger = ng.directive('connectorLightboxTrigger', [
             const init = async () => {
                 //event
                 element.on('click', function () {
+                    scope.connectorLightboxTrigger.$mutex = false;
                     _onTriggerApp.next(scope.connectorLightboxTrigger);
                 })
                 scope.$on('$destroy', function () {
@@ -131,7 +132,6 @@ export let connectorLightbox = ng.directive('connectorLightbox', ['$timeout', '$
             //public functions
             scope.onClose = function () {
                 scope.display.showAuthenticatedConnectorLightbox = false;
-                _MUTEX = false;
             }
             scope.onConfirm = function (): void {
                 scope.onClose();
@@ -155,6 +155,10 @@ export let connectorLightbox = ng.directive('connectorLightbox', ['$timeout', '$
                 }
             };
             const openAppWithCheck = function (app: App): void {
+                if(app.$mutex){
+                    return;
+                }
+                app.$mutex = true;
                 if(scope.skipCheck){
                     if (app.target) {
                         window.open(app.address, app.target);
@@ -164,10 +168,6 @@ export let connectorLightbox = ng.directive('connectorLightbox', ['$timeout', '$
                     return;
                 }
                 if (isAuthenticatedConnector(app) && isAuthenticatedConnectorFirstAccess(app)) {
-                    if (_MUTEX == true) {
-                        return;
-                    }
-                    _MUTEX = true;
                     scope.authenticatedConnectorClicked = app;
                     scope.display.showAuthenticatedConnectorLightbox = true;
                     scope.$apply();
