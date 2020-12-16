@@ -10,6 +10,7 @@ import {model} from "../modelDefinitions";
 import { embedderService } from '../embedder';
 import { Me } from '../me';
 import { DocumentsListModel } from '../workspace/model';
+import { ui } from '../ui';
 
 export interface VideoDelegate {
     title?: string
@@ -145,7 +146,7 @@ export let embedder = ng.directive('embedder', ['$timeout', '$filter', function 
 
             //=== Headers
             const HEADER_INTEGRATION: Header = {
-                i18Key: "video.header.integration",
+                i18Key: `${$(window).width() <= ui.breakpoints.tablette?'video.header.integration.mobile':'video.header.integration'}`,
                 template: "entcore/video/integration",
                 visible: () => true,
                 worflowKey: null
@@ -163,7 +164,7 @@ export let embedder = ng.directive('embedder', ['$timeout', '$filter', function 
                 worflowKey: "workspace.create"
             }
             const HEADER_RECORD: Header = {
-                i18Key: "video.header.record",
+                i18Key: `${$(window).width() <= ui.breakpoints.tablette?'video.header.record.mobile':'video.header.record'}`,
                 template: "entcore/video/record",
                 onDisplay(){
                     emitDisplayEvent();
