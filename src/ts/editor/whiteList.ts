@@ -28,6 +28,7 @@ const whiteListAttributes = [
     "content",
     "contenteditable",
     "controls",
+    "controlslist",
     "coords",
     "data",
     "datetime",

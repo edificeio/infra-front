@@ -25,7 +25,7 @@ export const embedderService = {
         return embedderService._providers;
     },
     getHtmlForVideoStream(document:Element){
-        return `<video controls class="render" src="${document.documentUrl}" data-document-id="${document._id}" data-document-is-captation="${document.metadata.captation}"></video>`
+        return `<div class="image-container"><video controls controlsList="nodownload" class="render" src="${document.documentUrl}" data-document-id="${document._id}" data-document-is-captation="${document.metadata.captation}"></video>&#8203;</div>`
     },
     getHtmlForVideoStreams(documents:Element[]){
         return documents.map(d=>embedderService.getHtmlForVideoStream(d)).join(' ');
