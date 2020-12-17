@@ -35,8 +35,8 @@ interface VideoControllerScope {
     recordTimeInMs: number
     recordTime: string
     recordMaxTime: number
-		videoInputDevices: MediaDeviceInfo[]
-		selectedVid: MediaDeviceInfo;
+    videoInputDevices: MediaDeviceInfo[]
+    selectedVid: MediaDeviceInfo;
     guard: VideoGuardModel;
     isIncompatible(): boolean
     isIncompatibleDevice(): boolean
@@ -44,7 +44,7 @@ interface VideoControllerScope {
     startCamera(): void
     stopRecord(pause?: boolean): void
     startRecord(resume?: boolean): Promise<void>
-		switchCamera(id): void;
+	switchCamera(id): void;
     switchRecording(): void
     redo(): void;
     play(): void;
@@ -95,27 +95,51 @@ export const VideoController = ng.controller('VideoController', ['$scope', 'mode
         $scope.recordTime = '00:00';
         $scope.recordTimeInMs = 0;
         $scope.recordMaxTime = $scope.RECORD_MAX_TIME * 60000;
-				Promise.resolve().then( () => {
-					return navigator.mediaDevices.enumerateDevices();
-				})
-				.then( devices => { 
-					return devices.filter( device => { 
-						return device.kind === "videoinput";
-					})
-				})
-				.then( devices => {
-					devices.unshift({deviceId:"user", label: lang.translate("video.default.camera"), groupId:'', kind:'videoinput'});
-					$scope.videoInputDevices = devices;
-					$scope.selectedVid = devices[0];
-				})
-				.catch( () => { 
-					$scope.videoInputDevices = [{deviceId:"user", label: lang.translate("video.default.camera"), groupId:'', kind:'videoinput'}];
-					$scope.selectedVid = devices[0];
-				});
 
-				$scope.switchCamera = (id) => {
-					$scope.recorder.switchCamera( id );
-				}
+        const backCameraChoice = {deviceId:"environment", label: lang.translate("video.back.camera"), groupId:'', kind:'videoinput'} as MediaDeviceInfo;
+        const frontCameraChoice = {deviceId:"user", label: lang.translate("video.front.camera"), groupId:'', kind:'videoinput'} as MediaDeviceInfo;
+        // Enumerate video stream devices
+        Promise.resolve().then( () => {
+            return navigator.mediaDevices.enumerateDevices();
+        })
+        // Filter on video inputs only
+        .then( devices => { 
+            return devices.filter( device => { 
+                //console.debug( JSON.stringify(device) );
+                return device.kind === "videoinput";
+            })
+        })
+        // Assemble the final cameras list
+        .then( videoinputs => {
+            switch( deviceType ) {
+                case "Mobile":
+                case "Tablet":
+                    if( videoinputs && videoinputs.length>1 ) {
+                        // This mobile/tablet has more than 1 camera 
+                        // => we assume at least one is on the front (user) and one is on the back (environment),
+                        //    and let the system choose the best for us.
+                        $scope.videoInputDevices = [backCameraChoice, frontCameraChoice];
+                    } else {
+                        // Else we let the system use the only one that exists (or none)
+                        $scope.videoInputDevices = [backCameraChoice];
+                    }
+                    break;
+                default: // "Desktop" or other future types => list all cameras without distinction.
+                    $scope.videoInputDevices = videoinputs;
+                    break;
+            }
+            $scope.selectedVid = $scope.videoInputDevices[0];
+            tryStartStreaming();
+        })
+        .catch( () => { 
+            $scope.videoInputDevices = [backCameraChoice];
+            $scope.selectedVid = $scope.videoInputDevices[0];
+            tryStartStreaming();
+        })
+
+        $scope.switchCamera = (info: MediaDeviceInfo) => {
+            $scope.recorder.switchCamera( info.deviceId );
+        }
 
         $scope.$on("$destroy", () => {
             //console.log("[VideoController.destroy] release video....")
@@ -208,6 +232,7 @@ export const VideoController = ng.controller('VideoController', ['$scope', 'mode
                 safeApply();
                 //console.log('[VideoController.showCamera] Using media constraints:', $scope.recorder.constraints);
                 await $scope.recorder.startStreaming(notAllowedCb);
+                await $scope.switchCamera( $scope.selectedVid );
                 $scope.videoState = 'ready';
             } catch (e) {
                 console.error('[VideoController.showCamera] Failed to start:', e);
@@ -396,7 +421,6 @@ export const VideoController = ng.controller('VideoController', ['$scope', 'mode
             template.open('video', 'videorecorder');
             window.location.hash = "";
         }
-        tryStartStreaming();
 
     }]);
 

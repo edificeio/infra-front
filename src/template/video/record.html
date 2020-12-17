@@ -28,15 +28,16 @@
                 </button>
             </div>
         </div>
-        <div class="recorder--controls" ng-if="isReady()" style="justify-content: center">
+        <div class="recorder--controls" ng-if="isReady()">
             <button type="button" ng-click="startRecord()">
                 <i class=record-video></i>
                 <span><i18n>embed.start</i18n></span>
             </button>
-						<select class="two cell" style="margin-left: 1em"
-							ng-options="vid as vid.label for vid in videoInputDevices"
-							ng-model="selectedVid" ng-change="switchCamera( selectedVid.deviceId )" >
-						</select>
+            <select class="two cell" style="margin-top: 10px"
+                ng-if="videoInputDevices.length > 1"
+                ng-options="vid as vid.label for vid in videoInputDevices"
+                ng-model="selectedVid" ng-change="switchCamera( selectedVid )" >
+            </select>
         </div>
         <div class="recorder--controls controls" ng-if="showActions()">
             <button type="button" class="recorder--control stop" ng-click="switchRecording()" ng-disabled="!isRecording()">

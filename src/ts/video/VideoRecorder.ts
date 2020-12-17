@@ -18,6 +18,8 @@ declare var MediaRecorder: {
     new(stream: MediaStream, options: { mimeType: string }): MediaRecorderImpl
     isTypeSupported: (mime: string) => boolean
 };
+type FacingMode = 'user' | 'environment';
+
 export class VideoRecorder {
     private stream: MediaStream;
     private gumVideo: HTMLMediaElement
@@ -25,17 +27,17 @@ export class VideoRecorder {
     private recorded: Blob[];
     private id: string;
     private mode: 'idle' | 'play' | 'record' | 'playing' = 'idle';
-    public constraints: MediaStreamConstraints & { facingMode?: string } = {
+    public constraints: MediaStreamConstraints & { facingMode?: FacingMode } = {
         audio: {
             channelCount: 0,
-            facingMode: 'user'
+            facingMode: 'environment'
         },
         video: {
             width: 640,
             height: 360,
-            facingMode: 'user'
+            facingMode: 'environment'
         },
-        facingMode: 'user'
+        facingMode: 'environment'
     } as MediaStreamConstraints;
     public onPlayChanged = new Subject<Event>();
     constructor(private videoFactory: () => HTMLMediaElement, private handleDuration: (event: Event) => void) { }
@@ -62,19 +64,19 @@ export class VideoRecorder {
         this.unbindRecordEvent();
         this.gumVideo.addEventListener('timeupdate', this.handleDuration);
     }
-		switchCamera( id ) {
-			if( id==='user' ) {
-				delete (this.constraints.video as MediaTrackConstraints).deviceId;
-				this.constraints.facingMode = 'user';
-				(this.constraints.video as MediaTrackConstraints).facingMode = this.constraints.facingMode;
-				(this.constraints.audio as MediaTrackConstraints).facingMode = this.constraints.facingMode;
-			} else {
-				delete (this.constraints.video as MediaTrackConstraints).facingMode;
-				(this.constraints.video as MediaTrackConstraints).deviceId = id;
-			}
-			this.stopStreaming();
-			this.startStreaming();
-		}
+    async switchCamera( id ) {
+        if( id==='environment' || id==='user' ) {
+            delete (this.constraints.video as MediaTrackConstraints).deviceId;
+            this.constraints.facingMode = id;
+            (this.constraints.video as MediaTrackConstraints).facingMode = this.constraints.facingMode;
+            (this.constraints.audio as MediaTrackConstraints).facingMode = this.constraints.facingMode;
+        } else {
+            delete (this.constraints.video as MediaTrackConstraints).facingMode;
+            (this.constraints.video as MediaTrackConstraints).deviceId = id;
+        }
+        this.stopStreaming();
+        await this.startStreaming();
+    }
     play() {
         if (!this.gumVideo) {
             console.warn('[VideoRecorder.play] stream not init');
