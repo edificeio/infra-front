@@ -32,7 +32,7 @@
     <div class="embed-container">
         <h2>[[title()]]</h2>
         <section class="twelve row">
-            <section class="tabs heading-tabs">
+            <section class="tabs heading-tabs" style="overflow: hidden">
                 <header ng-repeat="header in headers()" ng-class="{'selected':isSelectedHeader(header)}" navigation-trigger="showHeader(header)" workflow="[[header.worflowKey]]" ng-show="header.visible()">
                     <span translate content="[[header.i18Key]]" ng-class="getClassOf(header)"></span>
                 </header>
