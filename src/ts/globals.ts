@@ -1,3 +1,4 @@
+import { UAParser } from 'ua-parser-js';
 require('core-js');
 var _ = require('underscore');
 (window as any)._ = _;
@@ -41,7 +42,21 @@ export type BrowserInfo = {
     name:'MSIE'|'Edge'|'Chrome'|'Safari'|'Firefox'|'Opera'|'CriOS'|'FxiOS',
     version:number,
 }
+export type OSInfo = {
+    name: string | undefined;
+    version: string | undefined;
+}
 export const devices = {
+    /* A few User Agent strings for testing purposes: 
+    * iPod / iPad / iPhone
+        Mozilla/5.0 (iPhone; CPU iPhone OS 14_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0.2 Mobile/15E148 Safari/604.1
+        Mozilla/5.0 (iPad; CPU OS 14_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0.1 Mobile/15E148 Safari/604.1
+        Mozilla/5.0 (iPad; CPU OS 14_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0 Mobile/15E148 Safari/604.1
+    */
+    getOSInfo: (uaString?: string): OSInfo => {
+        let uaParser: UAParser = new UAParser(uaString);
+        return uaParser.getOS();
+    },
     isIE: () => navigator.userAgent.indexOf('Trident') !== -1,
     isiOS: () => /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream,
     isIphone: () => navigator.userAgent.indexOf("iPhone") != -1,

@@ -26,6 +26,7 @@
     "rxjs": "5.4.2",
     "source-map-loader": "^0.1.6",
     "typescript": "2.4.1",
+    "ua-parser-js": "^0.7.23",
     "uglify-js": "^3.0.23",
     "uglifyjs-webpack-plugin": "^0.4.6",
     "underscore": "^1.8.3",
@@ -33,6 +34,7 @@
     "webpack-stream": "^3.2.0"
   },
   "devDependencies": {
+    "@types/ua-parser-js": "^0.7.35",
     "@types/core-js": "0.9.46",
     "@types/jasmine": "2.8.8",
     "@types/jquery": "^3.3.32",

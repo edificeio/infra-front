@@ -278,7 +278,23 @@ export const VideoController = ng.controller('VideoController', ['$scope', 'mode
 
         $scope.isPlaying = () => isPlaying;
 
-        $scope.isIncompatibleDevice = () => devices.isIphone() || devices.isIpad() || devices.isIpod();
+        $scope.isIncompatibleDevice = () => {
+            const os = devices.getOSInfo();
+            /*
+            console.log( "Actual OS="+ os.name +" version "+ os.version );
+            let ios1 = devices.getOSInfo("Mozilla/5.0 (iPhone; CPU iPhone OS 14_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0.2 Mobile/15E148 Safari/604.1");
+            console.log( "iOS1 OS="+ ios1.name +" version "+ ios1.version );
+            let ios2 = devices.getOSInfo("Mozilla/5.0 (iPad; CPU OS 14_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0.1 Mobile/15E148 Safari/604.1");
+            console.log( "iOS2 OS="+ ios2.name +" version "+ ios2.version );
+            let ios3 = devices.getOSInfo("Mozilla/5.0 (iPad; CPU OS 14_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0 Mobile/15E148 Safari/604.1");
+            console.log( "iOS3 OS="+ ios3.name +" version "+ ios3.version );
+            */
+            // iOS 14.3+ has built-in MediaRecorder capabilities.
+            if( os && os.name==="iOS" && os.version>="14.3" )
+                return false;
+
+            return devices.isIphone() || devices.isIpad() || devices.isIpod();
+        };
 
         $scope.isIncompatibleBrowser = () => {
             if(!(window as any).MediaRecorder){
