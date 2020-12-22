@@ -1,13 +1,13 @@
 {
   "name": "entcore",
-  "version": "3.12.0-dev.6",
+  "version": "3.12.0-angular.1",
   "description": "",
   "main": "gulpfile.js",
   "types": "./types/src/ts/entcore.d.ts",
   "dependencies": {
-    "angular": "1.3",
-    "angular-route": "1.3",
-    "angular-sanitize": "1.3",
+    "angular": "1.4.9",
+    "angular-route": "1.4.9",
+    "angular-sanitize": "1.4.9",
     "awesome-typescript-loader": "^3.2.1",
     "axios": "^0.15.3",
     "conventional-changelog-cli": "^2.0.12",
