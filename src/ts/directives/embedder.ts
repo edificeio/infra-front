@@ -163,16 +163,18 @@ export let embedder = ng.directive('embedder', ['$timeout', '$filter', function 
                 visible: () => false,
                 worflowKey: "workspace.create"
             }
+            let hasVideoView = false;
             const HEADER_RECORD: Header = {
                 i18Key: `${$(window).width() <= ui.breakpoints.tablette?'video.header.record.mobile':'video.header.record'}`,
                 template: "entcore/video/record",
                 onDisplay(){
                     emitDisplayEvent();
                 },
-                visible: () => true,
+                visible: () => hasVideoView,
                 worflowKey: "video.view"
             };
             Me.hasWorkflowRight("video.view") //hack to start and load workflow rights
+            .then( hasIt => { hasVideoView = hasIt; } ); // Make the visible() property reactive.
             const emitDisplayEvent = () =>{
                 console.log("Broadcast display event displayVideoRecorder...")
                 scope.$broadcast('displayVideoRecorder', {});
