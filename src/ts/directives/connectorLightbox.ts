@@ -7,8 +7,12 @@ type App = {
     target: string,
     address: string,
     casType: string,
-    scope: string[],
-    $mutex?:boolean
+    scope: string[]
+}
+type AppEvent = {
+    app:App,
+    $mutex?:boolean,
+    ctrlKey:boolean   // Was CTRL key pressed ?
 }
 
 export interface ConnectorLightboxScope {
@@ -47,7 +51,7 @@ const _getPreference = async () => {
     return _CACHE;
 }
 
-const _onTriggerApp = new Subject<App>();
+const _onTriggerApp = new Subject<AppEvent>();
 
 export let connectorLightboxTrigger = ng.directive('connectorLightboxTrigger', ['$timeout', '$filter', function ($timeout, $filter) {
     return {
@@ -60,9 +64,13 @@ export let connectorLightboxTrigger = ng.directive('connectorLightboxTrigger', [
 
             const init = async () => {
                 //event
-                element.on('click', function () {
-                    scope.connectorLightboxTrigger.$mutex = false;
-                    _onTriggerApp.next(scope.connectorLightboxTrigger);
+                element.on('click', function (event: MouseEvent) {
+                    const appEvent = { 
+                        app: scope.connectorLightboxTrigger,
+                        $mutex: false,
+                        ctrlKey: !!event.ctrlKey
+                    } as AppEvent;
+                    _onTriggerApp.next( appEvent );
                 })
                 scope.$on('$destroy', function () {
                     element.off('click');
@@ -102,13 +110,13 @@ export let connectorLightbox = ng.directive('connectorLightbox', ['$timeout', '$
             scope.display = {
                 showAuthenticatedConnectorLightbox: false
             };
-            let _app: App = null;
+            let _appEvent: AppEvent = null;
             //private functions
             const init = async () => {
                 //event
                 const sub = _onTriggerApp.subscribe((event) => {
-                    _app = event;
-                    openAppWithCheck(event);
+                    _appEvent = event;
+                    openAppWithCheck(_appEvent);
                 })
                 scope.$on('$destroy', function () {
                     sub.unsubscribe();
@@ -134,6 +142,7 @@ export let connectorLightbox = ng.directive('connectorLightbox', ['$timeout', '$
                 scope.display.showAuthenticatedConnectorLightbox = false;
             }
             scope.onConfirm = function (): void {
+                const _app = _appEvent.app;
                 scope.onClose();
                 if (scope.authenticatedConnectorsAccessed) {
                     scope.authenticatedConnectorsAccessed.push(_app.name);
@@ -141,9 +150,9 @@ export let connectorLightbox = ng.directive('connectorLightbox', ['$timeout', '$
                     scope.authenticatedConnectorsAccessed = [_app.name];
                 }
 
-                let target = _app.target != null ? _app.target : '_self';
+                const target = _appEvent.ctrlKey ? '_blank' : (_app.target != null) ? _app.target : '_self';
 
-                if (target != '_self') {
+                if (target !== '_self') {
                     http().putJson('/userbook/preference/authenticatedConnectorsAccessed', scope.authenticatedConnectorsAccessed);
                     window.open(_app.address, target);
                 } else {
@@ -154,17 +163,21 @@ export let connectorLightbox = ng.directive('connectorLightbox', ['$timeout', '$
                     })();
                 }
             };
-            const openAppWithCheck = function (app: App): void {
-                if(app.$mutex){
+            const openAppWithCheck = function (appEvent: AppEvent): void {
+                if(appEvent.$mutex){
                     return;
                 }
-                app.$mutex = true;
+                appEvent.$mutex = true;
+
+                // Sanity check
+                const app = appEvent.app;
+                if( typeof app === "undefined" )
+                    throw "ConnectorLightboxScope.openAppWithCheck failed : target app is undefined";
+                
+                const target = _appEvent.ctrlKey ? '_blank' : (app.target != null) ? app.target : '_self';
+
                 if(scope.skipCheck){
-                    if (app.target) {
-                        window.open(app.address, app.target);
-                    } else {
-                        window.open(app.address, '_self');
-                    }
+                    window.open(app.address, target);
                     return;
                 }
                 if (isAuthenticatedConnector(app) && isAuthenticatedConnectorFirstAccess(app)) {
@@ -172,11 +185,7 @@ export let connectorLightbox = ng.directive('connectorLightbox', ['$timeout', '$
                     scope.display.showAuthenticatedConnectorLightbox = true;
                     scope.$apply();
                 } else {
-                    if (app.target) {
-                        window.open(app.address, app.target);
-                    } else {
-                        window.open(app.address, '_self');
-                    }
+                    window.open(app.address, target);
                 }
             };
             //init
