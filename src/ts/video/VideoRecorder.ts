@@ -24,6 +24,7 @@ export class VideoRecorder {
     private stream: MediaStream;
     private gumVideo: HTMLMediaElement
     private mediaRecorder: MediaRecorderImpl;
+    private recordMimeType: string;
     private recorded: Blob[];
     private id: string;
     private mode: 'idle' | 'play' | 'record' | 'playing' = 'idle';
@@ -238,6 +239,8 @@ export class VideoRecorder {
 
         try {
             this.mediaRecorder = new MediaRecorder(this.stream, options);
+            // Memorize which MIME type is being recorded.
+            this.recordMimeType = options.mimeType;
         } catch (e) {
             console.error('[VideoRecorder.startRecording] Exception while creating MediaRecorder:', e);
             return;
@@ -270,7 +273,7 @@ export class VideoRecorder {
     }
 
     public getBuffer() {
-        return new Blob(this.recorded, { type: 'video/webm' });
+        return new Blob(this.recorded, { type: this.recordMimeType /*'video/webm'*/ });
     }
 
     public clearBuffer(prepareRecord: boolean) {
