@@ -104,7 +104,7 @@ export var skin = {
 				model.me.bookmarkedApps = JSON.parse(data.preference) || [];
 				var upToDate = true;
 				let remove = [];
-				model.me.bookmarkedApps.forEach(function(app, index){
+				_.isArray(model.me.bookmarkedApps) && model.me.bookmarkedApps.forEach(function(app, index){
 					var foundApp = _.findWhere(model.me.apps, { name: app.name });
 					var updateApp = true;
 					if(foundApp){
