@@ -98,18 +98,21 @@ export const VideoController = ng.controller('VideoController', ['$scope', 'mode
 
         const backCameraChoice = {deviceId:"environment", label: lang.translate("video.back.camera"), groupId:'', kind:'videoinput'} as MediaDeviceInfo;
         const frontCameraChoice = {deviceId:"user", label: lang.translate("video.front.camera"), groupId:'', kind:'videoinput'} as MediaDeviceInfo;
-        // Enumerate video stream devices
+        // First call to the API, so that the operating system ask for user's consent, if needed.
         Promise.resolve().then( () => {
-            return navigator.mediaDevices.enumerateDevices();
+            navigator.mediaDevices.enumerateDevices();
         })
-        // Filter on video inputs only
+        // ...Then enumerate video stream devices,
+        .then( () => {
+            return navigator.mediaDevices.enumerateDevices();
+        })// ...Filter on video inputs only,
         .then( devices => { 
             return devices.filter( device => { 
                 //console.debug( JSON.stringify(device) );
                 return device.kind === "videoinput";
             })
         })
-        // Assemble the final cameras list
+        // ...Assemble the final cameras list,
         .then( videoinputs => {
             switch( deviceType ) {
                 case "Mobile":
