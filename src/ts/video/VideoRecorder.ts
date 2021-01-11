@@ -71,7 +71,7 @@ export class VideoRecorder {
             this.constraints.facingMode = id;
             (this.constraints.video as MediaTrackConstraints).facingMode = this.constraints.facingMode;
             (this.constraints.audio as MediaTrackConstraints).facingMode = this.constraints.facingMode;
-        } else {
+        } else if( id ) {
             delete (this.constraints.video as MediaTrackConstraints).facingMode;
             (this.constraints.video as MediaTrackConstraints).deviceId = id;
         }
