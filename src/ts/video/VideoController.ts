@@ -300,9 +300,9 @@ export const VideoController = ng.controller('VideoController', ['$scope', 'mode
             if(!(window as any).MediaRecorder){
                 return true;
             }
-            // TODO : challenge this filter on some specific browsers => why is it necessary ?
+            // Check against supported browsers.
             const browser = devices.getBrowserInfo();
-            return browser.name != 'Firefox' && browser.name != 'Chrome' && browser.name != 'Edge' && browser.name != 'Opera' && browser.name != 'Safari';
+            return ['Firefox', 'Chrome', 'Edge', 'Opera', 'Safari', 'CriOS', 'FxiOS'].findIndex( (item) => browser.name==item ) === -1;
         };
         
         $scope.isIncompatible = () => $scope.videoState == 'incompatible';
