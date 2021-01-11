@@ -44,7 +44,7 @@
                 <i class=stop></i>
                 <span><i18n>embed.stop</i18n></span>
             </button>
-            <button type="button" class="recorder--control play" ng-click="play()" ng-disabled="!isRecorded()">
+            <button type="button" class="recorder--control play" ng-click="play()" ng-disabled="!isRecorded()" ng-if="isReplayAllowed()">
                 <i ng-class="{'play': !isPlaying(), 'pause': isPlaying()}"></i>
                 <span ng-if="!isPlaying()"><i18n>embed.play</i18n></span>
                 <span ng-if="isPlaying()"><i18n>embed.pause</i18n></span>

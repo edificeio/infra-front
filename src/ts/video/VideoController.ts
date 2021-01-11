@@ -59,6 +59,7 @@ interface VideoControllerScope {
     isRecorded(): boolean;
     isRecording(): boolean;
     isPlaying():boolean;
+    isReplayAllowed: () => boolean;
     website: any;
     selectedWebsite: any;
     $apply: any
@@ -306,6 +307,12 @@ export const VideoController = ng.controller('VideoController', ['$scope', 'mode
             // Check against supported browsers.
             const browser = devices.getBrowserInfo();
             return ['Firefox', 'Chrome', 'Edge', 'Opera', 'Safari', 'CriOS', 'FxiOS'].findIndex( (item) => browser.name==item ) === -1;
+        };
+
+        /** Note 2021-01-11 : replaying a recorded stream does not work under iOS, even in version 14.3 */
+        $scope.isReplayAllowed = () => {
+            const os = devices.getOSInfo();
+            return !(os && os.name==="iOS");
         };
         
         $scope.isIncompatible = () => $scope.videoState == 'incompatible';
