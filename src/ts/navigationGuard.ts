@@ -44,6 +44,7 @@ export const navigationGuardService = {
     _guards: new Map<string, Set<INavigationGuard>>(),
 
     _id_counter: 0,
+    onUserConfirmNavigate: new Array<(canNavigate:boolean)=>void>(),
     generateID(): string {
         return "__auto_guard_id_" + (navigationGuardService._id_counter++);
     },
@@ -112,6 +113,9 @@ export const navigationGuardService = {
             for (const guard of setToArray(root)) {
                 if (!guard.canNavigate()) {
                     const can = confirm(idiom.translate("navigation.guard.text"));
+                    for(const cb of navigationGuardService.onUserConfirmNavigate){
+                        cb(can);
+                    }
                     guard.onUserConfirmNavigate && guard.onUserConfirmNavigate(can);
                     navigationGuardService._lastTime = new Date().getTime();
                     navigationGuardService._lastResponse = can;
