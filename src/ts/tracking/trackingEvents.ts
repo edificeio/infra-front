@@ -1,3 +1,4 @@
+import { navigationGuardService } from "../navigationGuard";
 
 let _generateID = 0;
 function generateID(): string {
@@ -29,6 +30,11 @@ export class EditTrackingEvent {
         this.id = data.resourceId || generateID();
         this.resourceUri = data.resourceUri || defautUri;
         this.matomoResourceUri = window.location.pathname +"/"+this.id;
+        navigationGuardService.onUserConfirmNavigate.push((can)=>{
+            if(!can){
+                this.onCancel();
+            }
+        })
     }
     onStart(onlyIfStopped: boolean): void {
         if (onlyIfStopped) {

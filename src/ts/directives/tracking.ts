@@ -20,6 +20,17 @@ export const trackInputEventDirective: Directive = ng.directive('trackInputEvent
                     }
                     return e
                 })
+            }else if(element[0].tagName == "IMAGE-SELECT"){
+                //imageselect track model to view change
+                let oldValue: string|number = -1;
+                ngModel && ngModel.$formatters.push(function (e) {
+                    if (oldValue == -1) oldValue = e;
+                    if (e != oldValue) {
+                        model.onStart(true);
+                        oldValue = e;
+                    }
+                    return e
+                })
             } else {
                 //track view to model change
                 ngModel && ngModel.$parsers.push(function (e) {
