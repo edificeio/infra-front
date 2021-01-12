@@ -940,7 +940,11 @@ export let RTE = {
                         element.find('button.editor-edit-action').css({ display: 'none' });
                     }
 
-                    $('body').on('mousedown', function(e){
+                    $('body').on('mousedown', function(e, props: any){
+                        let restrict: string = props && props.restrict;
+                        if($(e.target).parents('[ignore-editor-mousedown]').length > 0 || (restrict != undefined && !$(element).is(`#${restrict}`))) {
+                            return true;
+                        }
                         if(e.target !== element.find('.editor-toolbar-opener')[0] && element.find('editor-toolbar, .editor-toolbar-opener').find(e.target).length === 0){
                             element.find('editor-toolbar').removeClass('opened');
                             element.find('.editor-toolbar-opener').removeClass('active');
