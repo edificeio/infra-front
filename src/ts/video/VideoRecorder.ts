@@ -1,7 +1,6 @@
-import { http, httpPromisy } from "../http";
+import { http } from "../http";
 import { Subject } from "rxjs";
 import { model } from '../modelDefinitions';
-import { notify } from '../notify';
 import axios from "axios";
 import { appPrefix, devices, deviceType } from "../globals";
 
@@ -28,18 +27,14 @@ export class VideoRecorder {
     private recorded: Blob[];
     private id: string;
     private mode: 'idle' | 'play' | 'record' | 'playing' = 'idle';
-    public constraints: MediaStreamConstraints & { facingMode?: FacingMode } = {
-        audio: {
-            channelCount: 0,
-            facingMode: 'environment'
-        },
+    public constraints: MediaStreamConstraints = {
+        audio: true,
         video: {
             width: 640,
             height: 360,
             facingMode: 'environment'
-        },
-        facingMode: 'environment'
-    } as MediaStreamConstraints;
+        }
+    };
     public onPlayChanged = new Subject<Event>();
     constructor(private videoFactory: () => HTMLMediaElement, private handleDuration: (event: Event) => void) { }
     private bindPlayEvents() {
@@ -68,9 +63,7 @@ export class VideoRecorder {
     async switchCamera( id ) {
         if( id==='environment' || id==='user' ) {
             delete (this.constraints.video as MediaTrackConstraints).deviceId;
-            this.constraints.facingMode = id;
-            (this.constraints.video as MediaTrackConstraints).facingMode = this.constraints.facingMode;
-            (this.constraints.audio as MediaTrackConstraints).facingMode = this.constraints.facingMode;
+            (this.constraints.video as MediaTrackConstraints).facingMode = id;
         } else if( id ) {
             delete (this.constraints.video as MediaTrackConstraints).facingMode;
             (this.constraints.video as MediaTrackConstraints).deviceId = id;
@@ -161,25 +154,33 @@ export class VideoRecorder {
             this.prepareRecord();
             //console.log('[VideoRecorder.startStreaming] VIDEO STREAM STARTED', this.gumVideo);
         } catch (e) {
-            if (e && e.name == 'NotAllowedError') {
-                if (notAllowedCb) {
-                    return notAllowedCb();
-                }
-            }else if (e && e.name == 'NotReadableError'){
-                try{
-                    //try without constraint
-                    const stream = await navigator.mediaDevices.getUserMedia({});
-                    if (!this.gumVideo) {
-                        this.gumVideo = this.videoFactory();
+            if( e ) {
+                // Case when a cam is not authorized/found/matching/available
+                // See https://developer.mozilla.org/fr/docs/Web/API/MediaDevices/getUserMedia#erreurs
+                if ( e.name == 'NotAllowedError' 
+//                    || e.name == 'NotFoundError'
+//                    || e.name == 'OverConstrainedError'
+//                    || e.name == 'TypeError'
+                    ) {
+                    if (notAllowedCb) {
+                        return notAllowedCb();
                     }
-                    this.stream = stream;
-                    this.prepareRecord();
-                }catch(e){
-                    alert(e);
+                }else if (e.name == 'NotReadableError'){
+                    try{
+                        //try without constraint
+                        const stream = await navigator.mediaDevices.getUserMedia({});
+                        if (!this.gumVideo) {
+                            this.gumVideo = this.videoFactory();
+                        }
+                        this.stream = stream;
+                        this.prepareRecord();
+                    }catch(e){
+                        alert(e);
+                    }
+                    return;
                 }
-                return;
+                alert(e);
             }
-            alert(e);
         }
     }
     private uuid() {

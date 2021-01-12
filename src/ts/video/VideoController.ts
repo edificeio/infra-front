@@ -99,12 +99,8 @@ export const VideoController = ng.controller('VideoController', ['$scope', 'mode
 
         const backCameraChoice = {deviceId:"environment", label: lang.translate("video.back.camera"), groupId:'', kind:'videoinput'} as MediaDeviceInfo;
         const frontCameraChoice = {deviceId:"user", label: lang.translate("video.front.camera"), groupId:'', kind:'videoinput'} as MediaDeviceInfo;
-        // First call to the API, so that the operating system ask for user's consent, if needed.
+        // First call to the API, so that the operating system ask for user's consent if needed, then enumerate video stream devices,
         Promise.resolve().then( () => {
-            navigator.mediaDevices.enumerateDevices();
-        })
-        // ...Then enumerate video stream devices,
-        .then( () => {
             return navigator.mediaDevices.enumerateDevices();
         })// ...Filter on video inputs only,
         .then( devices => { 
@@ -135,7 +131,8 @@ export const VideoController = ng.controller('VideoController', ['$scope', 'mode
             $scope.selectedVid = $scope.videoInputDevices[0];
             tryStartStreaming();
         })
-        .catch( () => { 
+        .catch( () => {
+            console.error('[VideoController.videoInputDevices] An error occured while detecting cameras.');
             $scope.videoInputDevices = [backCameraChoice];
             $scope.selectedVid = $scope.videoInputDevices[0];
             tryStartStreaming();
