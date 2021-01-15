@@ -21,7 +21,7 @@
     "lodash": "^4.17.4",
     "merge2": "^1.0.2",
     "mobile-drag-drop": "^2.3.0-rc.2",
-    "moment": "^2.18.1",
+    "moment": "^2.29.1",
     "nouislider": "14.0.2",
     "rxjs": "5.4.2",
     "source-map-loader": "^0.1.6",
