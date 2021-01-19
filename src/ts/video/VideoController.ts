@@ -309,7 +309,7 @@ export const VideoController = ng.controller('VideoController', ['$scope', 'mode
         /** Note 2021-01-11 : replaying a recorded stream does not work under iOS, even in version 14.3 */
         $scope.isReplayAllowed = () => {
             const os = devices.getOSInfo();
-            return !(os && os.name==="iOS");
+            return !(os && (os.name==="iOS" || os.name==="Mac OS"));
         };
         
         $scope.isIncompatible = () => $scope.videoState == 'incompatible';
