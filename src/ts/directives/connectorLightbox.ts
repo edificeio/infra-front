@@ -150,7 +150,7 @@ export let connectorLightbox = ng.directive('connectorLightbox', ['$timeout', '$
                     scope.authenticatedConnectorsAccessed = [_app.name];
                 }
 
-                const target = _appEvent.ctrlKey ? '_blank' : (_app.target != null) ? _app.target : '_self';
+                const target = _appEvent.ctrlKey ? '_blank' : !!_app.target ? _app.target : '_self';
 
                 if (target !== '_self') {
                     http().putJson('/userbook/preference/authenticatedConnectorsAccessed', scope.authenticatedConnectorsAccessed);
@@ -174,7 +174,7 @@ export let connectorLightbox = ng.directive('connectorLightbox', ['$timeout', '$
                 if( typeof app === "undefined" )
                     throw "ConnectorLightboxScope.openAppWithCheck failed : target app is undefined";
                 
-                const target = _appEvent.ctrlKey ? '_blank' : (app.target != null) ? app.target : '_self';
+                const target = _appEvent.ctrlKey ? '_blank' : !!app.target ? app.target : '_self';
 
                 if(scope.skipCheck){
                     window.open(app.address, target);
