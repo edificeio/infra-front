@@ -9,14 +9,14 @@ export const VideoEventTracker = ng.service("VideoEventTracker", [
 		this.videos = [];
 	}
 
-	function generateEvent( type: "play"|"view", videoId: string) {
+	function generateEvent( type: "play"|"view", videoId: string, source:string) {
 		var browserInfo = devices.getBrowserInfo();
 		var videoEventData = {
 			videoId: videoId,
 			device: deviceType,
 			browser: browserInfo.name + ' ' + browserInfo.version,
 			session: '',	// TODO: in the end, this is intended to identify a session of play/pause/...
-			source: 'CAPTURED',
+			source: source,
 			duration: 0,	// This will become the "duration of the play session"
 			url: window.location.hostname,
 			app: appPrefix
@@ -28,12 +28,14 @@ export const VideoEventTracker = ng.service("VideoEventTracker", [
 
 	VideoEventTracker.prototype.onPlay  = function(event:Event) {
 		var videoId = (event.target as HTMLVideoElement).dataset.documentId || '';
-		generateEvent( "play", videoId );
+		var source = ((event.target as HTMLVideoElement).dataset.documentIsCaptation || "false") == "true" ? 'CAPTURED' : 'UPLOADED';
+		generateEvent( "play", videoId, source );
 	}
 
 	VideoEventTracker.prototype.generateViewEventFor = function( video: HTMLVideoElement) {
 		var videoId = video.dataset.documentId || '';
-		generateEvent( "view", videoId );
+		var source = (video.dataset.documentIsCaptation || "false") == "true" ? 'CAPTURED' : 'UPLOADED';
+		generateEvent( "view", videoId, source );
 	}
 
 	VideoEventTracker.prototype.trackAll = function( $scope ) {
