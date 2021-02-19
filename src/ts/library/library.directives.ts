@@ -268,7 +268,7 @@ export const libraryPublishDirective: Directive = ng.directive('libraryPublish',
                                     ng-src="[[libraryPublishController.revocableUrl]]"
                                     alt="" />
                                 <i class="file-image cell two"
-                                    ng-if="!libraryPublishController.revocableUrl"/>
+                                    ng-if="libraryPublishController.revocableUrl != null"/>
                             </div>
                             <div class="row top-spacing-twice">
                                 <label class="cell three bold" for="">
