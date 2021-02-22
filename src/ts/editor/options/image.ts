@@ -240,7 +240,7 @@ export const image = {
                 '</lightbox>' +
             '</div>',
             link: function (scope, element, attributes) {
-                instance.editZone.on('click touchstart', 'img', (e) => {
+                instance.editZone.on('click touchstart', 'img:not(.smiley)', (e) => {
                     if(!e.target){
                         return;
                     }
