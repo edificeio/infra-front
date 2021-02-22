@@ -927,7 +927,15 @@ export const Selection = function(data){
                         sel.addRange(range);
                     });
                 }
-                if (item.textContent === "" && !(isHTMLBlockElement(item.parentNode) && item.parentNode.childNodes.length === 1)) {
+                /* Remove items which :
+                 * - have no text node
+                 * - have a parent node which is not a "block" element (div, ul, ol, li, p...) with only 1 child
+                 * - have no child nodes (<span> sometimes have images (smileys) and are not considered a "block" element)
+                 */
+                if (    item.textContent === "" 
+                        && item.childNodes.length === 0
+                        && !(isHTMLBlockElement(item.parentNode) && item.parentNode.childNodes.length === 1)
+                    ) {
                     $(item).remove();
                 }
             });
