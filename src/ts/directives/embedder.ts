@@ -87,7 +87,7 @@ export interface VideoScope {
     showHeader(tab: Header):void
     showHeaderByI18Key(tab: string):void
     isSelectedHeader(header: Header): boolean;
-		getClassOf(header: Header): any;
+    getClassOf(header: Header): any;
     isEditedFirst(): boolean
     isEditedLast(): boolean
     nextImage(): void
@@ -210,8 +210,8 @@ export let embedder = ng.directive('embedder', ['$timeout', '$filter', function 
             }
 
             scope.getClassOf = function( h: Header ): any {
-							return (h !== HEADER_RECORD) ? "" : "beta-feature";
-						}
+                return (h !== HEADER_RECORD) ? "" : "beta-feature";
+            }
 
             scope.$on("video-upload", function (event, docId) {
                 //console.log('TEMPLATE LOADING ')

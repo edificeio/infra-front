@@ -289,14 +289,14 @@ export class VideoRecorder {
 
         let formData = new FormData();
         formData.append("file", this.getBuffer(), filename);
-				// Also report useful contextual data
-				let browserInfo = devices.getBrowserInfo();
-				formData.append("device", deviceType);
-				formData.append("browser", browserInfo.name + ' ' + browserInfo.version);
-				formData.append("duration", recordTime);
-				formData.append("weight", ''+this.getBuffer().size);
-				formData.append("url", window.location.hostname);
-				formData.append("app", appPrefix);
+        // Also report useful contextual data
+        let browserInfo = devices.getBrowserInfo();
+        formData.append("device", deviceType);
+        formData.append("browser", browserInfo.name + ' ' + browserInfo.version);
+        formData.append("duration", recordTime);
+        formData.append("weight", ''+this.getBuffer().size);
+        formData.append("url", window.location.hostname);
+        formData.append("app", appPrefix);
         try{
             const uploadRes = await axios.post("/video/upload?duration="+recordTime, formData);
             if(uploadRes.status==202){
