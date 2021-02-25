@@ -18,7 +18,6 @@ export let calendarComponent = ng.directive('calendar', function () {
                 start: 0,
                 end: 24
             };
-
             var refreshCalendar = function () {
                 model.calendar.clearScheduleItems();
                 $scope.items = _.where(_.map($scope.items, function (item) {
@@ -30,6 +29,9 @@ export let calendarComponent = ng.directive('calendar', function () {
                 model.calendar.addScheduleItems($scope.items);
                 model.calendar.display = $scope.display;
                 $scope.calendar = model.calendar;
+                if((window as any).currentLanguage){
+                    $scope.calendar.firstDay.locale((window as any).currentLanguage);
+                }
                 $scope.moment = moment;
                 $scope.display.editItem = false;
                 $scope.display.createItem = false;
