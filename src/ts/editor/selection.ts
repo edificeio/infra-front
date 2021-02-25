@@ -37,27 +37,40 @@ function removeEmptyChildTextNodes(node: Node) {
     let currentNode: Node;
 
     while (currentNode = tw.nextNode()) {
-        if (currentNode.nodeType === Node.TEXT_NODE && currentNode.textContent === '') {
+        if (currentNode.nodeType === Node.TEXT_NODE && (currentNode.textContent==='' || currentNode.textContent==='\u200b')) {
             currentNode.parentNode.removeChild(currentNode);
         }
     }
 }
 
-function isNodeInRange(node: Node, range: Range): boolean {
-    let positionComparedWithRangeStart = node.compareDocumentPosition(range.startContainer);
-    let positionComparedWithRangeEnd = node.compareDocumentPosition(range.endContainer);
-
-    return !(isBeforeComparedNode(positionComparedWithRangeStart) || isAfterComparedNode(positionComparedWithRangeEnd));
+/**
+ * Compares a node to a Range's startContainer and endContainer nodes,
+ * thanks to the DOM Node method https://developer.mozilla.org/fr/docs/Web/API/Node/compareDocumentPosition
+ * @param node The node to compare to the Range 
+ * @param range The range (https://developer.mozilla.org/fr/docs/Web/API/Range)
+ * @return {result:boolean, maskStart:number, maskEnd:number}
+ */
+function compareNodeToRange(node: Node, range: Range): {isInRange:boolean, maskStart:number, maskEnd:number} {
+    if( !node || (range.startOffset===0 && range.endOffset===0) ) {
+        return {isInRange:true, maskStart:0, maskEnd:0 };
+    }
+    let ret = {
+        isInRange: false,
+        maskStart: node.compareDocumentPosition(range.startContainer),
+        maskEnd: node.compareDocumentPosition(range.endContainer)
+    };
+    ret.isInRange = !(isBeforeComparedNode(ret.maskStart) || isAfterComparedNode(ret.maskEnd));
+    return ret;
 }
 
 function tryToRemoveOrMergeTextElementOutOfRange(currentNode: Node, ranges: Array<Range>): Node {
     if (!isHTMLBlockElement(currentNode)) {
-        if (ranges.every(r => !isNodeInRange(currentNode, r))) {
+        if (ranges.every(r => !(compareNodeToRange(currentNode, r).isInRange))) {
             if (currentNode.textContent === '' || currentNode.textContent === '\u200b') {
                 if (!(isHTMLBlockElement(currentNode.parentNode) && currentNode.parentNode.childNodes.length === 1) && containsOnlyTextNodes(currentNode)) {
                     currentNode.parentNode.removeChild(currentNode);
                 }
-            } else if (currentNode.previousSibling && ranges.every(r => !isNodeInRange(currentNode.previousSibling, r))) {
+            } else if (currentNode.previousSibling && ranges.every(r => !(compareNodeToRange(currentNode.previousSibling, r).isInRange))) {
                 const previousNode = currentNode.previousSibling;
                 const currentNodeClone = currentNode.cloneNode(false);
                 const previousNodeClone = previousNode.cloneNode(false);
@@ -109,7 +122,7 @@ function findStyledParentNode(currentNode: Node, styleProperty: string): HTMLEle
     return target;
 }
 
-function separateTreeBranchAfterRange(root: Node, node: Node, offset: number): Node {
+function splitNodeAfterRange(root: HTMLElement, node: Node, offset: number): HTMLElement {
     let branch, leaf = cloneNode(node);
     if (node.nodeType === Node.TEXT_NODE) {
         node.textContent = node.textContent.substring(0, offset);
@@ -137,7 +150,7 @@ function separateTreeBranchAfterRange(root: Node, node: Node, offset: number): N
     return branch;
 }
 
-function separateTreeBranchBeforeRange(root: Node, node: Node, offset: number): Node {
+function splitNodeBeforeRange(root: HTMLElement, node: Node, offset: number): HTMLElement {
     let branch, leaf = node.cloneNode();
     if (node.nodeType === Node.TEXT_NODE) {
         node.textContent = node.textContent.substring(offset, node.textContent.length);
@@ -151,11 +164,12 @@ function separateTreeBranchBeforeRange(root: Node, node: Node, offset: number): 
     let currentAncestorNode = node, currentNode;
     while (currentAncestorNode !== root) {
         branch = currentAncestorNode.parentNode.cloneNode(false);
+        branch.appendChild(leaf);
         currentNode = currentAncestorNode;
         while (currentNode = currentNode.previousSibling) {
-            branch.appendChild(currentNode);
+            branch.insertBefore( currentNode, leaf ); // insert before the latest inserted node, to keep the ordering.
+            leaf = currentNode;
         }
-        branch.appendChild(leaf);
         leaf = branch;
         currentAncestorNode = currentAncestorNode.parentNode;
     }
@@ -183,31 +197,61 @@ export function findLatestChildTextNode(node: Node): Node {
     return lastNode;
 }
 
-function separateTreeBranchesAroundRange(root: Node, range: Range): Node {
+/** Checks whether a node 
+ * - is an empty text node (with no text content), or 
+ * - an element node with at least 1 child which is not an empty text node.
+ */
+function isNullOrEmptyNode( node:Node ): boolean  {
+    if( node && node.nodeType===Node.TEXT_NODE && node.textContent.length>0 )
+        return false;
+    if( node && node.nodeType===Node.ELEMENT_NODE ) {
+        for( let i=0; i<node.childNodes.length; i++ ) {
+            let child = node.childNodes[i];
+            if( child && child.nodeType===Node.ELEMENT_NODE ) {
+                return false;
+            } else if( child && child.nodeType===Node.TEXT_NODE && child.textContent.length>0 ) {
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
+/**
+ * Split the given node around the range limits, into multiple nodes.
+ * /!\ WARNING /!\
+ * The newly created nodes will be inserted *as siblings* of the root, that is, in the parent node.
+ * => This methods may modify the DOM before and/or after the split node.
+ * @param root the node to split
+ * @param range where to split
+ * @return root node, or the node created and inserted before it (= its new previous sibling)
+ */
+function separateTreeBranchesAroundRange(root: HTMLElement, range: Range): HTMLElement {
+    let ret = root;
     const startOffset = range.startOffset;
-    const endOffset = range.endOffset - startOffset;
+    const endOffset = range.endOffset;
     const startContainer = range.startContainer;
     const endContainer = range.endContainer;
-    const branchBeforeRange = separateTreeBranchBeforeRange(root, startContainer, startOffset);
-    const branchAfterRange = separateTreeBranchAfterRange(root, endContainer, endOffset);
+    const branchBeforeRange = splitNodeBeforeRange(root, startContainer, startOffset);
+    const branchAfterRange = splitNodeAfterRange(root, endContainer, endOffset);
 
-    if (branchBeforeRange && branchBeforeRange.textContent.length > 0) {
-        root.parentNode.insertBefore(branchBeforeRange, root);
+    if (!isNullOrEmptyNode(branchBeforeRange)) {
+        ret = root.parentNode.insertBefore(branchBeforeRange, root);
     }
-    if (branchAfterRange && branchAfterRange.textContent.length > 0) {
+    if (!isNullOrEmptyNode(branchAfterRange)) {
         root.parentNode.insertBefore(branchAfterRange, root.nextSibling);
     }
-    if (startContainer.textContent.length === 0) {
+    if (isNullOrEmptyNode(startContainer) && startContainer) {
         startContainer.textContent = '\u200b';
     }
-    if (endContainer.textContent.length === 0) {
+    if (isNullOrEmptyNode(endContainer) && endContainer) {
         endContainer.textContent = '\u200b';
     }
     const newStartContainer = findFirstChildTextNode(range.startContainer) || range.startContainer;
     const newEndContainer = findLatestChildTextNode(range.endContainer) || range.endContainer;
     range.setStart(newStartContainer, 0);
     range.setEnd(newEndContainer, getNormalizedEndOffset(newEndContainer));
-    return root;
+    return ret;
 }
 
 export function isBeforeComparedNode(bitmask: number): boolean {
@@ -225,18 +269,17 @@ export function isParentOfComparedNode(bitmask: number): boolean {
 export function explodeRangeOnChildNodes(range: Range, root: Node): Array<{ node: Node, range: Range }> {
     const childNodesAndRanges: Array<{ node: Node, range: Range }> = [];
     let child = root.firstChild;
-    do {
-        if (isNodeInRange(child, range)) {
-            let positionComparedWithRangeStart = child.compareDocumentPosition(range.startContainer);
-            let positionComparedWithRangeEnd = child.compareDocumentPosition(range.endContainer);
+    while( child ) {
+        const compare = compareNodeToRange(child, range);
+        if (compare.isInRange) {
             let newRange = document.createRange();
-            if (isParentOfComparedNode(positionComparedWithRangeStart) || child === range.startContainer) {
+            if (isParentOfComparedNode(compare.maskStart) || child === range.startContainer) {
                 newRange.setStart(range.startContainer, range.startOffset);
             } else {
                 let startContainer = findFirstChildTextNode(child) || child;
-                newRange.setStart(startContainer, 0)
+                newRange.setStart(startContainer, 0);
             }
-            if (isParentOfComparedNode(positionComparedWithRangeEnd) || child === range.endContainer) {
+            if (isParentOfComparedNode(compare.maskEnd) || child === range.endContainer) {
                 newRange.setEnd(range.endContainer, range.endOffset);
             } else {
                 let endContainer = findLatestChildTextNode(child) || child;
@@ -245,7 +288,8 @@ export function explodeRangeOnChildNodes(range: Range, root: Node): Array<{ node
             }
             childNodesAndRanges.push({node: child, range: newRange});
         }
-    } while (child = child.nextSibling);
+        child = child.nextSibling
+    };
     return childNodesAndRanges;
 }
 
@@ -254,24 +298,27 @@ function applyCssToTextNode(node: Node, startOffset: number, endOffset: number, 
     const span = document.createElement('span');
     const text = document.createTextNode(node.textContent.substring(startOffset, endOffset) || '\u200b');
     span.appendChild(text);
-    const textBefore = document.createTextNode(node.textContent.substring(0, startOffset));
-    const textAfter = document.createTextNode(node.textContent.substring(endOffset, node.textContent.length));
     css(span, style);
-    parent.insertBefore(textBefore, node);
+
+    const textBefore:string = node.textContent.substring(0, startOffset);
+    const textAfter:string  = node.textContent.substring(endOffset, node.textContent.length);
+    if( textBefore && textBefore.length > 0 ) {
+        parent.insertBefore(document.createTextNode(textBefore), node);
+    }
     parent.replaceChild(span, node);
-    parent.insertBefore(textAfter, span.nextSibling);
+    if( textAfter && textAfter.length > 0 ) {
+        parent.insertBefore(document.createTextNode(textAfter), span.nextSibling);
+    }
     return text;
 }
 
-function cancelCssOnEveryChildNodes(root: Node, style: any): Node {
+function cancelCssOnNodeBranch(root: HTMLElement, style: any): HTMLElement {
     const ni = document.createNodeIterator(root, NodeFilter.SHOW_ELEMENT, null, false);
     const styleKeys = Object.keys(style);
 
     let currentNode: HTMLElement;
     while (currentNode = (ni.nextNode() as HTMLElement)) {
-        if (currentNode != root) {
-            styleKeys.forEach(key => currentNode.style.removeProperty(key));
-        }
+        styleKeys.forEach(key => currentNode.style.removeProperty(key));
     }
     return root;
 }
@@ -307,12 +354,13 @@ export function applyCssToRange(root: Node, range: Range, property: string, styl
         let styledNode = findStyledParentNode(range.commonAncestorContainer, property);
         if (styledNode) {
             separateTreeBranchesAroundRange(styledNode, range);
+            cancelCssOnNodeBranch(styledNode, style);
             css(styledNode, style);
-            cancelCssOnEveryChildNodes(styledNode, style)
         } else {
             if (range.startContainer === range.endContainer &&
                 range.startContainer.nodeType === Node.TEXT_NODE &&
-                isHTMLBlockElement(findClosestHTMLElement(range.startContainer))) {
+                isHTMLBlockElement(findClosestHTMLElement(range.startContainer))
+                ) {
                 const container = range.startContainer;
                 const styledTextNode = applyCssToTextNode(container, range.startOffset, range.endOffset, style);
                 range.selectNodeContents(styledTextNode);
@@ -321,8 +369,8 @@ export function applyCssToRange(root: Node, range: Range, property: string, styl
                     range.commonAncestorContainer : findClosestHTMLElement(range.commonAncestorContainer);
                 if (!isHTMLBlockElement(container)) {
                     separateTreeBranchesAroundRange(container, range);
+                    cancelCssOnNodeBranch(container, style);
                     css(container, style);
-                    cancelCssOnEveryChildNodes(container, style);
                 } else {
                     explodeRangeOnChildNodes(range, container)
                         .map((child) => applyCssToRange(child.node, child.range, property, style))
@@ -929,8 +977,8 @@ export const Selection = function(data){
                 }
                 /* Remove items which :
                  * - have no text node
-                 * - have a parent node which is not a "block" element (div, ul, ol, li, p...) with only 1 child
                  * - have no child nodes (<span> sometimes have images (smileys) and are not considered a "block" element)
+                 * - have a parent node which is not a "block" element (div, ul, ol, li, p...) with only 1 child
                  */
                 if (    item.textContent === "" 
                         && item.childNodes.length === 0

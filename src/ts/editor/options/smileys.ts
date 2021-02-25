@@ -20,7 +20,10 @@ export const smileys = {
                         '<img skin-src="/img/smileys/' + smiley + '.png" class="smiley" />'
                     )(scope.$parent);
                     instance.selection.replaceHTMLInline(content);
+                    let sel = window.getSelection();
+                    sel.getRangeAt(0).collapse(false); // Put after the selected smiley.
                     scope.display.pickSmiley = false;
+                    instance.focus();
                 }
 
                 element.children('i').on('click', function(){
