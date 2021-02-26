@@ -72,7 +72,7 @@ export class LibraryPublishController<R> {
         type: subjectArea
     }));
     public allLanguages: string[] = allLangages;
-    public revocableUrl: string;
+    public revocableUrl: string = null;
     public loading = false;
     public licence: 'CC-BY' | 'none' = 'none';
     public sliderOptions: { connect: boolean, range: { min: number, max: number }, step: number, pips?: any, tooltips: any, format: any } = {
@@ -268,7 +268,7 @@ export const libraryPublishDirective: Directive = ng.directive('libraryPublish',
                                     ng-src="[[libraryPublishController.revocableUrl]]"
                                     alt="" />
                                 <i class="file-image cell two"
-                                    ng-if="libraryPublishController.revocableUrl != null"/>
+                                    ng-if="libraryPublishController.revocableUrl == null"></i>
                             </div>
                             <div class="row top-spacing-twice">
                                 <label class="cell three bold" for="">

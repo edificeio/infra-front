@@ -1286,7 +1286,7 @@ module.directive('datePickerIcon', function(){
 		},
 		replace: true,
 		restrict: 'E',
-		template: '<div class="date-picker-icon"> <input type="text" class="hiddendatepickerform" style="visibility: hidden; width: 0px; height: 0px; float: inherit"/> <a ng-click="openDatepicker()"><i class="calendar"/></a> </div>',
+		template: '<div class="date-picker-icon"> <input type="text" class="hiddendatepickerform" style="visibility: hidden; width: 0px; height: 0px; float: inherit"/> <a ng-click="openDatepicker()"><i class="calendar"></i></a> </div>',
 		link: function($scope, $element, $attributes){
 			http().loadScript('/' + infraPrefix + '/public/js/bootstrap-datepicker.js').then(() => {
 				const format = getDatePickerFormat();

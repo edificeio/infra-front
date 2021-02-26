@@ -29,8 +29,8 @@ export const multiComboboxes: Directive = ng.directive('multiComboboxes', () => 
             <div class="fluid row">
                 <button type="button" class="select-button left-text low-text row" ng-class="{ selected : showOptions }" ng-disabled="ngDisabled">
                     <span ng-if="!ngModel && !ngDisabled" class="block cell-ellipsis right-spacing">[[ titleAll ]]</span>
-                    <span ng-if="ngModel.length >= 0 && !ngDisabled && title" class="block cell-ellipsis right-spacing active">[[ title ]]: [[ ngModel.length ]] <i18n>portal.selected</i18n></span> <i class="sort horizontal-margin top-spacing absolute-magnet"/>
-                    <span ng-if="ngModel.length >= 0 && !ngDisabled && !title" class="block cell-ellipsis right-spacing active">[[ ngModel.length ]] <i18n>portal.selected</i18n></span> <i class="sort horizontal-margin top-spacing absolute-magnet"/>
+                    <span ng-if="ngModel.length >= 0 && !ngDisabled && title" class="block cell-ellipsis right-spacing active">[[ title ]]: [[ ngModel.length ]] <i18n>portal.selected</i18n></span> <i class="sort horizontal-margin top-spacing absolute-magnet"></i>
+                    <span ng-if="ngModel.length >= 0 && !ngDisabled && !title" class="block cell-ellipsis right-spacing active">[[ ngModel.length ]] <i18n>portal.selected</i18n></span> <i class="sort horizontal-margin top-spacing absolute-magnet"></i>
                     <span ng-if="ngDisabled" class="block cell-ellipsis right-spacing">[[ titleDisabled || title ]]</span>
                 </button>
                 <article class="absolute-w">
