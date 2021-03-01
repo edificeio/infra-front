@@ -6,6 +6,7 @@ function generateID(): string {
 };
 
 export interface TrackingEvent {
+    disabled?:boolean;
     type: string;
     resourceType?: string
     date?: Date
@@ -25,6 +26,7 @@ export class EditTrackingEvent {
     private id: string;
     private resourceUri: string;
     private matomoResourceUri: string;
+    disabled:boolean = false;
     constructor(data: { resourceUri?: string, resourceId?: string }, private pushEvent: (event: TrackingEvent) => void) {
         const defautUri = window.location.pathname + window.location.hash;
         this.id = data.resourceId || generateID();

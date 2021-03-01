@@ -15,6 +15,7 @@ export abstract class Tracking {
     params: TrackingParams;
     initStatus: "void" | "pending" | "ready" | "failed" = "void";
     onReady: Promise<void>;
+    disabled:boolean = false;
     protected abstract doInit(params: TrackingParams): Promise<void>;
     protected abstract doTrackEvent(event: TrackingEvent): void;
     abstract trackPage(title: string, url: string): void;
@@ -48,6 +49,9 @@ export abstract class Tracking {
         return true;
     }
     shouldTrackEvent(eventName: string): boolean {
+        if(this.disabled){
+            return false;
+        }
         const params = this.params;
         const apps = this.getCurrentMatchingApps();
         //check included first
@@ -72,6 +76,9 @@ export abstract class Tracking {
         return true;
     }
     trackEvent(event: TrackingEvent): void {
+        if(event.disabled){
+            return;
+        }
         this.onReady && this.onReady.then(()=>{
             if (this.shouldTrackEvent(event.type)) {
                 this.doTrackEvent(event);
