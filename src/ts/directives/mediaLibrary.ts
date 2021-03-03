@@ -221,7 +221,6 @@ export const mediaLibrary = ng.directive('mediaLibrary', ['$timeout','$filter', 
 				template.open(MAIN_CONTAINER, TEMPLATE_LOADING);
 				const files = e.originalEvent.dataTransfer.files;
 				scope.importFiles(e.originalEvent.dataTransfer.files);
-				scope.$apply();
 			});
 
 			scope.$watch('ngModel', function (newVal) {
@@ -359,7 +358,6 @@ export const mediaLibrary = ng.directive('mediaLibrary', ['$timeout','$filter', 
 			const refresh = function () {
 				scope.documents = filteredDocuments(MediaLibrary[scope.display.listFrom]);
 				scope.folders = filterFolders(scope.openedFolder);
-				scope.$apply();
 			}
 			MediaLibrary.eventer.on('sync', refresh);
 			MediaLibrary.eventer.on('ready', () => {
@@ -367,7 +365,6 @@ export const mediaLibrary = ng.directive('mediaLibrary', ['$timeout','$filter', 
 				scope.openedFolder = scope.folder;
 				scope.documents = filteredDocuments(MediaLibrary[scope.display.listFrom]);
 				scope.folders = filterFolders(scope.openedFolder);
-				scope.$apply();
 			});
 			//init
 			MediaLibrary.sync();
@@ -376,7 +373,6 @@ export const mediaLibrary = ng.directive('mediaLibrary', ['$timeout','$filter', 
 				await folder.sync();
 				scope.documents = filteredDocuments(folder);
 				scope.folders = filterFolders(scope.openedFolder);
-				scope.$apply();
 			};
 
 			scope.$watch('visibility', function (newVal) {
@@ -402,14 +398,12 @@ export const mediaLibrary = ng.directive('mediaLibrary', ['$timeout','$filter', 
 						showTemplate(HEADER_RECORD);
 						element.parents('lightbox').on('lightboxvisible', () => {
 							showTemplate(HEADER_RECORD);
-							scope.$apply();
 						});
 					}
 					else {
 						showTemplate(HEADER_BROWSE);
 						element.parents('lightbox').on('lightboxvisible', () => {
 							showTemplate(HEADER_BROWSE);
-							scope.$apply();
 						});
 					}
 					if (MediaLibrary[scope.display.listFrom].documents.length === 0) {
@@ -489,7 +483,6 @@ export const mediaLibrary = ng.directive('mediaLibrary', ['$timeout','$filter', 
 					else {
 						scope.ngModel = duplicateDocuments[0];
 					}
-					scope.$apply();
 				}
 				if ((scope.ngModel && (scope.ngModel as Document)._id) || (scope.ngModel && scope.multiple && (scope.ngModel as Document[]).length)) {
 					$timeout(() => scope.ngChange());
@@ -551,7 +544,6 @@ export const mediaLibrary = ng.directive('mediaLibrary', ['$timeout','$filter', 
 				else
 					await scope.listFrom('appDocuments');
 				scope.showHeader(HEADER_BROWSE);
-				scope.$apply();
 			}
 
 			scope.cancelUpload = () => {

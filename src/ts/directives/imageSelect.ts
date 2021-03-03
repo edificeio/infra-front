@@ -40,9 +40,7 @@ export let imageSelect = ng.directive('imageSelect', function(){
 			scope.restoreDefault = () => {
 				setTimeout(() => {
 					scope.ngModel = '';
-					scope.$apply();
 					scope.ngChange();
-					scope.$apply();
 				}, 10);
 			};
 
@@ -101,20 +99,18 @@ export let imageSelect = ng.directive('imageSelect', function(){
 			});
 
 			scope.updateDocument = () => {
-				setTimeout(() => {
+//				setTimeout(() => {
 					scope.userSelecting = false;
 					var path = '/workspace/document/';
 					if(scope.selectedFile.visibility === 'public'){
 						path = '/workspace/pub/document/'
 					}
 					scope.ngModel = path + scope.selectedFile.file._id;
-					scope.$apply();
 					scope.ngChange();
-				}, 10);
+//				}, 10);
 			};
 			element.on('click', '.pick-file', () => {
 				scope.userSelecting = true;
-				scope.$apply();
 			});
 		}
 	}
