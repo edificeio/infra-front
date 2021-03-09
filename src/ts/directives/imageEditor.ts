@@ -45,7 +45,6 @@ export const imageEditor = ng.directive('imageEditor', () => {
             const start = async () => {
                 scope.ready = true;
                 scope.display.isImageLoading = true;
-                scope.$apply();
                 setTimeout(async () => {
                     await ImageEditor.init();
                     imageEditor.draw(element.find('section').last());
