@@ -140,7 +140,7 @@ export const inputdate = ng.directive("inputdate", ['$timeout', function ($timeo
                                 if (scope.ngMax) {
                                     const value = dateOrISOToMoment(model);
                                     const ngMax = dateOrISOToMoment(scope.ngMax);
-                                    if (value && value.isValid()) {
+                                    if (value && value.isValid() && ngMax && ngMax.isValid()) {
                                         return value.toDate().getTime() <= ngMax.toDate().getTime();
                                     }
                                 }
@@ -153,7 +153,7 @@ export const inputdate = ng.directive("inputdate", ['$timeout', function ($timeo
                                 if (scope.ngMin) {
                                     const value = dateOrISOToMoment(model);
                                     const ngMin = dateOrISOToMoment(scope.ngMin);
-                                    if (value && value.isValid()) {
+                                    if (value && value.isValid() && ngMin && ngMin.isValid()) {
                                         return value.toDate().getTime() >= ngMin.toDate().getTime();
                                     }
                                 }
