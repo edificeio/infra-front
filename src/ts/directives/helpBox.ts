@@ -74,7 +74,7 @@ function needVerticalScroll(el: HTMLElement, parent: HTMLElement) {
 }
 function synchronizeCssStyles(src: HTMLElement, destination: HTMLElement, recursively: boolean) {
     const style = window.getComputedStyle ? window.getComputedStyle(src) : {};
-    jQuery(destination).css({ ...style })
+    jQuery(destination).css((style as CSSStyleDeclaration).cssText)
     if (recursively) {
         const vSrcElements = jQuery(src).find("*");
         const vDstElements = jQuery(destination).find("*");
@@ -84,7 +84,7 @@ function synchronizeCssStyles(src: HTMLElement, destination: HTMLElement, recurs
             const vDstElement = vDstElements[i];
             const vStyle = window.getComputedStyle ? window.getComputedStyle(vSrcElement) : {};
             jQuery(vDstElement).removeClass();
-            jQuery(vDstElement).css({ ...vStyle })
+            jQuery(vDstElement).css((vStyle as CSSStyleDeclaration).cssText)
         }
     }
 }
