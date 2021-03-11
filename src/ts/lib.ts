@@ -8,6 +8,7 @@ import { currentLanguage, appPrefix, infraPrefix } from './globals';
 import { Collection, Model, model } from './modelDefinitions';
 import { skin } from './skin';
 import axios from "axios";
+import { Me } from './me';
 
 var _ = require('underscore');
 var moment = require('moment');
@@ -671,7 +672,11 @@ export async function bootstrap(func) {
 		
 		model.trigger("userinfo-loaded")
 		model.trigger('preferences-updated');
-
+		//
+		request({url:'/conf/public', method: 'get'}).then(res=>{
+			Me.keepOpenOnLogout = !!(res as any).keepOpenOnLogout;
+		});
+		//
 		model.me.hasWorkflow = function(workflow){
 			return _.find(model.me.authorizedActions, function(workflowRight){
 				return workflowRight.name === workflow;
