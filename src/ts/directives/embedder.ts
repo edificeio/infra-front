@@ -122,8 +122,9 @@ export let embedder = ng.directive('embedder', ['$timeout', '$filter', function 
             show: '=',
             hiddenShareVideoCode: '='
         },
+        require: "?ngModel",
         templateUrl: '/' + appPrefix + '/public/template/entcore/video/main.html',
-        link: function (scope: VideoScope, element, attributes) {
+        link: function (scope: VideoScope, element, attributes, lnkNgModel) {
 			scope.documentList = new DocumentsListModel($filter, true);
 			scope.documentList.watch(scope);
             //console.log('scope.delegate link', scope)
@@ -708,9 +709,7 @@ export let embedder = ng.directive('embedder', ['$timeout', '$filter', function 
 
             scope.applyHtml = function () {
                 scope.show = false;
-                scope.ngModel = scope.display.htmlCode;
-                scope.$apply();
-                scope.ngChange && scope.ngChange();
+                lnkNgModel.$setViewValue(scope.display.htmlCode);
                 scope.unselectProvider();
             };
 
