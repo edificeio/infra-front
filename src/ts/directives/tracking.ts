@@ -13,10 +13,13 @@ export const trackInputEventDirective: Directive = ng.directive('trackInputEvent
                 let oldValue: string;
                 ngModel && ngModel.$formatters.push(function (e) {
                     if (!oldValue) oldValue = e;
-                    const copy = e.replaceAll(" class=\"ng-scope\"", "");
-                    if (e != oldValue && copy != oldValue) {
-                        model.onStart(true);
-                        oldValue = e;
+                    if(e != null)
+                    {
+                        const copy = e.replace("/ class=\"ng-scope\"/g", "");
+                        if (e != oldValue && copy != oldValue) {
+                            model.onStart(true);
+                            oldValue = e;
+                        }
                     }
                     return e
                 })
