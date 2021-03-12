@@ -20,7 +20,7 @@ export const contentDivider = ng.directive('contentDivider', () => {
         template: function(tElement, tAttrs) {
             return `
             <div class="zero-mobile-fat-mobile flex-row reduce-block-eight scroll-x">
-                <div class="flex-row" ng-repeat="content in ngModel track by $index | orderBy:order">`
+                <div class="flex-row" ng-repeat="content in getModel() track by $index">`
                 + 
                     tElement.children()[0].outerHTML
                 +
@@ -28,7 +28,7 @@ export const contentDivider = ng.directive('contentDivider', () => {
                 </div>
             </div>
             <div class="mobile-fat-mobile flex-row f-column reduce-block-eight">
-                <div class="flex-row f-column" ng-repeat="content in ngModel track by $index">`
+                <div class="flex-row f-column" ng-repeat="content in getModel() track by $index">`
                 + 
                     tElement.children()[0].outerHTML
                 +
@@ -38,12 +38,18 @@ export const contentDivider = ng.directive('contentDivider', () => {
         `},
 
         scope: {
-            ngModel: '=',
             callback: '=',
         },
+        require: "ngModel",
 
-        link: (scope, element, attributes,ctrl,transclude) => {
+        link: (scope, element, attributes, ngModel,transclude) => {
             scope.order = attributes.order;
+
+            scope.getModel = function()
+            {
+                let m = ngModel.$viewValue;
+                return  m == null ? [] : typeof m == "string" ? JSON.parse(m) : m;
+            }
         }
     };
 });
