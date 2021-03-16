@@ -16,6 +16,8 @@ export let recorderComponent = ng.directive('recorder', function () {
                 if(eventName === 'saved'){
                     scope.onUpload();
                 }
+                if(scope.isRecording())
+                    scope.$apply(); // Force reevaluation of the recorder's field
             });
             scope.switchRecord = function () {
                 if (recorder.status === 'recording') {
