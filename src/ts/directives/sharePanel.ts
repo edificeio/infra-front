@@ -457,6 +457,7 @@ export const sharePanel = ng.directive('sharePanel', ['$rootScope', ($rootScope)
                 $scope.sharingModel.groups = [] as any;
                 $scope.sharingModel.users = [] as any;
                 $scope.found = [];
+                $scope.search = "";
             }
 
             $scope.findUserOrGroup = function () {
@@ -504,11 +505,11 @@ export const sharePanel = ng.directive('sharePanel', ['$rootScope', ($rootScope)
                         var testName = idiom.removeAccents(bookmark.name).toLowerCase();
                         return testName.indexOf(searchTerm) !== -1 && $scope.sharingModel.edited.find(i => i.id === bookmark.id) === undefined;
                     }),
-                    _.filter($scope.sharingModel.groups.visibles, function (group) {
+                    _.filter($scope.sharingModel.groups == null ? [] : $scope.sharingModel.groups.visibles, function (group) {
                         var testName = idiom.removeAccents(group.name).toLowerCase();
                         return testName.indexOf(searchTerm) !== -1 && $scope.sharingModel.edited.find(i => i.id === group.id) === undefined;
                     }),
-                    _.filter($scope.sharingModel.users.visibles, function (user) {
+                    _.filter($scope.sharingModel.users == null ? [] : $scope.sharingModel.users.visibles, function (user) {
                         var testName = idiom.removeAccents(user.lastName + ' ' + user.firstName).toLowerCase();
                         var testNameReversed = idiom.removeAccents(user.firstName + ' ' + user.lastName).toLowerCase();
                         var testUsername = idiom.removeAccents(user.username).toLowerCase();
@@ -705,8 +706,8 @@ export const sharePanel = ng.directive('sharePanel', ['$rootScope', ($rootScope)
                 if (value.type == 'group') return 1;
                 return 2;
             }
-            const doClose = async () => {
-                $element.closest('.lightbox').first().fadeOut();
+            const doClose = () => {
+                $element.closest('.lightbox').first().fadeOut(function() {$scope.display.showCloseConfirmation = false;});
                 $('body').css({ overflow: 'auto' });
                 $('body').removeClass('lightbox-opened');
 
@@ -715,18 +716,15 @@ export const sharePanel = ng.directive('sharePanel', ['$rootScope', ($rootScope)
                 if (isolatedScope) {
                     isolatedScope.$eval(isolatedScope.onClose);
                     isolatedScope.show = false;
-                    isolatedScope.$parent.$apply();
                 }
-                $scope.display.showCloseConfirmation = false;
-                await feedData();
-
-                $scope.$apply();
+                feedData();
+                $scope.clearSearch();
             }
             $scope.closePanel = async function (cancelled = true) {
                 if ($attributes.closeDelegate) {
                     $scope.closeDelegate({ "$canceled": cancelled, "$close": doClose })
                 } else {
-                    await doClose()
+                    doClose()
                 }
                 if (cancelled) {
                     $attributes.onCancel && $scope.onCancel();
@@ -736,7 +734,6 @@ export const sharePanel = ng.directive('sharePanel', ['$rootScope', ($rootScope)
             $scope.revertClose = function () {
                 $element.closest('.lightbox').find('.content > .close-lightbox').css({ visibility: 'visible' });
                 $scope.display.showCloseConfirmation = false;
-                $scope.$apply();
             }
             const closeCallback = function (e) {
                 e.stopPropagation();
