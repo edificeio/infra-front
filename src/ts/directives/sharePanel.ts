@@ -457,7 +457,6 @@ export const sharePanel = ng.directive('sharePanel', ['$rootScope', ($rootScope)
                 $scope.sharingModel.groups = [] as any;
                 $scope.sharingModel.users = [] as any;
                 $scope.found = [];
-                $scope.search = "";
             }
 
             $scope.findUserOrGroup = function () {
@@ -719,6 +718,7 @@ export const sharePanel = ng.directive('sharePanel', ['$rootScope', ($rootScope)
                 }
                 feedData();
                 $scope.clearSearch();
+                $scope.search = "";
             }
             $scope.closePanel = async function (cancelled = true) {
                 if ($attributes.closeDelegate) {
