@@ -111,6 +111,7 @@ export let imageSelect = ng.directive('imageSelect', function(){
 			};
 			element.on('click', '.pick-file', () => {
 				scope.userSelecting = true;
+				scope.$apply("userSelecting")
 			});
 		}
 	}
