@@ -1,6 +1,7 @@
 import { ng } from '../ng-start';
 import { http } from '../http';
 import { idiom as lang } from '../idiom';
+import { deviceType } from '../globals';
 
 export let libraryPrompt = ng.directive('libraryPrompt', ['$timeout', '$sce', function ($timeout, $sce) {
     return {
@@ -53,7 +54,7 @@ export let libraryPrompt = ng.directive('libraryPrompt', ['$timeout', '$sce', fu
 
             scope.show = { libraryprompt: false };
 
-            if (!scope.originModule) {
+            if (!scope.originModule || deviceType != 'Desktop') {
                 return;
             }
 
