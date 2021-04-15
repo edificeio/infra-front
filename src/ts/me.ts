@@ -5,6 +5,7 @@ import { idiom } from './idiom';
 import { $ } from "./entcore";
 import { notify } from './notify';
 import { Behaviours } from './behaviours';
+import { appPrefix } from './globals';
 
 export class Me{
     static preferences: any;
@@ -129,6 +130,27 @@ window.addEventListener('storage', function(event){
 
 if(!(XMLHttpRequest.prototype as any).baseSend && !(window as any).pupetterMode){
     (XMLHttpRequest.prototype as any).baseSend = XMLHttpRequest.prototype.send;
+    (XMLHttpRequest.prototype as any).baseOpen = XMLHttpRequest.prototype.open;
+    XMLHttpRequest.prototype.open = function(){
+        if((window as any).CDN_DOMAIN){
+            const url = arguments[1] as string;
+            let appFolder = appPrefix;
+            //PUBLIC infra
+            if(url.startsWith("/infra/public")){
+                arguments[1] = (window as any).CDN_DOMAIN + url;
+            }
+            //PUBLIC files (/.*/public)
+            const match = /^\/([^\/]*)\/public/.test(url)
+            if(match){
+                arguments[1] = (window as any).CDN_DOMAIN + url;
+            }
+            //ASSETS files
+            if(url.startsWith("/assets")){
+                arguments[1] = (window as any).CDN_DOMAIN + url;
+            }
+        }
+        return (this as any).baseOpen.apply(this, arguments);
+    }
     XMLHttpRequest.prototype.send = function(data){
         if((document.cookie.indexOf('authenticated=true') === -1 || window['newLogin'] === true) && window.location.href.indexOf('/auth') === -1 && !window.notLoggedIn){
             const url = idiom.translate('disconnected.redirect.url');

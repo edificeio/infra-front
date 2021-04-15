@@ -13,9 +13,9 @@ export const themeService = {
         const style = jQuery('<link>', {
             rel: 'stylesheet',
             type: 'text/css',
-            href: `/assets/themes/${oldTheme}/skins/${skinName}/wrapped.theme.css?version=${version}`,
+            href: (window as any).CDN_DOMAIN+`/assets/themes/${oldTheme}/skins/${skinName}/wrapped.theme.css?version=${version}`,
             id: 'themeOld'
-        });
+        }).attr("crossorigin", "anonymous");
         jQuery('head').append(style);
     },
     loadThemeJs(theme:string){
@@ -26,7 +26,7 @@ export const themeService = {
         jQuery("#themeJS").remove();
         const style = jQuery('<script>', {
             type: 'text/javascript',
-            src: `/assets/themes/${theme}/js/theme.js?version=${version}`,
+            src: (window as any).CDN_DOMAIN+`/assets/themes/${theme}/js/theme.js?version=${version}`,
             id: 'themeJS'
         });
         jQuery('body').append(style);
@@ -46,7 +46,7 @@ export function initThemeDirective(module:any){
                 for(let theme of conf.overriding){
                     //replace theme by bootstrap version
                     if(theme.child==themeName && theme.bootstrapVersion){
-                        url = `/assets/themes/${theme.bootstrapVersion}/skins/${skinName}/`;
+                        url = (window as any).CDN_DOMAIN + `/assets/themes/${theme.bootstrapVersion}/skins/${skinName}/`;
                         element.addClass(theme.bootstrapVersion);//add class at root=>wrapped theme
                         themeService.loadOldWrappedTheme(theme.child, skinName);
                         themeService.loadThemeJs(theme.bootstrapVersion)

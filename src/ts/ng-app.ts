@@ -37,10 +37,16 @@ import { initThemeDirective } from './theme';
 import {VideoController} from "./video/VideoController";
 import { VideoEventTracker } from './video/VideoEventTracker';
 
-
 var module = angular.module('app', ['ngSanitize', 'ngRoute'], ['$interpolateProvider', function($interpolateProvider) {
 		$interpolateProvider.startSymbol('[[');
 		$interpolateProvider.endSymbol(']]');
+	}]).config(['$sceDelegateProvider',function($sceDelegateProvider) {
+		$sceDelegateProvider.resourceUrlWhitelist([
+			// Allow same origin resource loads.
+			'self',
+			// Allow loading from our assets domain. **.
+			(window as any).CDN_DOMAIN + '/**'
+		  ]);
 	}])
 	.factory('route', ['$rootScope', '$route', '$routeParams', function($rootScope, $route, $routeParams){
 		const routes = {};

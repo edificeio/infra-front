@@ -28,11 +28,8 @@ export let bindHtml = ng.directive('bindHtml', ['$compile', function($compile){
 				});
 				let htmlContent = htmlVal[0].outerHTML;
 				if (!window.MathJax && !(window as any).MathJaxLoading) {
-					let script = $('<script></script>')
-						.attr('src', '/infra/public/mathjax/MathJax.js')
-						.appendTo('head');
-						
-						script[0].async = false;
+					(window as any).MathJaxLoading = true;
+					$.getScript((window as any).CDN_DOMAIN+'/infra/public/mathjax/MathJax.js',()=>{
 						window.MathJax.Hub.Config({
 							messageStyle: 'none',
 							tex2jax: { preview: 'none' },
@@ -43,6 +40,8 @@ export let bindHtml = ng.directive('bindHtml', ['$compile', function($compile){
 							}
 						});
 						window.MathJax.Hub.Queue(["Typeset", window.MathJax.Hub]);
+						scope.$apply();
+					});
                 }
 				element.html($compile(htmlContent)(scope.$parent));
 				//weird browser bug with audio tags

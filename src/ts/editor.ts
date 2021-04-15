@@ -496,7 +496,8 @@ export let RTE = {
                                 .attr('rel', 'stylesheet')
                                 .attr('type', 'text/css')
                                 .attr('class', 'prism-css')
-                                .attr('href', '/infra/public/js/prism/prism.css')
+                                .attr("crossorigin", "anonymous")
+                                .attr('href', (window as any).CDN_DOMAIN + '/infra/public/js/prism/prism.css')
                         );
 
                         http().get('/infra/public/js/prism/prism.js')
@@ -1276,22 +1277,21 @@ export let RTE = {
                 },
                 link: function (scope, element, attributes) {
                     if (!window.MathJax && !(window as any).MathJaxLoading) {
-                        let script = $('<script></script>')
-                            .attr('src', '/infra/public/mathjax/MathJax.js')
-                            .appendTo('head');
-
-                            script[0].async = false;
-                            window.MathJax.Hub.Config({
-                                messageStyle: 'none',
-                                tex2jax: { preview: 'none' },
-                                jax: ["input/TeX", "output/CommonHTML"],
-                                extensions: ["tex2jax.js", "MathMenu.js", "MathZoom.js"],
-                                TeX: {
-                                    extensions: ["AMSmath.js", "AMSsymbols.js", "noErrors.js", "noUndefined.js"]
-                                }
+                            (window as any).MathJaxLoading = true;
+                            $.getScript((window as any).CDN_DOMAIN+'/infra/public/mathjax/MathJax.js',()=>{
+                                window.MathJax.Hub.Config({
+                                    messageStyle: 'none',
+                                    tex2jax: { preview: 'none' },
+                                    jax: ["input/TeX", "output/CommonHTML"],
+                                    extensions: ["tex2jax.js", "MathMenu.js", "MathZoom.js"],
+                                    TeX: {
+                                        extensions: ["AMSmath.js", "AMSsymbols.js", "noErrors.js", "noUndefined.js"]
+                                    }
+                                });
+                                $('.MathJax_CHTML_Display').remove();
+                                window.MathJax.Hub.Queue(["Typeset", window.MathJax.Hub]);
+                                scope.$apply()
                             });
-                            $('.MathJax_CHTML_Display').remove();
-                            window.MathJax.Hub.Queue(["Typeset", window.MathJax.Hub]);
                     }
 
                     scope.updateFormula = function(newVal){

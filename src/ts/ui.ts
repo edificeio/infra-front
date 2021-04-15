@@ -1132,7 +1132,10 @@ export const ui = {
         });
         
     },
-    setStyle: function (stylePath) {
+    setStyle: function (stylePath:string) {
+        if(stylePath && stylePath.startsWith("/")){
+            stylePath = (window as any).CDN_DOMAIN + stylePath;
+        }
         if ($('#theme').length === 0) {
             let version = 'dev';
             if((window as any).springboardBuildDate){
@@ -1145,7 +1148,7 @@ export const ui = {
                 type: 'text/css',
                 href: stylePath + 'theme.css?version=' + version,
                 id: 'theme'
-            });
+            }).attr("crossorigin", "anonymous");
             var favicon = $('<link>', {
                 rel: 'icon',
                 href: skin.basePath + 'img/illustrations/favicon.ico'

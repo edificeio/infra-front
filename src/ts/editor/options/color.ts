@@ -50,7 +50,7 @@ export const color = {
                             setSpectrum(element);
                         }
                     });
-                    var stylesheet = $('<link rel="stylesheet" type="text/css" href="/infra/public/spectrum/spectrum.css" />');
+                    var stylesheet = $('<link rel="stylesheet" type="text/css" href="/infra/public/spectrum/spectrum.css" />').attr("crossorigin", "anonymous");
                     $('head').prepend(stylesheet);
                 }
                 if ($.spectrum && $.spectrum.palettes && element.find('input')[0].type === 'text') {
@@ -100,7 +100,7 @@ export const backgroundColor = {
                             setSpectrum(element);
                         }
                     });
-                    var stylesheet = $('<link rel="stylesheet" type="text/css" href="/infra/public/spectrum/spectrum.css" />');
+                    var stylesheet = $('<link rel="stylesheet" type="text/css" href="/infra/public/spectrum/spectrum.css" />').attr("crossorigin", "anonymous");
                     $('head').prepend(stylesheet);
                 }
                 else if ($.spectrum && $.spectrum.palettes && element.find('input')[0].type === 'text') {

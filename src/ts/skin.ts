@@ -39,7 +39,7 @@ export var skin = {
 			var rand = Math.random();
 			http().get('/skin', { token: rand }).done((data) => {
 				this.skin = data.skin;
-				this.theme = '/assets/themes/' + data.skin + '/skins/default/';
+				this.theme = (window as any).CDN_DOMAIN + '/assets/themes/' + data.skin + '/skins/default/';
 				this.basePath = this.theme + '../../';
 				skin.skinResolveFunc();
 				http().get('/assets/themes/' + data.skin + '/template/override.json', { token: rand }, { disableNotifications: true }).done((override) => {
@@ -141,9 +141,9 @@ export var skin = {
 				that.skinName = data.skinName;
 				that.themeName = data.themeName;
 				that.theme = data.skin;
-				that.basePath = that.theme + '../../';
+				that.basePath = (window as any).CDN_DOMAIN + that.theme + '../../';
 				that.skin = that.theme.split('/assets/themes/')[1].split('/')[0];
-				that.portalTemplate = '/assets/themes/' + that.skin + '/portal.html';
+				that.portalTemplate = (window as any).CDN_DOMAIN + '/assets/themes/' + that.skin + '/portal.html';
 				that.logoutCallback = data.logoutCallback;
 				skin.skinResolveFunc();
 				http().get('/assets/themes/' + that.skin + '/template/override.json', { token: rand }).done(function(override){
