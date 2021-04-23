@@ -3,6 +3,7 @@ import { Subject } from "rxjs";
 import { model } from '../modelDefinitions';
 import axios from "axios";
 import { appPrefix, devices, deviceType } from "../globals";
+import { UploadResult, VideoUploadService } from "./VideoUploadService";
 
 type MediaRecorderImpl = {
     start(time: number): void;
@@ -282,49 +283,19 @@ export class VideoRecorder {
         prepareRecord && this.prepareRecord();
     }
 
-    public async upload(filename, recordTime, callback,errCallback) {
+    public async upload(filename, recordTime, callback, errCallback) {
         if (!filename) {
             filename = "video-" + this.id;
         }
-
-        let formData = new FormData();
-        formData.append("file", this.getBuffer(), filename);
-        // Also report useful contextual data
-        let browserInfo = devices.getBrowserInfo();
-        formData.append("device", deviceType);
-        formData.append("browser", browserInfo.name + ' ' + browserInfo.version);
-        formData.append("duration", recordTime);
-        formData.append("weight", ''+this.getBuffer().size);
-        formData.append("url", window.location.hostname);
-        formData.append("app", appPrefix);
-        try{
-            const uploadRes = await axios.post("/video/upload?duration="+recordTime, formData);
-            if(uploadRes.status==202){
-                const id = uploadRes.data.processid;
-                console.log("[VideoRecorder] start fetching status for :", id, uploadRes.data)
-                let status = uploadRes.status;
-                let statusRes = null;
-                let seconds = 1;
-                while(status == 202){
-                    statusRes = await axios.get('/video/status/'+id);
-                    status = statusRes.status;
-                    await new Promise((resolve)=> setTimeout(resolve, seconds * 1000))
-                    seconds = Math.min(15, seconds * 2);
-                }
-                if(status==201){
-                    callback && callback(statusRes);
-                } else{
-                    console.warn("[VideoRecorder] Bad status while checking : ", uploadRes.status, uploadRes.data);
-                    errCallback && errCallback();
-                }
-            }else{
-                console.warn("[VideoRecorder] Bad status while uploading : ", uploadRes.status, uploadRes.data);
-                errCallback && errCallback();
+        new VideoUploadService().upload( this.getBuffer(), filename, true, recordTime )
+        .then( (statusRes:UploadResult) => {
+            if( statusRes && statusRes.data && statusRes.data.state==="error" ) {
+                errCallback && errCallback(statusRes.data.code);
+            } else {
+                callback && callback(statusRes);
             }
-        }catch(e){
-            console.warn(e)
-            errCallback && errCallback();
-        }
+        })
+        .catch( () => {errCallback && errCallback();} );
     }
 
 }

@@ -240,9 +240,23 @@ export var idiom = {
         }]);
 
 				/* For use in templates : <div title="{{'my.i18n.key.here'|i18n}}>" */
+				/* 
+                   Can accept variables.
+                   Given "my.variabilized.i18n.key.here"="Limit to ${limit} bytes"
+                        <div title="{{'my.variabilized.i18n.key.here'|i18n: {limit:50} }}">
+                   will return "Limit to 50 bytes"
+                */
 				module.filter('i18n', function() {
-					return function(input) {
-						return idiom.translate(input);
+					return function(input:string, params?:any) {
+                        var txt:string = idiom.translate(input);
+                        if( typeof params === "object" ) {
+                            for( var member in params ) {
+                                if( typeof params[member]!==undefined ) {
+                                    txt = txt.replace(new RegExp('${'+member+'}', 'g'), ''+params[member]);
+                                }
+                            }
+                        }
+						return txt;
 					};
 				});
 

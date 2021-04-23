@@ -35,7 +35,8 @@ import httpAxios from 'axios';
 import { NgModelExtend } from './directives';
 import { initThemeDirective } from './theme';
 import {VideoController} from "./video/VideoController";
-import { VideoEventTracker } from './video/VideoEventTracker';
+import { VideoEventTrackerService } from './video/VideoEventTrackerService';
+import { VideoUploadService } from './video/VideoUploadService';
 
 var module = angular.module('app', ['ngSanitize', 'ngRoute'], ['$interpolateProvider', function($interpolateProvider) {
 		$interpolateProvider.startSymbol('[[');
@@ -2487,7 +2488,9 @@ $(document).ready(function(){
 		    RTE.addDirectives(module);
             if (window.entcore.ng.init) {
 				window.entcore.ng.controllers.push(VideoController);
-				window.entcore.ng.services.push(VideoEventTracker);
+
+				window.entcore.ng.services.push( ng.service("VideoUploadService", [VideoUploadService]) );
+				window.entcore.ng.services.push( ng.service("VideoEventTracker", [VideoEventTrackerService]) );
                 window.entcore.ng.init(module);
 		    }
 			model.build();

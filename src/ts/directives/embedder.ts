@@ -11,6 +11,8 @@ import { embedderService } from '../embedder';
 import { Me } from '../me';
 import { DocumentsListModel } from '../workspace/model';
 import { ui } from '../ui';
+import { VideoUploadService } from '../video/VideoUploadService';
+import { notify } from '../notify';
 
 export interface VideoDelegate {
     title?: string
@@ -62,7 +64,8 @@ export interface VideoScope {
         highlights: Document[]
     };
     visibility: "public" | "protected" | "external";
-    viewMode: MediaLibraryView
+    viewMode: MediaLibraryView;
+    maxWeight: string;
 
     updatePreview():void;
     applyHtml():void;
@@ -97,21 +100,30 @@ export interface VideoScope {
     openCompression(doc: Document):void
     updateSelection(doc: Document):void
     abortOrDelete(doc: Document):void
+    canConfirmImport(): boolean
     confirmImport():void
     cancelUpload():void
     isExternalVisible(): boolean
+	triggerIpnutFileClick(event): void;
     //angular
     ngModel: string
     ngChange():void
     $apply(a?:any):void
     $watch(a?:any, b?:any):void
     $on(a?:any, b?:any):void
-    $parent: any
+    $id: any
+    $parent: any;
     cancel():void;
     $broadcast:any;
 }
 
-export let embedder = ng.directive('embedder', ['$timeout', '$filter', function ($timeout, $filter) {
+const VALID_UPLOAD_FORMATS = [
+    "video/mp4",        // .mp4
+    "video/quicktime",  // .mov
+    "video/x-msvideo"   // .avi
+];
+
+export let embedder = ng.directive('embedder', ['$timeout', '$filter', 'VideoUploadService', function ($timeout, $filter, VideoUploadService:VideoUploadService) {
     return {
         restrict: 'E',
         scope: {
@@ -143,7 +155,7 @@ export let embedder = ng.directive('embedder', ['$timeout', '$filter', function 
             scope.providers = [];
 
             const MAIN_CONTAINER = 'entcore/video/main';
-            const TEMPLATE_LOADING = 'entcore/media-library/loading';
+            const TEMPLATE_LOADING = 'entcore/video/loading';
 
             //=== Headers
             const HEADER_INTEGRATION: Header = {
@@ -153,17 +165,22 @@ export let embedder = ng.directive('embedder', ['$timeout', '$filter', function 
                 worflowKey: null
             };
             const HEADER_BROWSE: Header = {
-                i18Key: "library.header.browse",
+                i18Key: `${$(window).width() <= ui.breakpoints.tablette?"library.header.browse.mobile":"library.header.browse"}`,
                 template: "entcore/media-library/browse",
                 visible: () => true,
                 worflowKey: "video.view"
             };
+
+            let hasVideoUpload = false;
             const HEADER_UPLOAD: Header = {
-                i18Key: "video.header.upload",
-                template: "entcore/media-library/upload",
-                visible: () => false,
-                worflowKey: "workspace.create"
+                i18Key: `${$(window).width() <= ui.breakpoints.tablette?"video.header.upload.mobile":"video.header.upload"}`,
+                template: "entcore/video/upload",
+                visible: () => hasVideoUpload,
+                worflowKey: "video.upload"
             }
+            Me.hasWorkflowRight("video.upload")
+            .then( hasIt => { hasVideoUpload = hasIt; } ); // Make the visible() property reactive.
+
             let hasVideoView = false;
             const HEADER_RECORD: Header = {
                 i18Key: `${$(window).width() <= ui.breakpoints.tablette?'video.header.record.mobile':'video.header.record'}`,
@@ -176,6 +193,15 @@ export let embedder = ng.directive('embedder', ['$timeout', '$filter', function 
             };
             Me.hasWorkflowRight("video.view") //hack to start and load workflow rights
             .then( hasIt => { hasVideoView = hasIt; } ); // Make the visible() property reactive.
+            
+            // Get file upload limits
+            scope.maxWeight = "50";
+            http().get('/video/conf/public')
+            .done((response) => {
+                if( response && response["max-videosize-mbytes"] ) {
+                    scope.maxWeight = response["max-videosize-mbytes"];
+                }
+            });
             const emitDisplayEvent = () =>{
                 console.log("Broadcast display event displayVideoRecorder...")
                 scope.$broadcast('displayVideoRecorder', {});
@@ -211,7 +237,9 @@ export let embedder = ng.directive('embedder', ['$timeout', '$filter', function 
             }
 
             scope.getClassOf = function( h: Header ): any {
-                return (h !== HEADER_RECORD) ? "" : "beta-feature";
+                return {
+                    "beta-feature": (h===HEADER_RECORD || h===HEADER_UPLOAD)
+                }
             }
 
             scope.$on("video-upload", function (event, docId) {
@@ -226,12 +254,12 @@ export let embedder = ng.directive('embedder', ['$timeout', '$filter', function 
                 if (scope.delegate && scope.delegate.title) {
                     return scope.delegate.title;
                 } else {
-                    return idiom.translate("video.embedder.title");
+                    return idiom.translate("editor.option.embed");
                 }
             }
 
             //prefetch screen to avoid lock
-            template.open("entcore/media-library/cache", TEMPLATE_LOADING);
+            template.open("entcore/video/cache", TEMPLATE_LOADING);
             if (!(window as any).toBlobPolyfillLoaded) {
                 http().get('/infra/public/js/toBlob-polyfill.js').done((response) => {
                     eval(response.data);
@@ -250,19 +278,11 @@ export let embedder = ng.directive('embedder', ['$timeout', '$filter', function 
             });
 
             scope.openCompression = (doc: Document) => {
-                if (!doc.isEditableImage) {
-                    return;
-                }
-                scope.display.editedDocument = doc;
-                setTimeout(() => {
-                    scope.display.compressionReady = true;
-                    scope.$apply();
-                }, 350);
+                // void
             };
 
             scope.closeCompression = () => {
-                scope.display.editedDocument = undefined;
-                scope.display.compressionReady = false;
+                // void
             }
 
 
@@ -282,10 +302,7 @@ export let embedder = ng.directive('embedder', ['$timeout', '$filter', function 
             element.on('drop', async (e) => {
                 element.find('.drop-zone').removeClass('dragover');
                 e.preventDefault();
-                template.open(MAIN_CONTAINER, TEMPLATE_LOADING);
-                const files = e.originalEvent.dataTransfer.files;
                 scope.importFiles(e.originalEvent.dataTransfer.files);
-                scope.$apply();
             });
 
             scope.$watch('ngModel', function (newVal) {
@@ -594,26 +611,26 @@ export let embedder = ng.directive('embedder', ['$timeout', '$filter', function 
 
             const cancelAll = () => {
                 scope.display.editedDocument = undefined;
-
                 scope.upload.documents.forEach(doc => {
-                    if (doc.uploadStatus === "loaded") {
-                        doc.delete();
-                    }
-                    if (doc.uploadStatus === "loading") {
-                        doc.abort();
-                    }
+                    cancelDoc(doc);
                 });
                 scope.upload.documents = [];
                 scope.upload.loading = [];
             }
 
-            scope.abortOrDelete = (doc: Document) => {
+            const cancelDoc = (doc: Document) => {
                 if (doc.uploadStatus === "loaded") {
-                    doc.delete();
+                    return doc.delete();
                 }
                 if (doc.uploadStatus === "loading") {
-                    doc.abort();
+                    // Video uploads cannot be aborted.
+                    //doc.abort();
                 }
+                return Promise.resolve();
+            }
+            
+            scope.abortOrDelete = (doc: Document) => {
+                cancelDoc( doc );
                 const index = scope.upload.documents.indexOf(doc);
                 scope.upload.documents.splice(index, 1);
                 if (!scope.upload.documents.length) {
@@ -623,6 +640,10 @@ export let embedder = ng.directive('embedder', ['$timeout', '$filter', function 
                     scope.display.editedDocument = undefined;
                 }
             };
+
+			scope.canConfirmImport = function () {
+				return scope.upload.documents.map(d => d.uploadStatus == "loaded").reduce((a1, a2) => a1 && a2, true);
+			}
 
             scope.confirmImport = async () => {
                 scope.upload.documents.forEach(doc => {
@@ -640,6 +661,7 @@ export let embedder = ng.directive('embedder', ['$timeout', '$filter', function 
                     await scope.listFrom('appDocuments');
                 scope.showHeader(HEADER_BROWSE);
                 scope.$apply();
+                notify.success("video.file.saved");
             }
 
             scope.cancelUpload = () => {
@@ -648,15 +670,55 @@ export let embedder = ng.directive('embedder', ['$timeout', '$filter', function 
             };
 
             scope.importFiles = function (files) {
-                //console.log('IMPORT FILES', files);
                 if (!files) {
                     files = scope.upload.files;
                 }
+
+                // Check weight limits and file formats
+                for( var i = 0; i < files.length; i++ ) {
+                    if( Math.round(files[i].size/(1024*1024)) > Number(scope.maxWeight) ) {
+                        notify.error("video.upload.error.weight");
+                        scope.upload.files = undefined;
+                        return;
+                    }
+
+                    if( VALID_UPLOAD_FORMATS.indexOf(files[i].type) === -1 ) {
+                        notify.error("video.upload.error.format");
+                        scope.upload.files = undefined;
+                        return;
+                    }
+                }
+                
+                // Upload videos
                 for (var i = 0; i < files.length; i++) {
-                    let doc = new Document();
-                    scope.upload.documents.push(doc);
-                    const visibility = scope.visibility == "external" ? "protected" : scope.visibility;
-                    doc.upload(files[i], visibility).then(() => scope.$apply());
+					const doc = new Document();
+					scope.upload.documents.push(doc);
+                    doc.fromFile( files[i] );
+                    // Upload via the video service, not the workspace service.
+                    doc.uploadStatus = "loading";
+                    VideoUploadService.upload( files[i], doc.name, false )
+                    .then( (result) => {
+                        if( result.data ) {
+                            if( result.data.state==="error" ) {
+                                doc.uploadStatus = "failed";
+                                notify.error( result.data.code ? result.data.code : "video.file.error" );
+                            } else {
+                                doc.uploadStatus = "loaded";
+                                doc._id = result.data.videoworkspaceid;
+                                if( doc.metadata ) {
+                                    doc.metadata.size = result.data.videosize;
+                                }
+                            }
+                        }
+                     })
+                    .catch( err => {
+                        doc.uploadStatus = "failed";
+                        console.warn(err);
+                    })
+                    ["finally"]( () => {
+                        scope.$apply();
+                    });
+                    break; // Only 1 video can be uploaded at a time.
                 }
                 scope.upload.files = undefined;
                 template.open(MAIN_CONTAINER, TEMPLATE_LOADING);
@@ -810,6 +872,20 @@ export let embedder = ng.directive('embedder', ['$timeout', '$filter', function 
 
 
             };
+
+			// Rather dirty hack in case event isn't propagated from button to input..
+			scope.triggerIpnutFileClick = function(event) {
+				event.preventDefault();
+				event.stopPropagation();
+				$(".upload-input").trigger("click", [scope.$id]);
+			}
+			element.on('click', '.upload-input', (event, scopeId) => {
+				if (scopeId != scope.$id) {
+					event.preventDefault();
+				}
+				event.stopPropagation();
+			});
+
         }
 
     }

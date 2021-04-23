@@ -18,7 +18,7 @@
  ~
  -->
 
-<lightbox show="show" on-close="cancel();" navigation-guard="true">
+<lightbox show="show" on-close="cancel();" navigation-guard="true" guard-root="videoCapturedGuard">
 		<style>
 			header > span.beta-feature:after {
 				color: #FF8500;
@@ -32,8 +32,13 @@
     <div class="embed-container">
         <h2>[[title()]]</h2>
         <section class="twelve row">
-            <section class="tabs heading-tabs" style="overflow: hidden">
-                <header ng-repeat="header in headers()" ng-class="{'selected':isSelectedHeader(header)}" navigation-trigger="showHeader(header)" workflow="[[header.worflowKey]]" ng-show="header.visible()">
+            <section class="tabs heading-tabs">
+                <header workflow="[[header.worflowKey]]"
+                        navigation-trigger="showHeader(header)" 
+                        navigation-trigger-param="{onEvent:'click', guardMessageKey:'video.capture.guard.text', rootGuardId:'videoCapturedGuard'}"
+                        ng-repeat="header in headers()" 
+                        ng-class="{'selected':isSelectedHeader(header)}"
+                        ng-show="header.visible()">
                     <span translate content="[[header.i18Key]]" ng-class="getClassOf(header)"></span>
                 </header>
             </section>

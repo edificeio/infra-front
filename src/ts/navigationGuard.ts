@@ -22,6 +22,8 @@ function mapKeysToArray<KEY, T>(s: Map<KEY, T>): KEY[] {
 export interface INavigationInfo {
     accept(): void;
     reject(): void;
+    confirmMessageKey?: string;
+    checkGuardId?: string|"*";
 }
 
 export interface INavigationListener {
@@ -108,11 +110,21 @@ export const navigationGuardService = {
             else navigation.reject();
             return;
         }
+        const confirmMessageKey:string = navigation.confirmMessageKey || "navigation.guard.text";
         //try navigate
-        for (const root of mapValuesToArray(navigationGuardService._guards)) {
+        for (const guardId of mapKeysToArray(navigationGuardService._guards) ) {
+            const root = navigationGuardService._guards.get(guardId);
+            /* If a guard ID is specified for this navigation, check it and only it.
+               This is useful for guarding local modifications (in lightbox for example)
+               without triggering the global modification guards. */
+            if( navigation.checkGuardId
+                    && navigation.checkGuardId !== "*"
+                    && navigation.checkGuardId !== guardId ) {
+                continue;
+            }
             for (const guard of setToArray(root)) {
                 if (!guard.canNavigate()) {
-                    const can = confirm(idiom.translate("navigation.guard.text"));
+                    const can = confirm(idiom.translate(confirmMessageKey));
                     for(const cb of navigationGuardService.onUserConfirmNavigate){
                         cb(can);
                     }

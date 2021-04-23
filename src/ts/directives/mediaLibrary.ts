@@ -8,6 +8,7 @@ import { idiom } from '../idiom';
 import http from "axios";
 import { DocumentsListModel } from '../workspace/model';
 import { workspaceService } from '../workspace/services';
+import { ui } from '../ui';
 export type Header = { template: string, worflowKey: string, i18Key: string, visible: () => boolean, onDisplay?:()=>void };
 export type LIST_TYPE = "myDocuments" | "appDocuments" | "publicDocuments" | "sharedDocuments" | "trashDocuments" | "externalDocuments";
 export type MediaLibraryView = "icons" | "list";
@@ -113,19 +114,19 @@ export const mediaLibrary = ng.directive('mediaLibrary', ['$timeout','$filter', 
 			const TEMPLATE_LOADING = 'entcore/media-library/loading';
 			//=== Headers
 			const HEADER_BROWSE: Header = {
-				i18Key: "library.header.browse",
+				i18Key: `${$(window).width() <= ui.breakpoints.tablette?"library.header.browse.mobile":"library.header.browse"}`,
 				template: "entcore/media-library/browse",
 				visible: () => true,
 				worflowKey: null
 			}
 			const HEADER_UPLOAD: Header = {
-				i18Key: "library.header.upload",
+				i18Key: `${$(window).width() <= ui.breakpoints.tablette?"library.header.upload.mobile":"library.header.upload"}`,
 				template: "entcore/media-library/upload",
 				visible: () => true,
 				worflowKey: "workspace.create"
 			}
 			const HEADER_RECORD: Header = {
-				i18Key: "library.header.record",
+				i18Key: `${$(window).width() <= ui.breakpoints.tablette?"library.header.record.mobile":"library.header.record"}`,
 				template: "entcore/media-library/record",
 				visible: () => scope.fileFormat === 'audio',
 				worflowKey: "workspace.create"
