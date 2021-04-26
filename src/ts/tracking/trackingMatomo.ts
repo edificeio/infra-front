@@ -6,6 +6,7 @@ import { TrackingEvent } from "./trackingEvents";
 interface TrackingParamsMatomo extends TrackingParams {
     url: string;
     siteId: string;
+    UserId: string;
     Profile: string;
     School: string;
     Project: string;
@@ -23,6 +24,7 @@ export class TrackingMatomo extends Tracking {
             }
             const _paq = window["_paq"] || [];
             _paq.push(['setRequestMethod', 'POST']);
+            if (params.UserId) _paq.push(['setUserId', params.UserId]);
             if (params.Profile) _paq.push(['setCustomDimension', 1, params.Profile]);
             if (params.School) _paq.push(['setCustomDimension', 2, params.School]);
             if (params.Project) _paq.push(['setCustomDimension', 3, params.Project]);
