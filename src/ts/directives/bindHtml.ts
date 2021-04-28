@@ -30,6 +30,7 @@ export let bindHtml = ng.directive('bindHtml', ['$compile', function($compile){
 				if (!window.MathJax && !(window as any).MathJaxLoading) {
 					(window as any).MathJaxLoading = true;
 					$.getScript((window as any).CDN_DOMAIN+'/infra/public/mathjax/MathJax.js',()=>{
+						window.MathJax.Ajax.config.root = (window as any).CDN_DOMAIN+'/infra/public/mathjax/';
 						window.MathJax.Hub.Config({
 							messageStyle: 'none',
 							tex2jax: { preview: 'none' },
