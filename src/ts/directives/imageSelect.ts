@@ -41,6 +41,7 @@ export let imageSelect = ng.directive('imageSelect', function(){
 				setTimeout(() => {
 					scope.ngModel = '';
 					scope.ngChange();
+					scope.$apply();
 				}, 10);
 			};
 
