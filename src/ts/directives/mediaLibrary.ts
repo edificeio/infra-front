@@ -358,6 +358,7 @@ export const mediaLibrary = ng.directive('mediaLibrary', ['$timeout','$filter', 
 			const refresh = function () {
 				scope.documents = filteredDocuments(MediaLibrary[scope.display.listFrom]);
 				scope.folders = filterFolders(scope.openedFolder);
+				safeApply(scope);
 			}
 			MediaLibrary.eventer.on('sync', refresh);
 			MediaLibrary.eventer.on('ready', () => {
@@ -592,3 +593,14 @@ export const mediaLibrary = ng.directive('mediaLibrary', ['$timeout','$filter', 
 		}
 	}
 }]);
+
+function safeApply($scope, fn?:()=>void) {
+	const phase = $scope.$root.$$phase;
+	if(phase == '$apply' || phase == '$digest') {
+		if(fn && (typeof(fn) === 'function')) {
+			fn();
+		}
+	} else {
+		$scope.$apply(fn);
+	}
+};
