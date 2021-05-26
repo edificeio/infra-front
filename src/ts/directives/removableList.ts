@@ -17,7 +17,7 @@ import { ng, _, angular } from '../entcore';
         delete-item="deleteFavorite(item)"
         placeholder="[[lang.translate('<key>')]]"
         noitems="[[lang.translate('<key>')]]"
-        noresult="[[lang.translate('<key>')]]"/>
+        noresult="[[lang.translate('<key>')]]"></removable-list>
  */
 
 export const removableList = ng.directive('removableList', () => {
@@ -45,7 +45,7 @@ export const removableList = ng.directive('removableList', () => {
                         <span class="block cell-ellipsis right-spacing-twice">[[ item.name ]]</span>
                         <i class="trash right-spacing-twice vertical-spacing-four absolute-magnet only-desktop" 
                             ng-click="deleteItem({item: item}); $event.stopPropagation();" 
-                            ng-if="removable"/>
+                            ng-if="removable"></i>
                     </div>
                 </nav>
                 <div ng-show="filteredItems.length === 0"><span class="medium-importance"><i18n>[[ noresult ]]</i18n></span></div>
