@@ -1840,39 +1840,47 @@ module.directive('help', function(){
 });
 
 module.directive('stickToTop', function() {
-    return {
-        restrict: 'EA',
-        link: function(scope, element, attributes) {
+	return {
+		restrict: 'EA',
+		link: function(scope, element, attributes) {
 			if ("noStickMobile" in attributes && ui.breakpoints.checkMaxWidth("wideScreen"))
 				return;
 			var initialPosition = null;
-            var scrollTop = $(window).scrollTop()
-            var actualScrollTop = $(window).scrollTop()
+			var scrollTop = $(window).scrollTop()
+			var actualScrollTop = $(window).scrollTop()
 
-            var animation = function() {
-				element.addClass('scrolling')
-                   element.offset({
-                       top: element.offset().top + (actualScrollTop + $('.height-marker').height() - (element.offset().top)) / 20
-                   });
-                requestAnimationFrame(animation)
-            }
+			var animation = function() {
+				element.addClass('scrolling');
+				let hmHeight = $('.height-marker').height();
+				if(hmHeight == null) hmHeight = 0;
+				let scroll = actualScrollTop == null ? 0 : actualScrollTop;
+				let currTop = element.offset().top;
+				let nextTop = currTop + (scroll + hmHeight - currTop) / 20;
+				element.offset({
+					top: nextTop < 0 ? 0 : nextTop
+				});
+				requestAnimationFrame(animation);
+			}
 
-            var scrolls = false;
-				$(window).scroll(function() {
-					if (!initialPosition)
-						initialPosition = element.offset().top;
-	                actualScrollTop = $(window).scrollTop()
-					if(actualScrollTop <= initialPosition - $('.height-marker').height()){
-						actualScrollTop = initialPosition - $('.height-marker').height();
-					}
-	                if (!scrolls) {
-	                    animation();
-	                }
-	                scrolls = true;
-	            })
+			var scrolls = false;
+			$(window).scroll(function() {
+				if (!initialPosition)
+					initialPosition = element.offset().top;
+				actualScrollTop = $(window).scrollTop();
+				let hmHeight = $('.height-marker').height();
+				if(hmHeight == null) hmHeight = 0;
 
-        }
-    }
+				if(actualScrollTop <= initialPosition - hmHeight){
+					actualScrollTop = initialPosition - hmHeight;
+				}
+				if (!scrolls) {
+					animation();
+				}
+				scrolls = true;
+			})
+
+		}
+	}
 });
 
 module.directive('floatingNavigation', function(){

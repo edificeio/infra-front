@@ -642,7 +642,9 @@ export let RTE = {
                             toolbarElement.css({ 'position': 'absolute', 'top': '0px' });
                             element.css({ 'padding-top': toolbarElement.height() + 1 + 'px' });
                         }
-                        var topDistance = element.offset().top - $('.height-marker').height();
+                        let hmHeight = $('.height-marker').height();
+                        if(hmHeight == null) hmHeight = 0;
+                        var topDistance = element.offset().top - hmHeight;
                         if (topDistance < (window.scrollY || window.pageYOffset)) {
                             topDistance = (window.scrollY || window.pageYOffset);
                         }
@@ -651,18 +653,18 @@ export let RTE = {
                         }
                         if (attributes.inline !== undefined) {
                             toolbarElement.offset({
-                                top: topDistance + $('.height-marker').height()
+                                top: topDistance + hmHeight
                             });
                             element.children('popover').offset({
-                                top: topDistance + $('.height-marker').height() + 10 - parseInt(element.css('margin-top'))
+                                top: topDistance + hmHeight + 10 - parseInt(element.css('margin-top'))
                             });
                         }
                         else {
                             toolbarElement.offset({
-                                top: topDistance + $('.height-marker').height()
+                                top: topDistance + hmHeight
                             });
                             element.children('popover').offset({
-                                top: topDistance + $('.height-marker').height() + 10
+                                top: topDistance + hmHeight + 10
                             });
                         }
 
