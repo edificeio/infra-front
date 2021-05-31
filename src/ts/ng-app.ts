@@ -646,18 +646,38 @@ module.directive('portal', ['$compile','tracker', function($compile,tracker){
 			
 			return function postLink( scope, element, attributes, controller, transcludeFn ) {
 				scope.template = template;
-				// Create the banner to display
-				scope.isTrackerInitialized = function() {
-					return tracker.isInitialized;
+				scope.show = true;
+				scope.goToMyAccount = () => {
+					document.location.href = '/userbook/mon-compte';
+					httpAxios.put('/userbook/preference/rgpdCookies', {'showInfoTip': false});
 				}
-				var bannerCode = ' \
-					<infotip name="rgpd-cookies-banner" class="info modal" style="position:fixed; bottom:0; right:20px;" \
-							save-preference-under="tracking" \
-							show-once="true" \
-							ng-show="isTrackerInitialized()" > \
-						<p><i18n>rgpd.cookies.banner.text1</i18n> &nbsp; <a href="/userbook/mon-compte?show=rgpd_cookies"><strong><i18n>rgpd.cookies.banner.link</i18n></strong></a>.</p> \
-					</infotip> \
-				';
+				scope.closeBanner = () => {
+					scope.show = false;
+					httpAxios.put('/userbook/preference/rgpdCookies', {'showInfoTip': false});
+				}
+
+				var bannerCode = `
+					<infotip
+						name="showInfoTip" 
+						class="info modal" 
+						style="position:fixed; bottom:0; right:20px;"
+						save-preference-under="rgpdCookies"
+						show-once="false"
+						ng-show="show"
+					>
+						<p>
+							<i18n>rgpd.cookies.banner.text1</i18n>
+						</p>
+						<div class="right-magnet">
+							<button type="button" ng-click="goToMyAccount()" class="cancel">
+								<i18n>rgpd.cookies.banner.button.consult</i18n>
+							</button>
+							<button type="button" ng-click="closeBanner()">
+								<i18n>rgpd.cookies.banner.button.close</i18n>
+							</button>
+						</div>
+					</infotip>
+				`;
 				element.prepend( $compile(bannerCode)(scope) );
 			};
 		}
