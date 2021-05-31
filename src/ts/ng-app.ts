@@ -659,8 +659,8 @@ module.directive('portal', ['$compile','tracker', function($compile,tracker){
 				var bannerCode = `
 					<infotip
 						name="showInfoTip" 
-						class="info modal" 
-						style="position:fixed; bottom:0; right:20px;"
+						class="info" 
+						style="position:fixed; bottom:0; right:20px; width: 400px; z-index: 1000"
 						save-preference-under="rgpdCookies"
 						show-once="false"
 						ng-show="show"
