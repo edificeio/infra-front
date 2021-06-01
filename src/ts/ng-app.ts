@@ -662,7 +662,7 @@ module.directive('portal', ['$compile','tracker', function($compile,tracker){
 						class="info" 
 						style="position:fixed; bottom:0; right:20px; width: 400px; z-index: 1000"
 						save-preference-under="rgpdCookies"
-						show-once="false"
+						show-once="true"
 						ng-show="show"
 					>
 						<p>
