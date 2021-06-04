@@ -38,8 +38,8 @@ export let imageSelect = ng.directive('imageSelect', function(){
 			scope.selectedFile.visibility = scope.selectedFile.visibility.toLowerCase();
 
 			scope.restoreDefault = () => {
+				scope.ngModel = '';
 				setTimeout(() => {
-					scope.ngModel = '';
 					scope.ngChange();
 					scope.$apply();
 				}, 10);
@@ -100,15 +100,15 @@ export let imageSelect = ng.directive('imageSelect', function(){
 			});
 
 			scope.updateDocument = () => {
-//				setTimeout(() => {
-					scope.userSelecting = false;
-					var path = '/workspace/document/';
-					if(scope.selectedFile.visibility === 'public'){
-						path = '/workspace/pub/document/'
-					}
-					scope.ngModel = path + scope.selectedFile.file._id;
+				scope.userSelecting = false;
+				var path = '/workspace/document/';
+				if(scope.selectedFile.visibility === 'public'){
+					path = '/workspace/pub/document/'
+				}
+				scope.ngModel = path + scope.selectedFile.file._id;
+				setTimeout(() => {
 					scope.ngChange();
-//				}, 10);
+				});
 			};
 			element.on('click', '.pick-file', () => {
 				scope.userSelecting = true;
