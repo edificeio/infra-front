@@ -1,9 +1,6 @@
 import { http } from "../http";
 import { Subject } from "rxjs";
 import { model } from '../modelDefinitions';
-import axios from "axios";
-import { appPrefix, devices, deviceType } from "../globals";
-import { UploadResult, VideoUploadService } from "./VideoUploadService";
 
 type MediaRecorderImpl = {
     start(time: number): void;
@@ -26,7 +23,6 @@ export class VideoRecorder {
     private mediaRecorder: MediaRecorderImpl;
     private recordMimeType: string;
     private recorded: Blob[];
-    private id: string;
     private mode: 'idle' | 'play' | 'record' | 'playing' = 'idle';
     public constraints: MediaStreamConstraints = {
         audio: true,
@@ -184,7 +180,7 @@ export class VideoRecorder {
             }
         }
     }
-    private uuid() {
+    public generateVideoId() {
         return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
             var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
             return v.toString(16);
@@ -212,7 +208,6 @@ export class VideoRecorder {
         await this.startStreaming();
         this.prepareRecord();
         this.recorded = new Array();
-        this.id = this.uuid();
         let that = this;
         let options = { mimeType: 'video/webm;codecs=vp9' };
         if (MediaRecorder.isTypeSupported) { // SAFARI TEST
@@ -282,20 +277,4 @@ export class VideoRecorder {
         this.recorded = null;
         prepareRecord && this.prepareRecord();
     }
-
-    public async upload(filename, recordTime, callback, errCallback) {
-        if (!filename) {
-            filename = "video-" + this.id;
-        }
-        new VideoUploadService().upload( this.getBuffer(), filename, true, recordTime )
-        .then( (statusRes:UploadResult) => {
-            if( statusRes && statusRes.data && statusRes.data.state==="error" ) {
-                errCallback && errCallback(statusRes.data.code);
-            } else {
-                callback && callback(statusRes);
-            }
-        })
-        .catch( () => {errCallback && errCallback();} );
-    }
-
 }

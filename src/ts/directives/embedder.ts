@@ -65,7 +65,7 @@ export interface VideoScope {
     };
     visibility: "public" | "protected" | "external";
     viewMode: MediaLibraryView;
-    maxWeight: string;
+    maxWeight: number;      
 
     updatePreview():void;
     applyHtml():void;
@@ -194,13 +194,10 @@ export let embedder = ng.directive('embedder', ['$timeout', '$filter', 'VideoUpl
             Me.hasWorkflowRight("video.view") //hack to start and load workflow rights
             .then( hasIt => { hasVideoView = hasIt; } ); // Make the visible() property reactive.
             
-            // Get file upload limits
-            scope.maxWeight = "50";
-            http().get('/video/conf/public')
-            .done((response) => {
-                if( response && response["max-videosize-mbytes"] ) {
-                    scope.maxWeight = response["max-videosize-mbytes"];
-                }
+            // Get the max uploaded file size, and recorded duration
+            scope.maxWeight = 50;
+            VideoUploadService.initialize().then( () => {
+                scope.maxWeight = VideoUploadService.maxWeight;
             });
             const emitDisplayEvent = () =>{
                 console.log("Broadcast display event displayVideoRecorder...")
@@ -676,7 +673,7 @@ export let embedder = ng.directive('embedder', ['$timeout', '$filter', 'VideoUpl
 
                 // Check weight limits and file formats
                 for( var i = 0; i < files.length; i++ ) {
-                    if( Math.round(files[i].size/(1024*1024)) > Number(scope.maxWeight) ) {
+                    if( Math.round(files[i].size/(1024*1024)) > scope.maxWeight ) {
                         notify.error("video.upload.error.weight");
                         scope.upload.files = undefined;
                         return;

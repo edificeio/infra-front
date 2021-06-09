@@ -8,6 +8,8 @@ import { IObjectGuardDelegate } from "../navigationGuard";
 import { Me } from "../me";
 import { http } from '../http';
 import { idiom as lang } from "../idiom";
+import { UploadResult, VideoUploadService } from "./VideoUploadService";
+
 
 class VideoGuardModel implements IObjectGuardDelegate{
     hasRecorded = false;
@@ -19,7 +21,6 @@ class VideoGuardModel implements IObjectGuardDelegate{
     }
 }
 interface VideoControllerScope {
-    RECORD_MAX_TIME: number;
     template: typeof template
     me: typeof model.me
     recorder: VideoRecorder;
@@ -68,11 +69,15 @@ interface VideoControllerScope {
     $root: any
 }
 
-export const VideoController = ng.controller('VideoController', ['$scope', 'model', 'route', '$element',
-    ($scope: VideoControllerScope, model, route, $element) => {
+export const VideoController = ng.controller('VideoController', ['$scope', 'model', 'route', '$element', 'VideoUploadService',
+    ($scope: VideoControllerScope, model, route, $element, VideoUploadService:VideoUploadService) => {
+
         $scope.hasRight = true;
         $scope.guard = new VideoGuardModel();
-        $scope.RECORD_MAX_TIME = 3; // MAX TIME OF RECORDING IN MINUTES
+        $scope.recordMaxTime = 3; // MAX TIME OF RECORDING IN MINUTES
+        VideoUploadService.initialize().then( () => {
+            $scope.recordMaxTime = VideoUploadService.maxDuration;
+        });
         $scope.template = template;
         $scope.me = model.me;
         $scope.recorder = new VideoRecorder(() => {
@@ -95,7 +100,6 @@ export const VideoController = ng.controller('VideoController', ['$scope', 'mode
         $scope.recordStartTime = 0;
         $scope.recordTime = '00:00';
         $scope.recordTimeInMs = 0;
-        $scope.recordMaxTime = $scope.RECORD_MAX_TIME * 60000;
 
         const backCameraChoice = {deviceId:"environment", label: lang.translate("video.back.camera"), groupId:'', kind:'videoinput'} as MediaDeviceInfo;
         const frontCameraChoice = {deviceId:"user", label: lang.translate("video.front.camera"), groupId:'', kind:'videoinput'} as MediaDeviceInfo;
@@ -188,7 +192,7 @@ export const VideoController = ng.controller('VideoController', ['$scope', 'mode
         }
         const onTrackedVideoFrame = (time: number) => {
             // //console.log('TIME', time);
-            if (time > $scope.recordMaxTime) {
+            if (time > $scope.recordMaxTime * 60000) {
                 $scope.stopRecord();
             } else {
                 $scope.recordTime = msToTime(time);
@@ -393,15 +397,26 @@ export const VideoController = ng.controller('VideoController', ['$scope', 'mode
             $scope.videofile = {}
             $scope.videofile.name = `Capture Vidéo ${new Date().toLocaleDateString('fr-FR')}`;
             safeApply();
-            $scope.recorder.upload($scope.videofile.name, Math.round($scope.recordTimeInMs), function (response) {                
-                if (response.error) {
-                    notify.error("video.file.error");
-                } else {
-                    $scope.guard.guardObjectReset();
-                    notify.success("video.file.saved");
-                    if (response.data) {
-                        $scope.$emit("video-upload", response.data.videoid);
-                    }
+            Promise.resolve().then( () => {
+                let filename = $scope.videofile.name;
+                let recordTime = Math.round($scope.recordTimeInMs);
+
+                if (!filename) {
+                    filename = "video-" + $scope.recorder.generateVideoId();
+                }
+                return VideoUploadService.upload( $scope.recorder.getBuffer(), filename, true, recordTime );
+            })
+            .then( (statusRes:UploadResult) => {
+                if( !statusRes || (statusRes.data && statusRes.data.state==="error") ) {
+                    throw ((statusRes && statusRes.data && statusRes.data.code) || null);
+                }
+                return statusRes;
+            })
+            .then( (response:UploadResult) => {
+                $scope.guard.guardObjectReset();
+                notify.success("video.file.saved");
+                if (response.data) {
+                    $scope.$emit("video-upload", response.data.videoid);
                 }
 								
                 let browserInfo = devices.getBrowserInfo();
@@ -423,8 +438,10 @@ export const VideoController = ng.controller('VideoController', ['$scope', 'mode
                 });
                 $scope.videoState = 'recorded';
                 safeApply();
-            },()=>{
-                notify.error("video.file.error");
+            })
+            .catch( (e)=>{
+                e = e || "video.file.error";
+                notify.error(e);
                 $scope.videoState = 'recorded';
                 safeApply();
             });

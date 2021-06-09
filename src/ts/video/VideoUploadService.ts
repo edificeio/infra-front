@@ -1,4 +1,4 @@
-import axios, { AxiosResponse } from "axios";
+import axios from "axios";
 import { VideoEventTrackerService } from "./VideoEventTrackerService";
 
 export type UploadResult = {
@@ -25,6 +25,44 @@ export type UploadResult = {
  * The server will process each uploaded video and convert them to a streamable format.
  */
 export class VideoUploadService {
+    private _maxWeight   = 50;  // in Mbytes. Applies to uploaded videos.
+    private _maxDuration =  3;  // in minutes. Applies to recorded videos.
+    private _initialized = false;
+
+    public get maxWeight():number {
+        return this._maxWeight;
+    }
+
+    public get maxDuration():number {
+        return this._maxDuration;
+    }
+
+    private safeValueOf(obj:any, key:string, defaultValue:number) {
+        try { 
+            const value = parseInt( obj[key] );
+            return typeof value!=="number" || isNaN(value) ? defaultValue : value;
+        }
+        catch(e) { 
+            return defaultValue;
+         }
+    }
+
+    /** Awaits for loading the video public configuration. */
+    public async initialize() {
+        if( this._initialized ) {
+            return;
+        }
+        try {
+            await axios.get('/video/conf/public')
+            .then( response => {
+                this._maxWeight = this.safeValueOf(response.data, "max-videosize-mbytes", this._maxWeight);
+                this._maxDuration = this.safeValueOf(response.data, "max-videoduration-minutes", this._maxDuration);
+            });
+        } finally {
+            this._initialized = true;
+        }
+    }
+
     public async upload(file:Blob, filename:string, captation:boolean, duration?:string|number):Promise<UploadResult> {
         if (!file) {
             throw new Error("Invalid video file.");
