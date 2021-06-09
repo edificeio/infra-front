@@ -65,7 +65,7 @@ export interface VideoScope {
     };
     visibility: "public" | "protected" | "external";
     viewMode: MediaLibraryView;
-    maxWeight: number;      
+    maxWeight: number;
 
     updatePreview():void;
     applyHtml():void;
@@ -95,6 +95,7 @@ export interface VideoScope {
     isEditedLast(): boolean
     nextImage(): void
     previousImage(): void
+    acceptedFileList():string
     importFiles(files: FileList):void
     closeCompression():void
     openCompression(doc: Document):void
@@ -116,12 +117,6 @@ export interface VideoScope {
     cancel():void;
     $broadcast:any;
 }
-
-const VALID_UPLOAD_FORMATS = [
-    "video/mp4",        // .mp4
-    "video/quicktime",  // .mov
-    "video/x-msvideo"   // .avi
-];
 
 export let embedder = ng.directive('embedder', ['$timeout', '$filter', 'VideoUploadService', function ($timeout, $filter, VideoUploadService:VideoUploadService) {
     return {
@@ -195,7 +190,7 @@ export let embedder = ng.directive('embedder', ['$timeout', '$filter', 'VideoUpl
             .then( hasIt => { hasVideoView = hasIt; } ); // Make the visible() property reactive.
             
             // Get the max uploaded file size, and recorded duration
-            scope.maxWeight = 50;
+            scope.maxWeight = VideoUploadService.maxWeight;
             VideoUploadService.initialize().then( () => {
                 scope.maxWeight = VideoUploadService.maxWeight;
             });
@@ -666,6 +661,10 @@ export let embedder = ng.directive('embedder', ['$timeout', '$filter', 'VideoUpl
                 cancelAll();
             };
 
+            scope.acceptedFileList = () => {
+                return VideoUploadService.getValidExtensions().join(",");
+            }
+
             scope.importFiles = function (files) {
                 if (!files) {
                     files = scope.upload.files;
@@ -679,7 +678,10 @@ export let embedder = ng.directive('embedder', ['$timeout', '$filter', 'VideoUpl
                         return;
                     }
 
-                    if( VALID_UPLOAD_FORMATS.indexOf(files[i].type) === -1 ) {
+                    const fileExtPos = files[i].name.lastIndexOf(".");
+                    const fileExt = files[i].name.substring(fileExtPos<0 ? 0 : fileExtPos+1);
+                    console.debug("File ext="+fileExt);
+                    if( !VideoUploadService.checkValidExtension(fileExt) ) {
                         notify.error("video.upload.error.format");
                         scope.upload.files = undefined;
                         return;

@@ -27,6 +27,7 @@ export type UploadResult = {
 export class VideoUploadService {
     private _maxWeight   = 50;  // in Mbytes. Applies to uploaded videos.
     private _maxDuration =  3;  // in minutes. Applies to recorded videos.
+    private _acceptVideoUploadExtensions = ["mp4", "mov", "avi"];
     private _initialized = false;
 
     public get maxWeight():number {
@@ -57,10 +58,28 @@ export class VideoUploadService {
             .then( response => {
                 this._maxWeight = this.safeValueOf(response.data, "max-videosize-mbytes", this._maxWeight);
                 this._maxDuration = this.safeValueOf(response.data, "max-videoduration-minutes", this._maxDuration);
+                let exts = response.data["accept-videoupload-extensions"];
+                if( exts ) {
+                    if( typeof exts==="string" ) {
+                        exts = [exts];
+                    }
+                    this._acceptVideoUploadExtensions = exts || this._acceptVideoUploadExtensions;
+                    // Force to upper case
+                    this._acceptVideoUploadExtensions = this._acceptVideoUploadExtensions.map( e => e.toUpperCase() );
+                }
             });
         } finally {
             this._initialized = true;
         }
+    }
+
+    public getValidExtensions():string[] {
+        return this._acceptVideoUploadExtensions;
+    }
+
+    public checkValidExtension(ext:string) {
+        ext = ext.toUpperCase();
+        return this._acceptVideoUploadExtensions.findIndex(e => ext===e) !== -1;
     }
 
     public async upload(file:Blob, filename:string, captation:boolean, duration?:string|number):Promise<UploadResult> {
