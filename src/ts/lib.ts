@@ -636,6 +636,7 @@ export async function bootstrap(func) {
 		return new Promise((resolve, reject) => {
 			let xhr = new XMLHttpRequest();
 			xhr.open(obj.method || "GET", obj.url);
+			xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
 			if (obj.headers) {
 				Object.keys(obj.headers).forEach(key => {
 					xhr.setRequestHeader(key, obj.headers[key]);

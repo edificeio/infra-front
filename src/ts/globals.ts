@@ -221,6 +221,7 @@ const defaultLanguage = () => {
     // User preferences language
     var preferencesRequest = new XMLHttpRequest();
 	preferencesRequest.open('GET', '/userbook/preference/language');
+    preferencesRequest.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
     if(xsrfCookie){
         preferencesRequest.setRequestHeader('X-XSRF-TOKEN', xsrfCookie.val);
     }
