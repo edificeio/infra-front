@@ -657,26 +657,28 @@ module.directive('portal', ['$compile','tracker', function($compile,tracker){
 				}
 
 				var bannerCode = `
-					<infotip
-						name="showInfoTip" 
-						class="info" 
-						style="position:fixed; bottom:0; right:20px; width: 400px; z-index: 1000"
-						save-preference-under="rgpdCookies"
-						show-once="true"
-						ng-show="show"
-					>
-						<p>
-							<i18n>rgpd.cookies.banner.text1</i18n>
-						</p>
-						<div class="right-magnet">
-							<button type="button" ng-click="goToMyAccount()" class="cancel">
-								<i18n>rgpd.cookies.banner.button.consult</i18n>
-							</button>
-							<button type="button" ng-click="closeBanner()">
-								<i18n>rgpd.cookies.banner.button.close</i18n>
-							</button>
-						</div>
-					</infotip>
+					<div class="ode-theme-v1">
+						<infotip
+							name="showInfoTip" 
+							class="info" 
+							style="position:fixed; bottom:0; right:20px; width: 400px; z-index: 1000"
+							save-preference-under="rgpdCookies"
+							show-once="false"
+							ng-show="show"
+						>
+							<p>
+								<i18n>rgpd.cookies.banner.text1</i18n>
+							</p>
+							<div class="right-magnet">
+								<button type="button" ng-click="goToMyAccount()" class="cancel">
+									<i18n>rgpd.cookies.banner.button.consult</i18n>
+								</button>
+								<button type="button" ng-click="closeBanner()">
+									<i18n>rgpd.cookies.banner.button.close</i18n>
+								</button>
+							</div>
+						</infotip>
+					</div>
 				`;
 				element.prepend( $compile(bannerCode)(scope) );
 			};
