@@ -375,6 +375,7 @@ export const mediaLibrary = ng.directive('mediaLibrary', ['$timeout','$filter', 
 				await folder.sync();
 				scope.documents = filteredDocuments(folder);
 				scope.folders = filterFolders(scope.openedFolder);
+				safeApply(scope);
 			};
 
 			scope.$watch('visibility', function (newVal) {
