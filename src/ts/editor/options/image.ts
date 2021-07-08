@@ -321,7 +321,7 @@ export const image = {
                     scope.imageOption.display.pickFile = false;
                     scope.imageOption.display.files = [];
                     instance.focus();
-                    window.getSelection().removeAllRanges();
+                    window.getSelection() && window.getSelection().removeAllRanges();
                 };
 
                 instance.on('model-updated', () => refreshResize(instance));
