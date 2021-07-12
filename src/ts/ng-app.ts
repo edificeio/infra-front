@@ -2598,9 +2598,8 @@ module.directive('cguLightbox', [function () {
 				const logout = '/auth/logout?callback=' + skin.logoutCallback;
 				scope.title = idiom.translate("cgu.revalidate.title");
 				scope.content = idiom.translate("cgu.revalidate.content");
-				scope.linkUrl = idiom.translate("auth.charter");
-				scope.linkText = idiom.translate("cgu.revalidate.link.text");
-				scope.link = idiom.translate("cgu.revalidate.accept").replace("[[linkStart]]", `<a href="${scope.linkUrl}" target="_blank">`).replace("[[linkEnd]]", "</a>")
+				scope.userChartUrl = idiom.translate("auth.charter");
+				scope.cguUrl = idiom.translate("cgu.file");
 				scope.actionText = idiom.translate("cgu.revalidate.action");
 				scope.show = true;
 				scope.isDisabled = function () {
