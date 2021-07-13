@@ -2623,7 +2623,7 @@ module.directive('cguLightbox', [function () {
 model.one("bootstrap", async () => {
 	const shouldRevalidate = await Me.shouldRevalidate();
 	if (shouldRevalidate) {
-		injectIntoSelector("body", "<cgu-lightbox></cgu-lightbox>");
+		injectIntoSelector('body', '<div class="ode-theme-v1"><cgu-lightbox></cgu-lightbox></div>');
 	}
 })
 module.directive('onEnter', function () {
