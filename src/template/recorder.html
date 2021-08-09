@@ -43,7 +43,8 @@
 				ng-click="switchRecord()"
 				ng-disabled="isEncoding() || isUploading()">
 			<i class="record-audio" ng-class="{'start': !isRecording(), 'suspend': isRecording()}"></i>
-			<span ng-if="isSuspended()"><i18n>embed.resume</i18n></span>
+			<span ng-if="isIdle() || isStopped()"><i18n>embed.start.mini</i18n></span>
+			<span ng-if="!isIdle() && !isStopped() && !isRecording()"><i18n>embed.resume</i18n></span>
 			<span ng-if="isRecording()"><i18n>embed.suspend</i18n></span>
 		</button>
 

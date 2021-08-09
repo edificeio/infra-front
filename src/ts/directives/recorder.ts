@@ -3,6 +3,17 @@ import { ng } from '../ng-start';
 import { recorder } from '../recorder';
 
 export let recorderComponent = ng.directive('recorder', function () {
+    function safeApply($scope, fn?:()=>void) {
+        const phase = $scope.$root.$$phase;
+        if(phase == '$apply' || phase == '$digest') {
+            if(fn && (typeof(fn) === 'function')) {
+                fn();
+            }
+        } else {
+            $scope.$apply(fn);
+        }
+    };
+
     return {
         restrict: 'E',
         scope: {
@@ -14,10 +25,9 @@ export let recorderComponent = ng.directive('recorder', function () {
             scope.recorder = recorder;
             recorder.state(function (eventName:string) {
                 if(eventName === 'saved'){
-                    scope.onUpload();
+                    scope.onUpload && scope.onUpload();
                 }
-                if(scope.isRecording())
-                    scope.$apply(); // Force reevaluation of the recorder's field
+                safeApply(scope); // Force reevaluation of the recorder's field
             });
             scope.switchRecord = function () {
                 if (recorder.status === 'recording') {
