@@ -9,6 +9,7 @@ export * from './completeChange';
 export * from './connectorLightbox';
 export * from './contactChip';
 export * from './contentDivider';
+export * from './documentIsCaptation';
 export * from './dotsMenu';
 export * from './dragItem';
 export * from './dropDown';
