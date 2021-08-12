@@ -5,7 +5,7 @@ import { http } from "../http";
  * This utility class allows sending usage data events to the server.
  */
 export class VideoEventTrackerService {
-	videos = [];
+	cleanup:{elem:HTMLVideoElement, cb:(this:HTMLVideoElement, ev:Event)=>any}[] = [];
 
 	/**
 	 * Generates a new FormData containing generic video tracking metadata : 
@@ -56,39 +56,58 @@ export class VideoEventTrackerService {
 		this.generateEvent( "view", videoId, source );
 	}
 	
+	/** Track VIDEO_VIEW and VIDEO_PLAY events for a given <video> element. */
+	trackOne( video:HTMLVideoElement ) {
+		if( ! video )
+			return;
+		// Track this video player.
+		const onPlay = (e:Event) => {this.onPlay(e);}
+		video.addEventListener('play', onPlay);
+		this.cleanup.push( {elem:video, cb:onPlay} );
+		// Forbid downloading : this is not supported by all navigators, see https://caniuse.com/?search=controlsList
+		video.setAttribute("controlsList", "nodownload");
+		this.generateViewEventFor( video );
+	}
+
+	untrackOne( video:HTMLVideoElement ) {
+		if( ! video )
+			return;
+		// Untrack this video player.
+		for( let i=this.cleanup.length-1; i>=0; i-- ) {
+			const v = this.cleanup[i];
+			if( !v || v.elem!==video || !v.cb )
+				continue;
+			v.elem.removeEventListener('play', v.cb);
+			this.cleanup.splice(i,1);
+		}
+	}
+
 	/**
-	 * Look for every <video> tag in the HTML document, and the VIDEO_VIEW and VIDEO_PLAY events.
+	 * Look for every <video data-document-is-captation> tag in the HTML document, and manage their VIDEO_VIEW and VIDEO_PLAY events.
 	 * If applied to an angular scope, it will auto-release the listeners and prevent memory leaks.
 	 * Otherwise, you must call untrackAll() to release the listeners.
+	 * @param $scope
 	 */
 	trackAll( $scope ) {
-		const videos = document.querySelectorAll('video');
+		const videos = document.querySelectorAll('video[data-document-is-captation]');
 		// For each video players in the document.
 		for( let i=0; videos && i<videos.length; i++ ) {
-			let video: HTMLVideoElement = videos[i];
-			if( ! video )
-				continue;
-			// Track this video player.
-			video.addEventListener('play', this.onPlay);
-			this.videos.push( video );
-			// Forbid downloading : this is not supported by all navigators, see https://caniuse.com/?search=controlsList
-			video.setAttribute("controlsList", "nodownload");
-			// Generate a VIDEO_EVENT_VIEW
-			this.generateViewEventFor( video );
+			let video: HTMLVideoElement = videos[i] as HTMLVideoElement;
+			this.trackOne( video );
 		}
 		if( $scope )
-			$scope.$on('$destroy', this.untrackAll);
+			$scope.$on('$destroy', () => {this.untrackAll();});
 	}
 	
 	/** Release event listeners previously put on <video> tags, @see trackAll() */
 	untrackAll() {
-		for( let i=0; i<this.videos.length; i++ ) {
-			let video = this.videos[i];
-			if( ! video )
+		for( let i=0; i<this.cleanup.length; i++ ) {
+			const video = this.cleanup[i];
+			if( !video || !video.elem || !video.cb )
 				continue;
-			video.removeEventListener('play', this.onPlay);
+			video.elem.removeEventListener('play', video.cb);
 		}
-		this.videos = [];
+		this.cleanup = [];
 	}
 }
 
