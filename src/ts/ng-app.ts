@@ -610,6 +610,24 @@ module.service('tracker', ["$document", "$location", "$rootScope", (
 				break;
 			}
 		}
+		Tracker.prototype.trackEvent= function( category:string, action:string, name?:string, value?:number ) {
+			switch( this.type ) {
+			case "matomo":
+				var _paq = window["_paq"] = window["_paq"] || [];
+				let event:any[] = ['trackEvent',category,action];
+				if( typeof name==="string" ) {
+					name = name.trim();
+					if( name.length > 0)
+						event.push( name );
+				}
+				if( typeof value==="number" )
+					event.push( value );
+				_paq.push(event);
+				break;
+			default: 
+				break;
+			}
+		}
         Tracker.prototype.saveOptIn= function() {
 			switch( this.type ) {
                 case "matomo":
