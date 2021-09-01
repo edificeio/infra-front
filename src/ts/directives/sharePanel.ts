@@ -191,6 +191,10 @@ export const sharePanel = ng.directive('sharePanel', ['$rootScope', ($rootScope)
 
             http().get('/' + infraPrefix + '/public/json/sharing-rights.json').done(function (config) {
                 actionsConfiguration = config;
+                //update actions if already loaded
+                if($scope.actions){
+                    setActions($scope.actions)
+                }
             });
 
             $scope.translate = idiom.translate;
