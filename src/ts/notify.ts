@@ -18,6 +18,9 @@ export var notify = {
 	},
 	success: function(message, timeout?){
 		this.message('success', message, timeout);
+	},
+	close: function() {
+		humane.remove();
 	}
 };
 
