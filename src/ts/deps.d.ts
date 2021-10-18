@@ -31,6 +31,7 @@ declare interface Window{
     html_beautify: any;
     jQuery: any;
     notLoggedIn: boolean;
+    xiti(path?: string): void;
 }
 
 declare interface Node{
