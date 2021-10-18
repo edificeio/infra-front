@@ -2573,9 +2573,10 @@ $(document).ready(function(){
 					});
 				});
 			}
-
+			let _ui = ui;
             http().get(skin.basePath + 'js/directives.js').done((d) => {
-                eval(d);
+				var ui: any = _ui; // hack so that ui is not undefined when evaluating js
+				eval(d);
 
                 if(typeof skin.addDirectives === 'function'){
                     skin.addDirectives(module, start);
