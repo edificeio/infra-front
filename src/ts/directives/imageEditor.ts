@@ -112,8 +112,10 @@ export const imageEditor = ng.directive('imageEditor', () => {
                 await imageEditor.saveChanges();
                 if(typeof scope.onSave === 'function'){
                     scope.onSave();
+                    scope.loading = false;
                 }
                 scope.show = false;
+                scope.loading = false;
                 scope.$apply();
             };
 

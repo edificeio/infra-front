@@ -101,7 +101,7 @@ export class ImageEditor{
     }
 
     static async init(){
-        return new Promise((resolve, reject) => {
+        return new Promise<void>((resolve, reject) => {
             if(ImageEditor.loaded){
                 resolve();
                 return;
