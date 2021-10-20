@@ -20,7 +20,7 @@ import { idiom as lang, idiom as idiom } from './idiom';
 import { http, Http } from './http';
 import { Collection, Model, model } from './modelDefinitions';
 import { bootstrap } from './lib';
-import { ui } from './ui';
+import { ui as UI } from './ui';
 import { Behaviours } from './behaviours';
 import { currentLanguage, routes, appPrefix, infraPrefix } from './globals';
 import { template } from './template';
@@ -38,6 +38,7 @@ import {VideoController} from "./video/VideoController";
 import { VideoEventTrackerService } from './video/VideoEventTrackerService';
 import { VideoUploadService } from './video/VideoUploadService';
 
+let ui = UI;
 var module = angular.module('app', ['ngSanitize', 'ngRoute'], ['$interpolateProvider', function($interpolateProvider) {
 		$interpolateProvider.startSymbol('[[');
 		$interpolateProvider.endSymbol(']]');
@@ -2573,9 +2574,7 @@ $(document).ready(function(){
 					});
 				});
 			}
-			let _ui = ui;
             http().get(skin.basePath + 'js/directives.js').done((d) => {
-				var ui: any = _ui; // hack so that ui is not undefined when evaluating js
 				eval(d);
 
                 if(typeof skin.addDirectives === 'function'){
