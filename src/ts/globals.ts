@@ -8,13 +8,15 @@ declare let moment: any;
 if(!window.entcore){
 	window.entcore = {};
 }
-
 if((window as any).appPrefix === undefined){
     if(!window.entcore){
         window.entcore = {};
     }
 	if(window.location.pathname.split('/').length > 0){
-		(window as any).appPrefix = window.location.pathname.split('/')[1];
+        let locationPath = window.location.pathname.split('/')[1];
+        if (locationPath == 'userbook') locationPath = 'directory';
+        if (locationPath == 'welcome') locationPath = '.';
+        (window as any).appPrefix = locationPath;
         window.entcore.appPrefix = (window as any).appPrefix;
 	}
 }
