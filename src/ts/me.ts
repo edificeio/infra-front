@@ -149,6 +149,10 @@ if(!(XMLHttpRequest.prototype as any).baseSend && !(window as any).pupetterMode)
             if(url.startsWith("/assets")){
                 arguments[1] = (window as any).CDN_DOMAIN + url;
             }
+            //SKIP PUBLIC CONF
+            if(url == "/conf/public"){
+                arguments[1] = url;
+            }
         }
         return (this as any).baseOpen.apply(this, arguments);
     }
