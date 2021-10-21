@@ -181,6 +181,8 @@ export let lightbox = ng.directive('lightbox', () => {
                     }
 
 					element.children('.lightbox').fadeOut();
+					$('body').css({ overflow: 'auto' });
+					$('body').removeClass('lightbox-opened');
 				}
 			});
 
