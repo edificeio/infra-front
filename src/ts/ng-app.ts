@@ -665,13 +665,13 @@ module.directive('portal', ['$compile','tracker', function($compile,tracker){
 			
 			return function postLink( scope, element, attributes, controller, transcludeFn ) {
 				scope.template = template;
-				scope.show = true;
+				scope.$$showInfoTipRgpdCookie = true;
 				scope.goToMyAccount = () => {
 					document.location.href = '/userbook/mon-compte';
 					httpAxios.put('/userbook/preference/rgpdCookies', {'showInfoTip': false});
 				}
 				scope.closeBanner = () => {
-					scope.show = false;
+					scope.$$showInfoTipRgpdCookie = false;
 					httpAxios.put('/userbook/preference/rgpdCookies', {'showInfoTip': false});
 				}
 
@@ -683,7 +683,7 @@ module.directive('portal', ['$compile','tracker', function($compile,tracker){
 							style="position:fixed; bottom:0; right:20px; width: 400px; z-index: 1000"
 							save-preference-under="rgpdCookies"
 							show-once="false"
-							ng-show="show"
+							ng-show="$$showInfoTipRgpdCookie"
 						>
 							<p>
 								<i18n>rgpd.cookies.banner.text1</i18n>
