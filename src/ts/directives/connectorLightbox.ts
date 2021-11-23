@@ -7,10 +7,12 @@ type App = {
     target: string,
     address: string,
     casType: string,
-    scope: string[]
+    scope: string[],
+    isExternal?: boolean
 }
 type AppEvent = {
     app:App,
+    element:Element,
     $mutex?:boolean,
     ctrlKey:boolean,   // Was CTRL key pressed ?
     metaKey: boolean // Was Command key pressed? (Apple keyboard)
@@ -61,13 +63,14 @@ export let connectorLightboxTrigger = ng.directive('connectorLightboxTrigger', [
             connectorLightboxTrigger: "=",
         },
         link: function (scope: ConnectorLightboxTriggerScope, element, attributes) {
+            if (!scope.connectorLightboxTrigger.isExternal) return; // Don't do anything for internal apps
             //private functions
-
             const init = async () => {
                 //event
                 element.on('click', function (event: MouseEvent) {
                     const appEvent = { 
                         app: scope.connectorLightboxTrigger,
+                        element: element,
                         $mutex: false,
                         ctrlKey: !!event.ctrlKey,
                         metaKey: !!event.metaKey
@@ -143,6 +146,10 @@ export let connectorLightbox = ng.directive('connectorLightbox', ['$timeout', '$
             scope.onClose = function () {
                 scope.display.showAuthenticatedConnectorLightbox = false;
             }
+            const open = async (address, target) => {
+                if (window.xiti && window.xiti.click) await window.xiti.click(_appEvent.app.name, _appEvent.element[0]);
+                window.open(address, target);
+            }
             scope.onConfirm = function (): void {
                 const _app = _appEvent.app;
                 scope.onClose();
@@ -156,12 +163,12 @@ export let connectorLightbox = ng.directive('connectorLightbox', ['$timeout', '$
 
                 if (target !== '_self') {
                     http().putJson('/userbook/preference/authenticatedConnectorsAccessed', scope.authenticatedConnectorsAccessed);
-                    window.open(_app.address, target);
+                    open(_app.address, target);
                 } else {
                     (async function()
                     {
                         await httpPromisy<any>().putJson('/userbook/preference/authenticatedConnectorsAccessed', scope.authenticatedConnectorsAccessed);
-                        window.open(_app.address, target);
+                        open(_app.address, target);
                     })();
                 }
             };
@@ -179,7 +186,7 @@ export let connectorLightbox = ng.directive('connectorLightbox', ['$timeout', '$
                 const target = _appEvent.ctrlKey || _appEvent.metaKey ? '_blank' : !!app.target ? app.target : '_self';
 
                 if(scope.skipCheck){
-                    window.open(app.address, target);
+                    open(app.address, target);
                     return;
                 }
                 if (isAuthenticatedConnector(app) && isAuthenticatedConnectorFirstAccess(app)) {
@@ -187,7 +194,7 @@ export let connectorLightbox = ng.directive('connectorLightbox', ['$timeout', '$
                     scope.display.showAuthenticatedConnectorLightbox = true;
                     scope.$apply();
                 } else {
-                    window.open(app.address, target);
+                    open(app.address, target);
                 }
             };
             //init

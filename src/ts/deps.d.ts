@@ -24,6 +24,14 @@ declare interface Document{
     caretPositionFromPoint(x: number, y: number);
 }
 
+declare interface Xiti {
+    conf: any;
+    ATInternet: any;
+    structure: any;
+    run(path?: string): Promise<void>;
+    click(name: string, element: Element): Promise<void>;
+}
+
 declare interface Window{
     MathJax: any;
     Prism: any;
@@ -31,7 +39,7 @@ declare interface Window{
     html_beautify: any;
     jQuery: any;
     notLoggedIn: boolean;
-    xiti(path?: string): void;
+    xiti: Xiti;
 }
 
 declare interface Node{

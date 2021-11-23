@@ -710,13 +710,14 @@ module.directive('xiti', function(){
 		restrict: 'E',
 		compile: function(element, attributes) {
 			return function(scope) {
-				jQuery.getScript('/xiti/public/js/directive.js', function() {
-					element.on('run.script', function(event, url){
-						window.xiti(url);
+				jQuery.getScript('/xiti/public/js/directive.js', async function() {
+					element.on('run.script', async function(event, url){
+						await window.xiti.run(url);
 					})
 					scope.$on("$destroy", function() {
 						element.off();
 					});
+					await window.xiti.run();
 				});
 			}
 		}
