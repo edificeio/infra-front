@@ -244,6 +244,7 @@ class NavigationTriggerDirective {
             });
         }
         scope.$on("$destroy", () => {
+            scope.root.$apply();
             navigationGuardService.unregisterListener(listener);
             this.unbindAll();
         });
