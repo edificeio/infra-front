@@ -4,7 +4,7 @@ import { ng } from './ng-start';
 import { http } from './http';
 import { idiom as lang } from './idiom';
 
-const firstLevelWidgets = ["birthday", "mood"];
+const firstLevelWidgets = ["birthday", "mood", "calendar-widget", "notes"];
 const secondLevelWidgets = [
 	"agenda-widget", 
 	"carnet-de-bord", 
@@ -12,7 +12,8 @@ const secondLevelWidgets = [
 	"rss-widget", 
 	"bookmark-widget", 
 	"cursus-widget",
-	"maxicours-widget"
+	"maxicours-widget",
+    "school-widget"
 ];
 
 export let widgets = {
@@ -67,6 +68,13 @@ function WidgetModel(){
 						widget.hide = widget.mandatory ? false : that.preferences[widget.name].hide;
 						return widget;
 					})
+					data = data.sort((a, b) => {
+						const translatedA = lang.translate(`timeline.settings.${a.name}`).toLowerCase();
+						const translatedB = lang.translate(`timeline.settings.${b.name}`).toLowerCase();
+						if (translatedA < translatedB) return -1;
+						if (translatedA > translatedB) return 1;
+						return 0;
+					});
 				});
 
                 for(var i = 0; i < data.length; i++){

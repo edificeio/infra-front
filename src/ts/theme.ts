@@ -48,7 +48,7 @@ export function initThemeDirective(module:any){
                     if(theme.child==themeName && theme.bootstrapVersion){
                         url = (window as any).CDN_DOMAIN + `/assets/themes/${theme.bootstrapVersion}/skins/${skinName}/`;
                         element.addClass(theme.bootstrapVersion);//add class at root=>wrapped theme
-                        themeService.loadOldWrappedTheme(theme.child, skinName);
+                        // themeService.loadOldWrappedTheme(theme.child, skinName);
                         themeService.loadThemeJs(theme.bootstrapVersion)
                     }
                 }
