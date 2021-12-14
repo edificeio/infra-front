@@ -129,12 +129,7 @@ export class VideoRecorder {
             try {
                 this.stopRecording(false);
             } catch (e) { }
-            const tracks = this.stream.getTracks();
-            for (const track of tracks) {
-                try {
-                    track.stop();
-                } catch (e) { }
-            }
+            this.turnOffCamera();
             this.stream = undefined;
         }
         this.gumVideo = undefined;
@@ -266,6 +261,16 @@ export class VideoRecorder {
         this.mediaRecorder.stop();
         if (preparePlay) {
             setTimeout(() => this.preparePlay(), 0);
+        }
+    }
+
+    public turnOffCamera() {
+        if (!this.stream) return;
+        const tracks = this.stream.getTracks();
+        for (const track of tracks) {
+            try {
+                track.stop();
+            } catch (e) { }
         }
     }
 

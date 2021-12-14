@@ -437,12 +437,14 @@ export const VideoController = ng.controller('VideoController', ['$scope', 'mode
                     console.log(res);
                 });
                 $scope.videoState = 'recorded';
+                $scope.recorder.turnOffCamera();
                 safeApply();
             })
             .catch( (e)=>{
                 e = e || "video.file.error";
                 notify.error(e);
                 $scope.videoState = 'recorded';
+                $scope.recorder.turnOffCamera();
                 safeApply();
             });
         }
