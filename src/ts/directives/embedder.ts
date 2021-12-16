@@ -154,7 +154,7 @@ export let embedder = ng.directive('embedder', ['$timeout', '$filter', 'VideoUpl
 
             //===== HEADERS
             const HEADER_INTEGRATION: Header = {
-                i18Key: `${$(window).width() <= ui.breakpoints.tablette?'video.header.integration.mobile':'video.header.integration'}`,
+                i18Key: "video.header.integration",
                 template: "entcore/video/integration",
                 visible: () => true,
                 worflowKey: null
@@ -163,7 +163,7 @@ export let embedder = ng.directive('embedder', ['$timeout', '$filter', 'VideoUpl
             // UPLOAD Header
             let hasVideoUpload = false;
             const HEADER_UPLOAD: Header = {
-                i18Key: `${$(window).width() <= ui.breakpoints.tablette?"video.header.upload.mobile":"video.header.upload"}`,
+                i18Key: "video.header.upload",
                 template: "entcore/video/upload",
                 visible: () => hasVideoUpload,
                 worflowKey: "video.upload"
@@ -174,7 +174,7 @@ export let embedder = ng.directive('embedder', ['$timeout', '$filter', 'VideoUpl
             // CAPTURE Header
             let hasVideoCapture = false;
             const HEADER_RECORD: Header = {
-                i18Key: `${$(window).width() <= ui.breakpoints.tablette?'video.header.record.mobile':'video.header.record'}`,
+                i18Key: "video.header.record",
                 template: "entcore/video/record",
                 onDisplay(){
                     emitDisplayEvent();
@@ -187,7 +187,7 @@ export let embedder = ng.directive('embedder', ['$timeout', '$filter', 'VideoUpl
             
             // BROWSE Header
             const HEADER_BROWSE: Header = {
-                i18Key: `${$(window).width() <= ui.breakpoints.tablette?"library.header.browse.mobile":"library.header.browse"}`,
+                i18Key: "video.header.browse",
                 template: "entcore/media-library/browse",
                 visible: () => hasVideoCapture || hasVideoUpload,
                 worflowKey: null

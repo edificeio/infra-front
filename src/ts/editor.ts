@@ -432,7 +432,7 @@ export let RTE = {
             var optionName = option.name.replace(/([A-Z])/g, "-$1").toLowerCase();
             if(optionName == "sound"){
                 if(!instance.hiddenShareSoundCode) addTemplate(optionName);
-            }else if(optionName == "embed"){
+            } else if(optionName == "embed"){
                 if(!instance.hiddenShareVideoCode)  addTemplate(optionName);
             }else {
                 addTemplate(optionName);
