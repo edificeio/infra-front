@@ -246,8 +246,8 @@ export const VideoController = ng.controller('VideoController', ['$scope', 'mode
             safeApply()
         }
         const tryStartStreaming = async () => {
-            if(!await Me.hasWorkflowRight("video.view")){
-                console.warn("[VideoController] missing workflow right video.view")
+            if(!await Me.hasWorkflowRight("video.capture")){
+                console.warn("[VideoController] missing workflow right video.capture")
                 $scope.hasRight = false;
                 safeApply();
                 return;

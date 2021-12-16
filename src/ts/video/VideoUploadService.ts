@@ -90,7 +90,7 @@ export class VideoUploadService {
             throw new Error("Invalid video filename.");
         }
         
-        let uploadUrl = "/video/upload?captation="+captation;
+        let uploadUrl = "/video/encode?captation="+captation;
 
         // Add some metadata for the event layer.
         let formData = VideoEventTrackerService.asFormData();

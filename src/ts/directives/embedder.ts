@@ -152,20 +152,15 @@ export let embedder = ng.directive('embedder', ['$timeout', '$filter', 'VideoUpl
             const MAIN_CONTAINER = 'entcore/video/main';
             const TEMPLATE_LOADING = 'entcore/video/loading';
 
-            //=== Headers
+            //===== HEADERS
             const HEADER_INTEGRATION: Header = {
                 i18Key: `${$(window).width() <= ui.breakpoints.tablette?'video.header.integration.mobile':'video.header.integration'}`,
                 template: "entcore/video/integration",
                 visible: () => true,
                 worflowKey: null
             };
-            const HEADER_BROWSE: Header = {
-                i18Key: `${$(window).width() <= ui.breakpoints.tablette?"library.header.browse.mobile":"library.header.browse"}`,
-                template: "entcore/media-library/browse",
-                visible: () => true,
-                worflowKey: "video.view"
-            };
 
+            // UPLOAD Header
             let hasVideoUpload = false;
             const HEADER_UPLOAD: Header = {
                 i18Key: `${$(window).width() <= ui.breakpoints.tablette?"video.header.upload.mobile":"video.header.upload"}`,
@@ -176,19 +171,29 @@ export let embedder = ng.directive('embedder', ['$timeout', '$filter', 'VideoUpl
             Me.hasWorkflowRight("video.upload")
             .then( hasIt => { hasVideoUpload = hasIt; } ); // Make the visible() property reactive.
 
-            let hasVideoView = false;
+            // CAPTURE Header
+            let hasVideoCapture = false;
             const HEADER_RECORD: Header = {
                 i18Key: `${$(window).width() <= ui.breakpoints.tablette?'video.header.record.mobile':'video.header.record'}`,
                 template: "entcore/video/record",
                 onDisplay(){
                     emitDisplayEvent();
                 },
-                visible: () => hasVideoView,
-                worflowKey: "video.view"
+                visible: () => hasVideoCapture,
+                worflowKey: "video.capture"
             };
-            Me.hasWorkflowRight("video.view") //hack to start and load workflow rights
-            .then( hasIt => { hasVideoView = hasIt; } ); // Make the visible() property reactive.
+            Me.hasWorkflowRight("video.capture") //hack to start and load workflow rights
+            .then( hasIt => { hasVideoCapture = hasIt; } ); // Make the visible() property reactive.
             
+            // BROWSE Header
+            const HEADER_BROWSE: Header = {
+                i18Key: `${$(window).width() <= ui.breakpoints.tablette?"library.header.browse.mobile":"library.header.browse"}`,
+                template: "entcore/media-library/browse",
+                visible: () => hasVideoCapture || hasVideoUpload,
+                worflowKey: null
+            };
+            //===== End Headers
+
             // Get the max uploaded file size, and recorded duration
             scope.maxWeight = VideoUploadService.maxWeight;
             VideoUploadService.initialize().then( () => {
