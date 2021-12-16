@@ -1,7 +1,6 @@
 import { ng } from "../ng-start";
 import { $ } from "../libs/jquery/jquery";
 import { Me } from "../me";
-import { ui } from '../ui';
 import http from 'axios';
 
 export const toast = ng.directive('toastOnboarding', ['$http', function($http) {
@@ -12,30 +11,32 @@ export const toast = ng.directive('toastOnboarding', ['$http', function($http) {
 		},
 		templateUrl: "/public/template/entcore/video/onboarding.html",
 		link: function(scope, element, attr){
-
-            const key:string = "onboarding";
-            const HAS_VIDEO_UPLOAD_RIGHT:Promise<boolean> = Me.hasWorkflowRight("video.upload");
-            http.put(`/userbook/preference/${key}`, JSON.stringify({"showOnboardingVideo":true}));
-
             scope.display = {
                 preference: true,
                 visible: false
             }
 
+            let key:string = "onboarding";
             async function getShowOnboardingPref() {
                 await http.get(`/userbook/preference/${key}`).then(function(response){
                     let preferences;
                     if(response.data.preference){
                         try {
                             preferences = JSON.parse(response.data.preference);
+                            scope.display.preference = preferences.showOnboardingVideo;
+                            scope.display.visible = scope.display.preference === true ? true : false;
                         } catch(error){
                             console.log(error);
                         }
+                    } else {
+                        scope.display.visible = true;
                     }
-                    scope.display.preference = preferences.showOnboardingVideo;
-                    scope.display.visible = scope.display.preference === true ? true : false;
                 });
             }
+
+            function saveUserPreference() {
+                if (scope.display.preference) http.put(`/userbook/preference/${key}`, JSON.stringify({"showOnboardingVideo":false}));
+            };
 
             function displayOnboardingVideo() {
                 $("body").addClass("highlight-video");
@@ -53,7 +54,7 @@ export const toast = ng.directive('toastOnboarding', ['$http', function($http) {
             }
 
             async function init() {
-                if (HAS_VIDEO_UPLOAD_RIGHT) {
+                if (await Me.hasWorkflowRight("video.upload")) {
                     await getShowOnboardingPref();
                     if (scope.display.visible === true) {
                         await displayOnboardingVideo();
@@ -61,16 +62,14 @@ export const toast = ng.directive('toastOnboarding', ['$http', function($http) {
                 }
             }
 
-            scope.saveUserPreference = function() {
-                if (scope.display.preference) http.put(`/userbook/preference/${key}`, JSON.stringify({"showOnboardingVideo":false}));
-            };
             scope.hideToastAndSavePreference = function(save) {
                 removeAttrBody();
-                if (save === true) scope.saveUserPreference();
+                if (save === true) saveUserPreference();
             };
+
             scope.openEmbedder = function() {
                 removeAttrBody();
-                scope.saveUserPreference();
+                saveUserPreference();
                 scope.show = true;
             }
 
