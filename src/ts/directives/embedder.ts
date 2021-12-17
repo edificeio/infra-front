@@ -522,7 +522,8 @@ export let embedder = ng.directive('embedder', ['$timeout', '$filter', 'VideoUpl
             }
             
             function logVideoEvent_AddToContent(document: Document) {
-                if (document.metadata.captation) {
+                if (typeof document.metadata.captation !== "undefined" ) {
+                    // Track video embedding events, ONLY the video is streamable (captured or uploaded from the RTE)
                     let browserInfo = devices.getBrowserInfo();
                     let videoEventData = {
                         videoId: document._id,
@@ -712,6 +713,26 @@ export let embedder = ng.directive('embedder', ['$timeout', '$filter', 'VideoUpl
                                 if( doc.metadata ) {
                                     doc.metadata.size = result.data.videosize;
                                 }
+				
+                                let browserInfo = devices.getBrowserInfo();
+                                let videoEventData = {
+                                    videoId: result.data.videoworkspaceid,
+                                    userId: model.me.userId,
+                                    userProfile: model.me.profiles[0],
+                                    device: deviceType,
+                                    browser: browserInfo.name + ' ' + browserInfo.version,
+                                    structure: model.me.structureNames[0],
+                                    level: model.me.level,
+                                    duration: 0,
+                                    weight: result.data.videosize,
+                                    captation: false,
+                                    url: window.location.hostname,
+                                    app: appPrefix
+                                }
+                                http().postJson('/video/event/save', videoEventData).done(function(res){
+                                    console.log(res);
+                                });
+                
                             }
                         }
                      })

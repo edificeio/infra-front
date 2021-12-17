@@ -418,7 +418,7 @@ export const VideoController = ng.controller('VideoController', ['$scope', 'mode
                 if (response.data) {
                     $scope.$emit("video-upload", response.data.videoid);
                 }
-								
+				
                 let browserInfo = devices.getBrowserInfo();
                 let videoEventData = {
                     videoId: response.data.videoworkspaceid,
@@ -430,10 +430,11 @@ export const VideoController = ng.controller('VideoController', ['$scope', 'mode
                     level: $scope.me.level,
                     duration: Math.round($scope.recordTimeInMs),
                     weight: response.data.videosize,
+                    captation: true,
                     url: window.location.hostname,
                     app: appPrefix
                 }
-                http().postJson('/video/event/capture', videoEventData).done(function(res){
+                http().postJson('/video/event/save', videoEventData).done(function(res){
                     console.log(res);
                 });
                 $scope.videoState = 'recorded';
