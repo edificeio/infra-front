@@ -7,7 +7,8 @@ export const toast = ng.directive('toastOnboarding', ['$http', function($http) {
 	return {
 		restrict: "E",
 		scope: {
-			show: "="
+			show: "=",
+            confirm: "&"
 		},
 		templateUrl: "/public/template/entcore/video/onboarding.html",
 		link: function(scope, element, attr){
@@ -71,6 +72,7 @@ export const toast = ng.directive('toastOnboarding', ['$http', function($http) {
                 removeAttrBody();
                 saveUserPreference();
                 scope.show = true;
+                scope.confirm();
             }
 
             init();

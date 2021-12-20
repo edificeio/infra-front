@@ -30,6 +30,7 @@ export interface VideoScope {
     template: any;
     show: boolean;
     delegate?: VideoDelegate;
+    selectedHeader: string;
     display: {
         search: string,
         limit: number,
@@ -87,6 +88,7 @@ export interface VideoScope {
     isListFrom(listName: LIST_TYPE): boolean
     listFrom(listName: LIST_TYPE):void
     headers(): Header[];
+    getHeaderByI18NKey(key: string): Header;
     showHeader(tab: Header):void
     showHeaderByI18Key(tab: string):void
     isSelectedHeader(header: Header): boolean;
@@ -127,7 +129,8 @@ export let embedder = ng.directive('embedder', ['$timeout', '$filter', 'VideoUpl
             ngChange: '&',
             fileFormat: '=',
             show: '=',
-            hiddenShareVideoCode: '='
+            hiddenShareVideoCode: '=',
+            selectedHeader: '=',
         },
         require: "?ngModel",
         templateUrl: '/' + appPrefix + '/public/template/entcore/video/main.html',
@@ -364,6 +367,10 @@ export let embedder = ng.directive('embedder', ['$timeout', '$filter', 'VideoUpl
                 }, 100);
             }
             //
+            scope.getHeaderByI18NKey = function(key: string) {
+                return scope.headers().find(h => h.i18Key == key);
+            }
+
             scope.showHeaderByI18Key = function (key: string) {
                 const tab = scope.headers().find(h => h.i18Key == key);
                 tab && scope.showHeader(tab);
@@ -467,9 +474,13 @@ export let embedder = ng.directive('embedder', ['$timeout', '$filter', 'VideoUpl
                     }
 
                     if (newVal === 'video') {
-                        showTemplate(HEADER_INTEGRATION);
+                        let header = HEADER_INTEGRATION;
+                        if (scope.selectedHeader) {
+                            header = scope.getHeaderByI18NKey(scope.selectedHeader);
+                        }
+                        showTemplate(header);
                         element.parents('lightbox').on('lightboxvisible', () => {
-                            showTemplate(HEADER_INTEGRATION);
+                            showTemplate(header);
                             scope.$apply();
                         });
                     } else {
