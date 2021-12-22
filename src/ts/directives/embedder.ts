@@ -679,7 +679,7 @@ export let embedder = ng.directive('embedder', ['$timeout', '$filter', 'VideoUpl
             };
 
             scope.acceptedFileList = () => {
-                return VideoUploadService.getValidExtensions().join(",");
+                return VideoUploadService.getValidExtensions().join(", ");
             }
 
             scope.importFiles = function (files) {
