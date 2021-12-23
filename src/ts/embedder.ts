@@ -25,7 +25,10 @@ export const embedderService = {
         return embedderService._providers;
     },
     getHtmlForVideoStream(document:Element){
-        return `<div class="image-container"><video playsinline="true" controls controlsList="nodownload" class="render" src="${document.documentUrl}" data-document-id="${document._id}" data-document-is-captation="${document.metadata.captation}"></video>&#8203;</div>`
+        const m = document.metadata;
+        const resolution = (typeof m.width==="number" && typeof m.height==="number") ? `${m.width}x${m.height}` : null;
+        const dataResolution = (resolution) ? `data-video-resolution="${resolution}"` : "";
+        return `<div class="image-container"><video playsinline="true" controls controlsList="nodownload" class="render" src="${document.documentUrl}" data-document-id="${document._id}" data-document-is-captation="${m.captation}" ${dataResolution}></video>&#8203;</div>`
     },
     getHtmlForVideoStreams(documents:Element[]){
         return documents.map(d=>embedderService.getHtmlForVideoStream(d)).join(' ');
