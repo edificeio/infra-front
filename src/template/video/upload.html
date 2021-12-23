@@ -18,7 +18,7 @@
  ~
  -->
 
-<p>
+ <p>
 	<em class="twelve cell small-text"><i18n>video.upload.supported.formats</i18n></em>
 	<em class="twelve cell small-text"><i18n>video.upload.supported.weight</i18n></em>
 </p>
@@ -33,7 +33,12 @@
 		<article class="default flex-row align-center absolute-position">
 			<div class="three select-file">
 				<div class="hidden-content">
-					<input class="upload-input" type="file" files-input-change="importFiles()" ng-model="upload.files" />
+					<input
+						class="upload-input"
+						type="file"
+						files-input-change="importFiles()"
+						accept="video/avi, video/msvideo, video/x-msvideo, video/quicktime, video/x-quicktime, video/mp4, .mov, .avi, .mp4"
+						ng-model="upload.files" />
 				</div>
 				<button class="file-button no-margin" translate content="library.file.choose" ng-click="triggerIpnutFileClick($event)"></button>
 			</div>
