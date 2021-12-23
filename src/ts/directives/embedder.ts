@@ -81,6 +81,7 @@ export interface VideoScope {
     openFolder(folder: Folder):void
     isViewMode(mode: MediaLibraryView): void
     changeViewMode(mode: MediaLibraryView): void
+    videoThumbUrl(doc: Document): string
     orderByField(field: string): void
     orderByDefault(): void
     isOrderedAsc(field: string): boolean
@@ -401,6 +402,16 @@ export let embedder = ng.directive('embedder', ['$timeout', '$filter', 'VideoUpl
                 scope.viewMode = mode;
             }
             scope.changeViewMode("icons");
+            scope.videoThumbUrl = (doc: Document) => {
+                const thumbnails = doc['thumbnails'] as {[thumbSize:string]:string};
+                if( doc._id && typeof thumbnails==="object" ) {
+                    const thumbSizes = Object.getOwnPropertyNames(thumbnails);
+                    if( thumbSizes && thumbSizes.length>0 ) {
+                        return `url('/workspace/document/${doc._id}?thumbnail=${thumbSizes[0]}')`;
+                    }
+                }
+                return null;
+            }
             scope.orderByField = function (field: string): void {
                 if (scope.isOrderedAsc(field) == true)
                     scope.orderFieldDocument = '-' + field;
