@@ -801,6 +801,9 @@ export let embedder = ng.directive('embedder', ['$timeout', '$filter', 'VideoUpl
 
             scope.$watch('show', function (newValue) {
                 scope.unselectProvider();
+                if (newValue) {
+                    showTemplate(HEADER_INTEGRATION);
+                }
             });
 
             http().get('/infra/embed/default').done(function (providers) {
