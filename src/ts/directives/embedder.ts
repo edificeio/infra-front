@@ -10,9 +10,9 @@ import {model} from "../modelDefinitions";
 import { embedderService } from '../embedder';
 import { Me } from '../me';
 import { DocumentsListModel } from '../workspace/model';
-import { ui } from '../ui';
 import { VideoUploadService } from '../video/VideoUploadService';
 import { notify } from '../notify';
+import { IObjectGuardDelegate } from "../navigationGuard";
 
 export interface VideoDelegate {
     title?: string
@@ -26,6 +26,16 @@ export interface VideoDelegate {
 
 }
 
+class VideoUploadGuardModel implements IObjectGuardDelegate {
+    hasUploaded = false;
+    guardObjectIsDirty(): boolean{
+        return this.hasUploaded;
+    }
+    guardObjectReset(): void{
+        this.hasUploaded = false;
+    }
+}
+
 export interface VideoScope {
     template: any;
     show: boolean;
@@ -37,7 +47,7 @@ export interface VideoScope {
         loading?: Document[],
         url?: String,
         invalidPath?: boolean,
-
+        isUploading?: boolean,
         provider?: { name?: String, embed?: any, url?: Array<String> },
         compressionReady?: boolean,
         editDocument?: boolean,
@@ -67,6 +77,7 @@ export interface VideoScope {
     visibility: "public" | "protected" | "external";
     viewMode: MediaLibraryView;
     maxWeight: number;
+    uploadGuard: VideoUploadGuardModel;
 
     updatePreview():void;
     applyHtml():void;
@@ -145,16 +156,18 @@ export let embedder = ng.directive('embedder', ['$timeout', '$filter', 'VideoUpl
                 limit: 24,
                 provider: {
                     name: 'none'
-                }
+                },
+                isUploading: false
             };
             scope.upload = {
                 documents: [],
                 highlights: []
             };
             scope.providers = [];
+            scope.uploadGuard = new VideoUploadGuardModel();
 
             const MAIN_CONTAINER = 'entcore/video/main';
-            const TEMPLATE_LOADING = 'entcore/video/loading';
+            // const TEMPLATE_LOADING = 'entcore/video/loading';
 
             //===== HEADERS
             const HEADER_INTEGRATION: Header = {
@@ -170,7 +183,8 @@ export let embedder = ng.directive('embedder', ['$timeout', '$filter', 'VideoUpl
                 i18Key: "video.header.upload",
                 template: "entcore/video/upload",
                 visible: () => hasVideoUpload,
-                worflowKey: "video.upload"
+                worflowKey: "video.upload",
+                guardMessageKey: "video.upload.guard.text"
             }
             Me.hasWorkflowRight("video.upload")
             .then( hasIt => { hasVideoUpload = hasIt; } ); // Make the visible() property reactive.
@@ -184,7 +198,8 @@ export let embedder = ng.directive('embedder', ['$timeout', '$filter', 'VideoUpl
                     emitDisplayEvent();
                 },
                 visible: () => hasVideoCapture,
-                worflowKey: "video.capture"
+                worflowKey: "video.capture",
+                guardMessageKey: "video.capture.guard.text"
             };
             Me.hasWorkflowRight("video.capture") //hack to start and load workflow rights
             .then( hasIt => { hasVideoCapture = hasIt; } ); // Make the visible() property reactive.
@@ -260,7 +275,7 @@ export let embedder = ng.directive('embedder', ['$timeout', '$filter', 'VideoUpl
             }
 
             //prefetch screen to avoid lock
-            template.open("entcore/video/cache", TEMPLATE_LOADING);
+            // template.open("entcore/video/cache", TEMPLATE_LOADING);
             if (!(window as any).toBlobPolyfillLoaded) {
                 http().get('/infra/public/js/toBlob-polyfill.js').done((response) => {
                     eval(response.data);
@@ -285,7 +300,6 @@ export let embedder = ng.directive('embedder', ['$timeout', '$filter', 'VideoUpl
             scope.closeCompression = () => {
                 // void
             }
-
 
             element.on('dragenter', (e) => {
                 e.preventDefault();
@@ -631,6 +645,7 @@ export let embedder = ng.directive('embedder', ['$timeout', '$filter', 'VideoUpl
 
             const cancelAll = () => {
                 scope.display.editedDocument = undefined;
+                scope.display.isUploading = false;
                 scope.upload.documents.forEach(doc => {
                     cancelDoc(doc);
                 });
@@ -654,11 +669,14 @@ export let embedder = ng.directive('embedder', ['$timeout', '$filter', 'VideoUpl
                 const index = scope.upload.documents.indexOf(doc);
                 scope.upload.documents.splice(index, 1);
                 if (!scope.upload.documents.length) {
+                    scope.display.isUploading = false;
+                    scope.uploadGuard.guardObjectReset();
                     showTemplate(HEADER_UPLOAD);
                 }
                 if (doc === scope.display.editedDocument) {
                     scope.display.editedDocument = undefined;
                 }
+
             };
 
 			scope.canConfirmImport = function () {
@@ -681,10 +699,13 @@ export let embedder = ng.directive('embedder', ['$timeout', '$filter', 'VideoUpl
                     await scope.listFrom('appDocuments');
                 scope.showHeader(HEADER_BROWSE);
                 scope.$apply();
+                scope.uploadGuard.guardObjectReset();
                 notify.success("video.file.saved");
             }
 
             scope.cancelUpload = () => {
+                scope.uploadGuard.guardObjectReset();
+
                 showTemplate(HEADER_UPLOAD);
                 cancelAll();
             };
@@ -723,11 +744,13 @@ export let embedder = ng.directive('embedder', ['$timeout', '$filter', 'VideoUpl
                     doc.fromFile( files[i] );
                     // Upload via the video service, not the workspace service.
                     doc.uploadStatus = "loading";
+                    scope.uploadGuard.hasUploaded = true;
                     VideoUploadService.upload( files[i], doc.name, false )
                     .then( (result) => {
                         if( result.data ) {
                             if( result.data.state==="error" ) {
                                 doc.uploadStatus = "failed";
+                                scope.uploadGuard.guardObjectReset();
                                 notify.error( result.data.code ? result.data.code : "video.file.error" );
                             } else {
                                 doc.uploadStatus = "loaded";
@@ -768,7 +791,10 @@ export let embedder = ng.directive('embedder', ['$timeout', '$filter', 'VideoUpl
                     break; // Only 1 video can be uploaded at a time.
                 }
                 scope.upload.files = undefined;
-                template.open(MAIN_CONTAINER, TEMPLATE_LOADING);
+                scope.display.isUploading = true;
+                // template.open(MAIN_CONTAINER, TEMPLATE_LOADING);
+                // scope.uploadGuard.hasUploaded = true;
+                // console.log(scope.uploadGuard.hasUploaded);
             };
 
             scope.updateSearch = function () {

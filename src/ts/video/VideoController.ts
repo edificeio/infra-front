@@ -11,7 +11,7 @@ import { idiom as lang } from "../idiom";
 import { UploadResult, VideoUploadService } from "./VideoUploadService";
 
 
-class VideoGuardModel implements IObjectGuardDelegate{
+class VideoRecordGuardModel implements IObjectGuardDelegate {
     hasRecorded = false;
     guardObjectIsDirty(): boolean{
         return this.hasRecorded;
@@ -38,7 +38,7 @@ interface VideoControllerScope {
     recordMaxTime: number
     videoInputDevices: MediaDeviceInfo[]
     selectedVid: MediaDeviceInfo;
-    guard: VideoGuardModel;
+    recordGuard: VideoRecordGuardModel;
     isIncompatible(): boolean
     isIncompatibleDevice(): boolean
     isIncompatibleBrowser(): boolean
@@ -73,7 +73,7 @@ export const VideoController = ng.controller('VideoController', ['$scope', 'mode
     ($scope: VideoControllerScope, model, route, $element, VideoUploadService:VideoUploadService) => {
 
         $scope.hasRight = true;
-        $scope.guard = new VideoGuardModel();
+        $scope.recordGuard = new VideoRecordGuardModel();
         $scope.recordMaxTime = 3; // MAX TIME OF RECORDING IN MINUTES
         VideoUploadService.initialize().then( () => {
             $scope.recordMaxTime = VideoUploadService.maxDuration;
@@ -349,7 +349,8 @@ export const VideoController = ng.controller('VideoController', ['$scope', 'mode
                         $scope.recorder.resume();
                     } else {
                         $scope.recorder.startRecording();
-                        $scope.guard.hasRecorded = true;
+                        $scope.recordGuard.hasRecorded = true;
+                        console.log($scope.recordGuard.hasRecorded);
                     }
                 }
                 safeApply();
@@ -382,7 +383,7 @@ export const VideoController = ng.controller('VideoController', ['$scope', 'mode
 
         $scope.redo = () => {
             //console.log('[VideoController.redo] redoing...');
-            $scope.guard.guardObjectReset();
+            $scope.recordGuard.guardObjectReset();
             $scope.videoState = 'ready';
             isPlaying = false;
             $scope.currentDuration = 0;
@@ -413,7 +414,7 @@ export const VideoController = ng.controller('VideoController', ['$scope', 'mode
                 return statusRes;
             })
             .then( (response:UploadResult) => {
-                $scope.guard.guardObjectReset();
+                $scope.recordGuard.guardObjectReset();
                 notify.success("video.file.saved");
                 if (response.data) {
                     $scope.$emit("video-upload", response.data.videoid);

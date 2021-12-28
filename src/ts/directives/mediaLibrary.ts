@@ -9,7 +9,7 @@ import http from "axios";
 import { DocumentsListModel } from '../workspace/model';
 import { workspaceService } from '../workspace/services';
 import { ui } from '../ui';
-export type Header = { template: string, worflowKey: string, i18Key: string, visible: () => boolean, onDisplay?:()=>void };
+export type Header = { template: string, worflowKey: string, guardMessageKey?: string, i18Key: string, visible: () => boolean, onDisplay?:()=>void };
 export type LIST_TYPE = "myDocuments" | "appDocuments" | "publicDocuments" | "sharedDocuments" | "trashDocuments" | "externalDocuments";
 export type MediaLibraryView = "icons" | "list";
 export interface MediaLibraryDelegate {

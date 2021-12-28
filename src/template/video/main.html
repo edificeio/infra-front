@@ -35,7 +35,7 @@
             <section class="tabs heading-tabs">
                 <header workflow="[[header.worflowKey]]"
                         navigation-trigger="showHeader(header)" 
-                        navigation-trigger-param="{onEvent:'click', guardMessageKey:'video.capture.guard.text', rootGuardId:'videoCapturedGuard'}"
+                        navigation-trigger-param="{onEvent:'click', guardMessageKey: '[[header.guardMessageKey]]', rootGuardId:'videoCapturedGuard'}"
                         ng-repeat="header in headers()" 
                         ng-class="{'selected':isSelectedHeader(header)}"
                         ng-show="header.visible()">
