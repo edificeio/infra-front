@@ -183,8 +183,7 @@ export let embedder = ng.directive('embedder', ['$timeout', '$filter', 'VideoUpl
                 i18Key: "video.header.upload",
                 template: "entcore/video/upload",
                 visible: () => hasVideoUpload,
-                worflowKey: "video.upload",
-                guardMessageKey: "video.upload.guard.text"
+                worflowKey: "video.upload"
             }
             Me.hasWorkflowRight("video.upload")
             .then( hasIt => { hasVideoUpload = hasIt; } ); // Make the visible() property reactive.
@@ -198,8 +197,7 @@ export let embedder = ng.directive('embedder', ['$timeout', '$filter', 'VideoUpl
                     emitDisplayEvent();
                 },
                 visible: () => hasVideoCapture,
-                worflowKey: "video.capture",
-                guardMessageKey: "video.capture.guard.text"
+                worflowKey: "video.capture"
             };
             Me.hasWorkflowRight("video.capture") //hack to start and load workflow rights
             .then( hasIt => { hasVideoCapture = hasIt; } ); // Make the visible() property reactive.
