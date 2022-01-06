@@ -186,7 +186,24 @@ export var skin = {
 			};
 			xhr.send();
 		});
-	}
+	},
+	getBootstrapAssetsPath(): string {
+        // use html tag attribute with-theme : <html with-theme="ode-bootstrap-neo">
+        const htmlWithThemeElement: Element = document.querySelector('html[with-theme]');
+        if (htmlWithThemeElement) {
+            return `/assets/themes/${htmlWithThemeElement.getAttribute('with-theme')}`
+        } else {
+            // use link bootstrap css tag attribute href : <link rel="stylesheet" type="text/css" id="theme" href="/assets/themes/ode-bootstrap-neo/skins/default/theme.css">
+            const themeCssElement: Element = document.querySelector('#theme');
+            if (themeCssElement && themeCssElement.hasAttribute('href')) {
+                const themeHrefSplit = themeCssElement.getAttribute('href').split('/skins');
+                if (themeHrefSplit && themeHrefSplit.length > 0) {
+                    return themeHrefSplit[0];
+                }
+            }
+        }
+        return '';
+    }
 };
 
 if (!(window as any).entcore) {

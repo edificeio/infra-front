@@ -26,6 +26,7 @@ export * from './imageCompression';
 export * from './imageEditor';
 export * from './imageLazyLoad';
 export * from './imageSelect';
+export * from './img-on-error.directive';
 export * from './infotip';
 export * from './inputdate';
 export * from './inputPassword';
