@@ -5,7 +5,8 @@ export const embed = {
             return {
                 template: `
                     <i ng-click="display.copyEmbed = true" tooltip="editor.option.embed"></i>
-                    <toast-onboarding 
+                    <toast-onboarding
+                        ng-if="display.toast"
                         show="display.copyEmbed" 
                         confirm="handleOnboardingConfirm()"
                     >
@@ -25,7 +26,8 @@ export const embed = {
                     scope.display = {
                         htmlCode: '',
                         copyEmbed: false,
-                        selectedHeader: ''
+                        selectedHeader: '',
+                        toast: instance.showOnboardingVideo
                     };
                     scope.applyHtml = function (template) {
                         instance.selection.replaceHTML(scope.display.htmlCode);

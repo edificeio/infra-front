@@ -566,6 +566,7 @@ export let RTE = {
                         editorInstance = new RTE.Instance({
                             hiddenShareVideoCode: (attributes.hiddenShareVideoCode === 'true'),
                             hiddenShareSoundCode: (attributes.hiddenShareSoundCode === 'true'),
+                            showOnboardingVideo: (attributes.onboardingvideo !== undefined),
                             toolbarConfiguration: toolbarConf,
                             element: element,
                             scope: scope,
