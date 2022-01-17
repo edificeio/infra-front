@@ -315,7 +315,16 @@ export let embedder = ng.directive('embedder', ['$timeout', '$filter', 'VideoUpl
             element.on('drop', async (e) => {
                 element.find('.drop-zone').removeClass('dragover');
                 e.preventDefault();
-                scope.importFiles(e.originalEvent.dataTransfer.files);
+                // If user can upload those files
+                if( hasVideoUpload ) {
+                    // Switch to the corresponding tab, 
+                    showTemplate(HEADER_UPLOAD);
+                    // Cancel all other pending operations (captation...)
+                    cancelAll();
+                    scope.$apply();
+                    // Start importing the files and show progress.
+                    scope.importFiles(e.originalEvent.dataTransfer.files);
+                }
             });
 
             scope.$watch('ngModel', function (newVal) {
