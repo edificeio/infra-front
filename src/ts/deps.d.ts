@@ -27,6 +27,7 @@ declare interface Document{
 declare interface Xiti {
     conf: any;
     ATInternet: any;
+    ATTag: any;
     structure: any;
     run(path?: string): Promise<void>;
     click(name: string, element: Element): Promise<void>;

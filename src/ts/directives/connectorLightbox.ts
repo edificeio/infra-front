@@ -145,9 +145,26 @@ export let connectorLightbox = ng.directive('connectorLightbox', ['$timeout', '$
             scope.onClose = function () {
                 scope.display.showAuthenticatedConnectorLightbox = false;
             }
-            const open = async (address, target) => {
-                if (_appEvent.app.isExternal && window.xiti && window.xiti.click) await window.xiti.click(_appEvent.app.name, _appEvent.element[0]);
-                window.open(address, target);
+            const open = (address, target) => {
+                if (_appEvent.app.isExternal && window.xiti && window.xiti.click) {
+                    if (target == '_self') {
+                        /* If target is the same page, we must ensure 'window.xiti.click' method has terminated
+                           before opening the connector
+                        */
+                        window.xiti.click(_appEvent.app.name, _appEvent.element[0])
+                            .then(() => { window.open(address, target); })
+                            .catch(err => { window.open(address, target); });
+                    } else {
+                        /* If target is a new page, Firefox would block the connector as a popup, hence we don't
+                           wait for 'window.xiti.click' response, which is ok because its execution cannot be
+                           interrupted as the connector opens in a new page
+                        */
+                        window.xiti.click(_appEvent.app.name, _appEvent.element[0]);
+                        window.open(address, target);
+                    }
+                } else {
+                    window.open(address, target);
+                }
             }
             scope.onConfirm = function (): void {
                 const _app = _appEvent.app;
