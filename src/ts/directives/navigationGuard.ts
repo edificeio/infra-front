@@ -221,6 +221,7 @@ class NavigationTriggerDirective {
         params.rootGuardId = params.rootGuardId || '*';
         const listener = new ManualChangeListener;
         navigationGuardService.registerListener(listener);
+        let unbinds:Array<Function> = [];
         const trigger = (e: Event) => {
             e && e.preventDefault();
             listener.onChange.next({
@@ -233,33 +234,32 @@ class NavigationTriggerDirective {
             })
         }
 
+        const bind = (element, eventName:string, listener:Function):void => {
+            element.on(eventName, listener);
+            unbinds.push( () => element.off(eventName, listener) );
+        }
+
+        const unbindAll = ():void => {
+            for( let off of unbinds ) {
+                off();
+            }
+            unbinds = [];
+        }
+
         if( angular.isString(params.onEvent) ) {
-            this.bind( element, params.onEvent as string, trigger );
+            bind( element, params.onEvent as string, trigger );
         } else if( angular.isArray(params.onEvent) ) {
             (params.onEvent as Array<string>).forEach( (n, idx, arr) => {
                 // listen to distinct event only once.
                 if( angular.isString(n) && arr.lastIndexOf(n)===idx ) {
-                    this.bind( element, n, trigger );
+                    bind( element, n, trigger );
                 }
             });
         }
         scope.$on("$destroy", () => {
-            scope.root && scope.root.$apply();
+            unbindAll();
             navigationGuardService.unregisterListener(listener);
-            this.unbindAll();
         });
-    }
-
-    private unbinds:Array<Function> = [];
-    private bind($element, eventName:string, listener:Function):void {
-        $element.on(eventName, listener);
-        this.unbinds.push( () => $element.off(eventName, listener) );
-    }
-    private unbindAll():void {
-        for( let off of this.unbinds ) {
-            off();
-        }
-        this.unbinds = [];
     }
 };
 
@@ -278,4 +278,3 @@ class NavigationTriggerDirective {
  * Set rootGuardId to trigger only the guard with specified the ID (useful when nesting guards).
  */
 export const navigationTrigger: Directive = ng.directive('navigationTrigger', () => new NavigationTriggerDirective());
-
