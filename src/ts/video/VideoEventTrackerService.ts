@@ -1,11 +1,17 @@
 import { appPrefix, devices, deviceType } from "../globals";
 import { http } from "../http";
 
+type VideoSession = {
+	elem:HTMLVideoElement;
+	wasPlayed: boolean;
+	cb:(this:HTMLVideoElement, ev:Event)=>any;
+};
+
 /**
  * This utility class allows sending usage data events to the server.
  */
 export class VideoEventTrackerService {
-	cleanup:{elem:HTMLVideoElement, cb:(this:HTMLVideoElement, ev:Event)=>any}[] = [];
+	private cleanup:VideoSession[] = [];
 
 	/**
 	 * Generates a new FormData containing generic video tracking metadata : 
@@ -16,9 +22,9 @@ export class VideoEventTrackerService {
 	 * @returns FormData
 	 */
 	static asFormData():FormData {
-        let formData = new FormData();
+        const formData = new FormData();
         // Report useful contextual data
-        let browserInfo = devices.getBrowserInfo();
+        const browserInfo = devices.getBrowserInfo();
         formData.append("device", deviceType);
         formData.append("browser", browserInfo.name + ' ' + browserInfo.version);
         formData.append("url", window.location.hostname);
@@ -28,8 +34,8 @@ export class VideoEventTrackerService {
 
 	/** Send a VIDEO_VIEW or VIDEO_PLAY event to the server. */
 	private generateEvent( type: "play"|"view", videoId: string, source:string) {
-		let browserInfo = devices.getBrowserInfo();
-		let videoEventData = {
+		const browserInfo = devices.getBrowserInfo();
+		const videoEventData = {
 			videoId: videoId,
 			device: deviceType,
 			browser: browserInfo.name + ' ' + browserInfo.version,
@@ -45,14 +51,20 @@ export class VideoEventTrackerService {
 	}
 	
 	private onPlay(event:Event) {
-		let videoId = (event.target as HTMLVideoElement).dataset.documentId || '';
-		let source = ((event.target as HTMLVideoElement).dataset.documentIsCaptation || "false") == "true" ? 'CAPTURED' : 'UPLOADED';
-		this.generateEvent( "play", videoId, source );
+		const elem = event.target as HTMLVideoElement;
+		const session = this.cleanup.find( video => video.elem===elem && !video.wasPlayed );
+		if( session && !session.wasPlayed ) {
+			session.wasPlayed = true;
+
+			const videoId = elem.dataset.documentId || '';
+			const source = (elem.dataset.documentIsCaptation || "false") == "true" ? 'CAPTURED' : 'UPLOADED';
+			this.generateEvent( "play", videoId, source );
+		}
 	}
 	
 	private generateViewEventFor( video: HTMLVideoElement) {
-		let videoId = video.dataset.documentId || '';
-		let source = (video.dataset.documentIsCaptation || "false") == "true" ? 'CAPTURED' : 'UPLOADED';
+		const videoId = video.dataset.documentId || '';
+		const source = (video.dataset.documentIsCaptation || "false") == "true" ? 'CAPTURED' : 'UPLOADED';
 		this.generateEvent( "view", videoId, source );
 	}
 	
@@ -63,7 +75,7 @@ export class VideoEventTrackerService {
 		// Track this video player.
 		const onPlay = (e:Event) => {this.onPlay(e);}
 		video.addEventListener('play', onPlay);
-		this.cleanup.push( {elem:video, cb:onPlay} );
+		this.cleanup.push( {elem:video, wasPlayed:false, cb:onPlay} );
 		// Forbid downloading : this is not supported by all navigators, see https://caniuse.com/?search=controlsList
 		video.setAttribute("controlsList", "nodownload");
 		this.generateViewEventFor( video );
@@ -101,12 +113,11 @@ export class VideoEventTrackerService {
 	
 	/** Release event listeners previously put on <video> tags, @see trackAll() */
 	untrackAll() {
-		for( let i=0; i<this.cleanup.length; i++ ) {
-			const video = this.cleanup[i];
-			if( !video || !video.elem || !video.cb )
-				continue;
-			video.elem.removeEventListener('play', video.cb);
-		}
+		this.cleanup.forEach( video => {
+			if( video && video.elem && video.cb ) {
+				video.elem.removeEventListener('play', video.cb);
+			}
+		});
 		this.cleanup = [];
 	}
 }
