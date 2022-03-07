@@ -20,8 +20,8 @@ export let bindHtml = ng.directive('bindHtml', ['$compile', function($compile){
 				htmlVal.find('script').remove();
 				htmlVal.find('*').each((index, item: HTMLElement) => {
 					let attributes = item.attributes;
-					for(let i=attributes.length-1; i>=0; i--){
-						if(attributes[i].name.startsWith('on')){
+					for(let i = attributes.length-1; i >=0; i--){
+						if(attributes[i].name.startsWith('on') || attributes[i].value.includes("javascript:")){
 							item.removeAttribute(attributes[i].name);
 						}
 					}
