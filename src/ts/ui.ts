@@ -1117,15 +1117,16 @@ export const ui = {
         scope.refreshAvatar();
     },
     scrollToId: function (id): Promise<void> {
-        return new Promise<any>((resolve, reject) => {
+        return new Promise<any>((resolve:Function, reject:Function) => {
             //jquery doesn't like selecting elements with slashes in their id,
             //whereas native API doesn't care
             var targetElement = document.getElementById(id);
             if (!targetElement) {
                 resolve();
             }
+            const stickyRowHeight:number = $('sticky-row').outerHeight() || 0;
             $('html, body').animate({
-                scrollTop: $(targetElement).offset().top - 60 - $('sticky-row').outerHeight() - 10
+                scrollTop: $(targetElement).offset().top - 60 - stickyRowHeight - 10
             }, 800, () => {
                 resolve();
             });
