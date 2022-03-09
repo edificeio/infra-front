@@ -59,7 +59,7 @@ export const color = {
                 }
                 scope.foreColor = "#000000";
 
-                element.children('input').on('change', function(){
+                element.children('input').on('input', function(){
                     scope.foreColor = $(this).val();
                     scope.$apply('foreColor');
                     applyColor();

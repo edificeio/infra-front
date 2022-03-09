@@ -988,7 +988,6 @@ export const Selection = function(data){
                 }
             });
 
-            removeEmptyChildTextNodes(that.editZone.get(0));
             let ranges = [];
             for (let i = 0; i < window.getSelection().rangeCount; i++) {
                 ranges.push(window.getSelection().getRangeAt(i));
