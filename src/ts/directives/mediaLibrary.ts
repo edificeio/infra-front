@@ -8,6 +8,7 @@ import { idiom } from '../idiom';
 import http from "axios";
 import { DocumentsListModel } from '../workspace/model';
 import { workspaceService } from '../workspace/services';
+import { notify } from '../notify';
 import { ui } from '../ui';
 export type Header = { template: string, worflowKey: string, guardMessageKey?: string, i18Key: string, visible: () => boolean, onDisplay?:()=>void };
 export type LIST_TYPE = "myDocuments" | "appDocuments" | "publicDocuments" | "sharedDocuments" | "trashDocuments" | "externalDocuments";
@@ -78,7 +79,9 @@ export interface MediaLibraryScope {
 	openCompression(doc: Document)
 	updateSelection(doc: Document)
 	abortOrDelete(doc: Document)
+    canConfirmImport(): boolean
 	confirmImport()
+	automaticImport()
 	cancelUpload()
 	canExpand(folder:Folder):boolean
 	isExternalVisible(): boolean
@@ -351,7 +354,6 @@ export const mediaLibrary = ng.directive('mediaLibrary', ['$timeout','$filter', 
 				return scope.display.listFrom == listName;
 			}
 			scope.listFrom = async (listName: LIST_TYPE): Promise<any> => {
-				console.log('LIST FROM')
 				scope.display.listFrom = listName;
 				const temp = MediaLibrary[scope.display.listFrom];
 				await scope.openFolder(temp);
@@ -464,8 +466,7 @@ export const mediaLibrary = ng.directive('mediaLibrary', ['$timeout','$filter', 
 					else {
 						scope.ngModel = selectedDocuments[0];
 					}
-				}
-				else {
+				} else {
 					const duplicateDocuments = [];
 					scope.display.loading = selectedDocuments;
 					for (let i = 0; i < selectedDocuments.length; i++) {
@@ -534,22 +535,36 @@ export const mediaLibrary = ng.directive('mediaLibrary', ['$timeout','$filter', 
 				}
 			};
 
+			scope.canConfirmImport = function () {
+				return scope.upload.documents.map(d => d.uploadStatus == "loaded").reduce((a1, a2) => a1 && a2, true);
+			}
+
 			scope.confirmImport = async () => {
 				scope.upload.documents.forEach(doc => {
 					doc.applyBlob();
-					scope.upload.highlights.push(doc);
+					doc.selected = true;
 				});
-				scope.upload.documents = [];
 				if (scope.visibility == 'public') {
 					await scope.listFrom('publicDocuments');
 					const lastIndex = MediaLibrary['publicDocuments'].documents.all.length - 1;
 					if (lastIndex > -1) {
 						MediaLibrary['publicDocuments'].documents.all[lastIndex].selected = true;
 					}
-				}
-				else
+				} else {
 					await scope.listFrom('appDocuments');
-				scope.showHeader(HEADER_BROWSE);
+				}
+				scope.documents = scope.upload.documents;
+				if (scope.documents) {
+					scope.selectDocuments();
+
+					if (scope.documents.length > 1) {
+						notify.success("workspace.add.document");
+					} else {
+						notify.success("workspace.add.document");
+					}
+				}
+				scope.upload.documents = [];
+				scope.documents = [];
 			}
 
 			scope.cancelUpload = () => {

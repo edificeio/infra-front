@@ -139,6 +139,7 @@ export let embedder = ng.directive('embedder', ['$timeout', '$filter', 'VideoUpl
             delegate: "=",
             ngModel: '=',
             ngChange: '&',
+            multiple: '=',
             fileFormat: '=',
             show: '=',
             hiddenShareVideoCode: '=',
@@ -606,9 +607,13 @@ export let embedder = ng.directive('embedder', ['$timeout', '$filter', 'VideoUpl
             }
             scope.selectDocuments = async () => {
                 const selectedDocuments = scope.selectedDocuments();
+                if (selectedDocuments.length > 1) {
+                    scope.multiple = true;
+                }
                 if (scope.visibility === 'external' ||
                     (scope.openedFolder.filter == "protected" && scope.visibility === 'protected') ||
                     (scope.openedFolder.filter == "public" && scope.visibility === 'public')) {
+                    
                     if (scope.multiple) {
                         scope.ngModel = embedderService.getHtmlForVideoStreams(selectedDocuments);
                     } else {
@@ -691,24 +696,29 @@ export let embedder = ng.directive('embedder', ['$timeout', '$filter', 'VideoUpl
 			}
 
             scope.confirmImport = async () => {
-                scope.upload.documents.forEach(doc => {
-                    doc.applyBlob();
-                    scope.upload.highlights.push(doc);
-                });
-                scope.upload.documents = [];
-                if (scope.visibility == 'public') {
-                    await scope.listFrom('publicDocuments');
-                    const lastIndex = MediaLibrary['publicDocuments'].documents.all.length - 1;
-                    if (lastIndex > -1) {
-                        MediaLibrary['publicDocuments'].documents.all[lastIndex].selected = true;
-                    }
-                } else
-                    await scope.listFrom('appDocuments');
-                scope.showHeader(HEADER_BROWSE);
+				scope.upload.documents.forEach(doc => {
+					doc.applyBlob();
+					doc.selected = true;
+				});
+				if (scope.visibility == 'public') {
+					await scope.listFrom('publicDocuments');
+					const lastIndex = MediaLibrary['publicDocuments'].documents.all.length - 1;
+					if (lastIndex > -1) {
+						MediaLibrary['publicDocuments'].documents.all[lastIndex].selected = true;
+					}
+				} else {
+					await scope.listFrom('appDocuments');
+				}
+				scope.documents = scope.upload.documents;
+				if (scope.documents) {
+					scope.selectDocuments();
+				}
+				scope.upload.documents = [];
+				scope.documents = [];
                 scope.$apply();
                 scope.uploadGuard.guardObjectReset();
                 notify.success("video.file.saved");
-            }
+			}
 
             scope.cancelUpload = () => {
                 scope.uploadGuard.guardObjectReset();
@@ -746,7 +756,7 @@ export let embedder = ng.directive('embedder', ['$timeout', '$filter', 'VideoUpl
                 
                 // Upload videos
                 for (var i = 0; i < files.length; i++) {
-					const doc = new Document();
+					let doc = new Document();
 					scope.upload.documents.push(doc);
                     doc.fromFile( files[i] );
                     // Upload via the video service, not the workspace service.
@@ -795,7 +805,7 @@ export let embedder = ng.directive('embedder', ['$timeout', '$filter', 'VideoUpl
                     ["finally"]( () => {
                         scope.$apply();
                     });
-                    break; // Only 1 video can be uploaded at a time.
+                    //break; // Only 1 video can be uploaded at a time.
                 }
                 scope.upload.files = undefined;
                 scope.display.isUploading = true;
