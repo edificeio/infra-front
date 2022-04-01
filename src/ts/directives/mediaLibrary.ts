@@ -8,6 +8,7 @@ import { idiom } from "../idiom";
 import http from "axios";
 import { DocumentsListModel } from "../workspace/model";
 import { workspaceService } from "../workspace/services";
+import { notify } from "../notify";
 import { ui } from "../ui";
 export type Header = {
   template: string;
@@ -51,6 +52,7 @@ export interface MediaLibraryScope {
     loading?: Document[];
     compressionReady?: boolean;
     editedDocument?: Document;
+    acceptType?: string;
   };
   viewMode: MediaLibraryView;
   orderFieldDocument: string;
@@ -79,7 +81,6 @@ export interface MediaLibraryScope {
   openFolder(folder: Folder);
   isViewMode(mode: MediaLibraryView): void;
   changeViewMode(mode: MediaLibraryView): void;
-  videoThumbUrl(doc: Document): string;
   orderByField(field: string): void;
   orderByDefault(): void;
   isOrderedAsc(field: string): boolean;
@@ -99,7 +100,9 @@ export interface MediaLibraryScope {
   openCompression(doc: Document);
   updateSelection(doc: Document);
   abortOrDelete(doc: Document);
+  canConfirmImport(): boolean;
   confirmImport();
+  automaticImport();
   cancelUpload();
   canExpand(folder: Folder): boolean;
   isExternalVisible(): boolean;
@@ -126,6 +129,7 @@ export const mediaLibrary = ng.directive("mediaLibrary", [
         ngChange: "&",
         multiple: "=",
         fileFormat: "=",
+        accept: "=",
       },
       templateUrl:
         "/" + appPrefix + "/public/template/entcore/media-library/main.html",
@@ -371,18 +375,6 @@ export const mediaLibrary = ng.directive("mediaLibrary", [
           scope.viewMode = mode;
           workspaceService.savePreference({ bbmView: mode });
         };
-        scope.videoThumbUrl = (doc: Document) => {
-          const thumbnails = doc["thumbnails"] as {
-            [thumbSize: string]: string;
-          };
-          if (doc._id && typeof thumbnails === "object") {
-            const thumbSizes = Object.getOwnPropertyNames(thumbnails);
-            if (thumbSizes && thumbSizes.length > 0) {
-              return `url('/workspace/document/${doc._id}?thumbnail=${thumbSizes[0]}')`;
-            }
-          }
-          return null;
-        };
         workspaceService.getPreference().then(pref => {
           scope.changeViewMode((pref.bbmView as MediaLibraryView) || "icons");
         });
@@ -409,7 +401,6 @@ export const mediaLibrary = ng.directive("mediaLibrary", [
           return scope.display.listFrom == listName;
         };
         scope.listFrom = async (listName: LIST_TYPE): Promise<any> => {
-          console.log("LIST FROM");
           scope.display.listFrom = listName;
           const temp = MediaLibrary[scope.display.listFrom];
           await scope.openFolder(temp);
@@ -459,9 +450,12 @@ export const mediaLibrary = ng.directive("mediaLibrary", [
 
             if (newVal === "audio") {
               showTemplate(HEADER_RECORD);
+              scope.display.acceptType = "audio/*";
               element.parents("lightbox").on("lightboxvisible", () => {
                 showTemplate(HEADER_RECORD);
               });
+            } else if (newVal === "img") {
+              scope.display.acceptType = "image/*";
             } else {
               showTemplate(HEADER_BROWSE);
               element.parents("lightbox").on("lightboxvisible", () => {
@@ -557,7 +551,6 @@ export const mediaLibrary = ng.directive("mediaLibrary", [
               scope.ngModel = duplicateDocuments[0];
             }
           }
-          safeApply(scope);
           if (
             (scope.ngModel && (scope.ngModel as Document)._id) ||
             (scope.ngModel &&
@@ -568,6 +561,8 @@ export const mediaLibrary = ng.directive("mediaLibrary", [
               scope.ngChange();
             });
           }
+          scope.$apply()
+
         };
 
         scope.updateSelection = doc => {
@@ -609,12 +604,17 @@ export const mediaLibrary = ng.directive("mediaLibrary", [
           }
         };
 
+        scope.canConfirmImport = function () {
+          return scope.upload.documents
+            .map(d => d.uploadStatus == "loaded")
+            .reduce((a1, a2) => a1 && a2, true);
+        };
+
         scope.confirmImport = async () => {
           scope.upload.documents.forEach(doc => {
             doc.applyBlob();
-            scope.upload.highlights.push(doc);
+            doc.selected = true;
           });
-          scope.upload.documents = [];
           if (scope.visibility == "public") {
             await scope.listFrom("publicDocuments");
             const lastIndex =
@@ -624,8 +624,21 @@ export const mediaLibrary = ng.directive("mediaLibrary", [
                 lastIndex
               ].selected = true;
             }
-          } else await scope.listFrom("appDocuments");
-          scope.showHeader(HEADER_BROWSE);
+          } else {
+            await scope.listFrom("appDocuments");
+          }
+          scope.documents = scope.upload.documents;
+          if (scope.documents) {
+            scope.selectDocuments();
+
+            if (scope.documents.length > 1) {
+              notify.success("workspace.add.document");
+            } else {
+              notify.success("workspace.add.document");
+            }
+          }
+          scope.upload.documents = [];
+          scope.documents = [];
         };
 
         scope.cancelUpload = () => {

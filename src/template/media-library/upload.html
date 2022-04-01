@@ -18,26 +18,38 @@
  ~
  -->
 
-<div class="row media-library">
-	<div class="drop-zone import-files">
-		<article class="drop flex-row align-center">
-				<i class="two cloud-upload"></i>
-				<div class="ten help">
-					<em><i18n>medialibrary.drop.help2</i18n></em>
-				</div>
-		</article>
-		<article class="default flex-row align-center absolute-position">
-			<div class="three select-file">
-				<div class="hidden-content">
-					<input class="upload-input" type="file" multiple files-input-change="importFiles()" ng-model="upload.files" />
-				</div>
-				<button class="file-button no-margin" translate content="library.file.choose" ng-click="triggerIpnutFileClick($event)"></button>
-			</div>
-			<i class="two cloud-upload"></i>
-			<div class="seven help">
-				<em><i18n>medialibrary.drop.help</i18n></em>
-			</div>
-		</article>
-
-	</div>
-</div>
+ <div class="row media-library">
+    <div class="drop-zone import-files">
+      <article class="drop flex-row align-center">
+        <i class="two cloud-upload"></i>
+        <div class="ten help">
+          <em><i18n>medialibrary.drop.help2</i18n></em>
+        </div>
+      </article>
+      <article class="default flex-row align-center absolute-position">
+        <div class="three select-file">
+          <div class="hidden-content">
+            <input
+              class="upload-input"
+              type="file"
+              multiple="multiple"
+              files-input-change="importFiles()"
+              accept="[[display.acceptType]]"
+              ng-model="upload.files"
+            />
+          </div>
+          <button
+            class="file-button no-margin"
+            translate
+            content="library.file.choose"
+            ng-click="triggerIpnutFileClick($event)"
+          ></button>
+        </div>
+        <i class="two cloud-upload"></i>
+        <div class="seven help">
+          <em><i18n>medialibrary.drop.help</i18n></em>
+        </div>
+      </article>
+    </div>
+  </div>
+  
