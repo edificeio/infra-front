@@ -107,7 +107,7 @@ export const backgroundColor = {
                     element.find('input[type=color]').spectrum({ preferredFormat: "hex" });
                     setSpectrum(element);
                 }
-                element.children('input').on('change', function () {
+                element.children('input').on('input', function () {
                     if (!$(this).val()) {
                         return;
                     }
