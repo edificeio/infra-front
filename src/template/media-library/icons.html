@@ -18,7 +18,7 @@
  ~
  -->
 
-<div class="icons-view" style="overflow: auto">
+ <div class="icons-view" style="overflow: auto">
 	<div class="element reduce-block-six" ng-repeat="folder in folders | orderBy: orderFieldFolder">
 		<explorer ng-model="folder.selected" on-open="openFolder(folder)">
 			<div class="img container">
@@ -45,7 +45,7 @@
 			</div>
 			<div class="img container video" ng-switch-when="video" 
 					ng-style="{'background-image': videoThumbUrl(document)}">
-				<svg class="icon-video" width="48" height="48"><use xlink:href="/workspace/public/img/illustrations.svg#icon-play"></use></svg>
+				<i><svg class="icon-video" width="40" height="40"><use xlink:href="/workspace/public/img/illustrations.svg#icon-play"></use></svg></i>
 			</div>
 			<div class="img container" ng-switch-default>
 				<i class="[[document.role()]]-large"></i>
