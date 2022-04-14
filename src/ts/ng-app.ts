@@ -33,7 +33,7 @@ import * as directives from './directives';
 import { Me } from './me';
 import httpAxios from 'axios';
 import { NgModelExtend } from './directives';
-import { initThemeDirective } from './theme';
+import { initThemeDirective, initThemeLegacyDirective } from './theme';
 import {VideoController} from "./video/VideoController";
 import { VideoEventTrackerService } from './video/VideoEventTrackerService';
 import { VideoUploadService } from './video/VideoUploadService';
@@ -164,6 +164,7 @@ var module = angular.module('app', ['ngSanitize', 'ngRoute'], ['$interpolateProv
         }
     });
 initThemeDirective(module);
+initThemeLegacyDirective(module);
 //routing
 if(routes.routing){
 	module.config(['$routeProvider', routes.routing]);
