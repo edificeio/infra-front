@@ -11,11 +11,12 @@ export let autocomplete = ng.directive('autocomplete', ['$timeout', function ($t
             options: '&',
             ngModel: '=',
             ngChange: '&',
-            search: '=?'
+            search: '=?',
+            placeholder: '@?'
         },
         template: `
             <div class="row">
-                <input type="text" class="twelve cell" ng-model="search" translate attr="placeholder" placeholder="search" autocomplete="off" />
+                <input type="text" class="twelve cell" ng-model="search" i18n-placeholder="{{placeholder||'search'}}" autocomplete="off" />
                 <div data-drop-down class="drop-down">
                     <div>
                         <ul class="ten cell right-magnet">
