@@ -76,6 +76,7 @@ export function initThemeLegacyDirective(module:any){
                         element.addClass(legacy);//add class at root=>wrapped theme
                         // themeService.loadOldWrappedTheme(theme.child, skinName);
                         themeService.loadThemeJs(legacy)
+                        skin.theme = `/assets/themes/${legacy}/skins/${skinName}/`;
                     }
                 }
                 ui.setStyle(url);
