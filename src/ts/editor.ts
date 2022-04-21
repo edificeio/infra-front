@@ -480,7 +480,7 @@ export let RTE = {
 		</ul>
 	</popover-content>
 </popover>
-<div><div role="textbox" contenteditable="true" aria-label="[[lang.translate('aria.message.content')]]" aria-multiline="true"></div>
+<div><div role="textbox" placeholder="[[placeholder]]" contenteditable="true" aria-label="[[lang.translate('aria.message.content')]]" aria-multiline="true"></div>
 </div>
 <textarea tabindex="-1"></textarea>
 <code class="language-html" tabindex="-1"></code>
@@ -551,6 +551,12 @@ export let RTE = {
                     var toolbarElement = element.children('editor-toolbar');
                     document.execCommand("styleWithCSS", false, true);
 
+                    if(attributes.placeholder) {
+                        editZone.attr('placeholder', attributes.placeholder);
+                        attributes.$observe('placeholder', function(newValue) {
+                            editZone.attr('placeholder', newValue);
+                        });
+                    }
                     if(attributes.inline !== undefined){
                         element.children('editor-toolbar').addClass('inline');
                     }
