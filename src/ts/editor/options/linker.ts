@@ -40,7 +40,7 @@ export interface LinkerScope {
             link?: string
             blank?: boolean
             target?: string
-            tooltip?: string
+            title?: string
         },
         resource: Resource,
         resources?: Resource[]
@@ -122,7 +122,7 @@ export const linker = {
                             if (element.nodeName === 'A') {
                                 var link = $(element).attr('href');
                                 scope.linker.params.blank = $(element).attr('target') === '_blank';
-                                scope.linker.params.tooltip = $(element).attr('tooltip') || '';
+                                scope.linker.params.title = $(element).attr('title') || '';
 
                                 if (link.split('http')[0] === '' && link.split('http').length > 1) {
                                     scope.linker.externalLink = true;
@@ -265,15 +265,15 @@ export const linker = {
                             scope.linker.params.target = '_blank';
                             linkNode.attr('target', scope.linker.params.target);
                         }
-                        if(scope.linker.params.tooltip){
+                        if(scope.linker.params.title){
                             var reg = /[<]/gi;
-                            scope.linker.params.tooltip = scope.linker.params.tooltip.replace(reg, "&lt;");
+                            scope.linker.params.title = scope.linker.params.title.replace(reg, "&lt;");
                             reg = /[>]/gi;
-                            scope.linker.params.tooltip = scope.linker.params.tooltip.replace(reg, "&gt;");
-                            linkNode.attr('tooltip', scope.linker.params.tooltip);
+                            scope.linker.params.title = scope.linker.params.title.replace(reg, "&gt;");
+                            linkNode.attr('title', scope.linker.params.title);
                         }
-                        else if(linkNode.attr('tooltip')){
-                            linkNode.removeAttr('tooltip');
+                        else if(linkNode.attr('title')){
+                            linkNode.removeAttr('title');
                             linkNode.off('mouseover');
                         }
                         editorEvents.onLinkerAdd.next({
