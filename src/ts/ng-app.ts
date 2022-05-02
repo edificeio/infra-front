@@ -1832,6 +1832,11 @@ module.directive('help', function(){
 			else if (window.location.pathname.includes("/directory/class-admin")){
 				scope.helpPath = helpPath + '/application/parametrage-de-la-classe/';
 			}
+			else if (window.location.pathname.includes("/userbook/mon-compte") ||
+					window.location.pathname.includes("/timeline/preferencesView") ||
+					window.location.pathname.includes("/timeline/historyView")){
+				scope.helpPath = helpPath + '/application/userbook/';
+			}
 
 			var helpContent, burgerMenuElement, burgerButtonElement;
 
