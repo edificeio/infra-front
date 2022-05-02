@@ -96,8 +96,9 @@ export const linker = {
                 ]);
 
                 scope.linker.openLinker = function (appPrefix, address, element) {
-                    var sel = window.getSelection();
-                    instance.selection.range = sel.getRangeAt(0);
+                    if (!element) {
+                        instance.selection.range = window.getSelection().getRangeAt(0);
+                    }
                     this.rangeCount = 1;
                     scope.linker.display.chooseLink = true;
                     if (appPrefix) {

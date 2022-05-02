@@ -532,7 +532,7 @@ export const Selection = function(data){
             end = (element.firstChild || element).textContent.length;
         }
 
-        if (element.nodeType === 1) {
+        if (element.nodeType === 1 && element.nodeName !== 'A') {
             range.selectNode(element);
         } else {
             range.setStart(element.firstChild || element, start);
