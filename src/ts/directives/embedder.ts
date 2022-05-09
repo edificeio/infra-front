@@ -617,9 +617,9 @@ export let embedder = ng.directive('embedder', ['$timeout', '$filter', 'VideoUpl
                     (scope.openedFolder.filter == "protected" && scope.visibility === 'protected') ||
                     (scope.openedFolder.filter == "public" && scope.visibility === 'public')) {
                     if (scope.multiple) {
-                        scope.ngModel = embedderService.getHtmlForVideoStreams(selectedDocuments);
+                        scope.ngModel = embedderService.getHtmlForVideoStreams(selectedDocuments, scope.visibility);
                     } else {
-                        scope.ngModel = embedderService.getHtmlForVideoStream(selectedDocuments[0]);
+                        scope.ngModel = embedderService.getHtmlForVideoStream(selectedDocuments[0], scope.visibility);
                     }
                 } else {
                     const duplicateDocuments = [];
@@ -636,9 +636,9 @@ export let embedder = ng.directive('embedder', ['$timeout', '$filter', 'VideoUpl
 
                     scope.display.loading = undefined;
                     if (scope.multiple) {
-                        scope.ngModel = embedderService.getHtmlForVideoStreams(duplicateDocuments);
+                        scope.ngModel = embedderService.getHtmlForVideoStreams(duplicateDocuments, scope.visibility);
                     } else {
-                        scope.ngModel =  embedderService.getHtmlForVideoStream(duplicateDocuments[0]);
+                        scope.ngModel =  embedderService.getHtmlForVideoStream(duplicateDocuments[0], scope.visibility);
                     }
                 }
                 scope.$apply();

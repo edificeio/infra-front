@@ -27,7 +27,7 @@ export type UploadResult = {
 export class VideoUploadService {
     private _maxWeight   = 50;  // in Mbytes. Applies to uploaded videos.
     private _maxDuration =  3;  // in minutes. Applies to recorded videos.
-    private _acceptVideoUploadExtensions = ["mp4", "mov", "avi"];
+    private _acceptVideoUploadExtensions = ["MP4", "MOV", "AVI"];
     private _initialized = false;
 
     public get maxWeight():number {

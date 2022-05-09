@@ -19,6 +19,7 @@ export const embed = {
                         ng-if="display.copyEmbed" 
                         show="display.copyEmbed"
                         selected-header="display.selectedHeader"
+                        visibility="display.visibility"
                     >
                     </embedder>
                 `,
@@ -27,8 +28,12 @@ export const embed = {
                         htmlCode: '',
                         copyEmbed: false,
                         selectedHeader: '',
-                        toast: instance.showOnboardingVideo
+                        toast: instance.showOnboardingVideo,
+                        visibility: "protected"
                     };
+                    if (instance.visibility === 'public') {
+                        scope.display.visibility = 'public'
+                    }
                     scope.applyHtml = function (template) {
                         instance.selection.replaceHTML(scope.display.htmlCode);
                         scope.display.copyEmbed = false;
