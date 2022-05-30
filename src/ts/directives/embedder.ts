@@ -702,15 +702,7 @@ export let embedder = ng.directive('embedder', ['$timeout', '$filter', 'VideoUpl
 					doc.applyBlob();
 					doc.selected = true;
 				});
-				if (scope.visibility == 'public') {
-					await scope.listFrom('publicDocuments');
-					const lastIndex = MediaLibrary['publicDocuments'].documents.all.length - 1;
-					if (lastIndex > -1) {
-						MediaLibrary['publicDocuments'].documents.all[lastIndex].selected = true;
-					}
-				} else {
-					await scope.listFrom('appDocuments');
-				}
+				await scope.listFrom('appDocuments');
 				scope.documents = scope.upload.documents;
 				if (scope.documents) {
 					scope.selectDocuments();
