@@ -14,8 +14,10 @@ export let quickstart = {
 	},
 	mySteps: [],
 	assistantIndex: {},
+	app: '',
+	prefName: 'quickstart',
 	assistantStep: function(index){
-		return skin.basePath + 'template/assistant/' + this.types[model.me.type] + '/' + index + '.html';
+		return `${skin.basePath}template/assistant/${this.app ? this.app + '/' : ''}${this.types[model.me.type]}/${index}.html`;
 	},
 	nextAssistantStep: function(){
 		this.state.assistant ++;
@@ -72,7 +74,7 @@ export let quickstart = {
 		this.save();
 	},
 	save: function(cb?: () => void){
-		http().putJson('/userbook/preference/quickstart', this.state).done(function(){
+		http().putJson(`/userbook/preference/${this.prefName}`, this.state).done(function(){
 			if(typeof cb === 'function'){
 				cb();
 			}
@@ -104,7 +106,7 @@ export let quickstart = {
 			return;
 		}
 		this.loading = true;
-		http().get('/userbook/preference/quickstart').done(function(pref){
+		http().get(`/userbook/preference/${this.prefName}`).done(function(pref){
 			let preferences;
 			if(pref.preference){
 				try{
@@ -135,25 +137,26 @@ export let quickstart = {
  					&& moment(preferences.assistantTimer).hour() === moment().hour()
  				)
  			){
-				http().get(skin.basePath + 'template/assistant/steps.json').done(function(steps){
-					this.steps = steps;
-					let nbSteps = this.steps[this.types[model.me.type]];
-					for(let i = 0; i < nbSteps; i++){
-						this.mySteps.push({
-							index: i,
-							path: this.assistantStep(i)
-						});
-						this.assistantIndex = this.mySteps[this.state.assistant];
-					}
-					this.loaded = true;
-					this.awaiters.forEach(function(cb){
-						if(typeof cb === 'function'){
-							cb();
+				http().
+					get(`${skin.basePath}template/assistant/${this.app ? this.app + '/' : ''}steps.json`).
+					done(function(steps){
+						this.steps = steps;
+						let nbSteps = this.steps[this.types[model.me.type]];
+						for(let i = 0; i < nbSteps; i++){
+							this.mySteps.push({
+								index: i,
+								path: this.assistantStep(i)
+							});
+							this.assistantIndex = this.mySteps[this.state.assistant];
 						}
-					});
-				}.bind(this));
-			}
-			else{
+						this.loaded = true;
+						this.awaiters.forEach(function(cb){
+							if(typeof cb === 'function'){
+								cb();
+							}
+						});
+					}.bind(this));
+			} else {
 				this.loaded = true;
 				this.awaiters.forEach(function(cb){
 					if(typeof cb === 'function'){

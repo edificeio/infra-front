@@ -6,6 +6,9 @@ import { $ } from '../libs/jquery/jquery';
 export let assistant = ng.directive('assistant', function(){
     return {
         restrict: 'E',
+        scope: {
+            app: '=',
+        },
         templateUrl: '/infra/public/template/assistant.html',
         link: function(scope, element, attributes){
 
@@ -20,6 +23,11 @@ export let assistant = ng.directive('assistant', function(){
                 $('.pulsar-button').addClass('hidden');
                 token = setTimeout(hidePulsars, 50);
                 // cache TOUS les pulsars
+            }
+
+            if (scope.app) {
+                quickstart.app = scope.app;
+                quickstart.prefName += scope.app.charAt(0).toUpperCase() + scope.app.slice(1);
             }
 
             quickstart.load(function(){
