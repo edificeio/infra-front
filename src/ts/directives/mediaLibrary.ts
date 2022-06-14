@@ -632,9 +632,9 @@ export const mediaLibrary = ng.directive("mediaLibrary", [
             scope.selectDocuments();
 
             if (scope.documents.length > 1) {
-              notify.success("workspace.add.document");
+              notify.success("workspace.add.document.success");
             } else {
-              notify.success("workspace.add.document");
+              notify.success("workspace.add.document.success");
             }
           }
           scope.upload.documents = [];
