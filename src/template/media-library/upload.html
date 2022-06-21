@@ -30,6 +30,16 @@
         <div class="three select-file">
           <div class="hidden-content">
             <input
+              ng-if="multiple"
+              class="upload-input"
+              type="file"
+              multiple="multiple"
+              files-input-change="importFiles()"
+              accept="[[display.acceptType]]"
+              ng-model="upload.files"
+            />
+            <input
+              ng-if="!multiple"
               class="upload-input"
               type="file"
               files-input-change="importFiles()"
