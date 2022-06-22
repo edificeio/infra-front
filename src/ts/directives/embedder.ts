@@ -119,7 +119,8 @@ export interface VideoScope {
     confirmImport():void
     cancelUpload():void
     isExternalVisible(): boolean
-	triggerIpnutFileClick(event): void;
+    triggerIpnutFileClick(event): void;
+    safeApply(fn?): void;
     //angular
     ngModel: string
     ngChange():void
@@ -611,6 +612,16 @@ export let embedder = ng.directive('embedder', ['$timeout', '$filter', 'VideoUpl
                 document.selected = true;
                 scope.selectDocuments();
             }
+            scope.safeApply = function (fn?) {
+                const phase = this.$root.$$phase;
+                if (phase == '$apply' || phase == '$digest') {
+                    if (fn && (typeof (fn) === 'function')) {
+                        fn();
+                    }
+                } else {
+                    this.$apply(fn);
+                }
+            };
             scope.selectDocuments = async () => {
                 const selectedDocuments = scope.selectedDocuments();
                 if (scope.visibility === 'external' ||
@@ -641,7 +652,7 @@ export let embedder = ng.directive('embedder', ['$timeout', '$filter', 'VideoUpl
                         scope.ngModel =  embedderService.getHtmlForVideoStream(duplicateDocuments[0], scope.visibility);
                     }
                 }
-                scope.$apply();
+                scope.safeApply();
                 if (scope.ngModel) {
                     setTimeout(() => {
                         scope.ngChange && scope.ngChange();
