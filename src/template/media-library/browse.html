@@ -31,13 +31,24 @@
 <div class="row reduce-block-four search-image">
 	<input type="search" ng-model="display.search" i18n-placeholder="search" ng-change="updateSearch()" class="six cell" />
 	<div class="cell six">
-		<button type="button" class="right-magnet" ng-disabled="display.loading || selectedDocuments().length === 0" ng-click="selectDocuments()">
+		<!-- default nav -->
+		<button ng-if="display.listFrom" type="button" class="right-magnet" ng-disabled="display.loading || selectedDocuments().length === 0" ng-click="selectDocuments()">
 			<i18n>library.browse.add</i18n>
 		</button>
+
+		<!-- virtual document add button -->
+		<virtual-media-library-button
+				ng-if="!display.listFrom"
+				documents="documents"
+				folders="folders"
+				selected-virtual-folder="selectedVirtualFolder"
+				on-click="selectDocuments()">
+		</virtual-media-library-button>
 	</div>
 </div>
 
 <div class="row browse">
+	<!-- nav folder -->
 	<nav class="four cell vertical zero-mobile">
 		<ul class="height-minus300">
 			<li workflow="workspace.create">
@@ -75,22 +86,38 @@
 					<i18n>workspace.publicDocuments</i18n>
 				</a>
 			</li>
+
+			<!-- virtual folder -->
+			<virtual-media-library
+					selected-virtual-folder="selectedVirtualFolder"
+					on-click="resetRegularDisplay()">
+			</virtual-media-library>
 		</ul>
 	</nav>
 
-		<!--VIEW MODE-->
-		<div class="cell right-magnet">
-			<div class="choice-view">
-				<i class="show-icons" ng-class="{ selected: isViewMode('icons') }" ng-click="changeViewMode('icons')"></i>
-				<i class="show-list" ng-class="{ selected: isViewMode('list') }" ng-click="changeViewMode('list')"></i>
-			</div>
+	<!--VIEW MODE-->
+	<div ng-if="display.listFrom" class="cell right-magnet">
+		<div class="choice-view">
+			<i class="show-icons" ng-class="{ selected: isViewMode('icons') }" ng-click="changeViewMode('icons')"></i>
+			<i class="show-list" ng-class="{ selected: isViewMode('list') }" ng-click="changeViewMode('list')"></i>
 		</div>
+	</div>
 
-	<div class="cell eight height-five twelve-mobile browse-list height-minus300 overflowx-hd" on-bottom-scroll="documentList.increment()">
+	<!-- documents view by icons or list -->
+	<div ng-if="display.listFrom" class="cell eight height-five twelve-mobile browse-list height-minus300 overflowx-hd" on-bottom-scroll="documentList.increment()">
 		<div class="reduce-block-eight" ng-if="!documents.length && !folders.length" style="text-align: center; margin-top: 40px">
 			<i18n>library.browse.notfound</i18n>
 		</div>
 		<container ng-hide="!documents.length && !folders.length" template="documents-view" guard-ignore-template></container>
 	</div>
+
+	<!-- virtual folder document view -->
+	<virtual-media-library-document-view class="cell eight height-five twelve-mobile browse-list height-minus300 overflowx-hd"
+										 ng-if="!display.listFrom"
+										 search="display.search"
+										 selected-virtual-folder="selectedVirtualFolder">
+	</virtual-media-library-document-view>
+
+
 </div>
 <div class="row"></div>

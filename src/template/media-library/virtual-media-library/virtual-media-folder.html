@@ -1,0 +1,7 @@
+<nav class="vertical mobile-navigation" ng-if="vm.folderServiceTree.trees.length > 0">
+     <ul style="border-left: none;">
+         <li data-ng-repeat="folder in vm.folderServiceTree.trees">
+             <folder-tree-inner folder="folder" tree-props="vm.folderServiceTree"></folder-tree-inner>
+         </li>
+     </ul>
+ </nav>

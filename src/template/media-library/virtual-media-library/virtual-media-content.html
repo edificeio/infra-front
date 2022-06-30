@@ -1,0 +1,56 @@
+<div class="icons-view" style="overflow: auto" ng-if="vm.selectedVirtualFolder">
+
+    <!--  empty state message -->
+    <div class="reduce-block-eight" ng-if="!vm.folders.length && !vm.documents.length" style="text-align: center; margin-top: 40px">
+        <i18n>library.browse.notfound</i18n>
+    </div>
+
+    <!-- folder part area -->
+    <div class="element reduce-block-six" ng-repeat="folder in vm.folders | orderBy: orderFieldFolder">
+        <explorer ng-model="folder.selected" on-open="vm.mediaServiceLibrary.openedTree.openFolder(folder)">
+            <div class="img container">
+                <i class="folder-large"></i>
+            </div>
+            <legend>
+                <a class="medium-text">[[folder.name]]</a>
+            </legend>
+        </explorer>
+    </div>
+
+    <!-- documents part area -->
+    <div class="element reduce-block-six" ng-repeat="document in vm.documents">
+        <explorer ng-model="document.selected"
+                  ng-click="vm.updateSelection(document)" on-open="selectDocument(document)"
+                  ng-switch="vm.getRole(document)">
+
+            <!-- img content -->
+            <div class="img container" ng-switch-when="img">
+                <div class="clip">
+                    <img image-lazy-load="vm.getThumbUrl(document)"/>
+                    <div class="absolute" ng-if="display.loading && display.loading.indexOf(document) !== -1">
+                        <img skin-src="/img/illustrations/loading.gif" />
+                    </div>
+                </div>
+            </div>
+
+            <!-- container video -->
+            <div class="img container video" ng-switch-when="video"
+                 ng-style="{'background-image': videoThumbUrl(document)}">
+                <svg class="icon-video" width="48" height="48">
+                    <use xlink:href="/workspace/public/img/illustrations.svg#icon-play"></use>
+                </svg>
+            </div>
+
+            <!-- default file -->
+            <div class="img container" ng-switch-default>
+                <i class="[[vm.getRole(document)]]-large"></i>
+            </div>
+
+            <!-- legend content -->
+            <legend>
+                <a class="medium-text">[[document.name]]</a>
+                <a><strong class="small-text">[[document.ownerName]]</strong></a>
+            </legend>
+        </explorer>
+    </div>
+</div>

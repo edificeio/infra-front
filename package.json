@@ -35,6 +35,7 @@
     "webpack-stream": "^3.2.0"
   },
   "devDependencies": {
+    "@types/angular": "1.7.4",
     "@types/ua-parser-js": "^0.7.35",
     "@types/core-js": "0.9.46",
     "@types/jasmine": "2.8.8",

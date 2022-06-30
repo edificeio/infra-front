@@ -26,4 +26,5 @@ export * from "./tracking";
 export { Embedder } from "./embedder";
 export { DatepickerDelegate } from "./ng-app";
 export { FolderTreeProps } from "./directives/folderTree"
+export { IVirtualMediaLibraryScope } from "./directives/virtual-folder"
 export { FolderPickerProps, FolderPickerSource, FolderPickerSourceBlob, FolderPickerSourceFile } from "./directives/folderPicker"
