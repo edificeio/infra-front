@@ -334,7 +334,11 @@ export class Element extends Model implements Node, Shareable, Selectable {
         this.roleMappers.push(mapper);
     }
     static registerThumbUrlMapper(mapper: ElementToThumbMapper) {
-        this.thumbMappers.push(mapper);
+        const foundMapper: ElementToThumbMapper = this.thumbMappers.find((tm: ElementToThumbMapper) => tm.name === mapper.name);
+        // prevent re-pushing same function unless we have an unspecified function name which means we are forced to push either way
+        if (!mapper.name || !foundMapper) {
+            this.thumbMappers.push(mapper);
+        }
     }
     get contentType() {
         return this.metadata && this.metadata["content-type"];

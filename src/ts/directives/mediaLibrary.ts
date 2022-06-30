@@ -115,6 +115,9 @@ export interface MediaLibraryScope {
   $on(a?, b?);
   $id: any;
   $parent: any;
+  
+  // virtual folder
+  resetRegularDisplay(): void;
 }
 
 export const mediaLibrary = ng.directive("mediaLibrary", [
@@ -481,18 +484,21 @@ export const mediaLibrary = ng.directive("mediaLibrary", [
           }
         }
         function filteredDocuments(source: Folder) {
-          return source.documents.filter(function (doc: Document) {
-            const hasDelegateRoleFilter =
-              scope.delegate && scope.delegate.filterDocumentRole;
-            const hasValidRole =
-              doc.role() === scope.fileFormat || scope.fileFormat === "any";
-            const filetypeOk = hasDelegateRoleFilter
-              ? scope.delegate.filterDocumentRole(doc)
-              : hasValidRole;
-            const filenameOk = matchSearch(doc.metadata.filename);
-            const nameOk = matchSearch(doc.name);
-            return filetypeOk && (filenameOk || nameOk);
-          });
+          if (source) {
+            return source.documents.filter(function (doc: Document) {
+              const hasDelegateRoleFilter =
+                  scope.delegate && scope.delegate.filterDocumentRole;
+              const hasValidRole =
+                  doc.role() === scope.fileFormat || scope.fileFormat === "any";
+              const filetypeOk = hasDelegateRoleFilter
+                  ? scope.delegate.filterDocumentRole(doc)
+                  : hasValidRole;
+              const filenameOk = matchSearch(doc.metadata.filename);
+              const nameOk = matchSearch(doc.name);
+              return filetypeOk && (filenameOk || nameOk);
+            });
+          }
+          return [];
         }
 
         function filterFolders(source: Folder) {
@@ -685,6 +691,13 @@ export const mediaLibrary = ng.directive("mediaLibrary", [
           }
           event.stopPropagation();
         });
+
+        scope.resetRegularDisplay = function (): void {
+          scope.display.listFrom = null;
+          scope.openedFolder = new Folder("owner");
+          scope.documents = [];
+          scope.folders = [];
+        }
       },
     };
   },
