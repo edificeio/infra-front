@@ -12,13 +12,12 @@ export let sortableList = ng.directive('sortableList', ['$compile', function ($c
                 scope.updateElementsOrder = function (el) {
                     var sortables = element.find('[sortable-element]');
                     sortables.removeClass('animated');
-                    sortables.each(function (index, item) {
-                        if (parseInt($(item).css('margin-top')) > 0) {
-                            el.detach().insertBefore(item);
-                        }
+                    let noneAfter = true;
+                    sortables.filter("[sortable-order='after']").first().each(function (index, sortable) {
+                        el.detach().insertBefore(sortable);
+                        noneAfter = false;
                     });
-
-                    if (el.offset().top > sortables.last().offset().top + sortables.last().height()) {
+                    if (noneAfter) {
                         element.append(el.detach());
                     }
 
@@ -55,6 +54,8 @@ export let sortableElement = ng.directive('sortableElement', ['$parse', function
         transclude: true,
         link: function (scope, element, attributes) {
             var sortables;
+            var initialMarginTop = 0, 
+                initialMarginBottom = 0;
             scope.$watch('ngModel', function (newVal, oldVal) {
                 if (newVal !== oldVal && typeof scope.ngChange === 'function') {
                     scope.ngChange();
@@ -79,30 +80,45 @@ export let sortableElement = ng.directive('sortableElement', ['$parse', function
                         sortables.addClass('animated');
                     }, 20);
                     element.css({ 'z-index': 1000 });
+                    initialMarginTop = parseInt(element.css('margin-top')) || 0;
+                    initialMarginBottom = parseInt(element.css('margin-bottom')) || 0;
                 },
                 tick: function () {
-                    var moved = [];
+                    const elementFullHeight = element.outerHeight();
+                    const elementHalfHeight = elementFullHeight / 2;
+                    const elementMidDistance = element.offset().top + elementHalfHeight + initialMarginTop;
+                    let previousSortable = null;
+                    let latestMidDistance = 0;
                     sortables.each(function (index, sortable) {
-                        if (element[0] === sortable) {
-                            return;
-                        }
-                        var sortableTopDistance = $(sortable).offset().top - parseInt($(sortable).css('margin-top'));
-                        if (element.offset().top + element.outerHeight() / 2 > sortableTopDistance &&
-                            element.offset().top + element.outerHeight() / 2 < sortableTopDistance + $(sortable).outerHeight()) {
-                            $(sortable).css({ 'margin-top': element.outerHeight() });
-                            moved.push(sortable);
-                        }
-                        //first widget case
-                        if (element.offset().top + element.outerHeight() / 2 - 2 < sortableTopDistance && index === 0) {
-                            $(sortable).css({ 'margin-top': element.outerHeight() });
-                            moved.push(sortable);
+                        if (element[0] !== sortable) {  // don't care about the dragged element
+                            const previousMidDistance = latestMidDistance;
+                            latestMidDistance = $(sortable).offset().top + elementHalfHeight;
+                            if ( (!previousSortable || previousMidDistance < elementMidDistance) && elementMidDistance <= latestMidDistance) {
+                                // Dragged item is between the previous and the latest sortables
+                                $(sortable).attr('sortable-order', 'after');
+                                previousSortable && $(previousSortable).css({ 'margin-bottom': initialMarginBottom + elementHalfHeight +'px' });
+                                $(sortable).css({ 'margin-top': initialMarginTop +(previousSortable ? elementHalfHeight : elementFullHeight) +'px' });
+                            } else {
+                                if( elementMidDistance > latestMidDistance ) {
+                                    // Dragged item is after the latest sortable
+                                    $(sortable).attr('sortable-order', 'before');
+                                } else {
+                                    // Dragged item is before the latest sortable
+                                    $(sortable).attr('sortable-order', 'after');
+                                }
+                                previousSortable && $(previousSortable).css({ 'margin-bottom': initialMarginBottom +'px' });
+                                $(sortable).css({ 'margin-top': initialMarginTop + 'px' });
+                            }
+                            previousSortable = sortable;
                         }
                     });
-                    sortables.each(function (index, sortable) {
-                        if (moved.indexOf(sortable) === -1) {
-                            $(sortable).css({ 'margin-top': 0 + 'px' });
+                    if( previousSortable ) { // last item
+                        if ( elementMidDistance > latestMidDistance) {
+                            $(previousSortable).css({ 'margin-bottom': initialMarginBottom + elementFullHeight +'px' });
+                        } else {
+                            $(previousSortable).css({ 'margin-bottom': initialMarginBottom + 'px' });
                         }
-                    })
+                    }
                 }
             });
         }
