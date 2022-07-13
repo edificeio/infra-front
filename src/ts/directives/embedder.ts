@@ -514,13 +514,13 @@ export let embedder = ng.directive('embedder', ['$timeout', '$filter', 'VideoUpl
                         showTemplate(header);
                         element.parents('lightbox').on('lightboxvisible', () => {
                             showTemplate(header);
-                            scope.$apply();
+                            scope.safeApply();
                         });
                     } else {
                         showTemplate(HEADER_BROWSE);
                         element.parents('lightbox').on('lightboxvisible', () => {
                             showTemplate(HEADER_BROWSE);
-                            scope.$apply();
+                            scope.safeApply();
                         });
                     }
                     if (MediaLibrary[scope.display.listFrom].documents.length === 0) {
