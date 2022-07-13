@@ -30,7 +30,44 @@ export const themeService = {
             id: 'themeJS'
         });
         jQuery('body').append(style);
+    },
+    async initThemeLegacy(){
+        const conf = await ui.getConf();
+        await skin.onSkinReady;
+        const themeName = skin.themeName;
+        const skinName = skin.skinName;
+        let url = skin.theme;
+        for(let theme of conf.overriding){
+            const legacy = theme.legacyVersion || theme.parent;
+            if(theme.child==themeName && legacy){
+                url = (window as any).CDN_DOMAIN + `/assets/themes/${legacy}/skins/${skinName}/`;
+                $("html").addClass(legacy);
+                themeService.loadThemeJs(legacy);
+                skin.theme = `/assets/themes/${legacy}/skins/${skinName}/`;
+            }
+        }
+        ui.setStyle(url);
+    },
+    async initDisconnectedLegacyTheme() {
+        const conf = await ui.getCurrentThemeConf();
+        await skin.onSkinReady;
+        const currentTheme = conf;
+        const skinName = 'default';
+        let url = skin.theme;
+        const legacy = currentTheme.parent;
+        url = (window as any).CDN_DOMAIN + `/assets/themes/${legacy}/skins/${skinName}/`;
+        $("html").addClass(legacy);
+        themeService.loadThemeJs(legacy);
+        skin.theme = `/assets/themes/${legacy}/skins/${skinName}/`;
+        ui.setStyle(url);
     }
+}
+
+function loadLegacyTheme(url, legacy, skinName) {
+    url = (window as any).CDN_DOMAIN + `/assets/themes/${legacy}/skins/${skinName}/`;
+    $("html").addClass(legacy);
+    themeService.loadThemeJs(legacy);
+    skin.theme = `/assets/themes/${legacy}/skins/${skinName}/`;
 }
 
 export function initThemeDirective(module:any){
@@ -50,33 +87,6 @@ export function initThemeDirective(module:any){
                         element.addClass(theme.bootstrapVersion);//add class at root=>wrapped theme
                         // themeService.loadOldWrappedTheme(theme.child, skinName);
                         themeService.loadThemeJs(theme.bootstrapVersion)
-                    }
-                }
-                ui.setStyle(url);
-            }
-        }
-    });
-}
-
-export function initThemeLegacyDirective(module:any){
-    module.directive('withThemeLegacy', function(){
-        return {
-            restrict: 'EA',
-            link: async function(scope, element, attributes){
-                const conf = await ui.getConf();
-                await skin.onSkinReady;
-                const themeName = skin.themeName;
-                const skinName = skin.skinName;
-                let url = skin.theme;
-                for(let theme of conf.overriding){
-                    //replace theme by bootstrap version
-                    const legacy = theme.legacyVersion || theme.parent;
-                    if(theme.child==themeName && legacy){
-                        url = (window as any).CDN_DOMAIN + `/assets/themes/${legacy}/skins/${skinName}/`;
-                        element.addClass(legacy);//add class at root=>wrapped theme
-                        // themeService.loadOldWrappedTheme(theme.child, skinName);
-                        themeService.loadThemeJs(legacy)
-                        skin.theme = `/assets/themes/${legacy}/skins/${skinName}/`;
                     }
                 }
                 ui.setStyle(url);

@@ -32,11 +32,15 @@ import { ng } from './ng-start';
 import * as directives from './directives';
 import { Me } from './me';
 import httpAxios from 'axios';
+<<<<<<< HEAD
 import { NgModelExtend } from './directives';
 import { initThemeDirective, initThemeLegacyDirective } from './theme';
 import {VideoController} from "./video/VideoController";
 import { VideoEventTrackerService } from './video/VideoEventTrackerService';
 import { VideoUploadService } from './video/VideoUploadService';
+=======
+import { initThemeDirective, themeService } from './theme';
+>>>>>>> 1d81761 (feat: #WB-719, global legacy theme)
 
 let ui = UI;
 var module = angular.module('app', ['ngSanitize', 'ngRoute'], ['$interpolateProvider', function($interpolateProvider) {
@@ -164,7 +168,6 @@ var module = angular.module('app', ['ngSanitize', 'ngRoute'], ['$interpolateProv
         }
     });
 initThemeDirective(module);
-initThemeLegacyDirective(module);
 //routing
 if(routes.routing){
 	module.config(['$routeProvider', routes.routing]);
@@ -657,7 +660,7 @@ module.directive('portal', ['$compile','tracker', function($compile,tracker){
 			element.find('[logout]').attr('href', '/auth/logout?callback=' + skin.logoutCallback);
 			
 			if (!attributes.templateUrl) {
-				ui.setStyle(skin.theme);
+				themeService.initThemeLegacy();
 			}
 			
 			Http.prototype.bind('disconnected', function(){
@@ -2464,7 +2467,6 @@ module.controller('Account', ['$scope', function($scope) {
 		});
 	};
     $scope.goToMessagerie = function(){
-        console.log($scope.messagerieLink);
         http().get('/userbook/preference/zimbra').done(function(data){
             try{
                if( data.preference? JSON.parse(data.preference)['modeExpert'] && model.me.hasWorkflow('fr.openent.zimbra.controllers.ZimbraController|preauth') : false){
@@ -2474,7 +2476,6 @@ module.controller('Account', ['$scope', function($scope) {
                         $scope.messagerieLink = '/zimbra/zimbra';
                         window.location.href = window.location.origin + $scope.messagerieLink;
                     }
-                    console.log($scope.messagerieLink);
             } catch(e) {
                 $scope.messagerieLink = '/zimbra/zimbra';
             }
