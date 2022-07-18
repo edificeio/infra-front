@@ -648,10 +648,10 @@ module.directive('portal', ['$compile','tracker', function($compile,tracker){
 			// Initialize any configured tracker
 			tracker.init();
 
-			$("html").addClass("portal-container")
+			$("html").addClass("portal-container");
 			element.find('[logout]').attr('href', '/auth/logout?callback=' + skin.logoutCallback);
 			
-			if (!attributes.templateUrl) {
+			if (!attributes.templateUrl) {	
 				themeService.initThemeLegacy();
 			}
 			
@@ -731,11 +731,10 @@ module.directive('adminPortal', function(){
 			$("html").addClass("portal-container")
 			$('[logout]').attr('href', '/auth/logout?callback=' + skin.logoutCallback);
 			http().get('/userbook/preference/admin').done(function(data){
-				var theme = data.preference ? JSON.parse(data.preference) : null
-
-				if(!theme || !theme.path)
-					ui.setStyle(skin.theme)
-				else{
+				var theme = data.preference ? JSON.parse(data.preference) : null;
+				if(!theme || !theme.path) {
+					ui.setStyle(skin.theme);
+				} else {
 					ui.setStyle('/public/admin/'+theme.path+'/')
 				}
 			}).error(function(error){

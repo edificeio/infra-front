@@ -43,6 +43,7 @@ export var skin = {
 				this.theme = (window as any).CDN_DOMAIN + '/assets/themes/' + data.skin + '/skins/default/';
 				this.basePath = this.theme + '../../';
 				skin.skinResolveFunc();
+				
 				http().get('/assets/themes/' + data.skin + '/template/override.json', { token: rand }, { disableNotifications: true }).done((override) => {
 					this.templateMapping = override;
 					resolve();
@@ -51,6 +52,7 @@ export var skin = {
 			}).e404(() => {
 				skin.skinRejectedFunc();
 			});
+
 			themeService.initDisconnectedLegacyTheme();
 		});
 	},
