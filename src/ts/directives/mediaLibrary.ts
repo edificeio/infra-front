@@ -513,7 +513,7 @@ export const mediaLibrary = ng.directive("mediaLibrary", [
         scope.insertRecord = async (docId: string) => {
           await MediaLibrary.appDocuments.sync();
           MediaLibrary['appDocuments'].documents.all.forEach(doc => {
-            if (doc.file == docId) {
+            if (doc._id == docId) {
               scope.selectDocument(doc);
             }
           });
