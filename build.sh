@@ -34,8 +34,15 @@ install () {
   docker-compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "npm install"
 }
 
+# watch () {
+#   docker-compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "node_modules/gulp/bin/gulp.js watch --springboard=/home/node/$SPRINGBOARD"
+# }
+
 watch () {
-  docker-compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "node_modules/gulp/bin/gulp.js watch --springboard=/home/node/$SPRINGBOARD"
+  docker-compose run --rm \
+    -u "$USER_UID:$GROUP_GID" \
+    -v $PWD/../$SPRINGBOARD:/home/node/springboard \
+    node sh -c "npx gulp watch --springboard=/home/node/springboard"
 }
 
 publish () {
