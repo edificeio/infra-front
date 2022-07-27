@@ -12,25 +12,28 @@ if (argv.springboard) {
     springboardPath = argv.springboard;
     console.log('Using springboard at ' + springboardPath);
 }
-gulp.task('clean:types', function (cb) {
+
+function cleanTypes(cb) {
     rimraf('./types/src', cb);
-});
-gulp.task("do-build", ["clean:types"], function () {
+}
+
+function doBuild() {
     return gulp.src('./')
         .pipe(webpack(require('./webpack.config.js')))
         .on('error', function handleError() {
             this.emit('end');
         })
         .pipe(gulp.dest('./'));
-});
-gulp.task("build", ["do-build"], function () {
+}
+
+function build() {
     return gulp.src('./bundle/ng-app.js')
     .pipe(gap.prependText('window.springboardBuildDate="'+new Date().toISOString()+'";\n'))
     .pipe(gap.prependText('window.infrafrontVersion="'+pjson.version+'";\n'))
     .pipe(gulp.dest("./bundle/"));
-});
+}
 
-gulp.task("build-dev", ["clean:types"], () => {
+function buildDev() {
     webpack.plugins = [];
     return gulp.src('./')
         .pipe(webpack(require('./webpack-dev.config.js')))
@@ -38,11 +41,10 @@ gulp.task("build-dev", ["clean:types"], () => {
             this.emit('end');
         })
         .pipe(gulp.dest('./'));
-});
+}
 
-gulp.task('update', ['build-dev'], () => {
+function update(cb) {
     GlobManager.js().then(f => {
-        //console.log("founded js: ",f.length,f.join(","))
         f.forEach((file) => {
             const split = file.split('/');
             const fileName = split[split.length - 1];
@@ -61,25 +63,42 @@ gulp.task('update', ['build-dev'], () => {
                 .pipe(gulp.dest(split.slice(0, split.length - 1).join('/')));
         });
     });
-})
+    cb();
+}
 
-gulp.task("watch", ["clean:types"], () => {
-    gulp.watch('**/*.ts', () => gulp.start('update'));
-    gulp.watch('**/*.html', () => {
-        const apps = [];
-        GlobManager.html().then(f => {
-            f.forEach((file) => {
-                const app = file.split('/public/template/entcore')[0];
-                if (apps.indexOf(app) === -1) {
-                    apps.push(app);
-                    console.log('copy to ' + app + '/public/template/entcore')
-                    gulp.src('./src/template/**/*')
-                        .pipe(gulp.dest(app + '/public/template/entcore'));
-                }
-            });
-        })
-    });
-});
+function copyHtml(cb) {
+    const apps = [];
+    GlobManager.html().then(f => {
+        f.forEach((file) => {
+            const app = file.split('/public/template/entcore')[0];
+            if (apps.indexOf(app) === -1) {
+                apps.push(app);
+                console.log('copy to ' + app + '/public/template/entcore')
+                gulp.src('./src/template/**/*')
+                    .pipe(gulp.dest(app + '/public/template/entcore'));
+            }
+        });
+    })
+    cb();
+}
+
+gulp.task('clean:types', cleanTypes);
+gulp.task("do-build", doBuild);
+gulp.task("build", build);
+gulp.task("build-dev", buildDev);
+gulp.task('update', update);
+gulp.task('copy-html', copyHtml);
+
+function watchTs() {
+    return gulp.watch('./src/ts/**/*.ts', gulp.series('clean:types','build-dev','update'));
+}
+
+function watchHtml() {
+    return gulp.watch('./src/template/**/*.html', gulp.series('clean:types', 'copy-html'));
+}
+
+gulp.task('watch-ts', watchTs);
+gulp.task('watch-html', watchHtml);
 
 const GlobManager = {
     _js: null,
@@ -116,3 +135,9 @@ const GlobManager = {
         return GlobManager._html;
     }
 }
+
+// Exports Tasks
+exports.watch = gulp.parallel('watch-ts', 'watch-html');
+// exports.watch = watchHtml;
+// exports.watch = gulp.parallel(watchTs, watchHtml);
+exports.build = gulp.series('clean:types','do-build', 'build');
