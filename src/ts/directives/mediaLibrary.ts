@@ -74,7 +74,7 @@ export interface MediaLibraryScope {
   title(): string;
   updateSearch();
   editImage();
-  insertRecord();
+  insertRecord(docId: string);
   selectedDocuments(): Document[];
   selectDocument(doc: Document);
   selectDocuments();
@@ -510,10 +510,13 @@ export const mediaLibrary = ng.directive("mediaLibrary", [
           });
         }
 
-        scope.insertRecord = async () => {
+        scope.insertRecord = async (docId: string) => {
           await MediaLibrary.appDocuments.sync();
-          showTemplate(HEADER_BROWSE);
-          scope.listFrom("appDocuments");
+          MediaLibrary['appDocuments'].documents.all.forEach(doc => {
+            if (doc.file == docId) {
+              scope.selectDocument(doc);
+            }
+          });
         };
 
         scope.selectedDocuments = () =>

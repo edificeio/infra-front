@@ -24,8 +24,9 @@ export let recorderComponent = ng.directive('recorder', function () {
         link: function (scope, element, attributes) {
             scope.recorder = recorder;
             recorder.state(function (eventName:string) {
-                if(eventName === 'saved'){
-                    scope.onUpload && scope.onUpload();
+                if(eventName.startsWith('saved-')){
+                    let id = eventName.substring(6);
+                    scope.onUpload && scope.onUpload()(id);
                 }
                 safeApply(scope); // Force reevaluation of the recorder's field
             });

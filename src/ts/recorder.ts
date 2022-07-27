@@ -215,16 +215,24 @@ export var recorder = (function () {
 					closeWs();
 					notify.error(event.error);
 				}
-				ws.onmessage = (event) => {
-					if (event.data && event.data.indexOf("error") !== -1) {
+				ws.onmessage = async (event) => {
+					if (event.data && event.data.indexOf && typeof event.data.indexOf === 'function' && event.data.indexOf("error") !== -1) {
 						console.log(event.data);
 						closeWs();
 						notify.error(event.data);
-					} else if (event.data && event.data === "ok" && this.status === "encoding") {
-						closeWs();
-						notify.info("recorder.saved");
-						notifyFollowers('saved');
-						this.elapsedTime = 0;
+					}else if (event.data && event.data.text && typeof event.data.text === 'function' && this.status === "encoding") {
+						let data = JSON.parse(await event.data.text());
+						if (data.status === "ok") {
+							closeWs();
+							notify.info("recorder.saved");
+							let docId = data.docId;
+							notifyFollowers(`saved-${docId}`);
+							this.elapsedTime = 0;
+						} else {
+							console.log(event.data);
+							closeWs();
+							notify.error(event.data);
+						}
 					}
 
 				}
