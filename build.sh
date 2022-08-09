@@ -34,15 +34,11 @@ install () {
   docker-compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "npm install"
 }
 
-# watch () {
-#   docker-compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "node_modules/gulp/bin/gulp.js watch --springboard=/home/node/$SPRINGBOARD"
-# }
-
 watch () {
   docker-compose run --rm \
     -u "$USER_UID:$GROUP_GID" \
-    -v $PWD/../$SPRINGBOARD:/home/node/springboard \
-    node sh -c "npx gulp watch --springboard=/home/node/springboard"
+    -v $PWD/../$SPRINGBOARD:/home/node/$SPRINGBOARD \
+    node sh -c "npx gulp watch --springboard=../$SPRINGBOARD 2>/dev/null"
 }
 
 publish () {
@@ -60,7 +56,7 @@ do
       build
       ;;
     install)
-      install && build "--springboard=/home/node/${SPRINGBOARD}"
+      install && build "--springboard=../${SPRINGBOARD}"
       ;;
     watch)
       watch
