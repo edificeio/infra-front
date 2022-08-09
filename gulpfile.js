@@ -138,6 +138,4 @@ const GlobManager = {
 
 // Exports Tasks
 exports.watch = gulp.parallel('watch-ts', 'watch-html');
-// exports.watch = watchHtml;
-// exports.watch = gulp.parallel(watchTs, watchHtml);
 exports.build = gulp.series('clean:types','do-build', 'build');
