@@ -47,6 +47,7 @@ export interface SharePanelScope {
     found: ShareVisible[]
     maxEdit: number
     shareOverrideDefaultActions: string[]
+    allowNotify: boolean
     onValidate?(args: {
         $data: SharePayload,
         $resource: ShareableWithId,
@@ -101,7 +102,8 @@ export const sharePanel = ng.directive('sharePanel', ['$rootScope', ($rootScope)
             closeDelegate: '&?',
             confirmationCloseDelegate: '&?',
             canEditDelegate: '&?',
-            autoClose: '='
+            autoClose: '=',
+            allowNotify: '=?',
         },
         restrict: 'E',
         templateUrl: '/assets/js/entcore/template/share-panel.html',
@@ -138,10 +140,10 @@ export const sharePanel = ng.directive('sharePanel', ['$rootScope', ($rootScope)
 
             function loadAppBehavioursSharingConf() {
                 Behaviours.loadBehaviours(appPrefix, () => {
-                    if (Behaviours.applicationsBehaviours[appPrefix] 
+                    if (Behaviours.applicationsBehaviours[appPrefix]
                         && Behaviours.applicationsBehaviours[appPrefix].share
                         && typeof Behaviours.applicationsBehaviours[appPrefix].share === "function") {
-                            $scope.shareOverrideDefaultActions = Behaviours.applicationsBehaviours[appPrefix].share().overrideDefaultActions;
+                        $scope.shareOverrideDefaultActions = Behaviours.applicationsBehaviours[appPrefix].share().overrideDefaultActions;
                     }
                 });
             }
@@ -342,8 +344,8 @@ export const sharePanel = ng.directive('sharePanel', ['$rootScope', ($rootScope)
                                 $scope.sharingModel.edited = [];
                                 $scope.varyingRightsI18nKey =
                                     idiom.translate(`${currentApp}.share.varyingrights`) === `${currentApp}.share.varyingrights`
-                                    ? "share.varyingrights"
-                                    : `${currentApp}.share.varyingrights`
+                                        ? "share.varyingrights"
+                                        : `${currentApp}.share.varyingrights`
                             }
                         }
                         initModel = false;
@@ -668,9 +670,9 @@ export const sharePanel = ng.directive('sharePanel', ['$rootScope', ($rootScope)
                 });
                 try {
                     await Promise.all(promises);
-                    notify.success('share.notify.success');
+                    if(!angular.isDefined($scope.allowNotify) || $scope.allowNotify) notify.success('share.notify.success');
                 } catch (e) {
-                   $attributes.onFailure ? $scope.onFailure( {'$error' : e} ) : notify.error('share.notify.error');
+                    if(!angular.isDefined($scope.allowNotify) || $scope.allowNotify) $attributes.onFailure ? $scope.onFailure( {'$error' : e} ) : notify.error('share.notify.error');
                 }
                 if ($scope.autoClose) {
                     await $scope.closePanel(false);
