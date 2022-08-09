@@ -2,7 +2,6 @@ import { http } from './http';
 import { ui } from './ui';
 import { model } from './modelDefinitions';
 import { _ } from './libs/underscore/underscore';
-import { themeService } from './theme';
 
 let _skinResolved, _skinRejected = null;
 export var skin = {
@@ -43,7 +42,6 @@ export var skin = {
 				this.theme = (window as any).CDN_DOMAIN + '/assets/themes/' + data.skin + '/skins/default/';
 				this.basePath = this.theme + '../../';
 				skin.skinResolveFunc();
-				
 				http().get('/assets/themes/' + data.skin + '/template/override.json', { token: rand }, { disableNotifications: true }).done((override) => {
 					this.templateMapping = override;
 					resolve();
@@ -52,8 +50,6 @@ export var skin = {
 			}).e404(() => {
 				skin.skinRejectedFunc();
 			});
-
-			themeService.initDisconnectedLegacyTheme();
 		});
 	},
 	listThemes: function(cb){

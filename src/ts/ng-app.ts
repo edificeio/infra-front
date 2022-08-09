@@ -32,7 +32,7 @@ import { ng } from './ng-start';
 import * as directives from './directives';
 import { Me } from './me';
 import httpAxios from 'axios';
-import { initThemeDirective, themeService } from './theme';
+import { initThemeDirective, initThemeLegacyDirective } from './theme';
 
 let ui = UI;
 var module = angular.module('app', ['ngSanitize', 'ngRoute'], ['$interpolateProvider', function($interpolateProvider) {
@@ -160,6 +160,7 @@ var module = angular.module('app', ['ngSanitize', 'ngRoute'], ['$interpolateProv
         }
     });
 initThemeDirective(module);
+initThemeLegacyDirective(module);
 //routing
 if(routes.routing){
 	module.config(['$routeProvider', routes.routing]);
@@ -648,11 +649,11 @@ module.directive('portal', ['$compile','tracker', function($compile,tracker){
 			// Initialize any configured tracker
 			tracker.init();
 
-			$("html").addClass("portal-container");
+			$("html").addClass("portal-container")
 			element.find('[logout]').attr('href', '/auth/logout?callback=' + skin.logoutCallback);
 			
-			if (!attributes.templateUrl) {	
-				themeService.initThemeLegacy();
+			if (!attributes.templateUrl) {
+				ui.setStyle(skin.theme);
 			}
 			
 			Http.prototype.bind('disconnected', function(){
@@ -732,6 +733,7 @@ module.directive('adminPortal', function(){
 			$('[logout]').attr('href', '/auth/logout?callback=' + skin.logoutCallback);
 			http().get('/userbook/preference/admin').done(function(data){
 				var theme = data.preference ? JSON.parse(data.preference) : null;
+
 				if(!theme || !theme.path) {
 					ui.setStyle(skin.theme);
 				} else {
@@ -2458,6 +2460,7 @@ module.controller('Account', ['$scope', function($scope) {
 		});
 	};
     $scope.goToMessagerie = function(){
+        console.log($scope.messagerieLink);
         http().get('/userbook/preference/zimbra').done(function(data){
             try{
                if( data.preference? JSON.parse(data.preference)['modeExpert'] && model.me.hasWorkflow('fr.openent.zimbra.controllers.ZimbraController|preauth') : false){
@@ -2467,6 +2470,7 @@ module.controller('Account', ['$scope', function($scope) {
                         $scope.messagerieLink = '/zimbra/zimbra';
                         window.location.href = window.location.origin + $scope.messagerieLink;
                     }
+                    console.log($scope.messagerieLink);
             } catch(e) {
                 $scope.messagerieLink = '/zimbra/zimbra';
             }
