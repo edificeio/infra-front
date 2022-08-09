@@ -2,7 +2,6 @@ import { http } from './http';
 import { ui } from './ui';
 import { model } from './modelDefinitions';
 import { _ } from './libs/underscore/underscore';
-import { themeService } from './theme';
 
 let _skinResolved, _skinRejected = null;
 export var skin = {
@@ -51,7 +50,6 @@ export var skin = {
 			}).e404(() => {
 				skin.skinRejectedFunc();
 			});
-			themeService.initDisconnectedLegacyTheme();
 		});
 	},
 	listThemes: function(cb){
