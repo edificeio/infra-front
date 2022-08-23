@@ -1,29 +1,37 @@
-<div class="recorder--audio" ng-if="recorder.isCompatible()">
-	<h1><i18n>embed.audio.title</i18n></h1>
-	<div class="no-1d recorder--starting">
-		<p><i18n>embed.audio.tagline</i18n></p>
-		<img skin-src="/img/illustrations/recorder-audio.svg" ng-if="!showActionButtons()"/>
-		<button type="button" 
-				ng-click="switchRecord()" 
-				ng-if="isIdle() || isStopped()">
-			<i18n>embed.start</i18n>
-		</button>
-	</div>
+<div class="recorder--audio" ng-if="recorder.isCompatible() || isVideoCompatible()">
+	<h1><i18n>record-me.widget.title</i18n></h1>
 
-	<div class="recorder--controls no-2d" style="justify-content: center">
+	<div class="recorder--controls" style="justify-content: center">
 		<button type="button"
 				class="recorder--control" 
+				ng-if="recorder.isCompatible()"
+				ng-hide="showCamera" 
 				ng-click="switchRecord()" 
 				ng-class="{'start': !isRecording(), 'suspend': isRecording()}"
 				ng-disabled="isEncoding() || isUploading()">
 			<i class="record-audio" 
 				ng-class="{'start': !isRecording(), 'suspend': isRecording()}"></i>
-			<span ng-if="isIdle() || isStopped()"><i18n>embed.start.mini</i18n></span>
+			<span ng-if="isIdle() || isStopped()"><i18n>record.start.audio</i18n></span>
 			<span ng-if="isSuspended()"><i18n>embed.resume</i18n></span>
 			<span ng-if="isRecording()"><i18n>embed.suspend</i18n></span>
 		</button>
+
+		<button type="button"
+				class="recorder--control start" 
+				ng-if="isVideoCompatible()"
+				ng-hide="showCamera || showActionButtons()"
+				ng-click="onShowCamera()">
+			<i class="record-video start"></i>
+			<span ng-if="isIdle() || isStopped()"><i18n>record.start.video</i18n></span>
+		</button>
 	</div>
 
+	<!-- video capture -->
+	<div ng-if="showCamera">
+		<container template="entcore/video/record"></container>
+	</div>
+
+	<!-- audio capture -->
 	<div class="recorder--timer" 
 		ng-if="showActionButtons()" 
 		ng-class="{'recording': isRecording()}">
@@ -41,9 +49,9 @@
 				ng-if="showActionButtons()"
 				ng-class="{'start': !isRecording(), 'suspend': isRecording()}" 
 				ng-click="switchRecord()"
-				ng-disabled="isEncoding() || isUploading()">
+				ng-disabled="isEncoding() || isUploading()">
 			<i class="record-audio" ng-class="{'start': !isRecording(), 'suspend': isRecording()}"></i>
-			<span ng-if="isIdle() || isStopped()"><i18n>embed.start.mini</i18n></span>
+			<span ng-if="isIdle() || isStopped()"><i18n>embed.start.mini</i18n></span>
 			<span ng-if="!isIdle() && !isStopped() && !isRecording()"><i18n>embed.resume</i18n></span>
 			<span ng-if="isRecording()"><i18n>embed.suspend</i18n></span>
 		</button>
@@ -53,7 +61,7 @@
 				ng-click="switchPlay()" 
 				ng-if="showActionButtons()" 
 				ng-class="{'play': showActionButtons(), 'pause': isPlaying()}"
-				ng-disabled="isRecording() || isEncoding() || isUploading()">
+				ng-disabled="isRecording() || isEncoding() || isUploading()">
 			<i ng-class="{'play': showActionButtons(), 'pause': isPlaying()}"></i>
 			<span ng-if="!isPlaying()"><i18n>embed.play</i18n></span>
 			<span ng-if="isPlaying()"><i18n>embed.pause</i18n></span>
@@ -63,7 +71,7 @@
 				class="recorder--control redo" 
 				ng-click="recorder.flush()" 
 				ng-if="showActionButtons()"
-				ng-disabled="isRecording() || isEncoding() || isUploading()">
+				ng-disabled="isRecording() || isEncoding() || isUploading()">
 			<i class="redo"></i>
 			<span><i18n>embed.redo</i18n></span>
 		</button>
@@ -72,13 +80,13 @@
 				class="recorder--control save" 
 				ng-click="saveRecord()" 
 				ng-if="showActionButtons()"
-				ng-disabled="isRecording() || isEncoding() || isUploading()">
+				ng-disabled="isRecording() || isEncoding() || isUploading()">
 			<i ng-class="{'save': !isEncoding() && !isUploading(), 'loading': isEncoding() || isUploading()}"></i>
 			<span><i18n>embed.save</i18n></span>
 		</button>
 	</div>
 </div>
 
-<div ng-if="!recorder.isCompatible()">
+<div ng-if="!recorder.isCompatible() && !isVideoCompatible()">
 	<p><i18n>recorder.not.supported</i18n></p>
 </div>

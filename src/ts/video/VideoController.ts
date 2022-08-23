@@ -11,7 +11,7 @@ import { idiom as lang } from "../idiom";
 import { UploadResult, VideoUploadService } from "./VideoUploadService";
 
 
-class VideoRecordGuardModel implements IObjectGuardDelegate {
+export class VideoRecordGuardModel implements IObjectGuardDelegate {
     hasRecorded = false;
     guardObjectIsDirty(): boolean{
         return this.hasRecorded;
@@ -69,7 +69,7 @@ interface VideoControllerScope {
     $root: any
 }
 
-export const VideoController = ng.controller('VideoController', ['$scope', 'model', 'route', '$element', 'VideoUploadService',
+ng.controllers.push( ng.controller('VideoController', ['$scope', 'model', 'route', '$element', 'VideoUploadService',
     ($scope: VideoControllerScope, model, route, $element, VideoUploadService:VideoUploadService) => {
 
         $scope.hasRight = true;
@@ -350,7 +350,7 @@ export const VideoController = ng.controller('VideoController', ['$scope', 'mode
                     } else {
                         $scope.recorder.startRecording();
                         $scope.recordGuard.hasRecorded = true;
-                        console.log($scope.recordGuard.hasRecorded);
+                        //console.log($scope.recordGuard.hasRecorded);
                     }
                 }
                 safeApply();
@@ -391,6 +391,7 @@ export const VideoController = ng.controller('VideoController', ['$scope', 'mode
             $scope.recordTimeInMs = 0;
             $scope.recorder.clearBuffer(true);
             safeApply();
+            $scope.$emit("video-redo");
         }
 
         $scope.upload = () => {
@@ -436,7 +437,7 @@ export const VideoController = ng.controller('VideoController', ['$scope', 'mode
                     app: appPrefix
                 }
                 http().postJson('/video/event/save', videoEventData).done(function(res){
-                    console.log(res);
+                    //console.log(res);
                 });
                 $scope.videoState = 'recorded';
                 $scope.recorder.turnOffCamera();
@@ -467,5 +468,6 @@ export const VideoController = ng.controller('VideoController', ['$scope', 'mode
             window.location.hash = "";
         }
 
-    }]);
+    }])
+);
 

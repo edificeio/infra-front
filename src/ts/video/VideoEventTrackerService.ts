@@ -1,5 +1,6 @@
 import { appPrefix, devices, deviceType } from "../globals";
 import { http } from "../http";
+import { ng } from "../ng-start";
 
 type VideoSession = {
 	elem:HTMLVideoElement;
@@ -122,3 +123,4 @@ export class VideoEventTrackerService {
 	}
 }
 
+ng.services.push( ng.service("VideoEventTrackerService", [VideoEventTrackerService]) );

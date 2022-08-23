@@ -1,4 +1,5 @@
 import axios from "axios";
+import { ng } from "../ng-start";
 import { VideoEventTrackerService } from "./VideoEventTrackerService";
 
 export type UploadResult = {
@@ -203,3 +204,4 @@ export class VideoUploadService {
     }
 */
 }
+ng.services.push( ng.service("VideoUploadService", [VideoUploadService]) );

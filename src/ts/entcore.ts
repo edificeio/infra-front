@@ -22,6 +22,7 @@ export * from './toasts';
 export * from "./embedder";
 export * from "./stringutils/index";
 export * from "./tracking";
+export * from "./video";
 //interfaces
 export { Embedder } from "./embedder";
 export { DatepickerDelegate } from "./ng-app";
