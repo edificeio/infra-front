@@ -18,6 +18,13 @@ declare var MediaRecorder: {
 type FacingMode = 'user' | 'environment';
 
 export class VideoRecorder {
+    public static isCompatible() {
+        if( navigator.mediaDevices && typeof navigator.mediaDevices.getSupportedConstraints==='function' ) {
+            const supportedConstraints = navigator.mediaDevices.getSupportedConstraints();
+            return supportedConstraints['deviceId'] || false; // At least 1 device should exist.
+        }
+        return false;
+    }
     private stream: MediaStream;
     private gumVideo: HTMLMediaElement
     private mediaRecorder: MediaRecorderImpl;

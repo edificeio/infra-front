@@ -350,7 +350,7 @@ ng.controllers.push( ng.controller('VideoController', ['$scope', 'model', 'route
                     } else {
                         $scope.recorder.startRecording();
                         $scope.recordGuard.hasRecorded = true;
-                        console.log($scope.recordGuard.hasRecorded);
+                        //console.log($scope.recordGuard.hasRecorded);
                     }
                 }
                 safeApply();
@@ -391,6 +391,7 @@ ng.controllers.push( ng.controller('VideoController', ['$scope', 'model', 'route
             $scope.recordTimeInMs = 0;
             $scope.recorder.clearBuffer(true);
             safeApply();
+            $scope.$emit("video-redo");
         }
 
         $scope.upload = () => {
@@ -436,7 +437,7 @@ ng.controllers.push( ng.controller('VideoController', ['$scope', 'model', 'route
                     app: appPrefix
                 }
                 http().postJson('/video/event/save', videoEventData).done(function(res){
-                    console.log(res);
+                    //console.log(res);
                 });
                 $scope.videoState = 'recorded';
                 $scope.recorder.turnOffCamera();

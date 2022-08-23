@@ -1,6 +1,9 @@
 ﻿import { appPrefix } from '../globals';
+import { model } from '../modelDefinitions';
 import { ng } from '../ng-start';
 import { recorder } from '../recorder';
+import { template } from '../template';
+import { VideoRecorder } from '../video';
 
 export let recorderComponent = ng.directive('recorder', function () {
     function safeApply($scope, fn?:()=>void) {
@@ -22,6 +25,30 @@ export let recorderComponent = ng.directive('recorder', function () {
         },
         templateUrl: '/assets/js/entcore/template/recorder.html',
         link: function (scope, element, attributes) {
+            // video stuff
+            scope.showCamera = false;
+            scope.isVideoCompatible = () => VideoRecorder.isCompatible() && model.me.hasWorkflow("com.opendigitaleducation.video.controllers.VideoController|capture");
+            if(scope.isVideoCompatible() ) {
+                scope.onShowCamera = async () => {
+                    const resetHandlers = [
+                        scope.$on("video-upload", (event, docId) => resetCameraFlow(docId)),
+                        scope.$on("video-redo", (event) => resetCameraFlow())
+                    ];
+                    function resetCameraFlow(docId = null) {
+                        try {
+                            resetHandlers.forEach( handler => typeof handler === 'function' && handler() );
+                        } finally {
+                            scope.showCamera = false;
+                        }
+                    }
+
+                    await template.open("entcore/video/record");
+                    scope.showCamera = true;
+                    safeApply(scope);
+                }
+            }
+
+            // audio stuff
             scope.recorder = recorder;
             recorder.state(function (eventName:string) {
                 if(eventName.startsWith('saved-')){
@@ -75,7 +102,7 @@ export let recorderComponent = ng.directive('recorder', function () {
             scope.isStopped = () => recorder.status === 'stop';
             scope.isEncoding = () => recorder.status === 'encoding';
             scope.isUploading = () => recorder.status === 'uploading';
-            scope.showActionButtons = () => recorder.elapsedTime > 0 && recorder.status !== 'stop';
+            scope.showActionButtons = () => recorder.elapsedTime > 0 && recorder.status !== 'stop' && !scope.showCamera;
         }
     }
 });
