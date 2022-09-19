@@ -19,3 +19,4 @@ errorShots
 .vscode/
 .npmrc
 npm-debug.log
+package.json

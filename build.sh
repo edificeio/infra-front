@@ -25,20 +25,36 @@ case $i in
 esac
 done
 
-build () {
-  local extras=$1
-  docker-compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "node_modules/gulp/bin/gulp.js build ${extras}"
+clean () {
+  rm -rf node_modules
+  rm -rf bundle
+  rm -f yarn.lock
 }
 
-install () {
-  docker-compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "npm install"
+init () {
+  echo "[init] Generate package.json from package.json.template..."
+  NPM_VERSION_SUFFIX=`date +"%Y%m%d%H%M"`
+  cp package.json.template package.json
+  sed -i "s/%generateVersion%/${NPM_VERSION_SUFFIX}/" package.json
+
+  echo "[init] Install yarn dependencies..."
+  docker-compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "yarn install"
+}
+
+build () {
+  local extras=$1
+  docker-compose run --rm \
+    -u "$USER_UID:$GROUP_GID" \
+    -e EXTRAS=$extras \
+    node sh -c "npm run release:build"
 }
 
 watch () {
   docker-compose run --rm \
     -u "$USER_UID:$GROUP_GID" \
     -v $PWD/../$SPRINGBOARD:/home/node/$SPRINGBOARD \
-    node sh -c "npx gulp watch --springboard=../$SPRINGBOARD 2>/dev/null"
+    -e SPRINGBOARD=$SPRINGBOARD \
+    node sh -c "npm run dev:watch"
 }
 
 publish () {
@@ -49,14 +65,17 @@ publish () {
 for param in "$@"
 do
   case $param in
-    deps)
-      install
+    clean)
+      clean
+      ;;
+    init)
+      init
       ;;
     build)
       build
       ;;
     install)
-      install && build "--springboard=../${SPRINGBOARD}"
+      init && build "--springboard=../${SPRINGBOARD}"
       ;;
     watch)
       watch
