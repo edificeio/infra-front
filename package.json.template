@@ -1,7 +1,24 @@
 {
   "name": "entcore",
-  "version": "4.6.0-feat-produit.5",
+  "version": "4.6.0-feat-produit.%generateVersion%",
   "description": "",
+  "scripts": {
+    "dev:watch": "npx gulp watch --springboard=../${SPRINGBOARD} 2>/dev/null",
+    "release:build": "node_modules/gulp/bin/gulp.js build ${EXTRAS}",
+    "test": "karma start",
+    "test:compatibility": "karma start karma-compatibility.conf.js",
+    "test:end-to-end": "npx wdio"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/opendigitaleducation/infra-front.git"
+  },
+  "author": "",
+  "license": "AGPL-3.0",
+  "bugs": {
+    "url": "https://github.com/opendigitaleducation/infra-front/issues"
+  },
+  "homepage": "https://github.com/opendigitaleducation/infra-front",
   "main": "gulpfile.js",
   "types": "./types/src/ts/entcore.d.ts",
   "dependencies": {
@@ -59,19 +76,5 @@
     "ts-node": "7.0.1",
     "webdriverio": "7.20.7"
   },
-  "scripts": {
-    "test": "karma start",
-    "test:compatibility": "karma start karma-compatibility.conf.js",
-    "test:end-to-end": "npx wdio"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/opendigitaleducation/infra-front.git"
-  },
-  "author": "",
-  "license": "AGPL-3.0",
-  "bugs": {
-    "url": "https://github.com/opendigitaleducation/infra-front/issues"
-  },
-  "homepage": "https://github.com/opendigitaleducation/infra-front"
+  "files": ["bundle", "types"]
 }
