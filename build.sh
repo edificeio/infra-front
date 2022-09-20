@@ -28,6 +28,7 @@ done
 clean () {
   rm -rf node_modules
   rm -rf bundle
+  rm -rf dist
   rm -f yarn.lock
 }
 
@@ -59,6 +60,8 @@ watch () {
 
 publish () {
   LOCAL_BRANCH=`echo $GIT_BRANCH | sed -e "s|origin/||g"`
+  mkdir dist 2> /dev/null
+  cp -R bundle/* cp -R dist/
   docker-compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "npm publish --tag $LOCAL_BRANCH"
 }
 
