@@ -20,3 +20,4 @@ errorShots
 .npmrc
 npm-debug.log
 package.json
+dist

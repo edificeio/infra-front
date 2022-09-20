@@ -76,5 +76,5 @@
     "ts-node": "7.0.1",
     "webdriverio": "7.20.7"
   },
-  "files": ["bundle", "types"]
+  "files": ["bundle", "types", "dist"]
 }
