@@ -46,6 +46,7 @@ interface VideoControllerScope {
     stopRecord(pause?: boolean): void
     startRecord(resume?: boolean): Promise<void>
 	switchCamera(id): void;
+    switchVideoRecord(): void;
     switchRecording(): void
     redo(): void;
     play(): void;
@@ -366,6 +367,17 @@ ng.controllers.push( ng.controller('VideoController', ['$scope', 'model', 'route
                 $scope.recorder.stopRecording(true);
             }
             safeApply();
+        }
+
+        $scope.switchVideoRecord = () => {
+            if( $scope.isRecording() ) {
+                $scope.stopRecord();
+            } else {
+                $scope.startRecord();
+            }
+            if ($scope.isRecorded()) {
+                $scope.redo();
+            }
         }
 
         $scope.switchRecording = () => {
