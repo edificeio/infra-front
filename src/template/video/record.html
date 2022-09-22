@@ -29,22 +29,28 @@
             </div>
         </div>
         <div class="recorder--controls" ng-if="isReady()">
-            <button type="button" ng-click="startRecord()">
-                <i class=record-video></i>
-                <span><i18n>embed.start</i18n></span>
-            </button>
             <select class="two cell" style="margin-top: 10px"
                 ng-if="videoInputDevices.length > 1"
                 ng-options="vid as vid.label for vid in videoInputDevices"
                 ng-model="selectedVid" ng-change="switchCamera( selectedVid )" >
             </select>
         </div>
-        <div class="recorder--controls controls" ng-if="showActions()">
-            <button type="button" class="recorder--control stop" ng-click="switchRecording()" ng-disabled="!isRecording()">
-                <i class=stop></i>
-                <span><i18n>embed.stop</i18n></span>
+        <div class="timer timer-widget">
+            <i class="record-video"></i>
+            <span>[[recordTime]] / [[pad(recordMaxTime)]]:00</span>
+        </div>
+        <div class="recorder--controls vidéo controls">
+            <button type="button" class="recorder--control stop" ng-click="stopRecord()" ng-hide="!isRecording()">
+                <i class="stop"></i>
+                <span ng-if="isRecording()"><i18n>embed.stop</i18n></span>
             </button>
-            <button type="button" class="recorder--control play" ng-click="play()" ng-disabled="!isRecorded() || !isReplayAllowed()">
+
+            <button type="button" class="recorder--control play" ng-click="startRecord()" ng-disabled="isRecorded()" ng-hide="isRecording()">
+                <i class="record-video"></i>
+                <span ng-if="!isRecording()"><i18n>embed.record</i18n></span>
+            </button>
+
+            <button type="button" class="recorder--control play" ng-click="play()" ng-disabled="!isRecorded()">
                 <i ng-class="{'play': !isPlaying(), 'pause': isPlaying()}"></i>
                 <span ng-if="!isPlaying()"><i18n>embed.play</i18n></span>
                 <span ng-if="isPlaying()"><i18n>embed.pause</i18n></span>
@@ -58,17 +64,15 @@
                 <span><i18n>embed.save</i18n></span>
             </button>
         </div>
-        <div ng-if="!isIncompatible()">
-					<div class="recorder--viewer" ng-if="isUploading()"><p><i18n>video.upload.msg</i18n></p></div>
-            <div class="recorder--viewer" ng-if="isReady() || isRecording()">
-                <p><i18n>video.msg</i18n></p>
+        <div ng-if="!isIncompatible()" class="video">
+            <div class="recorder--viewer timer-modal" ng-if="isReady() || isRecording()">
                 <div class="recorder--timer">
                     <i class="rec" ng-if="isRecording()"></i>
                     <span>[[recordTime]] / [[pad(recordMaxTime)]]:00</span>
                 </div>
             </div>
             <div class="recorder--viewer" ng-show="isCameraVisible()">
-                <video id="gum" playsinline="true" autoplay muted ng-hide="isRecorded() && !isReplayAllowed()"></video>
+                <video id="gum" playsinline="true" autoplay muted></video>
             </div>
         </div>
     </div>
