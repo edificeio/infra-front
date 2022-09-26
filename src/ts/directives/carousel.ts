@@ -7,7 +7,7 @@ export let carousel = ng.directive('carousel', function(){
 			items: '='
 		},
 		restrict: 'E',
-		templateUrl: '/' + appPrefix + '/public/template/entcore/carousel.html',
+		templateUrl: '/assets/js/entcore/template/carousel.html',
 		link: function(scope, element, attributes){
 			var interrupt = 0;
 			if(attributes.transition){

@@ -7,7 +7,7 @@ import { _ } from "../libs/underscore/underscore";
 export let wizard = ng.directive('wizard', () => {
 	return {
 		restrict: 'E',
-		templateUrl: '/' + appPrefix + '/public/template/entcore/wizard.html',
+		templateUrl: '/assets/js/entcore/template/wizard.html',
 		scope: {
 			gotoStep: '=',
 			onCancel: '&',

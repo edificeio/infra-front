@@ -12,7 +12,7 @@ export let calendarComponent = ng.directive('calendar', function () {
     return {
         restrict: 'E',
         scope: true,
-        templateUrl: '/' + appPrefix + '/public/template/entcore/calendar.html',
+        templateUrl: '/assets/js/entcore/template/calendar.html',
         controller: ['$scope', '$timeout', function ($scope, $timeout) {
             $scope.timeOfDay = {
                 start: 0,

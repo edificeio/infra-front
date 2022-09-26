@@ -141,7 +141,7 @@ class Controller implements ng.IController, IVirtualMediaLibrary {
 function directive() {
     return {
         restrict: 'E',
-        templateUrl:  '/' + appPrefix + '/public/template/entcore/media-library/virtual-media-library/virtual-media-folder.html',
+        templateUrl:  '/assets/js/entcore/template/media-library/virtual-media-library/virtual-media-folder.html',
         scope: {
             selectedVirtualFolder: "=",
             onClick: "&"

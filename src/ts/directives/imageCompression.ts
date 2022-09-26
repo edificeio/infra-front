@@ -8,7 +8,7 @@ const canvasHeight = 280;
 export let imageCompression = ng.directive('imageCompression', () => {
     return {
         restrict: 'E',
-        templateUrl: '/' + appPrefix + '/public/template/entcore/compression.html',
+        templateUrl: '/assets/js/entcore/template/compression.html',
         scope: {
             document: '='
         },

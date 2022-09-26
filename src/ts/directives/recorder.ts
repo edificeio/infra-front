@@ -23,7 +23,7 @@ export let recorderComponent = ng.directive('recorder', function () {
             format: '@',
             onUpload: '&'
         },
-        templateUrl: '/' + appPrefix + '/public/template/entcore/recorder.html',
+        templateUrl: '/assets/js/entcore/template/recorder.html',
         link: function (scope, element, attributes) {
             // video stuff
             scope.showCamera = false;
