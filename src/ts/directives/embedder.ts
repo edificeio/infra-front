@@ -147,7 +147,7 @@ export let embedder = ng.directive('embedder', ['$timeout', '$filter', 'VideoUpl
             selectedHeader: '=',
         },
         require: "?ngModel",
-        templateUrl: '/' + appPrefix + '/public/template/entcore/video/main.html',
+        templateUrl: '/assets/js/entcore/template/video/main.html',
         link: function (scope: VideoScope, element, attributes, lnkNgModel) {
 			scope.documentList = new DocumentsListModel($filter, true);
 			scope.documentList.watch(scope);

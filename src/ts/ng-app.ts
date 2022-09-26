@@ -1604,7 +1604,7 @@ module.directive('attachments', ['$parse', function($parse){
 	return {
 		scope: true,
 		restrict: 'E',
-		templateUrl: '/' + appPrefix + '/public/template/entcore/attachments.html',
+		templateUrl: '/assets/js/entcore/template/attachments.html',
 		controller: ['$scope', function($scope){
 			$scope.linker = {
 				resource: {}
@@ -2002,7 +2002,7 @@ module.directive('multiCombo', function() {
             selectionEvent: '&',
             deselectionEvent: '&'
         },
-		templateUrl: '/' + appPrefix + '/public/template/entcore/multi-combo.html',
+		templateUrl: '/assets/js/entcore/template/multi-combo.html',
         controller: ['$scope', '$filter', '$timeout', function($scope, $filter, $timeout) {
             /* Search input */
             $scope.search = {

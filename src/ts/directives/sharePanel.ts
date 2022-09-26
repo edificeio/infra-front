@@ -102,7 +102,7 @@ export const sharePanel = ng.directive('sharePanel', ['$rootScope', ($rootScope)
             autoClose: '='
         },
         restrict: 'E',
-        templateUrl: '/' + appPrefix + '/public/template/entcore/share-panel.html',
+        templateUrl: '/assets/js/entcore/template/share-panel.html',
         link: function ($scope: SharePanelScope, $element, $attributes) {
             var currentApp = appPrefix;
             var usersCache = {};
@@ -159,7 +159,7 @@ export const sharePanel = ng.directive('sharePanel', ['$rootScope', ($rootScope)
                     loadAppBehavioursSharingConf();
                 });
 
-            $scope.shareTable = '/' + appPrefix + '/public/template/entcore/share-panel-table.html';
+            $scope.shareTable = '/assets/js/entcore/template/share-panel-table.html';
 
             if (!($scope.resources instanceof Array) && !$scope.resources.myRights && !($scope.resources instanceof Model)) {
                 throw new TypeError('Resources in share panel must be instance of Array or implement Rights interface');

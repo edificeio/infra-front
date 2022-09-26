@@ -10,7 +10,7 @@ export const toast = ng.directive('toastOnboarding', ['$http', function($http) {
 			show: "=",
             confirm: "&"
 		},
-		templateUrl: "/public/template/entcore/video/onboarding.html",
+		templateUrl: "/assets/js/entcore/template/video/onboarding.html",
 		link: function(scope, element, attr){
             scope.display = {
                 preference: true,

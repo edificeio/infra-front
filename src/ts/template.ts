@@ -40,10 +40,17 @@ export var template = {
 		const split = $('#context').attr('src').split('-');
 		const hash = split[split.length - 1].split('.')[0];
 		var path = this.viewPath + view + '.html?hash=' + hash;
+		//fix entcore path
+		if(view && view.startsWith("entcore/")){
+			const fixedView = view.replace(/^entcore/,"");
+			path = '/assets/js/entcore/template'+fixedView+ '.html?hash=' + hash;
+		}
+		//fix portal path
 		var folder = appPrefix;
 		if(appPrefix === '.' || !!isPortal){
 			folder = 'portal';
 		}
+		//fix override paths
 		if(skin.templateMapping[folder] && skin.templateMapping[folder].indexOf(view) !== -1){
 			path = '/assets/themes/' + skin.skin + '/template/' + folder + '/' + view + '.html?hash=' + hash;
 		}

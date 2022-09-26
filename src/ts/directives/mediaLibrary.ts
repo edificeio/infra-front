@@ -134,8 +134,7 @@ export const mediaLibrary = ng.directive("mediaLibrary", [
         fileFormat: "=",
         accept: "=",
       },
-      templateUrl:
-        "/" + appPrefix + "/public/template/entcore/media-library/main.html",
+      templateUrl: "/assets/js/entcore/template/media-library/main.html",
       link: function (scope: MediaLibraryScope, element, attributes) {
         scope.documentList = new DocumentsListModel($filter, true);
         scope.documentList.watch(scope);

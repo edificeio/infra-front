@@ -9,7 +9,7 @@ export const widgets = ng.directive('widgets', ['$compile', ($compile) => {
 			list: '='
 		},
 		restrict: 'E',
-		templateUrl: '/' + appPrefix + '/public/template/entcore/widgets.html',
+		templateUrl: '/assets/js/entcore/template/widgets.html',
 		link: function(scope, element, attributes){
 			element.on('index-changed', '.widget-container', function(e){
 				var widgetObj = angular.element(e.target).scope().widget;
