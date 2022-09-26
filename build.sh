@@ -61,6 +61,8 @@ watch () {
 publish () {
   LOCAL_BRANCH=`echo $GIT_BRANCH | sed -e "s|origin/||g"`
   mkdir dist 2> /dev/null
+  mkdir dist/template 2> /dev/null
+  cp -R src/template/* cp -R dist/template/
   cp -R bundle/* cp -R dist/
   docker-compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "npm publish --tag $LOCAL_BRANCH"
 }
