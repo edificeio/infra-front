@@ -45,7 +45,7 @@
                 <span ng-if="isRecording()"><i18n>embed.stop</i18n></span>
             </button>
 
-            <button type="button" class="recorder--control play" ng-click="startRecord()" ng-disabled="isRecorded()" ng-hide="isRecording()">
+            <button type="button" class="recorder--control play" ng-click="startRecord()" ng-disabled="isRecorded() || isUploading()" ng-hide="isRecording()">
                 <i class="record-video"></i>
                 <span ng-if="!isRecording()"><i18n>embed.record</i18n></span>
             </button>
