@@ -35,11 +35,11 @@
                 ng-model="selectedVid" ng-change="switchCamera( selectedVid )" >
             </select>
         </div>
-        <div class="timer timer-widget">
+        <div class="timer timer-widget" ng-if="isReady() || showActions()">
             <i class="record-video"></i>
             <span>[[recordTime]] / [[pad(recordMaxTime)]]:00</span>
         </div>
-        <div class="recorder--controls vidéo controls">
+        <div class="recorder--controls vidéo controls" ng-if="isReady() || showActions()">
             <button type="button" class="recorder--control stop" ng-click="stopRecord()" ng-hide="!isRecording()">
                 <i class="stop"></i>
                 <span ng-if="isRecording()"><i18n>embed.stop</i18n></span>
