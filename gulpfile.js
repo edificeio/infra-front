@@ -44,41 +44,15 @@ function buildDev() {
 }
 
 function update(cb) {
-    GlobManager.js().then(f => {
-        f.forEach((file) => {
-            const split = file.split('/');
-            const fileName = split[split.length - 1];
-            console.log('Copying js to ' + split.slice(0, split.length - 1).join('/'));
-            gulp.src('./bundle/ng-app.js')
-                .pipe(rename(fileName))
-                .pipe(gulp.dest(split.slice(0, split.length - 1).join('/')));
-        });
-    });
-    GlobManager.jsMap().then(f => {
-        f.forEach((file) => {
-            const split = file.split('/');
-            const fileName = split[split.length - 1];
-            gulp.src('./bundle/ng-app.js.map')
-                .pipe(rename(fileName))
-                .pipe(gulp.dest(split.slice(0, split.length - 1).join('/')));
-        });
-    });
+    console.log('Copying js to ' + springboardPath + '/assets/js/entcore/ng-app.js'); 
+    gulp.src('./bundle/ng-app.js').pipe(gulp.dest(springboardPath + '/assets/js/entcore/'));
+    //gulp.src('./bundle/ng-app.js.map').pipe(gulp.dest(springboardPath + '/assets/js/entcore/'));
     cb();
 }
 
 function copyHtml(cb) {
-    const apps = [];
-    GlobManager.html().then(f => {
-        f.forEach((file) => {
-            const app = file.split('/public/template/entcore')[0];
-            if (apps.indexOf(app) === -1) {
-                apps.push(app);
-                console.log('copy to ' + app + '/public/template/entcore')
-                gulp.src('./src/template/**/*')
-                    .pipe(gulp.dest(app + '/public/template/entcore'));
-            }
-        });
-    })
+    console.log('copy to ' + springboardPath + '/assets/js/entcore/template')
+    gulp.src('./src/template/**/*').pipe(gulp.dest(springboardPath + '/assets/js/entcore/template'));
     cb();
 }
 
@@ -104,6 +78,7 @@ const GlobManager = {
     _js: null,
     _jsMap: null,
     _html: null,
+    _templates: null,
     _buildPromise: (path) => {
         return new Promise((resolve, reject) => {
             console.log("init glob for: ",path)
@@ -133,6 +108,12 @@ const GlobManager = {
             GlobManager._html = GlobManager._buildPromise(springboardPath + '/mods/**/public/template/entcore/*.html')
         }
         return GlobManager._html;
+    },
+    templates: () => {
+        if (!GlobManager._templates) {
+            GlobManager._templates = GlobManager._buildPromise('./src/template/**/*.html')
+        }
+        return GlobManager._templates;
     }
 }
 
