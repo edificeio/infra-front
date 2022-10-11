@@ -59,7 +59,7 @@
                 <i ng-class="{'save': !isUploading(), 'loading': isUploading(), 'block': isUploading()}"></i>
                 <span><i18n>embed.save</i18n></span>
             </button>
-            <button type="button" class="recorder--control redo" ng-click="redo()" ng-disabled="!isRecorded()">
+            <button type="button" class="recorder--control redo" ng-click="redo()" ng-disabled="isRecording()">
                 <i class="redo"></i>
                 <span><i18n>embed.redo</i18n></span>
             </button>
