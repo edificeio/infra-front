@@ -794,6 +794,8 @@ export const ui = {
         },
         draggable: function (element, params: { 
             lock?: any, 
+            delay?: number,
+            delayOnTouchOnly?: number,
             restrict?: any, 
             tick?: any, 
             dragOver?: any, 
@@ -829,7 +831,7 @@ export const ui = {
                 catcher = element.find(params.restrict);
             }
 
-            catcher.on('touchstart mousedown', (e) => {
+            const startHandler = (e) => {
                 // console.log(element.data('resizing'));
                 if (element.data('lock') === true || (e.target.tagName === 'INPUT' && $(e.target).attr('type') === 'text') || (e.target.tagName === 'TEXTAREA' && $(e.target).is(':focus'))) {
                     return;
@@ -1079,6 +1081,27 @@ export const ui = {
                         }, 100);
                     });
                 }
+            };
+
+            catcher.on('touchstart mousedown', (e:JQuery.Event) => {
+                // ALlow delaying/cancelling this event
+                let delay = typeof params.delay==='number' ? params.delay : 0;
+                if( e.type === 'touchstart' && typeof params.delayOnTouchOnly === 'number' ) {
+                    delay = params.delayOnTouchOnly;
+                }
+                if( delay > 0 ) {
+                    // Releasing the touch/mouse event during the delay must cancel the event
+                    const cancelHandler = () => e.preventDefault();
+                    catcher.on('touchend touchcancel mouseup', cancelHandler );
+
+                    setTimeout(()=> {
+                        catcher.off('touchend touchcancel mouseup', cancelHandler );
+                        if( ! e.isDefaultPrevented() )
+                            startHandler(e);
+                    }, delay);
+                 } else {
+                    startHandler(e);
+                 }
             });
         }
     },
