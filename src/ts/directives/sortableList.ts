@@ -65,6 +65,7 @@ export let sortableElement = ng.directive('sortableElement', ['$parse', function
                 lock: {
                     horizontal: true
                 },
+                delayOnTouchOnly: 400,
                 mouseUp: function () {
                     scope.$parent.updateElementsOrder(element);
 
