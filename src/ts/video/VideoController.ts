@@ -11,7 +11,7 @@ import { idiom as lang } from "../idiom";
 import { UploadResult, VideoUploadService } from "./VideoUploadService";
 
 
-class VideoRecordGuardModel implements IObjectGuardDelegate {
+export class VideoRecordGuardModel implements IObjectGuardDelegate {
     hasRecorded = false;
     guardObjectIsDirty(): boolean{
         return this.hasRecorded;
@@ -69,7 +69,7 @@ interface VideoControllerScope {
     $root: any
 }
 
-export const VideoController = ng.controller('VideoController', ['$scope', 'model', 'route', '$element', 'VideoUploadService',
+ng.controllers.push( ng.controller('VideoController', ['$scope', 'model', 'route', '$element', 'VideoUploadService',
     ($scope: VideoControllerScope, model, route, $element, VideoUploadService:VideoUploadService) => {
 
         $scope.hasRight = true;
@@ -467,5 +467,6 @@ export const VideoController = ng.controller('VideoController', ['$scope', 'mode
             window.location.hash = "";
         }
 
-    }]);
+    }
+]));
 
