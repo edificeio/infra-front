@@ -63,7 +63,12 @@ class Controller implements ng.IController, IVirtualMediaLibrary {
         this.apps.forEach((app: string) => {
             if (Behaviours.applicationsBehaviours[app].mediaLibraryService &&
                 Behaviours.applicationsBehaviours[app].mediaLibraryService.enableInitFolderTree()) {
-                let folderService: Tree = {name: lang.translate(`${app}.virtual.media.title`), children: [], hierarchical: true};
+                let folderService: Tree = {
+                    name: lang.translate(`${app}.virtual.media.title`),
+                    children: [],
+                    hierarchical: true,
+                };
+                this.initFolderCache(folderService);
                 (<any>folderService).app = app;
                 foldersServices.push(folderService);
             }
@@ -124,6 +129,15 @@ class Controller implements ng.IController, IVirtualMediaLibrary {
             },
         };
     }
+
+    private initFolderCache = (folderService: Tree) => {
+        (<any>folderService).cacheChildren = new models.CacheList<any>(0, () => false, () => false);
+        (<any>folderService).cacheChildren.setData([]);
+        (<any>folderService).cacheChildren.disableCache();
+        (<any>folderService).cacheDocument = new models.CacheList<any>(0, () => false, () => false);
+        (<any>folderService).cacheDocument.setData([]);
+        (<any>folderService).cacheDocument.disableCache();
+    };
 
     triggerClick(mediaService: IVirtualMediaLibraryScope): void {
         this.$scope.$eval(this.$scope['vm']['onClick']());
