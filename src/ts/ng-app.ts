@@ -702,6 +702,43 @@ module.directive('portal', ['$compile','tracker', function($compile,tracker){
 	}
 }]);
 
+module.directive('publicInfotip', ['$compile','tracker', function($compile,tracker){
+	return {
+		restrict: 'E',
+		transclude: true,
+		template: `
+		<infotip
+			name="showInfoTip"
+			class="info"
+			style="position:fixed; bottom:0; right:20px; width: 400px; z-index: 1000"
+			save-preference-under="rgpdCookies"
+			show-once="false"
+			ng-show="$$showPublicInfoTipRgpdCookie">
+			<p>
+				<i18n>rgpd.cookies.banner.text2</i18n>
+			</p>
+			<div class="right-magnet">
+				<button type="button" ng-click="closeBanner()">
+					<i18n>rgpd.cookies.banner.button.close</i18n>
+				</button>
+			</div>
+		</infotip>
+		`,
+		link: function(scope, element, attributes){
+			scope.template = template;
+			scope.$$showPublicInfoTipRgpdCookie = false;
+			var showInfoTip = window.localStorage.getItem('showInfoTip.cookies');
+			if (!model.me && showInfoTip != 'false') {
+				scope.$$showPublicInfoTipRgpdCookie = true;
+			}
+			scope.closeBanner = () => {
+				scope.$$showPublicInfoTipRgpdCookie = false;
+				window.localStorage.setItem('showInfoTip.cookies', 'false');
+			}
+		}
+	}
+}]);
+
 module.directive('xiti', function(){
 	return {
 		restrict: 'E',
