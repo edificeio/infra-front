@@ -6,7 +6,6 @@ import { idiom as lang } from './idiom';
 
 const firstLevelWidgets = ["birthday", "mood", "calendar-widget", "notes"];
 const secondLevelWidgets = [
-	"agenda-widget", 
 	"carnet-de-bord", 
 	"my-apps", 
 	"rss-widget", 
