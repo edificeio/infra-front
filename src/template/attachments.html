@@ -1,19 +1,19 @@
 <div drop-files="linker.resource.file"
 	on-drop="linker.resource.title = linker.resource.file[0].name; linker.createResource()">
 
-	<input type="button" value="Ajouter une pièce jointe" ng-click="attachments.display.pickFile = true" />
+	<input type="button" i18n-value="attachment.add" ng-click="attachments.display.pickFile = true" />
 
-	<h2 ng-if="linker.resource.file.length">Pièces jointes</h2>
+	<h2 ng-if="linker.resource.file.length"><i18n>attachments</i18n></h2>
 
 	<ul>
 		<li ng-repeat="attachment in attachments.attachmentsList()">
-			[[attachment.title]] - <a ng-click="attachments.removeAttachment(attachment)">Supprimer</a>
+			[[attachment.title]] - <a ng-click="attachments.removeAttachment(attachment)"><i18n>remove</i18n></a>
 		</li>
 	</ul>
 
 	<lightbox show="attachments.display.pickFile" on-close="attachments.display.pickFile = false">
 		<div class="linker">
-			<h2>Ajouter une pièce jointe</h2>
+			<h2><i18n>attachment.add</i18n></h2>
 
 			<div class="row">
 				<div class="twelve cell vertical-spacing">
