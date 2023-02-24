@@ -196,7 +196,7 @@ calendar.Calendar.prototype.addScheduleItems = function(items){
     var schedule = this;
     items
         .filter(function(item) {
-            return moment(item.end).isSame(schedule.firstDay, schedule.increment);
+            return moment(item.end).isSame(schedule.firstDay, schedule.getIsoIncrement(schedule.increment));
         })
         .forEach(function(item) {
 		var startDay = moment(item.beginning);
@@ -223,6 +223,11 @@ calendar.Calendar.prototype.setIncrement = function(incr) {
 
     return this.firstDay;
 };
+
+calendar.Calendar.prototype.getIsoIncrement = function(incr)
+{
+	return incr == "week" ? "isoWeek" : incr;
+}
 
 calendar.Calendar.prototype.processSlotsDuration = function () {
 	const slotsDuration = [];
@@ -283,7 +288,7 @@ calendar.Calendar.prototype.setStartAndEndOfDay = function (slots) {
 };
 
 calendar.Calendar.prototype.setDate = function(momentDate){
-    this.firstDay = moment(momentDate).startOf(this.increment);
+    this.firstDay = moment(momentDate).startOf(this.getIsoIncrement(this.increment));
 	this.days.sync();
 	this.trigger('date-change');
 };
