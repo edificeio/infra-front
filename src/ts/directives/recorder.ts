@@ -52,12 +52,16 @@ export let recorderComponent = ng.directive('recorder', function () {
 
             // audio stuff
             scope.recorder = recorder;
-            recorder.state(function (eventName:string) {
+            const unsubscribe = recorder.state(function (eventName:string) {
                 if(eventName.startsWith('saved-')){
                     let id = eventName.substring(6);
                     scope.onUpload && scope.onUpload()(id);
                 }
                 safeApply(scope); // Force reevaluation of the recorder's field
+            });
+
+            scope.$on('$destroy', function () {
+                unsubscribe()
             });
             scope.switchRecord = function () {
                 if (recorder.status === 'recording') {

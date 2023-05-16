@@ -268,6 +268,9 @@ export var recorder = (function () {
 		},
 		state: function (callback) {
 			followers.push(callback);
+			return () => {
+				followers = followers.filter(cb => cb !== callback);
+			}
 		},
 		title: "",
 		status: 'idle',
