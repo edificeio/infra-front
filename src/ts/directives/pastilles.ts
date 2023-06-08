@@ -33,7 +33,7 @@ export const pastilles = ng.directive('pastilles', ['$window', ($window) => {
             setTimeout(function () {
                 var i, l, count;
                 var pastilles, totalWidth, pastilleWidth, leftOffset, offset, pastilleOffset, nbPastilles;
-                scope.index = 0;
+                scope.index = scope.ngModel;
 
                 var updatePastilles = function() {
                     pastilles = element.find("div").children();
@@ -154,9 +154,9 @@ export const pastilles = ng.directive('pastilles', ['$window', ($window) => {
                 updateImages();
 
                 // Activate the first pastille
-                scope.setActive(pastilles[0]);
-                pastilles.eq(0).removeClass("inactive");
-                pastilles.eq(0).addClass("active");
+                scope.setActive(pastilles[scope.index]);
+                pastilles.eq(scope.index).removeClass("inactive");
+                pastilles.eq(scope.index).addClass("active");
 
                 element.find("div").removeClass("invisible-content");
 
