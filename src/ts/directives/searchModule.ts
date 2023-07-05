@@ -32,13 +32,12 @@ export const searchModule = ng.directive('searchModule', ['$window', ($window) =
         restrict: 'E',
         transclude: true,
         template: `
-            <pastilles 
-                ng-model="ngModel"
-                images="images">
-            </pastilles>
             <form name="searchForm" ng-submit="search()" novalidate>
                 <article class="twelve cell reduce-block-six">
-                    <div class="spacer-large"></div>
+                    <pastilles 
+                        ng-model="ngModel"
+                        images="images">
+                    </pastilles>
                     <ng-transclude></ng-transclude>
                 </article>
             </form>
@@ -52,13 +51,16 @@ export const searchModule = ng.directive('searchModule', ['$window', ($window) =
 
         link: (scope, element, attributes) => {
             var imgs = typeof attributes.images === 'string' ? JSON.parse(attributes.images) : attributes.images;
+            var i18ns = typeof attributes.i18n === 'string' ? JSON.parse(attributes.i18n) : attributes.i18n;
+            if (!Array.isArray(i18ns)) i18ns = [i18ns];
             var pages = element.find("ng-transclude").children();
             var i, l = pages.length;
             scope.images = [];
             for (i = 0; i < l; i++) {
                 scope.images[i] = {
                     img: imgs[i],
-                    visible: true
+                    visible: true,
+                    i18n: i18ns[i],
                 };
             }
 
