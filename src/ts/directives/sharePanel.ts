@@ -61,6 +61,7 @@ export interface SharePanelScope {
     closeDelegate?(args: ShareCloseDelegate)
     onCancel?()
     onSubmit?(args: { $shared: SharePayload })
+    onFailure?(args: { $error : JQueryXHR})
     onFeed?(args: {
         $data: SharePayload,
         $resource: ShareableWithId,
@@ -95,6 +96,7 @@ export const sharePanel = ng.directive('sharePanel', ['$rootScope', ($rootScope)
             onCancel: '&?',
             onSubmit: '&?',
             onValidate: '&?',
+            onFailure: '&?',
             onFeed: '&?',
             closeDelegate: '&?',
             confirmationCloseDelegate: '&?',
@@ -598,7 +600,6 @@ export const sharePanel = ng.directive('sharePanel', ['$rootScope', ($rootScope)
 
             $scope.share = async function () {
                 $scope.sharingModel.changed = false;
-
                 const data: SharePayload = {};
                 const users: { [key: string]: string[] } = {};
                 const groups: { [key: string]: string[] } = {};
@@ -660,8 +661,8 @@ export const sharePanel = ng.directive('sharePanel', ['$rootScope', ($rootScope)
                                 $rootScope.$broadcast('share-updated', res['notify-timeline-array']);
                                 resolve()
                             })
-                            .error(function () {
-                                reject()
+                            .error(function (e) {
+                                reject(e)
                             });
                     })
                 });
@@ -669,7 +670,7 @@ export const sharePanel = ng.directive('sharePanel', ['$rootScope', ($rootScope)
                     await Promise.all(promises);
                     notify.success('share.notify.success');
                 } catch (e) {
-                    notify.error('share.notify.error');
+                   $attributes.onFailure ? $scope.onFailure( {'$error' : e} ) : notify.error('share.notify.error');
                 }
                 if ($scope.autoClose) {
                     await $scope.closePanel(false);
