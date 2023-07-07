@@ -763,6 +763,12 @@ module.directive("portal", [
         // Initialize any configured tracker
         tracker.init();
 
+		if (model.me.hasWorkflow('fr.openent.chatbot.controller.ChatbotController|view')) {
+			Behaviours.loadBehaviours('chatbot', function () {
+				Behaviours.applicationsBehaviours.chatbot.chatbot.init();
+			});
+		}
+
         $("html").addClass("portal-container");
         element
           .find("[logout]")
