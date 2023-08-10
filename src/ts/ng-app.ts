@@ -755,9 +755,11 @@ module.directive("portal", [
       restrict: "E",
       transclude: true,
       templateUrl: function (element, attributes) {
+
+        const version = (window as any).springboardBuildDate || new Date().getTime()
         return attributes.templateUrl
-          ? attributes.templateUrl
-          : skin.portalTemplate;
+          ? attributes.templateUrl+"?version="+version
+          : skin.portalTemplate+"?version="+version;
       },
       compile: function (element, attributes, transclude) {
         // Initialize any configured tracker

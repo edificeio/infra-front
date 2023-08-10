@@ -10,7 +10,9 @@ if(appFolder === 'userbook'){
 export interface TemplateDelegate{
 	tryOpen(args:{name:string, view:string, success:()=>void,reject:()=>void}):void;
 }
-
+function getVersion(){
+	return (window as any).springboardBuildDate || new Date().getTime()
+}
 type PromiseWithResolvers =  {promise:Promise<void>, resolve():void, reject():void };
 export var template = {
 	viewPath: '/' + appFolder + '/public/template/',
@@ -39,11 +41,11 @@ export var template = {
 	getCompletePath(view:string, isPortal?:boolean):string {
 		const split = $('#context').attr('src').split('-');
 		const hash = split[split.length - 1].split('.')[0];
-		var path = this.viewPath + view + '.html?hash=' + hash;
+		var path = this.viewPath + view + '.html?hash=' + hash+"&version="+getVersion();
 		//fix entcore path
 		if(view && view.startsWith("entcore/")){
 			const fixedView = view.replace(/^entcore/,"");
-			path = '/assets/js/entcore/template'+fixedView+ '.html?hash=' + hash;
+			path = '/assets/js/entcore/template'+fixedView+ '.html?hash=' + hash+"&version="+getVersion();
 		}
 		//fix portal path
 		var folder = appPrefix;
@@ -52,7 +54,7 @@ export var template = {
 		}
 		//fix override paths
 		if(skin.templateMapping[folder] && skin.templateMapping[folder].indexOf(view) !== -1){
-			path = '/assets/themes/' + skin.skin + '/template/' + folder + '/' + view + '.html?hash=' + hash;
+			path = '/assets/themes/' + skin.skin + '/template/' + folder + '/' + view + '.html?hash=' + hash+"&version="+getVersion();
 		}
 		return path;
 	},
