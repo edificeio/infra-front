@@ -10,9 +10,15 @@ if(appFolder === 'userbook'){
 export interface TemplateDelegate{
 	tryOpen(args:{name:string, view:string, success:()=>void,reject:()=>void}):void;
 }
+let globalVersion;
+
 function getVersion(){
-	return (window as any).springboardBuildDate || new Date().getTime()
+	if (!globalVersion) {
+		globalVersion = (window as any).springboardBuildDate || new Date().getTime();
+	} 
+	return globalVersion;
 }
+
 type PromiseWithResolvers =  {promise:Promise<void>, resolve():void, reject():void };
 export var template = {
 	viewPath: '/' + appFolder + '/public/template/',
@@ -115,7 +121,7 @@ export var template = {
 	contains: function(name, view){
 		const split = $('#context').attr('src').split('-');
 		const hash = split[split.length - 1].split('.')[0];
-		return this.containers[name] === this.viewPath + view + '.html?hash=' + hash;
+		return this.containers[name] === this.viewPath + view + '.html?hash=' + hash + '&version=' + getVersion();
 	},
 	isEmpty: function(name){
 		return this.containers[name] === 'empty' || !this.containers[name];
@@ -123,7 +129,7 @@ export var template = {
 	getPath: (view) => {
         const split = $('#context').attr('src').split('-');
         const hash = split[split.length - 1].split('.')[0];
-        return this.template.viewPath + view + '.html?hash=' + hash;
+        return this.template.viewPath + view + '.html?hash=' + hash + '&version=' + getVersion();
 	},
 	close: function(name){
 		this.containers[name] = 'empty';
