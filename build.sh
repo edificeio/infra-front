@@ -47,7 +47,7 @@ build () {
   docker-compose run --rm \
     -u "$USER_UID:$GROUP_GID" \
     -e EXTRAS=$extras \
-    node sh -c "npm run release:build"
+    node sh -c "pnpm run release:build"
 }
 
 watch () {
@@ -55,7 +55,7 @@ watch () {
     -u "$USER_UID:$GROUP_GID" \
     -v $PWD/../$SPRINGBOARD:/home/node/$SPRINGBOARD \
     -e SPRINGBOARD=$SPRINGBOARD \
-    node sh -c "npm run dev:watch"
+    node sh -c "pnpm run dev:watch"
 }
 
 publish () {
@@ -64,7 +64,8 @@ publish () {
   mkdir dist/template 2> /dev/null
   cp -R src/template/* cp -R dist/template/
   cp -R bundle/* cp -R dist/
-  docker-compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "npm publish --tag $LOCAL_BRANCH"
+  
+  docker-compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "pnpm publish --no-git-checks --tag $LOCAL_BRANCH"
 }
 
 for param in "$@"

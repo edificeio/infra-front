@@ -21,3 +21,5 @@ errorShots
 npm-debug.log
 package.json
 dist
+pnpm-lock.yaml
+.pnpm-store
