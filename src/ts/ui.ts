@@ -1160,12 +1160,12 @@ export const ui = {
         if(stylePath && stylePath.startsWith("/")){
             stylePath = (window as any).CDN_DOMAIN + stylePath;
         }
+        let version = 'dev';
+        if((window as any).springboardBuildDate){
+            version = (window as any).springboardBuildDate;
+            console.log('Springboard built on ' + version);
+        }
         if ($('#theme').length === 0) {
-            let version = 'dev';
-            if((window as any).springboardBuildDate){
-                version = (window as any).springboardBuildDate;
-                console.log('Springboard built on ' + version);
-            }
 
             var style = $('<link>', {
                 rel: 'stylesheet',
@@ -1188,7 +1188,7 @@ export const ui = {
             }, 300);
         }
         else {
-            $('#theme').attr('href', stylePath + 'theme.css');
+            $('#theme').attr('href', stylePath + 'theme.css?version=' + version);
         }
     },
     extendSelector: {
