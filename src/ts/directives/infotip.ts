@@ -18,7 +18,12 @@ export let infotip = ng.directive('infotip', () => {
                 key = scope.savePreferenceUnder.trim();
             }
 
-            await Me.preference( key );
+            try {
+                await Me.preference( key );
+            }
+            catch (e) {
+                console.error(e)
+            }
 
             // Helper get/set function
             var visibility = function(value?: Boolean) {
