@@ -1,6 +1,6 @@
 {
   "name": "entcore",
-  "version": "4.8.0-develop-pedago.%generateVersion%",
+  "version": "4.8.0-dev.%generateVersion%",
   "description": "",
   "scripts": {
     "dev:watch": "npx gulp watch --springboard=../${SPRINGBOARD} 2>/dev/null",
