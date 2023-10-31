@@ -755,25 +755,21 @@ module.directive("portal", [
       restrict: "E",
       transclude: true,
       templateUrl: function (element, attributes) {
-        const version =
-          (window as any).springboardBuildDate || new Date().getTime();
+
+        const version = (window as any).springboardBuildDate || new Date().getTime()
         return attributes.templateUrl
-          ? attributes.templateUrl + "?version=" + version
-          : skin.portalTemplate + "?version=" + version;
+          ? attributes.templateUrl+"?version="+version
+          : skin.portalTemplate+"?version="+version;
       },
       compile: function (element, attributes, transclude) {
         // Initialize any configured tracker
         tracker.init();
 
-        if (
-          model.me.hasWorkflow(
-            "fr.openent.chatbot.controller.ChatbotController|view"
-          )
-        ) {
-          Behaviours.loadBehaviours("chatbot", function () {
-            Behaviours.applicationsBehaviours.chatbot.chatbot.init();
-          });
-        }
+		if (model.me.hasWorkflow('fr.openent.chatbot.controller.ChatbotController|view')) {
+			Behaviours.loadBehaviours('chatbot', function () {
+				Behaviours.applicationsBehaviours.chatbot.chatbot.init();
+			});
+		}
 
         $("html").addClass("portal-container");
         element
