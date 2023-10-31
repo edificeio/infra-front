@@ -71,7 +71,6 @@ export function initThemeLegacyDirective(module:any){
                 for(let theme of conf.overriding){
                     //replace theme by bootstrap version
                     const legacy = theme.legacyVersion || theme.parent;
-                    console.log({legacy});
                     if(theme.child==themeName && legacy){
                         url = (window as any).CDN_DOMAIN + `/assets/themes/${legacy}/skins/${skinName}/`;
                         element.addClass(legacy);//add class at root=>wrapped theme
