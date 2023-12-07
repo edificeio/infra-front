@@ -1,14 +1,8 @@
-gradle:
-  image: gradle:4.5-alpine
-  working_dir: /home/gradle/project
-  volumes:
-    - ./:/home/gradle/project
-    - ~/.m2:/home/gradle/.m2
-    - ~/.gradle:/home/gradle/.gradle
-
-node:
-  image: opendigitaleducation/node:16-alpine-pnpm
-  working_dir: /home/node/app
-  volumes:
-    - ./:/home/node/app
-    - ~/.pnpm:/.pnpm
+version: "3"
+services:
+  node:
+    image: opendigitaleducation/node:16-alpine-pnpm
+    working_dir: /home/node/app
+    volumes:
+      - ./:/home/node/app
+      - ~/.pnpm:/.pnpm
