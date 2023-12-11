@@ -38,7 +38,7 @@ export let infotip = ng.directive('infotip', () => {
             if( !visibility() ) {
                 element.remove();
             } else {
-                element.css({'display': !!attributes.display ? attributes.display : 'block'});
+                element.css({'display': 'block'});
                 if( scope.showOnce ) {
                     visibility( false ); // Do not notify this visibility change.
                     Me.savePreference( key );
