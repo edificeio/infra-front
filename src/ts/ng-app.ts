@@ -770,6 +770,24 @@ module.directive("portal", [
 				Behaviours.applicationsBehaviours.chatbot.chatbot.init();
 			});
 		}
+        // Load the optional feature cantoo
+        // Verification of the workflow rights
+        if(model.me.hasWorkflow('org.entcore.portal.controllers.PortalController|optionalFeatureCantoo')) {
+
+          // Get the scriptPath of the script to load
+          http().get("/optionalFeature/cantoo").done(function (data) {
+
+            const script = document.createElement("script");
+            script.src = data.scriptPath;
+            script.async = true;
+
+            // Load the script and append it to the body
+            document.body.appendChild(script);
+
+          });
+        
+        }
+      
 
         $("html").addClass("portal-container");
         element
