@@ -1,6 +1,6 @@
 {
   "name": "entcore",
-  "version": "4.8.4",
+  "version": "4.8.4-mongodb7.0.%generateVersion%",
   "description": "",
   "scripts": {
     "dev:watch": "npx gulp watch --springboard=../${SPRINGBOARD} 2>/dev/null",
