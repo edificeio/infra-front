@@ -1,3 +1,4 @@
+import { Me } from "../me";
 import { ng } from "../ng-start";
 
 export let infotip = ng.directive("infotip", () => {
@@ -24,7 +25,7 @@ export let infotip = ng.directive("infotip", () => {
         key = scope.savePreferenceUnder.trim();
       }
 
-      element.css({'display': 'block'});
+      element.css({ display: "block" });
 
       scope.$$showPublicInfoTipRgpdCookie = false;
 
@@ -42,6 +43,41 @@ export let infotip = ng.directive("infotip", () => {
         element.slideUp();
         closeBanner();
       });
+
+      try {
+        await Me.preference(key);
+
+        // Helper get/set function
+        var visibility = function (value?: Boolean) {
+          if (arguments.length <= 0)
+            return Me.preferences[key][scope.name] !== false ? true : false;
+          else Me.preferences[key][scope.name] = value;
+        };
+
+        const notifyVisibility = function () {
+          scope.onChange && scope.onChange({ $visible: visibility() });
+        };
+
+        notifyVisibility();
+        if (!visibility()) {
+          element.remove();
+        } else {
+          element.css({ display: "block" });
+          if (scope.showOnce) {
+            visibility(false); // Do not notify this visibility change.
+            Me.savePreference(key);
+          }
+        }
+
+        element.children("i").on("click", () => {
+          element.slideUp();
+          visibility(false);
+          notifyVisibility();
+          Me.savePreference(key);
+        });
+      } catch (error) {
+        console.error(error);
+      }
     },
   };
 });
