@@ -1244,6 +1244,19 @@ export const ui = {
             }
             return "grey";
         }
+    },
+    getCurrentThemePreference: async function (): Promise<any> {
+        await skin.onSkinReady;
+        const conf = await ui.getConf();
+
+        const res = await axios({
+            url: `/userbook/preference/theme`,
+            method: 'get'
+        });
+        const result = res.data;
+        const currentTheme = conf.overriding.find(t => t.child === result.preference);
+
+        return currentTheme;
     }
 };
 

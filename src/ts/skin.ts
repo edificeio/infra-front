@@ -15,9 +15,11 @@ export var skin = {
 	basePath: '',
 	logoutCallback: '/',
 	_onSkinReady:null,
+	is1D: false,
 	get skinResolveFunc(){
 		//load func
 		skin.onSkinReady;
+		Promise.resolve(skin.setIs1D());
 		return _skinResolved;
 	},
 	get skinRejectedFunc(){
@@ -203,7 +205,13 @@ export var skin = {
             }
         }
         return '';
-    }
+    },
+	setIs1D() {
+		Promise.resolve(ui.getCurrentThemePreference()).then((conf) => {
+			skin.is1D = (conf.parent === 'panda'); 
+		});
+
+	}
 };
 
 if (!(window as any).entcore) {
