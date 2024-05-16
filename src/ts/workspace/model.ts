@@ -88,7 +88,6 @@ export interface Tree extends Node {
     hidden?: boolean
     filter?: TREE_NAME
     hierarchical?: boolean
-    helpbox?: string
     buttons?: { text: string, action: () => any, disabled: () => boolean, icon?: boolean, workflow?: string }[]
     contextualButtons?: { text: string, action: () => any, allow?: () => boolean, right?: string }[]
 }
@@ -779,7 +778,6 @@ export class ElementTree extends Element implements Tree{
     get hidden() { return this.tree.hidden}
     get filter() { return this.tree.filter}
     get hierarchical() { return this.tree.hierarchical}
-    get helpbox() { return this.tree.helpbox}
     get buttons() { return this.tree.buttons}
     get contextualButtons() { return this.tree.contextualButtons}
 }

@@ -21,7 +21,6 @@ export * from "./folderPicker"
 export * from "./folderTree";
 export * from './foldingList';
 export * from './groupsUsersSelector';
-export * from './helpBox';
 export * from './imageCompression';
 export * from './imageEditor';
 export * from './imageLazyLoad';
