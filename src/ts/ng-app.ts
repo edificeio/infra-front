@@ -1018,6 +1018,19 @@ module.directive("portal", [
         labels = dataModule.default;
       }
 
+      if(modulePathnameSplit && modulePathnameSplit.includes("formulaire#")) {
+        (window as any).zE("webWidget", "updateSettings", {
+          webWidget: {
+            offset: {
+              mobile: {
+                horizontal: '70px',
+                vertical: '0px'
+              }
+            }      
+          },
+        });
+      }
+
       // Check if label has tag ${adml} and replace it with the user role
       if(labels.includes("${adml}")) {
         if(Me.session.functions.ADMIN_LOCAL) {
