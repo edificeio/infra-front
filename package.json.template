@@ -1,6 +1,6 @@
 {
   "name": "entcore",
-  "version": "4.8.6-develop-b2school.%generateVersion%",
+  "version": "4.8.6-dev.%generateVersion%",
   "description": "",
   "scripts": {
     "dev:watch": "npx gulp watch --springboard=../${SPRINGBOARD} 2>/dev/null",
