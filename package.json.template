@@ -1,6 +1,6 @@
 {
   "name": "entcore",
-  "version": "4.8.7",
+  "version": "4.8.8",
   "description": "",
   "scripts": {
     "dev:watch": "npx gulp watch --springboard=../${SPRINGBOARD} 2>/dev/null",
@@ -22,9 +22,9 @@
   "main": "gulpfile.js",
   "types": "./types/src/ts/entcore.d.ts",
   "dependencies": {
-    "angular": "1.7.9",
-    "angular-route": "1.7.9",
-    "angular-sanitize": "1.7.9",
+    "angular": "1.8.3",
+    "angular-route": "1.8.3",
+    "angular-sanitize": "1.8.3",
     "awesome-typescript-loader": "^3.2.1",
     "axios": "^0.15.3",
     "conventional-changelog-cli": "2.0.12",
@@ -52,7 +52,7 @@
     "webpack-stream": "^3.2.0"
   },
   "devDependencies": {
-    "@types/angular": "1.7.4",
+    "@types/angular": "1.8.3",
     "@types/core-js": "0.9.46",
     "@types/jasmine": "2.8.8",
     "@types/jquery": "^3.3.32",
