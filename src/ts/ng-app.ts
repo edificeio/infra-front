@@ -125,6 +125,43 @@ var module = angular
       return model;
     },
   ])
+  .factory("xmlHelper", function () {
+    return {
+      xmlToJson: function (xml, accumulator, stripNamespaces, flatten) {
+        var nodeName;
+        var that = this;
+        if (!accumulator) accumulator = {};
+        if (!stripNamespaces) stripNamespaces = true;
+        if (flatten == null) flatten = true;
+
+        if (stripNamespaces && xml.nodeName.indexOf(":") > -1) {
+          nodeName = xml.nodeName.split(":")[1];
+        } else {
+          nodeName = xml.nodeName;
+        }
+        if ($(xml).children().length > 0) {
+          if (!flatten) accumulator[nodeName] = [];
+          else accumulator[nodeName] = {};
+          _.each($(xml).children(), function (child) {
+            if (!flatten)
+              accumulator[nodeName].push(
+                that.xmlToJson(child, {}, stripNamespaces, flatten)
+              );
+            else
+              return that.xmlToJson(
+                child,
+                accumulator[nodeName],
+                stripNamespaces,
+                flatten
+              );
+          });
+        } else {
+          accumulator[nodeName] = $(xml).text();
+        }
+        return accumulator;
+      },
+    };
+  })
   .factory("httpWrapper", function () {
     return {
       wrap: function (name, fun, context) {
@@ -2406,6 +2443,116 @@ module.directive("plus", function () {
             //}
           });
         }, 0);
+      });
+    },
+  };
+});
+
+module.directive("help", function () {
+  var helpText;
+  return {
+    restrict: "E",
+    scope: {},
+    template:
+      '<i class="navbar-help ic-help"></i>' +
+      '<lightbox show="display.read" on-close="display.read = false"><div></div></lightbox>',
+    link: async function (scope, element) {
+      let helpPath = await skin.getHelpPath();
+      scope.display = {};
+      scope.helpPath = helpPath + "/application/" + appPrefix + "/";
+      if (appPrefix === "." && window.location.pathname !== "/adapter") {
+        scope.helpPath = helpPath + "/application/portal/";
+      } else if (window.location.pathname === "/adapter") {
+        scope.helpPath =
+          helpPath +
+          "/application/" +
+          window.location.search.split("eliot=")[1].split("&")[0] +
+          "/";
+      } else if (window.location.pathname.includes("/directory/class-admin")) {
+        scope.helpPath = helpPath + "/application/parametrage-de-la-classe/";
+      } else if (
+        window.location.pathname.includes("/userbook/mon-compte") ||
+        window.location.pathname.includes("/timeline/preferencesView") ||
+        window.location.pathname.includes("/timeline/historyView")
+      ) {
+        scope.helpPath = helpPath + "/application/userbook/";
+      }
+
+      var helpContent, burgerMenuElement, burgerButtonElement;
+
+      var setHtml = function (content) {
+        helpContent = $("<div>" + content + "</div>");
+        // Swap ToC and introduction paragraphs
+        helpContent.find("> p").prev().insertAfter(helpContent.find("> p"));
+        helpContent.find("img").each(function (index, item) {
+          $(item).attr("src", scope.helpPath + "../.." + $(item).attr("src"));
+        });
+        element
+          .find("div.content > div[ng-transclude]")
+          .html(helpContent.html());
+        element.find("li a").on("click", function (e) {
+          element.find(".section").slideUp();
+          $("div#" + $(e.target).attr("href").split("#")[1]).slideDown();
+        });
+        element.find("div.paragraph a").on("click", function (e) {
+          window.open($(e.target).closest("a").attr("href"), "_newtab");
+        });
+        element.find("li a").first().click();
+
+        // Activate hamburger menu on responsive
+        element
+          .find("#TOC")
+          .wrap('<div id="burger-menu" class="burger-menu"></div>');
+        burgerMenuElement = element.find("#burger-menu");
+        burgerMenuElement.prepend(
+          '<button id="burger-button" class="burger-button"><i class="burger-icon"></i></button>'
+        );
+        burgerButtonElement = element.find("#burger-button");
+        burgerButtonElement.click(function (e) {
+          burgerMenuElement.toggleClass("active");
+        });
+        element.find("#TOC > ul li a").on("click", function (e) {
+          burgerMenuElement.removeClass("active");
+        });
+
+        let bodyClick = function (event) {
+          if (
+            element.find("#TOC > ul").find(event.target).length == 0 &&
+            burgerMenuElement.find(event.target).length == 0
+          ) {
+            burgerMenuElement.removeClass("active");
+          }
+        };
+        $("body").on("click", bodyClick);
+        scope.$on("$destroy", function () {
+          $("body").off("click", bodyClick);
+        });
+        // end of hamburger
+
+        scope.display.read = true;
+        scope.$apply("display");
+      };
+
+      element.children("i.navbar-help").on("click", function () {
+        if (helpText) {
+          setHtml(helpText);
+        } else {
+          http()
+            .get(scope.helpPath)
+            .done(function (content) {
+              helpText = content;
+              setHtml(helpText);
+            })
+            .e404(function () {
+              helpText =
+                "<h2>" +
+                lang.translate("help.notfound.title") +
+                "</h2><p>" +
+                lang.translate("help.notfound.text") +
+                "</p>";
+              setHtml(helpText);
+            });
+        }
       });
     },
   };
