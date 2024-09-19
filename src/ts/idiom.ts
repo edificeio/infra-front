@@ -252,7 +252,7 @@ export var idiom = {
                         if( typeof params === "object" ) {
                             for( var member in params ) {
                                 if( typeof params[member]!==undefined ) {
-                                    txt = txt.replace(new RegExp('${'+member+'}', 'g'), ''+params[member]);
+                                    txt = txt.replace(new RegExp("\\$\\{"+member+"\\}", 'g'), ''+params[member]);
                                 }
                             }
                         }
