@@ -33,10 +33,17 @@ clean () {
 }
 
 init () {
+  BRANCH_NAME=`echo $GIT_BRANCH | sed -e "s|origin/||g"`
+  if [ "$BRANCH_NAME" = "" ]; then
+    echo "[init] Get branch name from git..."
+    BRANCH_NAME=`git branch | sed -n -e "s/^\* \(.*\)/\1/p"`
+  fi
+
   echo "[init] Generate package.json from package.json.template..."
   NPM_VERSION_SUFFIX=`date +"%Y%m%d%H%M"`
   cp package.json.template package.json
   sed -i "s/%generateVersion%/${NPM_VERSION_SUFFIX}/" package.json
+  sed -i "s/%branch%/${BRANCH_NAME}/" package.json
 
   echo "[init] Install yarn dependencies..."
   docker-compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "yarn install"
