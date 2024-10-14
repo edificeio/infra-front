@@ -1,9 +1,9 @@
-import { ng } from '../ng-start';
+import { Subject, Subscription } from 'rxjs';
 import { idiom } from '../idiom';
 import { $ } from '../libs/jquery/jquery';
+import { ng } from '../ng-start';
 import { template } from '../template';
 import { ui } from '../ui';
-import { Subject, Subscription } from 'rxjs';
 
 type TooltipCondition = (cond: JQuery) => boolean;
 type TooltipScope = { $watch: any, $eval: any, $on: any };
@@ -211,8 +211,9 @@ class DefaultToolTip extends AbstractToolTip {
     }
     protected moveTip() {
         if (!this.tip || !this.isReady()) return;
-        let top = parseInt(this.sourceElement.offset().top + this.sourceElement.outerHeight());
-        let left = parseInt(this.sourceElement.offset().left + $(this.sourceElement).width() / 2 - $(this.tip).width() / 2);
+        let sourceBoxViewport = $(this.sourceElement).get(0).getBoundingClientRect();
+        let top = parseInt(sourceBoxViewport.top + window.scrollY + document.documentElement.clientTop + sourceBoxViewport.height);
+        let left = parseInt(sourceBoxViewport.left + window.scrollX + document.documentElement.clientLeft + sourceBoxViewport.width / 2 - $(this.tip).outerWidth() / 2);
         if (top < 5) {
             top = 5;
         }
