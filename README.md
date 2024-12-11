@@ -3,7 +3,7 @@
 infra-front is the Open Digital Education (ODE) frontend framework. 
 It is wriiten in typescript and it provides features and components to build and run ODE applications :
 
-- angularJS bootstrap and (light) abstraction (Model, Controllers and Direcctives injection)
+- angularJS bootstrap and (light) abstraction (Model, Controllers and Directives injection)
 - portal theming (skin, assets overriding, SASS extensions for applications ...)
 - widgets management
 - sniplets management (sniplets are small and dynamic pieces of UI useful to mix contents from different applications)
@@ -14,7 +14,7 @@ It is wriiten in typescript and it provides features and components to build and
 
 ## Install
 
-Install and configure the following projects in the same root direectory.
+Install and configure the following projects in the same root directory.
 
 ### 1. ENT Core
 
