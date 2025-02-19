@@ -1,7 +1,7 @@
 <div class="image-properties">
     <div class="row">
         <label class="twelve cell"><strong><i18n>filename</i18n></strong></label>
-        <input class="twelve cell" type="text" i18n-placeholder="name" ng-model="document.newProperties.name" />
+        <input class="twelve cell" type="text" i18n-placeholder="name" ng-model="document.newProperties.name" ng-maxlength="80" maxlength="80" ng-keypress="preventForbiddenChars($event)" />
     </div>
     <div class="row">
         <label class="twelve cell"><strong><i18n>alttext</i18n></strong></label>
