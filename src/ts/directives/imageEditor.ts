@@ -105,6 +105,8 @@ export const imageEditor = ng.directive('imageEditor', () => {
             }
             scope.save = async () => {
                 scope.loading = true;
+                const forbiddenRegex = /[\/\\<>|]/g;
+                imageEditor.document.name = imageEditor.document.name.trim().replace(forbiddenRegex, '');
                 if(imageEditor.canApply){
                     await imageEditor.applyChanges();
                 }
@@ -134,6 +136,15 @@ export const imageEditor = ng.directive('imageEditor', () => {
             });
 
             scope.$on('destroy', () => imageEditor.destroy());
+
+            scope.preventForbiddenChars = function($event) {
+                const regexForbiddenChars = /[\/\\<>|]/;
+                var char = $event.key;
+              
+                if (regexForbiddenChars.test(char)) {
+                  $event.preventDefault();
+                }
+            };
         }
     }
 })
