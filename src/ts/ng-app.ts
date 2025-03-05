@@ -948,6 +948,16 @@ module.directive("portal", [
                 });
               });
 
+              // Hide the Zendesk Guide Widget before printing 
+              window.addEventListener("beforeprint", () => {
+                (window as any).zE("webWidget", "hide");
+              });
+
+              // Display Zendesk Guide Widget back after printing has completed
+              window.addEventListener("afterprint", () => {
+                (window as any).zE("webWidget", "show");
+              });
+
               // Set the Zendesk Guide Widget to update the labels when the user opens the widget
               (window as any).zE("webWidget:on", "open", function () {
                 // Detect if the user has changed the page to reset the labels
