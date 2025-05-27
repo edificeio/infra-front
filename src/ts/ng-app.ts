@@ -931,6 +931,7 @@ module.directive("portal", [
                       "*": "Assistance ENT",
                       "es-419": "Asistencia ENT",
                     },
+                    originalArticleButton: (data.articleRedirectButton !== null && data.articleRedirectButton !== undefined) ? data.articleRedirectButton : true,
                   },
                 },
               });
