@@ -1697,6 +1697,7 @@ module.directive("datePicker", [
         ngModel: "=",
         ngChange: "&",
         datePickerDelegate: "=",
+        autoFormat: "@?",
       },
       transclude: true,
       replace: true,
@@ -1744,6 +1745,64 @@ module.directive("datePicker", [
           );
           return parsed;
         };
+
+        // --- Auto-formatting ---
+        if (attributes.autoFormat !== undefined && attributes.autoFormat !== "false") {
+          const formatMask = (value: string) => {
+            // replace non digits and "/" characters
+            value = value.replace(/[^0-9/]/g, "");
+            // add a slash after the 2 first digit (dd)
+            if (value.length == 2) {
+              value = value + "/";
+            } else if (value.length == 5) { 
+              // add a slash after the 2 digits of the month (dd/MM)
+              value = value + "/";
+            }
+            return value;
+          };
+
+          // keep track of the last value to handle the "/" deletion
+          let lastValue = "";
+          element.on("beforeinput", function (event) {
+            lastValue = element.val();
+          });
+
+          element.on("input", function (event) {
+            const nativeEvent = event.originalEvent || event;
+            const inputEl = element[0];
+            const caret = inputEl.selectionStart;
+
+            // Handle the "/" deletion
+            if (
+              nativeEvent.inputType === "deleteContentBackward" || 
+              nativeEvent.inputType === "deleteContentForward"
+            ) {
+              // For backspace, caret is after the deleted char
+              // For delete, caret is before the deleted char
+              let deletedChar;
+              if (nativeEvent.inputType === "deleteContentBackward") {
+                deletedChar = lastValue[caret];
+              } else {
+                deletedChar = lastValue[caret - 1];
+              }
+              if (deletedChar === "/") {
+                // You can handle special logic here
+                return false;
+              }
+            } // End of "/" deletion handle
+            
+            // Format the date (adding the "/")
+            const formatted = formatMask(element.val());
+            element.val(formatted);
+            ngModel.$setViewValue(formatted);
+          });
+
+          // Also format initial value
+          ngModel.$formatters.unshift(formatMask);
+          ngModel.$parsers.unshift(formatMask);
+        }
+        // --- End auto-format block ---
+
         //model to view
         ngModel.$formatters.push((value) => {
           const inner = (value) => {
