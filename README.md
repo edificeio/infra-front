@@ -1,7 +1,15 @@
+# À propos d'infra-front
+    
+* Licence : [AGPL v3](http://www.gnu.org/licenses/agpl.txt) - Copyright Edifice
+* Financeur(s) : Edifice
+* Développeur(s) : Edifice
+* Description : framework frontend AngularJS Edifice.
+
+
 # infra-front : Open Digital Education Framework
 
-infra-front is the Open Digital Education (ODE) frontend framework. 
-It is wriiten in typescript and it provides features and components to build and run ODE applications :
+infra-front is the Edifice frontend framework. 
+It is written in typescript and it provides features and components to build and run Edifice applications :
 
 - angularJS bootstrap and (light) abstraction (Model, Controllers and Directives injection)
 - portal theming (skin, assets overriding, SASS extensions for applications ...)
