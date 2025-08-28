@@ -55,7 +55,7 @@
     "@types/angular": "1.8.3",
     "@types/core-js": "0.9.46",
     "@types/jasmine": "2.8.8",
-    "@types/jquery": "^3.3.32",
+    "@types/jquery": "3.5.32",
     "@types/pixi.js": "4.5.7",
     "@types/ua-parser-js": "^0.7.35",
     "@types/webdriverio": "4.13.0",
