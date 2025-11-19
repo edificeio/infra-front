@@ -26,7 +26,13 @@ export const font = {
                                                 cssRule.style.cssText.toLowerCase().indexOf('fontello') === -1 &&
                                                 cssRule.style.cssText.toLowerCase().indexOf('glyphicon') === -1 &&
                                                 cssRule.style.cssText.toLowerCase().indexOf('fontawesome') === -1 &&
-                                                cssRule.style.cssText.toLowerCase().indexOf('mathjax') === -1;
+                                                cssRule.style.cssText.toLowerCase().indexOf('mathjax') === -1 &&
+                                                cssRule.style.cssText.toLowerCase().indexOf('calendar-material-icons') === -1 &&
+                                                cssRule.style.cssText.toLowerCase().indexOf('material-icons') === -1 &&
+                                                cssRule.style.cssText.toLowerCase().indexOf('formulaire-mdi') === -1 &&
+                                                cssRule.style.cssText.toLowerCase().indexOf('lystore-material-icons') === -1 &&
+                                                cssRule.style.cssText.toLowerCase().indexOf('magneto-mdi') === -1 &&
+                                                cssRule.style.cssText.toLowerCase().indexOf('minibadge-icons') === -1;
                                         }
                                     )
                                 }
