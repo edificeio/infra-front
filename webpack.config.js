@@ -13,6 +13,9 @@ module.exports = {
   resolve: {
     modulesDirectories: ["node_modules"],
     extensions: ["", ".ts", ".js"],
+    alias: {
+      'ua-parser-js': 'ua-parser-js/dist/ua-parser.min.js'
+    }
   },
   devtool: "source-map",
   module: {

@@ -9,9 +9,13 @@ import { Collection, Model, model } from './modelDefinitions';
 import { skin } from './skin';
 import axios from "axios";
 import { Me } from './me';
+import { setDeviceCookies } from './deviceDetection';
 
 var _ = require('underscore');
 var moment = require('moment');
+
+// Set device cookies immediately (no auth required)
+setDeviceCookies();
 
 (function(){
 	function pluralizeName(obj){
