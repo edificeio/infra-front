@@ -44,10 +44,6 @@ export type BrowserInfo = {
     name:'MSIE'|'Edge'|'Chrome'|'Safari'|'Firefox'|'Opera'|'CriOS'|'FxiOS',
     version:number,
 }
-export type OSInfo = {
-    name: string | undefined;
-    version: string | undefined;
-}
 export const devices = {
     /* A few User Agent strings for testing purposes: 
     * iPod / iPad / iPhone
@@ -55,9 +51,9 @@ export const devices = {
         Mozilla/5.0 (iPad; CPU OS 14_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0.1 Mobile/15E148 Safari/604.1
         Mozilla/5.0 (iPad; CPU OS 14_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0 Mobile/15E148 Safari/604.1
     */
-    getOSInfo: (uaString?: string): OSInfo => {
-        let uaParser: UAParser = new UAParser(uaString);
-        return uaParser.getOS();
+    getOSInfo: (uaString?: string) => {
+        let uaParser = UAParser(uaString);
+        return uaParser.os;
     },
     isIE: () => navigator.userAgent.indexOf('Trident') !== -1,
     isiOS: () => /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream,
