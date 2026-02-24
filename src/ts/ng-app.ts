@@ -3212,7 +3212,7 @@ module.controller("Account", [
     $scope.refreshMails = function () {
       if (
         model.me.hasWorkflow(
-          "fr.openent.zimbra.controllers.ZimbraController|view"
+          "fr.openent.zimbra.controllers.ZimbraController|view",
         )
       ) {
         http()
@@ -3221,7 +3221,11 @@ module.controller("Account", [
             $scope.nbNewMessages = nbMessages.count;
             $scope.$apply("nbNewMessages");
           });
-      } else {
+      } else if (
+        model.me.hasWorkflow(
+          "org.entcore.conversation.controllers.ConversationController|view",
+        )
+      ) {
         http()
           .get("/conversation/count/INBOX", { unread: true })
           .done(function (nbMessages) {
