@@ -855,8 +855,8 @@ module.directive("portal", [
           var bannerCode = `
 					<div class="ode-theme-v1">
 						<infotip
-							name="showInfoTip" 
-							class="info" 
+							name="showInfoTip"
+							class="info"
 							style="position:fixed; bottom:0; right:20px; width: 400px; z-index: 1000"
 							save-preference-under="rgpdCookies"
 							show-once="false"
@@ -949,7 +949,7 @@ module.directive("portal", [
                 });
               });
 
-              // Hide the Zendesk Guide Widget before printing 
+              // Hide the Zendesk Guide Widget before printing
               window.addEventListener("beforeprint", () => {
                 (window as any).zE("webWidget", "hide");
               });
@@ -1016,7 +1016,7 @@ module.directive("portal", [
                       },
                     });
                     (window as any).zE('webWidget', 'close');
-                    window.open("/support", "_blank");
+                    window.open("/support/tickets/new", "_blank");
                   }
                 }
               );
@@ -1074,7 +1074,7 @@ module.directive("portal", [
                 horizontal: '70px',
                 vertical: '0px'
               }
-            }      
+            }
           },
         });
       }
@@ -1085,14 +1085,14 @@ module.directive("portal", [
           labels = labels.replace("${adml}", "adml");
         } else {
           labels = labels.replace("/${adml}", "");
-        } 
+        }
       }
 
       // Check if the label has a ${profile} tag and replace it with the user profile
       if (labels.includes("${profile}")) {
         labels = labels.replace("${profile}", profileTypes());
       }
-      
+
       // Check if the user has a ${theme} tag and replace it with the theme
       if (labels.includes("${theme}")) {
         if (skin.is1D) {
