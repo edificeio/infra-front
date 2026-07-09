@@ -33,8 +33,6 @@ git clone git@github.com:entcore/entcore.git
 
 ### 2. Springboard
 
-https://opendigitaleducation.gitbooks.io/reference-manual/content/first-steps/install-with-docker.html
-
 In `docker-compose.yml` add the following volume mapping for `node` container :
 
 ```yml
