@@ -3,6 +3,19 @@ import { ui } from './ui';
 import { model } from './modelDefinitions';
 import { _ } from './libs/underscore/underscore';
 
+// Same uiOverrides mechanism as @edifice.io/react's useUiOverride: a platform's
+// /assets/theme-conf.js can set `overriding[].uiOverrides['layout.header']` to
+// `'v2'` or `{ variant: 'v2' }` to opt into the new header, per skin.
+const UI_OVERRIDE_PORTAL_HEADER_KEY = 'layout.header';
+
+async function getUiOverride(skinName: string): Promise<string | undefined> {
+	await skin.listSkins();
+	const currentTheme = skin.conf && skin.conf.overriding.find(t => t.child === skinName);
+	const raw = currentTheme && currentTheme.uiOverrides && currentTheme.uiOverrides[UI_OVERRIDE_PORTAL_HEADER_KEY];
+	const override = typeof raw === 'string' ? { variant: raw } : raw;
+	return override && override.variant;
+}
+
 let _skinResolved, _skinRejected = null;
 export var skin = {
 	skinName:'',
@@ -43,12 +56,17 @@ export var skin = {
 				this.skin = data.skin;
 				this.theme = (window as any).CDN_DOMAIN + '/assets/themes/' + data.skin + '/skins/default/';
 				this.basePath = this.theme + '../../';
-				skin.skinResolveFunc();
-				http().get('/assets/themes/' + data.skin + '/template/override.json', { token: rand }, { disableNotifications: true }).done((override) => {
-					this.templateMapping = override;
-					resolve();
-				})
-				.e404(() => resolve());
+				getUiOverride(data.skin).then((variant) => {
+					if (variant === 'v2') {
+						this.portalTemplate = (window as any).CDN_DOMAIN + '/assets/themes/' + data.skin + '/portal-v2.html';
+					}
+					skin.skinResolveFunc();
+					http().get('/assets/themes/' + data.skin + '/template/override.json', { token: rand }, { disableNotifications: true }).done((override) => {
+						this.templateMapping = override;
+						resolve();
+					})
+					.e404(() => resolve());
+				});
 			}).e404(() => {
 				skin.skinRejectedFunc();
 			});
@@ -70,6 +88,7 @@ export var skin = {
 	pickSkin: false,
 	themeConf: undefined,
 	themeConfPromise: undefined,
+	conf: undefined as any,
 	listSkins: function(): Promise<any>{
 		let conf = { overriding:[] };
 		if(this.themeConfPromise){
@@ -160,17 +179,22 @@ export var skin = {
 				that.skin = that.theme.split('/assets/themes/')[1].split('/')[0];
 				that.portalTemplate = (window as any).CDN_DOMAIN + '/assets/themes/' + that.skin + '/portal.html';
 				that.logoutCallback = data.logoutCallback;
-				skin.skinResolveFunc();
-				http().get('/assets/themes/' + that.skin + '/template/override.json', { token: rand }).done(function(override){
-					that.templateMapping = override;
-					if (window.entcore.template) {
-						window.entcore.template.loadPortalTemplates();
+				getUiOverride(that.skin).then((variant) => {
+					if (variant === 'v2') {
+						that.portalTemplate = (window as any).CDN_DOMAIN + '/assets/themes/' + that.skin + '/portal-v2.html';
 					}
-					resolve();
-				})
-				.e404(() => { 
-					resolve(); 
-					skin.skinRejectedFunc();
+					skin.skinResolveFunc();
+					http().get('/assets/themes/' + that.skin + '/template/override.json', { token: rand }).done(function(override){
+						that.templateMapping = override;
+						if (window.entcore.template) {
+							window.entcore.template.loadPortalTemplates();
+						}
+						resolve();
+					})
+					.e404(() => {
+						resolve();
+						skin.skinRejectedFunc();
+					});
 				});
 			});
 		});
