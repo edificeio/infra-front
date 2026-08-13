@@ -32,6 +32,7 @@ interface StyleProperties {
 }
 
 const whitelistedProperties = [
+    'aspect-ratio',
     'background-color',
     'color',
     'cursor',
