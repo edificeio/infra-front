@@ -14,27 +14,6 @@ import { VideoUploadService } from '../video/VideoUploadService';
 import { notify } from '../notify';
 import { IObjectGuardDelegate } from "../navigationGuard";
 
-// Rewrites non-numeric iframe width/height (e.g. "100%", "auto") as inline CSS, since browsers silently mis-size or drop such invalid attribute values.
-function sanitizeEmbedHtml(html: string): string {
-    if (!html || html.indexOf('<iframe') === -1) {
-        return html;
-    }
-    const container = document.createElement('div');
-    container.innerHTML = html;
-    const iframes = container.querySelectorAll('iframe');
-    for (let i = 0; i < iframes.length; i++) {
-        const iframe = iframes[i];
-        ['width', 'height'].forEach((attr) => {
-            const value = iframe.getAttribute(attr);
-            if (value && !/^[0-9]+$/.test(value)) {
-                iframe.style.setProperty(attr, value);
-                iframe.removeAttribute(attr);
-            }
-        });
-    }
-    return container.innerHTML;
-}
-
 export interface VideoDelegate {
     title?: string
     filterDocumentRole?(element: Document): boolean
@@ -890,7 +869,7 @@ export let embedder = ng.directive('embedder', ['$timeout', '$filter', 'VideoUpl
 
             scope.applyHtml = function () {
                 scope.show = false;
-                lnkNgModel.$setViewValue(sanitizeEmbedHtml(scope.display.htmlCode));
+                lnkNgModel.$setViewValue(scope.display.htmlCode);
                 scope.unselectProvider();
             };
 
@@ -937,7 +916,7 @@ export let embedder = ng.directive('embedder', ['$timeout', '$filter', 'VideoUpl
                 if(scope.display.provider.name === 'other'){
                     let preview = element.find('.' + scope.display.provider.name + ' .preview');
                     preview.html(
-                        sanitizeEmbedHtml(scope.display.htmlCode)
+                        scope.display.htmlCode
                     );
                     return;
                 }
@@ -986,7 +965,7 @@ export let embedder = ng.directive('embedder', ['$timeout', '$filter', 'VideoUpl
 
                 let preview = element.find('.' + scope.display.provider.name + ' .preview');
                 preview.html(
-                    sanitizeEmbedHtml(scope.display.htmlCode)
+                    scope.display.htmlCode
                 );
 
 
