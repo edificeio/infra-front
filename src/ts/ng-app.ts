@@ -762,6 +762,18 @@ const profileTypes = () => {
   }
 };
 
+// Compact "Edifice" icon mark, shown once the page has scrolled.
+const EDIFICE_MARK_SVG = `<svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><g clip-path="url(#edifice-assistance-mark-clip)"><path d="M12.3607 0H5.63574V1.98663H12.3607V0Z" fill="white"/><path d="M8.99998 1.94877C4.5758 1.94877 0.99 5.55054 0.99 9.99441H17.01C17.01 5.55054 13.4242 1.94877 8.99998 1.94877Z" fill="#C8D3FE"/><path d="M12.6785 12.1763C12.497 12.4797 12.2767 12.7621 12.0205 13.0164C11.2121 13.8215 10.1394 14.265 8.99997 14.265C7.86153 14.265 6.78888 13.8215 5.97941 13.0164C5.17094 12.2113 4.72034 11.1389 4.70938 9.99638V9.99338H0.99C0.99 9.99338 0.99 9.99438 0.99 9.99538C0.99 10.0074 0.99 10.0194 0.99 10.0314C1.03087 14.4393 4.60072 18 8.99897 18C12.6555 18 15.7389 15.5387 16.6989 12.1753H12.6775L12.6785 12.1763Z" fill="white"/></g><defs><clipPath id="edifice-assistance-mark-clip"><rect width="18" height="18" fill="white"/></clipPath></defs></svg>`;
+
+// Full "Edifice" wordmark, shown by default (page not scrolled).
+const EDIFICE_WORDMARK_SVG = `<svg width="81" height="18" viewBox="0 0 225 50" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><g clip-path="url(#edifice-assistance-wordmark-clip)"><path d="M201.851 5.39963C189.565 5.39963 179.601 15.4045 179.601 27.7486H224.101C224.101 15.4045 214.141 5.39963 201.851 5.39963Z" fill="#C8D3FE"/><path d="M212.071 33.8134C211.567 34.6562 210.955 35.4406 210.243 36.1471C207.997 38.3834 205.018 39.6156 201.853 39.6156C198.69 39.6156 195.711 38.3834 193.462 36.1471C191.216 33.9108 189.965 30.9318 189.934 27.7582V27.7498H179.603C179.603 27.7498 179.603 27.7526 179.603 27.7554C179.603 27.7888 179.603 27.8222 179.603 27.8555C179.716 40.0996 189.632 49.9905 201.85 49.9905C212.007 49.9905 220.572 43.1536 223.239 33.8107H212.068L212.071 33.8134Z" fill="white"/><path d="M154.433 27.8152C154.464 24.6666 155.699 21.7099 157.914 19.4903C160.132 17.2707 163.073 16.0469 166.194 16.0469H176.243V5.74994H166.047C154.057 5.8306 144.348 15.6158 144.237 27.7179H144.235C144.235 27.754 144.235 27.793 144.235 27.8291C144.235 27.8625 144.235 27.8959 144.235 27.9293C144.348 40.0314 154.057 49.8165 166.044 49.8944H176.24V39.5975H166.191C163.07 39.5975 160.129 38.3736 157.911 36.154C155.696 33.9344 154.458 30.9777 154.428 27.8291V27.8097L154.433 27.8152Z" fill="white"/><path d="M139.727 21.4199H129.839V49.8965H139.727V21.4199Z" fill="#C8D3FE"/><path d="M139.727 5.74994H129.839V15.7715H139.727V5.74994Z" fill="white"/><path d="M113.842 5.74994H103.953V49.8973H113.842V5.74994Z" fill="#C8D3FE"/><path d="M123.69 5.74994H113.802V15.6825H114.419C119.539 15.6825 123.69 11.5131 123.69 6.3702V5.74994Z" fill="white"/><path d="M123.69 21.4199H113.802V31.3525H114.419C119.539 31.3525 123.69 27.1831 123.69 22.0402V21.4199Z" fill="white"/><path d="M97.7506 21.4199H87.8621V49.8965H97.7506V21.4199Z" fill="#C8D3FE"/><path d="M97.7506 5.74994H87.8621V15.7715H97.7506V5.74994Z" fill="white"/><path d="M82.3215 27.8236C82.3215 15.6325 72.4828 5.74994 60.3457 5.74994V49.8973C72.4828 49.8973 82.3215 40.0148 82.3215 27.8236Z" fill="white"/><path d="M60.3493 5.74994H50.4607V49.8973H60.3493V5.74994Z" fill="#C8D3FE"/><path d="M32.4353 0H13.7548V5.51842H32.4353V0Z" fill="white"/><path d="M23.0999 5.41325C10.8105 5.41325 0.85 15.4182 0.85 27.7623H45.3499C45.3499 15.4182 35.3893 5.41325 23.0999 5.41325Z" fill="#C8D3FE"/><path d="M33.318 33.823C32.814 34.6658 32.202 35.4501 31.4904 36.1566C29.2446 38.3929 26.265 39.6251 23.0999 39.6251C19.9376 39.6251 16.958 38.3929 14.7095 36.1566C12.4637 33.9203 11.2121 30.9414 11.1816 27.7677V27.7594H0.85C0.85 27.7594 0.85 27.7622 0.85 27.7649C0.85 27.7983 0.85 27.8317 0.85 27.8651C0.963534 40.1091 10.8798 50 23.0972 50C33.2543 50 41.8192 43.1632 44.4859 33.8202H33.3152L33.318 33.823Z" fill="white"/></g><defs><clipPath id="edifice-assistance-wordmark-clip"><rect width="225" height="50" fill="white"/></clipPath></defs></svg>`;
+
+// "?" help icon, right side of the launcher.
+const EDIFICE_QUESTION_SVG = `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><g><path fill-rule="evenodd" clip-rule="evenodd" d="M12 3C7.02944 3 3 7.02944 3 12C3 16.9706 7.02944 21 12 21C16.9706 21 21 16.9706 21 12C21 7.02944 16.9706 3 12 3ZM1 12C1 5.92487 5.92487 1 12 1C18.0751 1 23 5.92487 23 12C23 18.0751 18.0751 23 12 23C5.92487 23 1 18.0751 1 12Z" fill="white"/><path fill-rule="evenodd" clip-rule="evenodd" d="M11.0315 8.4265C10.8469 8.66926 10.75 9.03749 10.75 9.44444C10.75 9.99673 10.3023 10.4444 9.75 10.4444C9.19772 10.4444 8.75 9.99673 8.75 9.44444C8.75 8.78195 8.89804 7.92796 9.43956 7.21586C10.0173 6.45616 10.9346 6 12.1646 6C13.5808 6 14.4858 6.7401 14.9221 7.65786C15.313 8.48011 15.3302 9.4426 15.1011 10.0856C14.8215 10.8705 14.2831 11.4933 13.9026 11.9335C13.8455 11.9995 13.792 12.0614 13.7434 12.1191C13.312 12.632 13.1646 12.9084 13.1646 13.213V14.3325C13.1646 14.8848 12.7169 15.3333 12.1646 15.3333C11.6124 15.3333 11.1646 14.8856 11.1646 14.3333V13.213C11.1646 12.1262 11.7696 11.3587 12.2129 10.8316C12.2824 10.749 12.3487 10.6711 12.4118 10.597C12.8045 10.1358 13.0721 9.82138 13.2171 9.41437C13.2614 9.29007 13.2875 8.87755 13.1159 8.51663C13.041 8.35912 12.9414 8.24051 12.8164 8.15879C12.6952 8.07954 12.497 8 12.1646 8C11.4699 8 11.1799 8.23134 11.0315 8.4265Z" fill="white"/><path d="M13.325 17.1667C13.325 17.719 12.8773 18.1667 12.325 18.1667C11.7727 18.1667 11.325 17.719 11.325 17.1667C11.325 16.6145 11.7727 16.1667 12.325 16.1667C12.8773 16.1667 13.325 16.6145 13.325 17.1667Z" fill="white"/></g></svg>`;
+
+const EDIFICE_ASSISTANCE_BUTTON_ID = "edifice-assistance-button";
+const EDIFICE_ASSISTANCE_BUTTON_STYLE_ID = "edifice-assistance-button-style";
+
 module.directive("portal", [
   "$compile",
   "tracker",
@@ -881,6 +893,87 @@ module.directive("portal", [
       },
     };
 
+    // Zendesk injects its own launcher button (#launcher). This app renders
+    // its own launcher instead, so hide the native one.
+    function injectEdificeAssistanceButtonStyles() {
+      if (document.getElementById(EDIFICE_ASSISTANCE_BUTTON_STYLE_ID)) {
+        return;
+      }
+
+      const style = document.createElement("style");
+      style.id = EDIFICE_ASSISTANCE_BUTTON_STYLE_ID;
+      style.textContent = `
+        #launcher { display: none !important; }
+        #${EDIFICE_ASSISTANCE_BUTTON_ID} {
+          position: fixed;
+          right: 24px;
+          bottom: 24px;
+          z-index: 8000;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          padding: 8px 8px 8px 12px;
+          color: #fff;
+          cursor: pointer;
+          background-color: #3030d1;
+          border: none;
+          border-radius: 999px;
+          box-shadow: 0 4px 5px rgba(0, 0, 0, 0.18);
+        }
+        #${EDIFICE_ASSISTANCE_BUTTON_ID}:hover,
+        #${EDIFICE_ASSISTANCE_BUTTON_ID}:focus-visible {
+          box-shadow: 0 4px 10px rgba(0, 0, 0, 0.18);
+        }
+        #${EDIFICE_ASSISTANCE_BUTTON_ID} .edifice-assistance-button-logo {
+          display: flex;
+          align-items: center;
+          height: 18px;
+        }
+        #${EDIFICE_ASSISTANCE_BUTTON_ID} .edifice-assistance-button-logo svg {
+          display: block;
+          height: 18px;
+          width: auto;
+        }
+        #${EDIFICE_ASSISTANCE_BUTTON_ID} .edifice-assistance-button-divider {
+          align-self: stretch;
+          width: 1px;
+          background-color: #fff;
+          border-radius: 20px;
+        }
+        #${EDIFICE_ASSISTANCE_BUTTON_ID} .edifice-assistance-button-question {
+          display: flex;
+          width: 24px;
+          height: 24px;
+        }
+      `;
+      document.head.appendChild(style);
+    }
+
+    function createEdificeAssistanceButton(): HTMLButtonElement {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.id = EDIFICE_ASSISTANCE_BUTTON_ID;
+      button.innerHTML = `
+        <span class="edifice-assistance-button-logo">${EDIFICE_WORDMARK_SVG}</span>
+        <span class="edifice-assistance-button-divider"></span>
+        <span class="edifice-assistance-button-question">${EDIFICE_QUESTION_SVG}</span>
+      `;
+      button.addEventListener("click", () => {
+        (window as any).zE("webWidget", "toggle");
+      });
+      return button;
+    }
+
+    function setEdificeAssistanceButtonCollapsed(
+      button: HTMLButtonElement,
+      collapsed: boolean
+    ) {
+      const logo = button.querySelector(".edifice-assistance-button-logo");
+      if (logo) {
+        logo.innerHTML = collapsed ? EDIFICE_MARK_SVG : EDIFICE_WORDMARK_SVG;
+      }
+    }
+
     // Add Zendesk Guide Widget
     function addZendeskGuideWedget() {
       http()
@@ -911,16 +1004,12 @@ module.directive("portal", [
                 setZendeskLabels(data.module, locationHref);
               }
 
-              // Set the Zendesk Guide Widget settings color and launcher to mobile and suppress contact form if the user has the right to see the support
+              // Set the Zendesk Guide Widget settings color and suppress contact form if the user has the right to see the support.
+              // Color always matches EdificeAssistanceButton's background (theme) and its header banner (header).
               (window as any).zE("webWidget", "updateSettings", {
                 webWidget: {
-                  color: { theme: data.color || "#ffc400" },
+                  color: { theme: "#3030d1", header: "#738efc" },
                   zIndex: 8000,
-                  launcher: {
-                    mobile: {
-                      labelVisible: true,
-                    },
-                  },
                   contactForm: {
                     suppress: !model.me.hasWorkflow(
                       "net.atos.entng.support.controllers.DisplayController|view"
@@ -936,27 +1025,46 @@ module.directive("portal", [
                 },
               });
 
-              // Set the Zendesk Guide Widget settings on mobile to remove the label when the user scrolls
-              window.addEventListener("scroll", () => {
-                (window as any).zE("webWidget", "updateSettings", {
-                  webWidget: {
-                    launcher: {
-                      mobile: {
-                        labelVisible: window.scrollY <= 5,
-                      },
-                    },
-                  },
-                });
-              });
+              // The native Zendesk launcher is hidden (see injectEdificeAssistanceButtonStyles):
+              // EdificeAssistanceButton is rendered instead and drives the widget via 'toggle'.
+              injectEdificeAssistanceButtonStyles();
+              const assistanceButton = createEdificeAssistanceButton();
+              document.body.appendChild(assistanceButton);
 
-              // Hide the Zendesk Guide Widget before printing
+              // Collapse the launcher to its compact mark once the page scrolls. Some
+              // layouts scroll an inner container instead of the window; scroll events
+              // don't bubble, but a capture-phase listener on window still sees them
+              // from any descendant, so read the scrollTop off whichever element scrolled.
+              const getScrollTop = (target: EventTarget | null) =>
+                target instanceof HTMLElement ? target.scrollTop : window.scrollY;
+
+              const handleAssistanceButtonScroll = (event: Event) => {
+                setEdificeAssistanceButtonCollapsed(
+                  assistanceButton,
+                  getScrollTop(event.target) > 5
+                );
+              };
+
+              setEdificeAssistanceButtonCollapsed(
+                assistanceButton,
+                window.scrollY > 5
+              );
+              window.addEventListener(
+                "scroll",
+                handleAssistanceButtonScroll,
+                true
+              );
+
+              // Hide the Zendesk Guide Widget and its launcher before printing
               window.addEventListener("beforeprint", () => {
                 (window as any).zE("webWidget", "hide");
+                assistanceButton.style.display = "none";
               });
 
-              // Display Zendesk Guide Widget back after printing has completed
+              // Display Zendesk Guide Widget and its launcher back after printing has completed
               window.addEventListener("afterprint", () => {
                 (window as any).zE("webWidget", "show");
+                assistanceButton.style.display = "";
               });
 
               // Set the Zendesk Guide Widget to update the labels when the user opens the widget
