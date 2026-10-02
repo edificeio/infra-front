@@ -55,7 +55,7 @@ export function addZendeskGuideWidget() {
           (window as any).zE("webWidget", "updateSettings", {
             webWidget: {
               ...helpZone.widgetSettings,
-              color: { theme: "#3030D1" },
+              color: { theme: data.color || "#3030D1" },
               zIndex: 8000,
               contactForm: {
                 suppress: !model.me.hasWorkflow(
