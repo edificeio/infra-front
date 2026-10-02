@@ -152,7 +152,7 @@ function injectEdificeHelpZoneStyles() {
 function escapeHtml(text: string): string {
   const span = document.createElement("span");
   span.textContent = text;
-  return span.innerHTML;
+  return span.innerHTML.replace(/"/g, "&quot;");
 }
 
 function createEdificeHelpZoneElement(): HTMLDivElement {
