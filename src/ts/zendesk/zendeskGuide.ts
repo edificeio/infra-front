@@ -89,6 +89,8 @@ export function addZendeskGuideWidget() {
 
           // Set the Zendesk Guide Widget to update the labels when the user opens the widget
           (window as any).zE("webWidget:on", "open", function () {
+            helpZone.onWidgetOpen();
+
             // Detect if the user has changed the page to reset the labels
             if (
               Object.keys(data.module).length > 0 &&
@@ -112,6 +114,11 @@ export function addZendeskGuideWidget() {
                 },
               });
             }
+          });
+
+          // Notify the help zone when the user closes the widget
+          (window as any).zE("webWidget:on", "close", function () {
+            helpZone.onWidgetClose();
           });
 
           (window as any).zE(

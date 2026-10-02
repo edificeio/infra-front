@@ -18,6 +18,10 @@ export interface HelpZone {
   // Hide / show the launcher (e.g. while printing)
   hide(): void;
   show(): void;
+  // Zendesk only allows a single handler per event: zendeskGuide.ts owns the
+  // widget 'open' / 'close' handlers and forwards them to the help zone.
+  onWidgetOpen(): void;
+  onWidgetClose(): void;
 }
 
 export async function getHelpZone(): Promise<HelpZone> {

@@ -29,5 +29,9 @@ export function createLegacyHelpZone(): HelpZone {
     // The native launcher follows the widget visibility (zE 'hide' / 'show')
     hide() {},
     show() {},
+
+    // The native launcher handles the widget open / close state by itself
+    onWidgetOpen() {},
+    onWidgetClose() {},
   };
 }

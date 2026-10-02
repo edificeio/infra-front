@@ -1,3 +1,4 @@
+import { idiom } from "../idiom";
 import { HelpZone } from "./helpZone";
 
 // Compact "Edifice" icon mark, shown once the page has scrolled.
@@ -9,21 +10,25 @@ const EDIFICE_WORDMARK_SVG = `<svg width="81" height="18" viewBox="0 0 225 50" f
 // "?" help icon, right side of the launcher.
 const EDIFICE_QUESTION_SVG = `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><g><path fill-rule="evenodd" clip-rule="evenodd" d="M12 3C7.02944 3 3 7.02944 3 12C3 16.9706 7.02944 21 12 21C16.9706 21 21 16.9706 21 12C21 7.02944 16.9706 3 12 3ZM1 12C1 5.92487 5.92487 1 12 1C18.0751 1 23 5.92487 23 12C23 18.0751 18.0751 23 12 23C5.92487 23 1 18.0751 1 12Z" fill="white"/><path fill-rule="evenodd" clip-rule="evenodd" d="M11.0315 8.4265C10.8469 8.66926 10.75 9.03749 10.75 9.44444C10.75 9.99673 10.3023 10.4444 9.75 10.4444C9.19772 10.4444 8.75 9.99673 8.75 9.44444C8.75 8.78195 8.89804 7.92796 9.43956 7.21586C10.0173 6.45616 10.9346 6 12.1646 6C13.5808 6 14.4858 6.7401 14.9221 7.65786C15.313 8.48011 15.3302 9.4426 15.1011 10.0856C14.8215 10.8705 14.2831 11.4933 13.9026 11.9335C13.8455 11.9995 13.792 12.0614 13.7434 12.1191C13.312 12.632 13.1646 12.9084 13.1646 13.213V14.3325C13.1646 14.8848 12.7169 15.3333 12.1646 15.3333C11.6124 15.3333 11.1646 14.8856 11.1646 14.3333V13.213C11.1646 12.1262 11.7696 11.3587 12.2129 10.8316C12.2824 10.749 12.3487 10.6711 12.4118 10.597C12.8045 10.1358 13.0721 9.82138 13.2171 9.41437C13.2614 9.29007 13.2875 8.87755 13.1159 8.51663C13.041 8.35912 12.9414 8.24051 12.8164 8.15879C12.6952 8.07954 12.497 8 12.1646 8C11.4699 8 11.1799 8.23134 11.0315 8.4265Z" fill="white"/><path d="M13.325 17.1667C13.325 17.719 12.8773 18.1667 12.325 18.1667C11.7727 18.1667 11.325 17.719 11.325 17.1667C11.325 16.6145 11.7727 16.1667 12.325 16.1667C12.8773 16.1667 13.325 16.6145 13.325 17.1667Z" fill="white"/></g></svg>`;
 
-const EDIFICE_HELPZONE_BUTTON_ID = "edifice-helpzone-button";
-const EDIFICE_HELPZONE_BUTTON_STYLE_ID = "edifice-helpzone-button-style";
 
-// Zendesk injects its own launcher button (#launcher). This help zone renders
-// its own launcher instead, so hide the native one.
+const EDIFICE_HELPZONE_ID = "edifice-helpzone";
+const EDIFICE_HELPZONE_STYLE_ID = "edifice-helpzone-style";
+const EDIFICE_RELEASES_NOTES_URL = "https://edifice.io/releases/";
+
+
+// Mirrors @edifice.io/bootstrap's _help-zone.scss (px values, since Angular
+// themes don't share the 10px root font-size) plus a CSS-only tooltip mimicking
+// the Bootstrap one. Zendesk injects its own launcher (#launcher): hide it.
 function injectEdificeHelpZoneStyles() {
-  if (document.getElementById(EDIFICE_HELPZONE_BUTTON_STYLE_ID)) {
+  if (document.getElementById(EDIFICE_HELPZONE_STYLE_ID)) {
     return;
   }
 
   const style = document.createElement("style");
-  style.id = EDIFICE_HELPZONE_BUTTON_STYLE_ID;
+  style.id = EDIFICE_HELPZONE_STYLE_ID;
   style.textContent = `
     #launcher { display: none !important; }
-    #${EDIFICE_HELPZONE_BUTTON_ID} {
+    #${EDIFICE_HELPZONE_ID} {
       position: fixed;
       right: 24px;
       bottom: 24px;
@@ -32,106 +37,210 @@ function injectEdificeHelpZoneStyles() {
       align-items: center;
       gap: 8px;
       padding: 8px 8px 8px 12px;
-      color: #fff;
-      cursor: pointer;
       background-color: #3030d1;
-      border: none;
       border-radius: 999px;
       box-shadow: 0 4px 5px rgba(0, 0, 0, 0.18);
+      opacity: 1;
+      transform: translateY(0);
+      transition: box-shadow 300ms ease, opacity 300ms ease, transform 300ms ease;
     }
-    #${EDIFICE_HELPZONE_BUTTON_ID}:hover,
-    #${EDIFICE_HELPZONE_BUTTON_ID}:focus-visible {
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.18);
+    #${EDIFICE_HELPZONE_ID}.edifice-helpzone--open {
+      opacity: 0;
+      transform: translateY(20px);
+      pointer-events: none;
     }
-    #${EDIFICE_HELPZONE_BUTTON_ID} .edifice-helpzone-button-logo {
-      display: flex;
+    /* Tooltips are siblings of the controls (not children): Angular themes may
+       set overflow: hidden on every button, which would clip them. */
+    #${EDIFICE_HELPZONE_ID} .edifice-helpzone-item {
+      position: relative;
+      display: inline-flex;
       align-items: center;
-      height: 18px;
     }
-    #${EDIFICE_HELPZONE_BUTTON_ID} .edifice-helpzone-button-logo svg {
+    #${EDIFICE_HELPZONE_ID} .edifice-helpzone-badge,
+    #${EDIFICE_HELPZONE_ID} .edifice-helpzone-question {
+      display: inline-flex;
+      align-items: center;
+      margin: 0;
+      padding: 0;
+      min-width: 0;
+      height: auto;
+      color: #fff;
+      line-height: 0;
+      text-decoration: none;
+      background: transparent;
+      border: none;
+      box-shadow: none;
+      cursor: pointer;
+    }
+    #${EDIFICE_HELPZONE_ID} .edifice-helpzone-badge {
+      transition: transform 250ms cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+    #${EDIFICE_HELPZONE_ID} .edifice-helpzone-badge:hover,
+    #${EDIFICE_HELPZONE_ID} .edifice-helpzone-badge:focus-visible {
+      transform: translateY(-2px);
+    }
+    #${EDIFICE_HELPZONE_ID} .edifice-helpzone-logo {
+      display: inline-flex;
+      align-items: center;
+      overflow: hidden;
+      height: 18px;
+      width: 81px;
+      transition: width 250ms ease;
+    }
+    #${EDIFICE_HELPZONE_ID} .edifice-helpzone-logo--compact {
+      width: 18px;
+    }
+    #${EDIFICE_HELPZONE_ID} .edifice-helpzone-logo svg,
+    #${EDIFICE_HELPZONE_ID} .edifice-helpzone-question svg {
       display: block;
-      height: 18px;
-      width: auto;
+      flex-shrink: 0;
     }
-    #${EDIFICE_HELPZONE_BUTTON_ID} .edifice-helpzone-button-divider {
+    #${EDIFICE_HELPZONE_ID} .edifice-helpzone-divider {
       align-self: stretch;
       width: 1px;
       background-color: #fff;
-      border-radius: 20px;
     }
-    #${EDIFICE_HELPZONE_BUTTON_ID} .edifice-helpzone-button-question {
-      display: flex;
-      width: 24px;
-      height: 24px;
+    #${EDIFICE_HELPZONE_ID} .edifice-helpzone-tooltip {
+      position: absolute;
+      bottom: calc(100% + 20px);
+      left: 50%;
+      padding: 8px 12px;
+      color: #fff;
+      font-size: 14px;
+      line-height: 1.4;
+      white-space: nowrap;
+      background-color: rgba(0, 0, 0, 0.8);
+      border-radius: 8px;
+      transform: translateX(-50%);
+      visibility: hidden;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 150ms linear, visibility 150ms linear;
+    }
+    #${EDIFICE_HELPZONE_ID} .edifice-helpzone-tooltip::after {
+      content: "";
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      margin-left: -8px;
+      border: 8px solid transparent;
+      border-bottom-width: 0;
+      border-top-color: rgba(0, 0, 0, 0.8);
+    }
+    /* The "?" sits close to the viewport's right edge: right-align its tooltip */
+    #${EDIFICE_HELPZONE_ID} .edifice-helpzone-question + .edifice-helpzone-tooltip {
+      left: auto;
+      right: -8px;
+      transform: none;
+    }
+    #${EDIFICE_HELPZONE_ID} .edifice-helpzone-question + .edifice-helpzone-tooltip::after {
+      left: auto;
+      right: 12px;
+      margin-left: 0;
+    }
+    #${EDIFICE_HELPZONE_ID} .edifice-helpzone-item:hover .edifice-helpzone-tooltip,
+    #${EDIFICE_HELPZONE_ID} .edifice-helpzone-badge:focus-visible + .edifice-helpzone-tooltip,
+    #${EDIFICE_HELPZONE_ID} .edifice-helpzone-question:focus-visible + .edifice-helpzone-tooltip {
+      visibility: visible;
+      opacity: 1;
     }
   `;
   document.head.appendChild(style);
 }
 
-function createEdificeHelpZoneButton(): HTMLButtonElement {
-  const button = document.createElement("button");
-  button.type = "button";
-  button.id = EDIFICE_HELPZONE_BUTTON_ID;
-  button.innerHTML = `
-    <span class="edifice-helpzone-button-logo">${EDIFICE_WORDMARK_SVG}</span>
-    <span class="edifice-helpzone-button-divider"></span>
-    <span class="edifice-helpzone-button-question">${EDIFICE_QUESTION_SVG}</span>
-  `;
-  button.addEventListener("click", () => {
-    (window as any).zE("webWidget", "toggle");
-  });
-  return button;
+// Render a translated text without letting it inject markup.
+function escapeHtml(text: string): string {
+  const span = document.createElement("span");
+  span.textContent = text;
+  return span.innerHTML;
 }
 
-function setEdificeHelpZoneButtonCollapsed(
-  button: HTMLButtonElement,
-  collapsed: boolean
-) {
-  const logo = button.querySelector(".edifice-helpzone-button-logo");
+function createEdificeHelpZoneElement(): HTMLDivElement {
+  const releasesNotes = escapeHtml(idiom.translate("help-zone.edifice-releases-notes"));
+  const supportOpen = escapeHtml(idiom.translate("help-zone.support.open"));
+
+  const zone = document.createElement("div");
+  zone.id = EDIFICE_HELPZONE_ID;
+  zone.innerHTML = `
+    <span class="edifice-helpzone-item">
+      <a class="edifice-helpzone-badge" href="${EDIFICE_RELEASES_NOTES_URL}" target="_blank" rel="noopener noreferrer" aria-label="${releasesNotes}">
+        <span class="edifice-helpzone-logo">${EDIFICE_WORDMARK_SVG}</span>
+      </a>
+      <span class="edifice-helpzone-tooltip" role="tooltip">${releasesNotes}</span>
+    </span>
+    <span class="edifice-helpzone-divider"></span>
+    <span class="edifice-helpzone-item">
+      <button type="button" class="edifice-helpzone-question" aria-label="${supportOpen}">
+        ${EDIFICE_QUESTION_SVG}
+      </button>
+      <span class="edifice-helpzone-tooltip" role="tooltip">${supportOpen}</span>
+    </span>
+  `;
+  zone
+    .querySelector(".edifice-helpzone-question")
+    .addEventListener("click", () => {
+      (window as any).zE("webWidget", "toggle");
+    });
+  return zone;
+}
+
+// Swap the wordmark for its compact mark; the logo width transition animates it.
+function setEdificeHelpZoneCompact(zone: HTMLDivElement) {
+  const logo = zone.querySelector(".edifice-helpzone-logo");
   if (logo) {
-    logo.innerHTML = collapsed ? EDIFICE_MARK_SVG : EDIFICE_WORDMARK_SVG;
+    logo.classList.add("edifice-helpzone-logo--compact");
+    logo.innerHTML = EDIFICE_MARK_SVG;
   }
 }
 
-// Edifice-branded launcher (wordmark collapsing to its mark on scroll),
-// replacing the native Zendesk one and driving the widget via 'toggle'.
+// Edifice-branded launcher, same behaviour as @edifice.io/react's HelpZone:
+// - the logo links to the Edifice release notes, the "?" toggles the widget;
+// - the wordmark collapses to its mark on the first scroll and stays compact;
+// - the whole zone fades out while the widget is open.
 export function createEdificeHelpZone(): HelpZone {
-  let button: HTMLButtonElement | null = null;
+  let zone: HTMLDivElement | null = null;
 
   return {
     widgetSettings: {},
 
     mount() {
       injectEdificeHelpZoneStyles();
-      button = createEdificeHelpZoneButton();
-      document.body.appendChild(button);
+      zone = createEdificeHelpZoneElement();
+      document.body.appendChild(zone);
 
-      // Collapse the launcher to its compact mark once the page scrolls. Some
-      // layouts scroll an inner container instead of the window; scroll events
-      // don't bubble, but a capture-phase listener on window still sees them
-      // from any descendant, so read the scrollTop off whichever element scrolled.
-      const getScrollTop = (target: EventTarget | null) =>
-        target instanceof HTMLElement ? target.scrollTop : window.scrollY;
-
-      setEdificeHelpZoneButtonCollapsed(button, window.scrollY > 5);
-      window.addEventListener(
-        "scroll",
-        (event: Event) => {
-          setEdificeHelpZoneButtonCollapsed(button, getScrollTop(event.target) > 5);
-        },
-        true
-      );
+      // Some layouts scroll an inner container instead of the window; scroll
+      // events don't bubble, but a capture-phase listener still sees them.
+      // Once compact, the zone never expands back (even back at the top).
+      const goCompact = () => {
+        setEdificeHelpZoneCompact(zone);
+        document.removeEventListener("scroll", goCompact, true);
+      };
+      document.addEventListener("scroll", goCompact, true);
     },
 
     hide() {
-      if (button) {
-        button.style.display = "none";
+      if (zone) {
+        zone.style.display = "none";
       }
     },
 
     show() {
-      if (button) {
-        button.style.display = "";
+      if (zone) {
+        zone.style.display = "";
+      }
+    },
+
+    onWidgetOpen() {
+      if (zone) {
+        zone.classList.add("edifice-helpzone--open");
+        zone.setAttribute("aria-hidden", "true");
+      }
+    },
+
+    onWidgetClose() {
+      if (zone) {
+        zone.classList.remove("edifice-helpzone--open");
+        zone.removeAttribute("aria-hidden");
       }
     },
   };
