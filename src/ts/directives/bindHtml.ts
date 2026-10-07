@@ -2,7 +2,7 @@ import { ng } from '../ng-start';
 import http from 'axios';
 import { $ } from '../libs/jquery/jquery';
 
-export let bindHtml = ng.directive('bindHtml', [function(){
+export let bindHtml = ng.directive('bindHtml', ['$compile', function($compile){
 	return {
 		restrict: 'A',
 		scope: {
@@ -44,8 +44,7 @@ export let bindHtml = ng.directive('bindHtml', [function(){
 						scope.$apply();
 					});
                 }
-
-				element.html(htmlContent);
+				element.html($compile(htmlContent)(scope.$parent));
 				//weird browser bug with audio tags
 				element.find('audio').each(function(index, item){
 					let parent = $(item).parent();
