@@ -55,7 +55,11 @@ export function addZendeskGuideWidget() {
           (window as any).zE("webWidget", "updateSettings", {
             webWidget: {
               ...helpZone.widgetSettings,
-              color: { theme: data.color || "#3030D1" },
+              color: {
+                //TODO #IMPULS-6352 to update with "edifice in product" generalization
+                // theme: data.color || "#3030D1",
+                theme: helpZone.forcedColor || data.color || "#3030D1",
+              },
               zIndex: 8000,
               contactForm: {
                 suppress: !model.me.hasWorkflow(

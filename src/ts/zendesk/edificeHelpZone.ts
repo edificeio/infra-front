@@ -202,6 +202,8 @@ export function createEdificeHelpZone(): HelpZone {
 
   return {
     widgetSettings: {},
+    //TODO #IMPULS-6352 to delete with "edifice in product" generalization
+    forcedColor: "#3030D1",
 
     mount() {
       injectEdificeHelpZoneStyles();
