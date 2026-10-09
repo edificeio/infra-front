@@ -4,16 +4,22 @@ import { model } from './modelDefinitions';
 import { _ } from './libs/underscore/underscore';
 
 // Same uiOverrides mechanism as @edifice.io/react's useUiOverride: a platform's
-// /assets/theme-conf.js can set `overriding[].uiOverrides['layout.header']` to
-// `'v2'` or `{ variant: 'v2' }` to opt into the new header, per skin.
+// /assets/theme-conf.js can set `overriding[].uiOverrides[key]` to
+// `'variant'` or `{ variant: 'variant' }` to opt into a UI variant, per skin.
+// e.g. `uiOverrides['layout.header'] = 'v2'` opts into the new header.
 const UI_OVERRIDE_PORTAL_HEADER_KEY = 'layout.header';
 
-async function getUiOverride(skinName: string): Promise<string | undefined> {
+async function getUiOverride(skinName: string, key: string): Promise<string | undefined> {
 	await skin.listSkins();
 	const currentTheme = skin.conf && skin.conf.overriding.find(t => t.child === skinName);
-	const raw = currentTheme && currentTheme.uiOverrides && currentTheme.uiOverrides[UI_OVERRIDE_PORTAL_HEADER_KEY];
+	const raw = currentTheme && currentTheme.uiOverrides && currentTheme.uiOverrides[key];
 	const override = typeof raw === 'string' ? { variant: raw } : raw;
 	return override && override.variant;
+}
+
+// Resolve a uiOverrides variant for the current skin.
+export function getSkinUiOverride(key: string): Promise<string | undefined> {
+	return getUiOverride(skin.skin, key);
 }
 
 let _skinResolved, _skinRejected = null;
@@ -56,7 +62,7 @@ export var skin = {
 				this.skin = data.skin;
 				this.theme = (window as any).CDN_DOMAIN + '/assets/themes/' + data.skin + '/skins/default/';
 				this.basePath = this.theme + '../../';
-				getUiOverride(data.skin).then((variant) => {
+				getUiOverride(data.skin, UI_OVERRIDE_PORTAL_HEADER_KEY).then((variant) => {
 					if (variant === 'v2') {
 						this.portalTemplate = (window as any).CDN_DOMAIN + '/assets/themes/' + data.skin + '/portal-v2.html';
 					}
@@ -179,7 +185,7 @@ export var skin = {
 				that.skin = that.theme.split('/assets/themes/')[1].split('/')[0];
 				that.portalTemplate = (window as any).CDN_DOMAIN + '/assets/themes/' + that.skin + '/portal.html';
 				that.logoutCallback = data.logoutCallback;
-				getUiOverride(that.skin).then((variant) => {
+				getUiOverride(that.skin, UI_OVERRIDE_PORTAL_HEADER_KEY).then((variant) => {
 					if (variant === 'v2') {
 						that.portalTemplate = (window as any).CDN_DOMAIN + '/assets/themes/' + that.skin + '/portal-v2.html';
 					}
