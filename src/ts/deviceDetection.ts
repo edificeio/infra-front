@@ -34,8 +34,12 @@ export interface DeviceInfo {
  */
 function setCookie(name: string, value: string): void {
   if (typeof document === 'undefined') return;
-  const secure = location.protocol === 'https:' ? '; Secure' : '';
-  document.cookie = `${name}=${encodeURIComponent(value)}; path=/; SameSite=Strict${secure}`;
+  // Same policy as the cookies set by the backend (oneSessionId, XSRF-TOKEN...).
+  // SameSite=Strict drops these cookies on cross-site navigations (SAML ACS,
+  // CAS from Pronote, OAuth connectors...) and the device stays unknown in events.
+  // SameSite=None requires Secure, so fall back to Lax on plain http (local dev).
+  const sameSite = location.protocol === 'https:' ? 'None; Secure' : 'Lax';
+  document.cookie = `${name}=${encodeURIComponent(value)}; path=/; SameSite=${sameSite}`;
 }
 
 /**
@@ -136,20 +140,14 @@ export function readDeviceCookies(): DeviceInfo | null {
 /**
  * Sets device detection cookies in the browser.
  *
- * First checks if cookies already exist. If so, returns the existing values
- * without recalculating. Otherwise, detects device info and sets the cookies.
- *
- * This optimization avoids parsing the user-agent on every page load.
+ * Cookies are (re)written on every call so that cookies previously written
+ * with other attributes (e.g. SameSite=Strict) get replaced.
+ * Detection is cheap (a single user-agent parse).
  *
  * @returns DeviceInfo object containing osName, osVersion, deviceType, deviceName
  */
 export function setDeviceCookies(): DeviceInfo {
   try {
-    const existing = readDeviceCookies();
-    if (existing != null) {
-      return existing;
-    }
-
     const info = detectDevice();
     setCookie('osName', info.osName);
     setCookie('osVersion', info.osVersion);
