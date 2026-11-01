@@ -23,6 +23,8 @@ interface IVirtualMediaLibrary {
 }
 
 class Controller implements ng.IController, IVirtualMediaLibrary {
+    public app: string;
+    public excludedApp: string;
     public apps: Array<string>;
     public folderServiceTree: FolderTreeProps;
     public openedFolder: Array<models.Element>;
@@ -41,12 +43,25 @@ class Controller implements ng.IController, IVirtualMediaLibrary {
     async $onInit() {
         await this.loadBehavioursModules();
         this.initServiceTree();
+        // A tab dedicated to one app has a single tree: open it instead of waiting for a click on its root.
+        if (this.app && this.folderServiceTree.trees.length > 0) {
+            // Root trees are Tree objects, which openFolder handles through its hierarchical branch.
+            await this.folderServiceTree.openFolder(<any>this.folderServiceTree.trees[0]);
+        }
         this.safeApply();
+    }
+
+    isDisplayedApp(app: string): boolean {
+        if (this.app) {
+            return app === this.app;
+        }
+        return app !== this.excludedApp;
     }
 
     async loadBehavioursModules(): Promise<void[]> {
         const conf: any = await http().get('/workspace/conf/public');
-        this.apps = conf && conf['folder-service'] ? conf['folder-service'] : [];
+        const folderServices: Array<string> = conf && conf['folder-service'] ? conf['folder-service'] : [];
+        this.apps = folderServices.filter((app: string) => this.isDisplayedApp(app));
         const promises: Promise<void>[] = [];
         this.apps.forEach((app: string) => {
             if (appPrefix !== app) {
@@ -157,6 +172,8 @@ function directive() {
         restrict: 'E',
         templateUrl:  '/assets/js/entcore/template/media-library/virtual-media-library/virtual-media-folder.html',
         scope: {
+            app: "@",
+            excludedApp: "@",
             selectedVirtualFolder: "=",
             onClick: "&"
         },
