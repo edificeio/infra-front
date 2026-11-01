@@ -1,0 +1,31 @@
+<div class="row reduce-block-four search-image">
+	<input type="search" ng-model="display.search" i18n-placeholder="search" class="six cell" />
+	<div class="cell six">
+		<virtual-media-library-button
+				ng-if="selectedVirtualFolder"
+				documents="documents"
+				folders="folders"
+				selected-virtual-folder="selectedVirtualFolder"
+				on-click="selectDocuments()">
+		</virtual-media-library-button>
+	</div>
+</div>
+
+<div class="row browse">
+	<nav class="four cell vertical zero-mobile">
+		<ul class="height-minus300">
+			<virtual-media-library
+					app="nextcloud"
+					selected-virtual-folder="selectedVirtualFolder"
+					on-click="resetRegularDisplay()">
+			</virtual-media-library>
+		</ul>
+	</nav>
+
+	<virtual-media-library-document-view class="cell eight height-five twelve-mobile browse-list height-minus300 overflowx-hd"
+										 ng-if="selectedVirtualFolder"
+										 search="display.search"
+										 selected-virtual-folder="selectedVirtualFolder">
+	</virtual-media-library-document-view>
+</div>
+<div class="row"></div>

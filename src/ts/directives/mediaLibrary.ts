@@ -10,6 +10,28 @@ import { DocumentsListModel } from "../workspace/model";
 import { workspaceService } from "../workspace/services";
 import { notify } from "../notify";
 import { ui } from "../ui";
+
+const WORKSPACE_VIEW_WORKFLOW =
+  "org.entcore.workspace.controllers.WorkspaceController|view";
+const NEXTCLOUD_VIEW_WORKFLOW =
+  "fr.openent.nextcloud.controller.NextcloudController|view";
+const NEXTCLOUD_APP = "nextcloud";
+
+const canViewPersonalFolders = (): boolean =>
+  !!model.me && model.me.hasWorkflow(WORKSPACE_VIEW_WORKFLOW);
+
+const getDefaultListFrom = (
+  visibility: MediaLibraryScope["visibility"]
+): LIST_TYPE => {
+  if (visibility === "external") {
+    return "externalDocuments";
+  }
+  if (visibility === "public") {
+    return "publicDocuments";
+  }
+  return "appDocuments";
+};
+
 export type Header = {
   template: string;
   worflowKey: string;
@@ -106,6 +128,8 @@ export interface MediaLibraryScope {
   cancelUpload();
   canExpand(folder: Folder): boolean;
   isExternalVisible(): boolean;
+  isNextcloudEnabled: boolean;
+  canViewPersonalFolders(): boolean;
   triggerIpnutFileClick(event): void;
   //angular
   ngModel: Document | Document[];
@@ -150,9 +174,22 @@ export const mediaLibrary = ng.directive("mediaLibrary", [
               ? "library.header.browse.mobile"
               : "library.header.browse"
           }`,
-          template: "entcore/media-library/browse",
+          template: "entcore/media-library/workspace",
           visible: () => true,
           worflowKey: null,
+          onDisplay: () => {
+            // Coming back from the Nextcloud tab, which clears the regular listing.
+            if (scope.display && !scope.display.listFrom) {
+              scope.listFrom(getDefaultListFrom(scope.visibility));
+            }
+          },
+        };
+        const HEADER_NEXTCLOUD: Header = {
+          i18Key: "bbm.nextcloud",
+          template: "entcore/media-library/nextcloud",
+          visible: () => scope.isNextcloudEnabled,
+          worflowKey: null,
+          onDisplay: () => scope.resetRegularDisplay(),
         };
         const HEADER_UPLOAD: Header = {
           i18Key: `${
@@ -195,7 +232,12 @@ export const mediaLibrary = ng.directive("mediaLibrary", [
           //
         };
         scope.headers = function () {
-          const headers = [HEADER_RECORD, HEADER_UPLOAD, HEADER_BROWSE];
+          const headers = [
+            HEADER_RECORD,
+            HEADER_UPLOAD,
+            HEADER_BROWSE,
+            HEADER_NEXTCLOUD,
+          ];
           return scope.delegate && scope.delegate.augmentHeaders
             ? scope.delegate.augmentHeaders(headers)
             : headers;
@@ -363,6 +405,23 @@ export const mediaLibrary = ng.directive("mediaLibrary", [
         scope.isExternalVisible = function () {
           return scope.visibility == "external";
         };
+        scope.canViewPersonalFolders = canViewPersonalFolders;
+        scope.isNextcloudEnabled = false;
+        loadNextcloudAvailability();
+        async function loadNextcloudAvailability() {
+          if (!model.me || !model.me.hasWorkflow(NEXTCLOUD_VIEW_WORKFLOW)) {
+            return;
+          }
+          try {
+            const { data } = await http.get("/workspace/conf/public");
+            const folderServices: string[] =
+              (data && data["folder-service"]) || [];
+            scope.isNextcloudEnabled = folderServices.includes(NEXTCLOUD_APP);
+            safeApply(scope);
+          } catch (e) {
+            console.error("Error while loading the workspace public conf", e);
+          }
+        }
         scope.isSelectedHeader = function (h: Header): boolean {
           return header && h && header.i18Key == h.i18Key;
         };
@@ -434,17 +493,7 @@ export const mediaLibrary = ng.directive("mediaLibrary", [
         };
 
         scope.$watch("visibility", function (newVal) {
-          if (scope.visibility == "external") {
-            scope.listFrom("externalDocuments");
-          } else if (model.me && model.me.workflow.workspace.create) {
-            if (scope.visibility === "public") {
-              scope.listFrom("publicDocuments");
-            } else {
-              scope.listFrom("appDocuments");
-            }
-          } else if (model.me && model.me.workflow.workspace.list) {
-            scope.listFrom("sharedDocuments");
-          }
+          scope.listFrom(getDefaultListFrom(scope.visibility));
           scope.$watch("fileFormat", async newVal => {
             if (!newVal) {
               return;
