@@ -1,6 +1,5 @@
 var webpack = require("webpack");
 var path = require("path");
-const UglifyJSPlugin = require("uglifyjs-webpack-plugin");
 
 module.exports = {
   context: path.resolve(__dirname, "./"),
@@ -26,9 +25,6 @@ module.exports = {
       },
     ],
   },
-  plugins: [
-    new UglifyJSPlugin({
-      sourceMap: true,
-    }),
-  ],
+  // No minification plugin here: the bundle is minified by the gulp `minify` task
+  // (see gulpfile.js) with uglify-js 3.
 };
