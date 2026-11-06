@@ -6,6 +6,8 @@ var argv = require('yargs').argv;
 var rimraf = require("rimraf");
 var gap = require('gulp-append-prepend');
 var pjson = require('./package.json');
+var fs = require('fs');
+var UglifyJS = require('uglify-js');
 
 let springboardPath = '../recette';
 if (argv.springboard) {
@@ -24,6 +26,26 @@ function doBuild() {
             this.emit('end');
         })
         .pipe(gulp.dest('./'));
+}
+
+// The bundle is minified here rather than by a webpack plugin: the webpack that
+// runs is the 1.15 embedded in webpack-stream, whose only usable minifier plugin
+// (uglifyjs-webpack-plugin 0.4.x) drives UglifyJS 2 through its internal API.
+// UglifyJS 2 only parses ES5, so it fails ("Invalid assignment") as soon as a
+// bundled dependency ships ES2015 (e.g. entcore-toolkit's dist/http.js), and the
+// plugin cannot be pointed at uglify-js 3 (it calls uglify.base54, gone in 3.x).
+function minify(cb) {
+    var file = './bundle/ng-app.js';
+    var result = UglifyJS.minify(fs.readFileSync(file, 'utf8'), {
+        sourceMap: { content: fs.readFileSync(file + '.map', 'utf8'), url: 'ng-app.js.map' },
+        output: { comments: /^\**!|@preserve|@license/ }
+    });
+    if (result.error) {
+        return cb(result.error);
+    }
+    fs.writeFileSync(file, result.code);
+    fs.writeFileSync(file + '.map', result.map);
+    cb();
 }
 
 function build() {
@@ -58,6 +80,7 @@ function copyHtml(cb) {
 
 gulp.task('clean:types', cleanTypes);
 gulp.task("do-build", doBuild);
+gulp.task("minify", minify);
 gulp.task("build", build);
 gulp.task("build-dev", buildDev);
 gulp.task('update', update);
@@ -119,4 +142,4 @@ const GlobManager = {
 
 // Exports Tasks
 exports.watch = gulp.parallel('watch-ts', 'watch-html');
-exports.build = gulp.series('clean:types','do-build', 'build');
+exports.build = gulp.series('clean:types','do-build', 'minify', 'build');
